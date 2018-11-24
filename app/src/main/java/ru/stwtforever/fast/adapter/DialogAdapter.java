@@ -293,7 +293,7 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
             counter.setText(item.unread > 0 ? String.valueOf(item.unread) : "");
             date.setText(Utils.dateFormatter.format(last.date * 1000));
 
-            counter.getBackground().setTint(item.isNotificationsDisabled() && item.no_sound ? c_pushes_disabled : c_pushes_enabled);
+            counter.getBackground().setTint(item.isNotificationsDisabled() ? c_pushes_disabled : c_pushes_enabled);
 
             body.setText(last.text);
 
