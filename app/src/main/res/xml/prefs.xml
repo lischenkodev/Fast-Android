@@ -37,21 +37,6 @@
 		
 	</android.support.v7.preference.PreferenceCategory>
 	<android.support.v7.preference.PreferenceCategory
-		android:key="database"
-		android:title="@string/database">
-		
-		<android.support.v7.preference.PreferenceScreen
-			android:key="clean_messages_cache"
-			android:defaultValue="false"
-			android:title="@string/clean_messages_cache" />
-
-		<android.support.v7.preference.PreferenceScreen
-			android:key="clean_all_cache"
-			android:defaultValue="false"
-			android:title="@string/clean_cache" />
-
-	</android.support.v7.preference.PreferenceCategory>
-	<android.support.v7.preference.PreferenceCategory
 		android:key="application"
 		android:title="@string/application">
 

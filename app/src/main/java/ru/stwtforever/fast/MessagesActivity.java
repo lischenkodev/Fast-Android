@@ -364,7 +364,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
         msg.randomId = new Random().nextLong();
 
         adapter.getValues().add(msg);
-        adapter.notifyDataSetChanged();
+        adapter.notifyItemInserted(adapter.getItemCount() - 1);
         recyclerView.smoothScrollToPosition(adapter.getValues().size());
 
         ThreadExecutor.execute(new AsyncCallback(this) {
@@ -395,12 +395,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
                 e.printStackTrace();
                 busy = false;
                 msg.status = VKMessage.STATUS_ERROR;
-                adapter.notifyItemChanged(adapter.searchPosition(msg));
-
-                ArrayList<VKMessage> failed = new ArrayList<>();
-                failed.add(msg);
-
-                CacheStorage.insert(DBHelper.FAILED_MESSAGES_TABLE, failed);
+                adapter.notifyDataSetChanged();
             }
         });
 
@@ -513,8 +508,9 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
                         .edit()
                         .peerId(peerId)
                         .text(newText)
-                        .keepForwardMessages(true)
                         .messageId(messageId)
+                        .keepForwardMessages(true)
+                        .attachment(adapter.getItem(pos).attachments)
                         .keepSnippets(true)
                         .dontParseLinks(false)
                         .execute(Integer.class).get(0);

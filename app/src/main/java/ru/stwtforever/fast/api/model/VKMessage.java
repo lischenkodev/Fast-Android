@@ -78,8 +78,6 @@ public class VKMessage extends VKModel implements Serializable {
     public ArrayList<VKModel> attachments = new ArrayList<>();
     public ArrayList<VKMessage> fwd_messages;
 
-    public VKConversation conversation;
-
     public long update_time;
 
     public static final String TAG = "FVKMessage";

@@ -1,6 +1,8 @@
 package ru.stwtforever.fast.api.method;
 
+import ru.stwtforever.fast.api.model.VKModel;
 import ru.stwtforever.fast.util.*;
+
 import java.util.*;
 
 /**
@@ -52,25 +54,26 @@ public class MessageMethodSetter extends MethodSetter {
         put("filters", value);
         return this;
     }
-	
-	public MessageMethodSetter keepForwardMessages(boolean keep) {
-		put("keep_forward_messages", keep ? 1 : 0);
-		return this;
-	}
-	public MessageMethodSetter keepSnippets(boolean keep) {
-		put("keep_snippets", keep ? 1 : 0);
-		return this;
-	}
-	
-	public MessageMethodSetter filter(String filter) {
-		put("filter", filter);
-		return this;
-	}
-	
-	public MessageMethodSetter dontParseLinks(boolean dont_parse) {
-		put("dont_parse_links", dont_parse);
-		return this;
-	}
+
+    public MessageMethodSetter keepForwardMessages(boolean keep) {
+        put("keep_forward_messages", keep ? 1 : 0);
+        return this;
+    }
+
+    public MessageMethodSetter keepSnippets(boolean keep) {
+        put("keep_snippets", keep ? 1 : 0);
+        return this;
+    }
+
+    public MessageMethodSetter filter(String filter) {
+        put("filter", filter);
+        return this;
+    }
+
+    public MessageMethodSetter dontParseLinks(boolean dont_parse) {
+        put("dont_parse_links", dont_parse);
+        return this;
+    }
 
     /**
      * Number of characters after which to truncate a previewed message.
@@ -90,11 +93,11 @@ public class MessageMethodSetter extends MethodSetter {
         put("last_message_id", value);
         return this;
     }
-	
-	public MessageMethodSetter extended(boolean extended) {
-		put("extended", extended ? 1 : 0);
-		return this;
-	}
+
+    public MessageMethodSetter extended(boolean extended) {
+        put("extended", extended ? 1 : 0);
+        return this;
+    }
 
 
     /** Setters for messages.getDialogs */
@@ -119,21 +122,21 @@ public class MessageMethodSetter extends MethodSetter {
         put("message_ids", ArrayUtil.toString(ids));
         return this;
     }
-	
-	public MessageMethodSetter every(Boolean every) {
-		if (every != null) {
-			put("delete_for_all", every);
-		}
-		return this;
-	}
-	
-	public MessageMethodSetter spam(Boolean spam) {
-		if (spam != null) {
-			put("spam", spam);
-		}
-		
-		return this;
-	}
+
+    public MessageMethodSetter every(Boolean every) {
+        if (every != null) {
+            put("delete_for_all", every);
+        }
+        return this;
+    }
+
+    public MessageMethodSetter spam(Boolean spam) {
+        if (spam != null) {
+            put("spam", spam);
+        }
+
+        return this;
+    }
 
     /** Setters for messages.search */
 
@@ -236,6 +239,11 @@ public class MessageMethodSetter extends MethodSetter {
      * List of objects attached to the message, separated by commas
      */
     public final MessageMethodSetter attachment(Collection<String> attachments) {
+        put("attachment", ArrayUtil.toString(attachments));
+        return this;
+    }
+
+    public final MessageMethodSetter attachment(ArrayList<VKModel> attachments) {
         put("attachment", ArrayUtil.toString(attachments));
         return this;
     }
