@@ -218,9 +218,9 @@ public class MainActivity extends AppCompatActivity {
 
         ListView list = findViewById(R.id.drawer_list);
 
-        final String[] titles = new String[]{getString(R.string.settings), getString(R.string.logout)};
-        int[] icons = new int[]{R.drawable.md_settings, R.drawable.md_exit_to_app};
-        final String[] tags = new String[]{"settings", "exit"};
+        final String[] titles = new String[]{getString(R.string.groups), getString(R.string.settings), getString(R.string.logout)};
+        int[] icons = new int[]{R.drawable.ic_people_outline_black_24dp, R.drawable.md_settings, R.drawable.md_exit_to_app};
+        final String[] tags = new String[]{"groups", "settings", "exit"};
 
         ArrayList<Object[]> items = new ArrayList<>();
 

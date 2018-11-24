@@ -153,8 +153,6 @@ public class LongPollService extends Service {
             m.add(conversation.last);
             CacheStorage.insert(DBHelper.MESSAGES_TABLE, m);
 
-            Log.d("New message FVK", item.toString());
-
             EventBus.getDefault().postSticky(new Object[]{4, conversation});
         }
 

@@ -143,4 +143,5 @@
     <string name="pinned_message">Pinned message</string>
 
     <string name="restart_longpoll">Restart longpoll</string>
+    <string name="groups">Groups</string>
 </resources>

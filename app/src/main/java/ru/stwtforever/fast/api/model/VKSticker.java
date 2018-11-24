@@ -41,8 +41,5 @@ public class VKSticker extends VKModel implements Serializable {
 		this.src_128 = srcs.get(1);
 		this.src_256 = srcs.get(2);
 		this.src_512 = srcs.get(4);
-		
-		Utils.logD(TAG, "size = " + this.src_256);
-		
     }
 }

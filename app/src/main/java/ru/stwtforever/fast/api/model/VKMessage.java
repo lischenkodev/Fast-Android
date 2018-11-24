@@ -27,10 +27,6 @@ public class VKMessage extends VKModel implements Serializable {
     public static final int MEDIA = 512;        //сообщение содержит медиаконтент
     public static final int BESEDA = 8192;    //беседа
 
-    private static final long serialVersionUID = 1L;
-
-    public boolean needParse = false;
-
     public boolean isAdded;
 
     public static final String ACTION_CHAT_CREATE = "chat_create";
@@ -60,8 +56,6 @@ public class VKMessage extends VKModel implements Serializable {
     public int status;
     public int flag;
     public int chatMessageId;
-
-    public Integer adminId;
 
     public String type;
     public long date;
@@ -153,48 +147,15 @@ public class VKMessage extends VKModel implements Serializable {
 
         JSONArray fws = o.optJSONArray("fwd_messages");
 
-        if (fws.length() > 0) {
+        if (fws != null && fws.length() > 0) {
             fwd_messages = parseAttMessages(fws);
         }
 
         JSONArray atts = o.optJSONArray("attachments");
 
-        if (atts.length() > 0) {
+        if (atts != null && atts.length() > 0) {
             attachments = VKAttachments.parse(atts);
         }
-    }
-
-    public static ArrayList<VKMessage> parseArray(JSONArray a) throws JSONException {
-        ArrayList<VKMessage> messages = new ArrayList<>();
-
-        for (int i = 0; i < a.length(); i++) {
-            VKMessage m = new VKMessage(a.optJSONObject(i));
-            messages.add(m);
-        }
-
-        return messages;
-    }
-
-    public static ArrayList<VKMessage> parseArrayExtended(JSONObject o) {
-        return null;
-    }
-
-    public static VKMessage parseFromLongPoll(JSONArray a) throws JSONException {
-        Log.d("Message", a.toString());
-        VKMessage m = new VKMessage();
-        m.id = a.optInt(1);
-        m.flag = a.optInt(2);
-        m.peerId = a.optInt(3);
-        m.date = a.optLong(4);
-        m.read = ((m.flag & UNREAD) == 0);
-        m.out = (m.flag & OUTBOX) != 0;
-        m.text = (a.optString(6));
-        if ((m.flag & BESEDA) != 0) {
-            JSONObject o = a.optJSONObject(7);
-            m.fromId = o.optInt("from");
-        }
-
-        return m;
     }
 
     public boolean isChat() {

@@ -62,7 +62,7 @@ public class DrawerAdapter extends BaseListViewAdapter<Object[]> {
 		int color, bgColor = 0;
 		
 		if (select) {
-			color = context.getResources().getColor(R.color.colorPrimary);
+			color = ThemeManager.getAccent();
 			bgColor = ColorUtil.alphaColor(color, 0.5f);
 		} else {
 			color = ThemeManager.isDark() ? Color.WHITE : Color.DKGRAY;

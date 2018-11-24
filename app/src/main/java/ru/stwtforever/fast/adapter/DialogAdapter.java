@@ -254,7 +254,9 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
 
         public void bind(final int position) {
             VKConversation item = adapter.getItem(position);
+            if (item == null) return;
             VKMessage last = item.last;
+            if (last == null) return;
             VKGroup group = adapter.searchGroup(last.fromId);
             VKGroup peerGroup = adapter.searchGroup(last.peerId);
 
