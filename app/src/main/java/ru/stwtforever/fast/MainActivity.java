@@ -35,6 +35,7 @@ import ru.stwtforever.fast.db.DBHelper;
 import ru.stwtforever.fast.db.MemoryCache;
 import ru.stwtforever.fast.fragment.FragmentDialogs;
 import ru.stwtforever.fast.fragment.FragmentFriends;
+import ru.stwtforever.fast.fragment.FragmentGroups;
 import ru.stwtforever.fast.helper.DialogHelper;
 import ru.stwtforever.fast.helper.PermissionHelper;
 import ru.stwtforever.fast.service.LongPollService;
@@ -56,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
     FragmentDialogs f_dialogs;
     FragmentFriends f_friends;
+    FragmentGroups f_groups;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -181,6 +183,7 @@ public class MainActivity extends AppCompatActivity {
     private void initFragments() {
         f_dialogs = new FragmentDialogs();
         f_friends = new FragmentFriends();
+        f_groups = new FragmentGroups();
     }
 
     private void initToolbar() {
@@ -255,6 +258,9 @@ public class MainActivity extends AppCompatActivity {
         String tag = (String) adapter.getValues().get(position)[3];
 
         switch (tag) {
+            case "groups":
+                //replaceFragment(f_groups);
+                break;
             case "settings":
                 startActivity(new Intent(this, SettingsActivity.class));
                 break;
@@ -350,15 +356,7 @@ public class MainActivity extends AppCompatActivity {
                 tr.add(R.id.fragment_container, f);
             }
 
-            new Handler().post(new Runnable() {
-
-                @Override
-                public void run() {
-                    tr.commit();
-                }
-            });
-
-            invalidateOptionsMenu();
+            tr.commit();
         }
     }
 
