@@ -1,0 +1,51 @@
+<resources>
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light">
+		<item name="colorPrimary">@color/colorPrimary</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+		<item name="colorAccent">@color/colorAccent</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+		<item name="mainColor">#000000</item>
+		<item name="secondaryColor">#a9a9a9</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar" parent="AppTheme">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="ChatInfoTheme" parent="AppTheme.NoActionBar">
+        <item name="colorControlNormal">@android:color/white</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+	
+	<style name="LoginTheme" parent="AppTheme.NoActionBar">
+		<item name="colorAccent">@android:color/white</item>
+		<item name="colorPrimary">@color/colorPrimary</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+	</style>
+		
+	<style name="LightTheme" parent="Theme.AppCompat.Light.NoActionBar">
+		<item name="colorAccent">@color/colorAccent</item>
+		<item name="colorPrimary">@color/colorPrimary</item>
+		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+		<item name="android:windowBackground">@color/light_bg</item>
+		<item name="mainLightColor">#FFFFFF</item>
+		<item name="mainColor">#000000</item>
+		<item name="secondaryColor">#a9a9a9</item>
+	</style>
+
+	<style name="DarkTheme" parent="Theme.AppCompat.NoActionBar">
+		<item name="colorAccent">@color/colorAccentDark</item>
+		<item name="colorPrimary">@color/colorDarkPrimary</item>
+		<item name="colorPrimaryDark">@color/colorDarkPrimaryDark</item>
+		<item name="android:windowBackground">@color/dark_bg</item>
+		<item name="mainLightColor">#424242</item>
+		<item name="mainColor">#ffffff</item>
+		<item name="secondaryColor">#d3d3d3</item>
+	</style>
+	
+</resources>

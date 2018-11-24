@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+	
+	<EditTextPreference
+		android:title="@string/vk_api_domain"
+		android:key="domain_api"
+		android:defaultValue="api.vk.com" />
+	
+	<EditTextPreference
+		android:title="@string/vk_oauth_domain"
+		android:key="domain_oauth"
+		android:defaultValue="oauth.vk.com" />
+	
+</PreferenceScreen>

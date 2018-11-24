@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.preference.PreferenceScreen 
+	xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<android.support.v7.preference.PreferenceCategory
+		android:key="interface_"
+		android:title="@string/interface_">
+
+		<android.support.v7.preference.SwitchPreferenceCompat
+			android:title="@string/dark_theme"
+			android:defaultValue="false"
+			android:key="dark_style" />
+
+	</android.support.v7.preference.PreferenceCategory>
+
+
+	<android.support.v7.preference.PreferenceCategory
+		android:key="functional"
+		android:title="@string/functions">
+
+		<android.support.v7.preference.EditTextPreference
+			android:id="@android:id/edit"
+			android:key="template"
+			android:defaultValue="¯\\_(ツ)_/¯"
+			android:summary="@string/message_template"
+			android:title="@string/template" />
+
+	</android.support.v7.preference.PreferenceCategory>
+	<android.support.v7.preference.PreferenceCategory
+		android:key="invisible"
+		android:title="@string/invisible">
+		
+		<android.support.v7.preference.SwitchPreferenceCompat
+			android:key="hide_typing"
+			android:defaultValue="false"
+			android:title="@string/hide_typing_status" />
+		
+	</android.support.v7.preference.PreferenceCategory>
+	<android.support.v7.preference.PreferenceCategory
+		android:key="database"
+		android:title="@string/database">
+		
+		<android.support.v7.preference.PreferenceScreen
+			android:key="clean_messages_cache"
+			android:defaultValue="false"
+			android:title="@string/clean_messages_cache" />
+
+		<android.support.v7.preference.PreferenceScreen
+			android:key="clean_all_cache"
+			android:defaultValue="false"
+			android:title="@string/clean_cache" />
+
+	</android.support.v7.preference.PreferenceCategory>
+	<android.support.v7.preference.PreferenceCategory
+		android:key="application"
+		android:title="@string/application">
+
+		<android.support.v7.preference.PreferenceScreen
+			android:title="@string/about_app"
+			android:key="about" />
+		
+		<android.support.v7.preference.PreferenceScreen
+			android:title="@string/show_exceptions"
+			android:key="exceptions" />
+
+	</android.support.v7.preference.PreferenceCategory>
+
+	<android.support.v7.preference.PreferenceCategory
+		android:key="updates"
+		android:title="@string/updates">
+
+		<android.support.v7.preference.SwitchPreferenceCompat
+			android:title="@string/ota"
+			android:defaultValue="false"
+			android:key="ota" />
+
+		<android.support.v7.preference.PreferenceScreen
+			android:title="@string/check_updates"
+			android:key="check_updates" />
+
+	</android.support.v7.preference.PreferenceCategory>
+
+	<android.support.v7.preference.PreferenceCategory
+		android:key="debug"
+		android:title="@string/debug">
+
+		<android.support.v7.preference.PreferenceScreen
+			android:title="@string/custom_error"
+			android:key="do_error" />
+		
+		<android.support.v7.preference.PreferenceScreen
+			android:title="@string/custom_exception"
+			android:key="do_exception" />
+
+	</android.support.v7.preference.PreferenceCategory>
+</android.support.v7.preference.PreferenceScreen>
