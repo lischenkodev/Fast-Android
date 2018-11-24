@@ -176,7 +176,7 @@ public class LoginActivity extends AppCompatActivity {
 			avatar.setImageResource(R.drawable.placeholder_user);
 			
 			card.setOnClickListener(loginClick);
-			fab.setVisibility(View.INVISIBLE);
+			fab.hide();
 			return;
 		}
 		
@@ -189,7 +189,7 @@ public class LoginActivity extends AppCompatActivity {
 			.priority(Picasso.Priority.HIGH)
 			.into(avatar);
 			
-		fab.setVisibility(View.VISIBLE);
+		fab.show();
 	}
 
 	private void checkUpdates() {

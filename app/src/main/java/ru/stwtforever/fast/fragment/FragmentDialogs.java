@@ -3,6 +3,7 @@ package ru.stwtforever.fast.fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -79,6 +80,12 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
             adapter.destroy();
         }
         super.onDestroy();
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        this.title = getString(R.string.fragment_messages);
+        super.onCreate(savedInstanceState);
     }
 
     @Override

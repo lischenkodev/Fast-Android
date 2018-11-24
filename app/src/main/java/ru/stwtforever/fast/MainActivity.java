@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initFragments() {
         f_dialogs = new FragmentDialogs();
-        f_friends = new FragmentFriends(getString(R.string.fragment_friends));
+        f_friends = new FragmentFriends();
     }
 
     private void initToolbar() {
