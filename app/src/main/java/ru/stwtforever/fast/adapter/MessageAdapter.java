@@ -629,16 +629,6 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
 
             loadImage(image, source.photo_130, source.photo_320, false);
             parent.addView(v);
-
-            v.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View p1) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(source.player));
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(intent);
-                }
-            });
         }
 
         public void photo(VKMessage item, ViewGroup parent, final VKPhoto source, int width) {

@@ -1,18 +1,21 @@
 package ru.stwtforever.fast.api.model;
 
 import android.util.*;
+
 import ru.stwtforever.fast.api.*;
 import ru.stwtforever.fast.api.model.*;
+
 import java.io.*;
 import java.util.*;
+
 import org.json.*;
 
 public class VKMessage extends VKModel implements Serializable {
 
-	public static int count;
+    public static int count;
     public static int lastHistoryCount;
 
-	public static final int UNREAD = 1;        //сообщение не прочитано
+    public static final int UNREAD = 1;        //сообщение не прочитано
     public static final int OUTBOX = 2;        //исходящее сообщение
     public static final int REPLIED = 4;        //на сообщение был создан ответ
     public static final int IMPORTANT = 8;    //помеченное сообщение
@@ -24,9 +27,11 @@ public class VKMessage extends VKModel implements Serializable {
     public static final int MEDIA = 512;        //сообщение содержит медиаконтент
     public static final int BESEDA = 8192;    //беседа
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public boolean isAdded;
+    public boolean needParse = false;
+
+    public boolean isAdded;
 
     public static final String ACTION_CHAT_CREATE = "chat_create";
     public static final String ACTION_CHAT_INVITE_USER = "chat_invite_user";
@@ -36,50 +41,50 @@ public class VKMessage extends VKModel implements Serializable {
     public static final String ACTION_CHAT_PHOTO_UPDATE = "chat_photo_update";
     public static final String ACTION_CHAT_PHOTO_REMOVE = "chat_photo_remove";
 
-	public static final String ACTION_CHAT_PIN_MESSAGE = "chat_pin_message";
-	public static final String ACTION_CHAT_UNPIN_MESSAGE = "chat_unpin_message";
-	public static final String ACTION_CHAT_INVITE_USER_BY_LINK = "chat_invite_user_by_link";
+    public static final String ACTION_CHAT_PIN_MESSAGE = "chat_pin_message";
+    public static final String ACTION_CHAT_UNPIN_MESSAGE = "chat_unpin_message";
+    public static final String ACTION_CHAT_INVITE_USER_BY_LINK = "chat_invite_user_by_link";
 
-	public static final int STATUS_SENDING = 0;
-	public static final int STATUS_SENT = 1;
-	public static final int STATUS_ERROR = 2;
+    public static final int STATUS_SENDING = 0;
+    public static final int STATUS_SENT = 1;
+    public static final int STATUS_ERROR = 2;
 
     public String actionType = null;
     public int actionUserId = 0;
 
     public int id;
     public int peerId;
-	public int fromId;
-	public Long randomId;
-	public int mask;
-	public int status;
-	public int flag;
-	public int chatMessageId;
+    public int fromId;
+    public Long randomId;
+    public int mask;
+    public int status;
+    public int flag;
+    public int chatMessageId;
 
-	public Integer adminId;
+    public Integer adminId;
 
-	public String type;
+    public String type;
     public long date;
 
-	public String actionText;
+    public String actionText;
     public String text;
 
     public boolean read;
     public boolean out;
-	public boolean important;
+    public boolean important;
 
-	public int unread;
+    public int unread;
 
-	public ArrayList<VKModel> attachments = new ArrayList<>();
+    public ArrayList<VKModel> attachments = new ArrayList<>();
     public ArrayList<VKMessage> fwd_messages;
 
-	public VKConversation conversation;
+    public VKConversation conversation;
 
-	public long update_time;
+    public long update_time;
 
-	public static final String TAG = "FVKMessage";
+    public static final String TAG = "FVKMessage";
 
-	public static boolean isDeleted(int flags) {
+    public static boolean isDeleted(int flags) {
         return (flags & DELETED) != 0;
     }
 
@@ -91,105 +96,106 @@ public class VKMessage extends VKModel implements Serializable {
         return (flags & UNREAD) != 0;
     }
 
-	public static VKMessage parseFromAttach(JSONObject o) {
-		VKMessage m = new VKMessage();
+    public static VKMessage parseFromAttach(JSONObject o) {
+        VKMessage m = new VKMessage();
 
-		m.date = o.optLong("date");
-		m.fromId = o.optInt("from_id");
-		m.out = m.fromId == UserConfig.userId;
-		m.text = o.optString("text");
+        m.date = o.optLong("date");
+        m.fromId = o.optInt("from_id");
+        m.out = m.fromId == UserConfig.userId;
+        m.text = o.optString("text");
 
-		JSONArray attachments = o.optJSONArray("attachments");
-		if (attachments != null) {
-			if (attachments.length() > 0)
-				m.attachments = VKAttachments.parse(attachments);
-		}
+        JSONArray attachments = o.optJSONArray("attachments");
+        if (attachments != null) {
+            if (attachments.length() > 0)
+                m.attachments = VKAttachments.parse(attachments);
+        }
 
-		m.update_time = o.optLong("update_time");
+        m.update_time = o.optLong("update_time");
 
-		return m;
-	}
+        return m;
+    }
 
-	public static ArrayList<VKMessage> parseAttMessages(JSONArray a) throws JSONException {
-		ArrayList<VKMessage> ms = new ArrayList<>();
+    public static ArrayList<VKMessage> parseAttMessages(JSONArray a) throws JSONException {
+        ArrayList<VKMessage> ms = new ArrayList<>();
 
-		for (int i = 0; i < a.length(); i++) {
-			VKMessage m = parseFromAttach(a.optJSONObject(i));
-			ms.add(m);
-		}
+        for (int i = 0; i < a.length(); i++) {
+            VKMessage m = parseFromAttach(a.optJSONObject(i));
+            ms.add(m);
+        }
 
-		return ms;
-	}
+        return ms;
+    }
 
-	public VKMessage() {}
+    public VKMessage() {
+    }
 
-	public VKMessage(JSONObject o) throws JSONException {
-		Log.d(TAG, o.toString());
-		
-		status = VKMessage.STATUS_SENT;
+    public VKMessage(JSONObject o) throws JSONException {
+        Log.d(TAG, o.toString());
 
-		date = o.optLong("date");
-		fromId = o.optInt("from_id");
-		peerId = o.optInt("peer_id");
-		id = o.optInt("id");
-		out = fromId == UserConfig.userId;
-		read = false;
-		text = o.optString("text");
-		chatMessageId = o.optInt("conversation_message_id");
-		important = o.optBoolean("important");
-		randomId = o.optLong("random_id");
-		update_time = o.optLong("update_time");
+        status = VKMessage.STATUS_SENT;
 
-		if (o.has("action")) {
-			JSONObject a = o.optJSONObject("action");
-			actionUserId = a.optInt("member_id");
-			actionType = a.optString("type");
-			actionText = a.optString("text");
-		}
+        date = o.optLong("date");
+        fromId = o.optInt("from_id");
+        peerId = o.optInt("peer_id");
+        id = o.optInt("id");
+        out = fromId == UserConfig.userId;
+        read = false;
+        text = o.optString("text");
+        chatMessageId = o.optInt("conversation_message_id");
+        important = o.optBoolean("important");
+        randomId = o.optLong("random_id");
+        update_time = o.optLong("update_time");
 
-		JSONArray fws = o.optJSONArray("fwd_messages");
+        if (o.has("action")) {
+            JSONObject a = o.optJSONObject("action");
+            actionUserId = a.optInt("member_id");
+            actionType = a.optString("type");
+            actionText = a.optString("text");
+        }
 
-		if (fws.length() > 0) {
-			fwd_messages = parseAttMessages(fws);
-		}
+        JSONArray fws = o.optJSONArray("fwd_messages");
 
-		JSONArray atts = o.optJSONArray("attachments");
+        if (fws.length() > 0) {
+            fwd_messages = parseAttMessages(fws);
+        }
 
-		if (atts.length() > 0) {
-			attachments = VKAttachments.parse(atts);
-		}
-	}
+        JSONArray atts = o.optJSONArray("attachments");
 
-	public static ArrayList<VKMessage> parseArray(JSONArray a) throws JSONException {
-		ArrayList<VKMessage> messages = new ArrayList<>();
+        if (atts.length() > 0) {
+            attachments = VKAttachments.parse(atts);
+        }
+    }
 
-		for (int i = 0; i < a.length(); i++) {
-			VKMessage m = new VKMessage(a.optJSONObject(i));
-			messages.add(m);
-		}
+    public static ArrayList<VKMessage> parseArray(JSONArray a) throws JSONException {
+        ArrayList<VKMessage> messages = new ArrayList<>();
 
-		return messages;
-	}
+        for (int i = 0; i < a.length(); i++) {
+            VKMessage m = new VKMessage(a.optJSONObject(i));
+            messages.add(m);
+        }
 
-	public static ArrayList<VKMessage> parseArrayExtended(JSONObject o) {
-		return null;
-	}
+        return messages;
+    }
+
+    public static ArrayList<VKMessage> parseArrayExtended(JSONObject o) {
+        return null;
+    }
 
     public static VKMessage parseFromLongPoll(JSONArray a) throws JSONException {
         Log.d("Message", a.toString());
-		VKMessage m = new VKMessage();
+        VKMessage m = new VKMessage();
         m.id = a.optInt(1);
         m.flag = a.optInt(2);
         m.peerId = a.optInt(3);
-		m.date = a.optLong(4);
-		m.read = ((m.flag & UNREAD) == 0);
-		m.out = (m.flag & OUTBOX) != 0;
-		m.text = (a.optString(6));
+        m.date = a.optLong(4);
+        m.read = ((m.flag & UNREAD) == 0);
+        m.out = (m.flag & OUTBOX) != 0;
+        m.text = (a.optString(6));
         if ((m.flag & BESEDA) != 0) {
             JSONObject o = a.optJSONObject(7);
-			m.fromId = o.optInt("from");
+            m.fromId = o.optInt("from");
         }
-		
+
         return m;
     }
 
@@ -197,19 +203,19 @@ public class VKMessage extends VKModel implements Serializable {
         return peerId > 2_000_000_000;
     }
 
-	public boolean isFromGroup() {
-		return VKGroup.isGroupId(fromId);
-	}
+    public boolean isFromGroup() {
+        return VKGroup.isGroupId(fromId);
+    }
 
-	public boolean isGroup() {
-		return VKGroup.isGroupId(peerId);
-	}
+    public boolean isGroup() {
+        return VKGroup.isGroupId(peerId);
+    }
 
-	public boolean isUser() {
-		return !isGroup() && !isChat();
-	}
+    public boolean isUser() {
+        return !isGroup() && !isChat();
+    }
 
-	public boolean isFromUser() {
-		return !isFromGroup();
-	}
+    public boolean isFromUser() {
+        return !isFromGroup();
+    }
 }

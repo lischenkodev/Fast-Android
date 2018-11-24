@@ -18,6 +18,7 @@ import ru.stwtforever.fast.api.model.VKAttachments;
 import ru.stwtforever.fast.api.model.VKConversation;
 import ru.stwtforever.fast.api.model.VKLongPollServer;
 import ru.stwtforever.fast.api.model.VKMessage;
+import ru.stwtforever.fast.common.AppGlobal;
 import ru.stwtforever.fast.concurrent.LowThread;
 import ru.stwtforever.fast.db.CacheStorage;
 import ru.stwtforever.fast.db.DBHelper;
@@ -87,8 +88,6 @@ public class LongPollService extends Service {
                     sleep();
                     continue;
                 }
-
-                Log.e(TAG, "running...");
                 try {
                     if (server == null) {
                         server = VKApi.messages().getLongPollServer()
@@ -154,9 +153,6 @@ public class LongPollService extends Service {
             m.add(conversation.last);
             CacheStorage.insert(DBHelper.MESSAGES_TABLE, m);
 
-            if (conversation.last.attachments != null) {
-                //TODO GET MESSAGE BY ID
-            }
             EventBus.getDefault().postSticky(new Object[]{4, conversation});
         }
 
@@ -248,6 +244,10 @@ public class LongPollService extends Service {
             int userId = item.optInt(1);
             int peerId = 2_000_000_000 + item.optInt(2);
         }
+    }
+
+    private VKMessage getMessage(int id) throws Exception {
+        return VKApi.messages().getById().messageIds(id).extended(true).execute(VKMessage.class).get(0);
     }
 }
 

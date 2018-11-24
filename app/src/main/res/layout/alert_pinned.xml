@@ -6,15 +6,14 @@
 	android:layout_height="wrap_content"
 	android:layout_width="match_parent"
 	android:clickable="true"
-	android:focusable="false"
+	android:focusable="true"
 	android:selectable="false"
-	android:background="?android:windowBackground"
 	android:gravity="center"
 	android:padding="6dp">
 
 	<LinearLayout
 		android:orientation="vertical"
-		android:layout_width="wrap_content"
+		android:layout_width="0dp"
 		android:layout_height="wrap_content"
 		android:layout_weight="1.0"
 		android:layout_marginStart="6dp">
@@ -36,7 +35,7 @@
 				android:paddingStart="6dp"/>
 
 			<TextView
-				android:layout_width="wrap_content"
+				android:layout_width="0dp"
 				android:layout_height="wrap_content"
 				android:layout_weight="0.7"
 				android:id="@+id/date"
