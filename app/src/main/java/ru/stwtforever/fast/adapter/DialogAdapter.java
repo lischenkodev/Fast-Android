@@ -109,7 +109,7 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
             current.last.peerId = conversation.last.peerId;
             current.last.date = conversation.last.date;
             current.last.text = conversation.last.text;
-            current.last.read = current.read;
+            current.last.read = conversation.last.read;
             current.last.out = conversation.last.out;
             current.last.fromId = conversation.last.fromId;
 
@@ -122,6 +122,7 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
                 current.read = false;
             }
 
+            conversation = current;
 
             int first = manager.findFirstCompletelyVisibleItemPosition();
             boolean scroll = false;
@@ -130,7 +131,7 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
                 scroll = true;
 
             getValues().remove(index);
-            getValues().add(0, current);
+            getValues().add(0, conversation);
             notifyItemRemoved(index);
             notifyItemInserted(0);
 

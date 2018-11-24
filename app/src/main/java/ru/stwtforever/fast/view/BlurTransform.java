@@ -34,7 +34,7 @@ public class BlurTransform implements Transformation {
 
     @Override
     public String key() {
-        return "stark_blur_" + radius;
+        return "stack_blur_" + radius;
     }
 
 
