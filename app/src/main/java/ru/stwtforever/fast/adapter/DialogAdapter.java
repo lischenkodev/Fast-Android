@@ -104,25 +104,17 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
         if (index >= 0) {
             VKConversation current = getItem(index);
 
-            current.last.id = conversation.last.id;
-            current.last.flag = conversation.last.flag;
-            current.last.peerId = conversation.last.peerId;
-            current.last.date = conversation.last.date;
-            current.last.text = conversation.last.text;
-            current.last.read = conversation.last.read;
-            current.last.out = conversation.last.out;
-            current.last.fromId = conversation.last.fromId;
+            conversation.photo_50 = current.photo_50;
+            conversation.photo_100 = current.photo_100;
+            conversation.photo_200 = current.photo_200;
+            conversation.title = current.title;
+            conversation.type = current.type;
+            conversation.unread++;
 
-            current.read = conversation.read;
-            current.type = conversation.type;
-            current.unread++;
-
-            if (current.last.out) {
-                current.unread = 0;
-                current.read = false;
+            if (conversation.last.out) {
+                conversation.unread = 0;
+                conversation.read = false;
             }
-
-            conversation = current;
 
             getValues().remove(index);
             getValues().add(0, conversation);
@@ -299,27 +291,25 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
             } else
                 fromAvatar = item.isFromUser() ? user.photo_100 : group.photo_100;
 
-            if (fromAvatar != null)
-                if (TextUtils.isEmpty(fromAvatar.trim())) {
-                    avatar_small.setImageDrawable(p_user);
-                } else {
-                    Picasso.get()
-                            .load(fromAvatar)
-                            .priority(Picasso.Priority.HIGH)
-                            .placeholder(p_user)
-                            .into(avatar_small);
-                }
+            if (TextUtils.isEmpty(fromAvatar)) {
+                avatar_small.setImageDrawable(p_user);
+            } else {
+                Picasso.get()
+                        .load(fromAvatar)
+                        .priority(Picasso.Priority.HIGH)
+                        .placeholder(p_user)
+                        .into(avatar_small);
+            }
 
-            if (peerAvatar != null)
-                if (TextUtils.isEmpty(peerAvatar.trim())) {
-                    avatar.setImageDrawable(item.isChat() ? p_users : p_user);
-                } else {
-                    Picasso.get()
-                            .load(peerAvatar)
-                            .priority(Picasso.Priority.HIGH)
-                            .placeholder(item.isChat() ? p_users : p_user)
-                            .into(avatar);
-                }
+            if (TextUtils.isEmpty(peerAvatar)) {
+                avatar.setImageDrawable(item.isChat() ? p_users : p_user);
+            } else {
+                Picasso.get()
+                        .load(peerAvatar)
+                        .priority(Picasso.Priority.HIGH)
+                        .placeholder(item.isChat() ? p_users : p_user)
+                        .into(avatar);
+            }
 
             body.setTextColor(!ThemeManager.isDark() ? 0x90000000 : 0x90ffffff);
 
@@ -336,7 +326,7 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
                     body.append(span);
                 }
             } else {
-                String body_ = VKUtils.getActionBody(last);
+                String body_ = VKUtils.getActionBody(last, true);
 
                 body.setTextColor(ThemeManager.getAccent());
                 body.setText(Html.fromHtml(body_));

@@ -167,7 +167,10 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
 
             main_container.setBackgroundColor(editColor);
 
-            time.setText((item.update_time > 0 ? adapter.getString(R.string.edited).toLowerCase() + ", " : "") + Utils.dateFormatter.format(item.isAdded ? item.date : item.date * 1000L));
+            String s = item.update_time > 0 ? adapter.getString(R.string.edited) + ", " : "";
+            String time_ = s + Utils.dateFormatter.format(item.isAdded ? item.date : item.date * 1000L);
+
+            time.setText(time_);
 
             bubble.setVisibility(View.VISIBLE);
 
@@ -342,16 +345,12 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
 
         MessagesActivity root = (MessagesActivity) context;
         root.checkMessagesCount();
-
-        LinearLayoutManager manager = (LinearLayoutManager) root.getRecycler().getLayoutManager();
-        if (manager.findLastVisibleItemPosition() == 0) {
-            root.getRecycler().smoothScrollToPosition(getMessagesCount());
-        }
+        root.getRecycler().smoothScrollToPosition(getMessagesCount());
     }
 
-    private boolean isExist(int mid) {
+    private boolean isExist(long id) {
         for (VKMessage m : getValues()) {
-            if (m.id == mid) return true;
+            if (m.id == id) return true;
         }
 
         return false;
@@ -595,7 +594,7 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
             text.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
             text.setGravity(Gravity.CENTER);
-            text.setText(Html.fromHtml(VKUtils.getActionBody(item)));
+            text.setText(Html.fromHtml(VKUtils.getActionBody(item, false)));
 
             text.setClickable(false);
             text.setFocusable(false);

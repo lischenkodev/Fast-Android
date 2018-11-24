@@ -137,7 +137,7 @@ public class LongPollService extends Service {
             params.put("key", server.key);
             params.put("ts", String.valueOf(server.ts));
             params.put("wait", "25");
-            params.put("mode", "106");
+            params.put("mode", "238");
             params.put("version", "3");
 
             String url = "https://" + server.server;
@@ -152,6 +152,8 @@ public class LongPollService extends Service {
             ArrayList<VKMessage> m = new ArrayList<>();
             m.add(conversation.last);
             CacheStorage.insert(DBHelper.MESSAGES_TABLE, m);
+
+            Log.d("New message FVK", item.toString());
 
             EventBus.getDefault().postSticky(new Object[]{4, conversation});
         }

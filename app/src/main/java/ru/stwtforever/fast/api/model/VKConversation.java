@@ -135,9 +135,11 @@ public class VKConversation extends VKModel implements Serializable {
             last.fromId = o.optInt("from");
         }
 
+        last.randomId = a.optLong(8);
+
         c.type = getType(last.peerId);
 
-        JSONObject attachments = a.optJSONObject(6);
+        JSONObject attachments = a.optJSONObject(7);
 
         if (attachments != null && attachments.length() > 0) {
             last.attachments = VKAttachments.parseFromLongPoll(attachments);

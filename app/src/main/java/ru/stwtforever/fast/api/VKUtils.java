@@ -1,15 +1,26 @@
 package ru.stwtforever.fast.api;
 
-import android.content.*;
-import android.text.*;
-import ru.stwtforever.fast.*;
-import ru.stwtforever.fast.common.*;
-import ru.stwtforever.fast.db.*;
-import ru.stwtforever.fast.util.*;
-import ru.stwtforever.fast.api.model.*;
-import java.io.*;
-import java.util.*;
-import java.util.regex.*;
+import android.text.TextUtils;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import ru.stwtforever.fast.R;
+import ru.stwtforever.fast.api.model.VKAttachments;
+import ru.stwtforever.fast.api.model.VKConversation;
+import ru.stwtforever.fast.api.model.VKGroup;
+import ru.stwtforever.fast.api.model.VKMessage;
+import ru.stwtforever.fast.api.model.VKModel;
+import ru.stwtforever.fast.api.model.VKUser;
+import ru.stwtforever.fast.common.AppGlobal;
+import ru.stwtforever.fast.db.CacheStorage;
+import ru.stwtforever.fast.util.ArrayUtil;
 
 public class VKUtils {
 
@@ -59,121 +70,124 @@ public class VKUtils {
             return null;
         return m.group(2);
     }
-	
-	public static String getActionBody(VKMessage msg) {
-		String action = "<b>";
 
-		VKUser u = CacheStorage.getUser(msg.fromId);
-		if (u != null) {
-			action += u.toString();
-		}
+    public static String getActionBody(VKMessage msg, boolean fromDialogs) {
+        String action = "<b>";
 
-		action += ("</b>");
+        VKUser u = CacheStorage.getUser(msg.fromId);
+        if (u != null) {
+            action += u.toString();
+        }
 
-		VKUser action_user = CacheStorage.getUser(msg.actionUserId);
+        action += ("</b>");
 
-		String u_name = null;
+        VKUser action_user = CacheStorage.getUser(msg.actionUserId);
 
-		if (action_user != null) {
-			u_name = action_user.toString();
-		} else {
-			VKGroup group = CacheStorage.getGroup(VKGroup.toGroupId(msg.actionUserId));
-			if (group != null) {
-				u_name = group.name;
-			}
-		}
+        String u_name = null;
 
-		switch (msg.actionType) {
-			case VKMessage.ACTION_CHAT_CREATE:
-				action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.created_chat_w : R.string.created_chat_m : R.string.created_chat_m), action, " «<b>" + msg.actionText + "</b>»");
-				break;
-			case VKMessage.ACTION_CHAT_INVITE_USER:
-				if (msg.actionUserId == msg.fromId) {
-					action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.returned_to_chat_w : R.string.returned_to_chat_m : R.string.returned_to_chat_m), action);
-				} else {
-					action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.invited_to_chat_w : R.string.invited_to_chat_m : R.string.invited_to_chat_m), action, "<b>" + u_name + "</b>");
-				}
+        if (action_user != null) {
+            u_name = action_user.toString();
+        } else {
+            VKGroup group = CacheStorage.getGroup(VKGroup.toGroupId(msg.actionUserId));
+            if (group != null) {
+                u_name = group.name;
+            }
+        }
 
-				break;
-			case VKMessage.ACTION_CHAT_KICK_USER:
-				if (msg.actionUserId == msg.fromId) {
-					action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.left_the_chat_w : R.string.left_the_chat_m : R.string.left_the_chat_m), action);
-				} else {
-					action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.kicked_from_chat_w : R.string.kicked_from_chat_m : R.string.kicked_from_chat_m), action, "<b>" + u_name + "</b>");
-				}
-				break;
-			case VKMessage.ACTION_CHAT_PHOTO_REMOVE:
-				action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.remove_chat_photo_w : R.string.remove_chat_photo_m : R.string.remove_chat_photo_m), action);
-				break;
-			case VKMessage.ACTION_CHAT_PHOTO_UPDATE:
-				action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.updated_chat_photo_w : R.string.updated_chat_photo_m : R.string.updated_chat_photo_m), action);
-				break;
-			case VKMessage.ACTION_CHAT_TITLE_UPDATE:
-				action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.updated_title_w : R.string.updated_title_m : R.string.updated_title_m), action, "«<b>" + msg.actionText + "</b>»");
-				break;
-			case VKMessage.ACTION_CHAT_INVITE_USER_BY_LINK:
-				action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.invited_by_link_w : R.string.invited_by_link_m : R.string.invited_by_link_m), action);
-				break;
-			case VKMessage.ACTION_CHAT_PIN_MESSAGE:
-				action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.pinned_message_w : R.string.pinned_message_m : R.string.pinned_message_m), action);
-				break;
-			case VKMessage.ACTION_CHAT_UNPIN_MESSAGE:
-				action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.unpinned_message_w : R.string.unpinned_message_m : R.string.unpinned_message_m), action);
-				break;
-		}
-		
-		return action;
-	}
-	
-	public static String getAttachmentBody(ArrayList<VKModel> attachments, ArrayList<VKMessage> forwards) {
-		if (ArrayUtil.isEmpty(attachments) && ArrayUtil.isEmpty(forwards)) {
-			return "";
-		}
-		
-		String s = "";
-		
-		if (!ArrayUtil.isEmpty(attachments)) {
-        	s = VKAttachments.getAttachmentString(attachments);
-			return s;
-		}
-		
-		if (!ArrayUtil.isEmpty(forwards) && TextUtils.isEmpty(s)) {
-			s = forwards.size() > 1 ?
-			forwards.size() + " " + getString(R.string.forwarded_messages).toLowerCase() :
-			getString(R.string.forwarded_messages);
-		}
+        if (fromDialogs)
+            action = "";
+
+            switch (msg.actionType) {
+                case VKMessage.ACTION_CHAT_CREATE:
+                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.created_chat_w : R.string.created_chat_m : R.string.created_chat_m), action, " «<b>" + msg.actionText + "</b>»");
+                    break;
+                case VKMessage.ACTION_CHAT_INVITE_USER:
+                    if (msg.actionUserId == msg.fromId) {
+                        action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.returned_to_chat_w : R.string.returned_to_chat_m : R.string.returned_to_chat_m), action);
+                    } else {
+                        action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.invited_to_chat_w : R.string.invited_to_chat_m : R.string.invited_to_chat_m), action, "<b>" + u_name + "</b>");
+                    }
+
+                    break;
+                case VKMessage.ACTION_CHAT_KICK_USER:
+                    if (msg.actionUserId == msg.fromId) {
+                        action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.left_the_chat_w : R.string.left_the_chat_m : R.string.left_the_chat_m), action);
+                    } else {
+                        action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.kicked_from_chat_w : R.string.kicked_from_chat_m : R.string.kicked_from_chat_m), action, "<b>" + u_name + "</b>");
+                    }
+                    break;
+                case VKMessage.ACTION_CHAT_PHOTO_REMOVE:
+                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.remove_chat_photo_w : R.string.remove_chat_photo_m : R.string.remove_chat_photo_m), action);
+                    break;
+                case VKMessage.ACTION_CHAT_PHOTO_UPDATE:
+                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.updated_chat_photo_w : R.string.updated_chat_photo_m : R.string.updated_chat_photo_m), action);
+                    break;
+                case VKMessage.ACTION_CHAT_TITLE_UPDATE:
+                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.updated_title_w : R.string.updated_title_m : R.string.updated_title_m), action, "«<b>" + msg.actionText + "</b>»");
+                    break;
+                case VKMessage.ACTION_CHAT_INVITE_USER_BY_LINK:
+                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.invited_by_link_w : R.string.invited_by_link_m : R.string.invited_by_link_m), action);
+                    break;
+                case VKMessage.ACTION_CHAT_PIN_MESSAGE:
+                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.pinned_message_w : R.string.pinned_message_m : R.string.pinned_message_m), action);
+                    break;
+                case VKMessage.ACTION_CHAT_UNPIN_MESSAGE:
+                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.unpinned_message_w : R.string.unpinned_message_m : R.string.unpinned_message_m), action);
+                    break;
+            }
+
+        return action;
+    }
+
+    public static String getAttachmentBody(ArrayList<VKModel> attachments, ArrayList<VKMessage> forwards) {
+        if (ArrayUtil.isEmpty(attachments) && ArrayUtil.isEmpty(forwards)) {
+            return "";
+        }
+
+        String s = "";
+
+        if (!ArrayUtil.isEmpty(attachments)) {
+            s = VKAttachments.getAttachmentString(attachments);
+            return s;
+        }
+
+        if (!ArrayUtil.isEmpty(forwards) && TextUtils.isEmpty(s)) {
+            s = forwards.size() > 1 ?
+                    forwards.size() + " " + getString(R.string.forwarded_messages).toLowerCase() :
+                    getString(R.string.forwarded_messages);
+        }
 
         return s;
     }
-	
-	public static String getErrorReason(int reason) {
-		String s = "";
-		
-		switch (reason) {
-			case VKConversation.REASON_CANT_SEND_MESSAGE_USER_WHICH_IN_BLACKLIST:
-				s = getString(R.string.user_in_blacklist);
-				break;
-			case VKConversation.REASON_CANT_SEND_USER_PRIVACY:
-				s = getString(R.string.user_strict_messaging);
-				break;
-			case VKConversation.REASON_USER_BLOCKED_DELETED:
-				s = getString(R.string.user_blocked_or_deleted);
-				break;
-			case VKConversation.REASON_LEFT:
-				s = getString(R.string.you_left_this_chat);
-				break;
-			case VKConversation.REASON_KICKED:
-				s = getString(R.string.kicked_out_text);
-				break;
-			default:
-				s = getString(R.string.messaging_restricted);
-				break;
-		}
-		
-		return s;
-	}
-	
-	private static String getString(int res) {
-		return AppGlobal.context.getString(res);
-	}
+
+    public static String getErrorReason(int reason) {
+        String s = "";
+
+        switch (reason) {
+            case VKConversation.REASON_CANT_SEND_MESSAGE_USER_WHICH_IN_BLACKLIST:
+                s = getString(R.string.user_in_blacklist);
+                break;
+            case VKConversation.REASON_CANT_SEND_USER_PRIVACY:
+                s = getString(R.string.user_strict_messaging);
+                break;
+            case VKConversation.REASON_USER_BLOCKED_DELETED:
+                s = getString(R.string.user_blocked_or_deleted);
+                break;
+            case VKConversation.REASON_LEFT:
+                s = getString(R.string.you_left_this_chat);
+                break;
+            case VKConversation.REASON_KICKED:
+                s = getString(R.string.kicked_out_text);
+                break;
+            default:
+                s = getString(R.string.messaging_restricted);
+                break;
+        }
+
+        return s;
+    }
+
+    private static String getString(int res) {
+        return AppGlobal.context.getString(res);
+    }
 }
