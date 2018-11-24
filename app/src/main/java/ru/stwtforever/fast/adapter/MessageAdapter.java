@@ -248,16 +248,14 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
 
             timeColor = ThemeManager.isDark() ? 0xffdddddd : 0xff404040;
 
-            //text.setTextColor(textColor);
-            //text.setLinkTextColor(linkColor);
-            //time.setTextColor(timeColor);
+            text.setTextColor(textColor);
+            text.setLinkTextColor(linkColor);
+            time.setTextColor(timeColor);
 
             bubble.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 3));
 
             Drawable bg = context.getResources().getDrawable(R.drawable.msg_in_bg);
-            //bg.setColorFilter(bgColor, PorterDuff.Mode.MULTIPLY);
 
-            bubble.setBackground(bg);
 
             if (!TextUtils.isEmpty(item.actionType)) {
                 //if (avatar.getVisibility() != View.GONE)
@@ -271,8 +269,11 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
 
                 //if (service_container.getVisibility() != View.VISIBLE)
                 service_container.setVisibility(View.VISIBLE);
+                service_container.removeAllViews();
 
                 adapter.applyActionStyle(item, service_container);
+
+                bg.setTint(Color.TRANSPARENT);
             } else {
                 //if (avatar.getVisibility() != View.VISIBLE)
                 avatar.setVisibility(View.VISIBLE);
@@ -285,7 +286,10 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
 
                 //if (service_container.getVisibility() != View.GONE)
                 service_container.setVisibility(View.GONE);
+                bg.setColorFilter(bgColor, PorterDuff.Mode.MULTIPLY);
             }
+
+            bubble.setBackground(bg);
 
             if (!ArrayUtil.isEmpty(item.fwd_messages) || !ArrayUtil.isEmpty(item.attachments)) {
                 attachments.setVisibility(View.VISIBLE);

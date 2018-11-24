@@ -133,14 +133,14 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
             getValues().remove(index);
             getValues().add(0, conversation);
             notifyItemRemoved(index);
-            notifyItemInserted(0);
+            notifyItemInserted(1);
 
             if (scroll) {
                 list.smoothScrollToPosition(0);
             }
         } else {
             getValues().add(0, conversation);
-            notifyItemInserted(0);
+            notifyItemInserted(1);
 
             int first = manager.findFirstCompletelyVisibleItemPosition();
             boolean scroll = false;
