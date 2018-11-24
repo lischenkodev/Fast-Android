@@ -39,19 +39,11 @@ public class VKUser extends VKModel implements Serializable {
         return users;
     }
 
-    /**
-     * Creates a new User model without fields
-     */
     public VKUser() {
         this.name = "...";
         this.surname = "";
     }
 
-    /**
-     * Creates a new user model with fields from json source
-     *
-     * @param source the json source to parse
-     */
     public VKUser(JSONObject source) {
         this.id = source.optInt("id");
         this.name = source.optString("first_name", "...");

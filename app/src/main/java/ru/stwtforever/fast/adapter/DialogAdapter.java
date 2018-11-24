@@ -124,33 +124,14 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
 
             conversation = current;
 
-            int first = manager.findFirstCompletelyVisibleItemPosition();
-            boolean scroll = false;
-
-            if (first <= 2)
-                scroll = true;
-
             getValues().remove(index);
             getValues().add(0, conversation);
-            notifyItemRemoved(index);
-            notifyItemInserted(1);
-
-            if (scroll) {
-                list.smoothScrollToPosition(0);
-            }
+            notifyDataSetChanged();
         } else {
+            if (!conversation.last.out)
+                conversation.unread++;
             getValues().add(0, conversation);
-            notifyItemInserted(1);
-
-            int first = manager.findFirstCompletelyVisibleItemPosition();
-            boolean scroll = false;
-
-            if (first <= 2)
-                scroll = true;
-
-            if (scroll) {
-                list.smoothScrollToPosition(0);
-            }
+            notifyDataSetChanged();
         }
     }
 
@@ -301,7 +282,7 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
 
             avatar_small.setVisibility((!item.isChat() && !last.out) ? View.GONE : View.VISIBLE);
 
-            String peerAvatar = "";
+            String peerAvatar;
 
             if (item.isGroup()) {
                 peerAvatar = peerGroup.photo_100;
@@ -311,32 +292,34 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
                 peerAvatar = item.photo_100;
             }
 
-            String fromAvatar = "";
+            String fromAvatar;
 
             if (last.out && !item.isChat()) {
                 fromAvatar = UserConfig.user.photo_100;
             } else
                 fromAvatar = item.isFromUser() ? user.photo_100 : group.photo_100;
 
-            if (TextUtils.isEmpty(fromAvatar)) {
-                avatar_small.setImageDrawable(p_user);
-            } else {
-                Picasso.get()
-                        .load(fromAvatar)
-                        .priority(Picasso.Priority.HIGH)
-                        .placeholder(p_user)
-                        .into(avatar_small);
-            }
+            if (fromAvatar != null)
+                if (TextUtils.isEmpty(fromAvatar.trim())) {
+                    avatar_small.setImageDrawable(p_user);
+                } else {
+                    Picasso.get()
+                            .load(fromAvatar)
+                            .priority(Picasso.Priority.HIGH)
+                            .placeholder(p_user)
+                            .into(avatar_small);
+                }
 
-            if (TextUtils.isEmpty(peerAvatar)) {
-                avatar.setImageDrawable(item.isChat() ? p_users : p_user);
-            } else {
-                Picasso.get()
-                        .load(peerAvatar)
-                        .priority(Picasso.Priority.HIGH)
-                        .placeholder(item.isChat() ? p_users : p_user)
-                        .into(avatar);
-            }
+            if (peerAvatar != null)
+                if (TextUtils.isEmpty(peerAvatar.trim())) {
+                    avatar.setImageDrawable(item.isChat() ? p_users : p_user);
+                } else {
+                    Picasso.get()
+                            .load(peerAvatar)
+                            .priority(Picasso.Priority.HIGH)
+                            .placeholder(item.isChat() ? p_users : p_user)
+                            .into(avatar);
+                }
 
             body.setTextColor(!ThemeManager.isDark() ? 0x90000000 : 0x90ffffff);
 
@@ -356,7 +339,7 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
                 String body_ = VKUtils.getActionBody(last);
 
                 body.setTextColor(ThemeManager.getAccent());
-                body.append(Html.fromHtml(body_));
+                body.setText(Html.fromHtml(body_));
             }
 
             counter.setVisibility(!last.out && item.unread > 0 ? View.VISIBLE : View.GONE);

@@ -74,18 +74,10 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
 
     private DisplayMetrics metrics;
 
-    private ArrayList<Integer> mids;
-
     public MessageAdapter(Context context, ArrayList<VKMessage> msgs, int peerId) {
         super(context, msgs);
 
         this.peerId = peerId;
-
-        this.mids = new ArrayList<>();
-
-        for (VKMessage m : getValues()) {
-            mids.add(m.id);
-        }
 
         this.inflater = LayoutInflater.from(context);
 
@@ -93,18 +85,6 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
         this.attacher = new AttachmentInflater();
 
         EventBus.getDefault().register(this);
-    }
-
-    public void sendMessage(int id) {
-        mids.add(id);
-    }
-
-    public void removeMessage(int id) {
-        for (int i = 0; i < mids.size(); i++) {
-            int mid = mids.get(i);
-            if (mid == id) mids.remove(i);
-        }
-
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -258,34 +238,34 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
 
 
             if (!TextUtils.isEmpty(item.actionType)) {
-                //if (avatar.getVisibility() != View.GONE)
-                avatar.setVisibility(View.GONE);
+                if (avatar.getVisibility() != View.GONE)
+                    avatar.setVisibility(View.GONE);
 
-                //if (messageContainer.getVisibility() != View.GONE)
-                messageContainer.setVisibility(View.GONE);
+                if (messageContainer.getVisibility() != View.GONE)
+                    messageContainer.setVisibility(View.GONE);
 
-                //if (time.getVisibility() != View.GONE)
-                time.setVisibility(View.GONE);
+                if (time.getVisibility() != View.GONE)
+                    time.setVisibility(View.GONE);
 
-                //if (service_container.getVisibility() != View.VISIBLE)
-                service_container.setVisibility(View.VISIBLE);
+                if (service_container.getVisibility() != View.VISIBLE)
+                    service_container.setVisibility(View.VISIBLE);
                 service_container.removeAllViews();
 
                 adapter.applyActionStyle(item, service_container);
 
                 bg.setTint(Color.TRANSPARENT);
             } else {
-                //if (avatar.getVisibility() != View.VISIBLE)
-                avatar.setVisibility(View.VISIBLE);
+                if (avatar.getVisibility() != View.VISIBLE)
+                    avatar.setVisibility(View.VISIBLE);
 
-                //if (time.getVisibility() != View.VISIBLE)
-                time.setVisibility(View.VISIBLE);
+                if (time.getVisibility() != View.VISIBLE)
+                    time.setVisibility(View.VISIBLE);
 
-                //if (messageContainer.getVisibility() != View.VISIBLE)
-                messageContainer.setVisibility(View.VISIBLE);
+                if (messageContainer.getVisibility() != View.VISIBLE)
+                    messageContainer.setVisibility(View.VISIBLE);
 
-                //if (service_container.getVisibility() != View.GONE)
-                service_container.setVisibility(View.GONE);
+                if (service_container.getVisibility() != View.GONE)
+                    service_container.setVisibility(View.GONE);
                 bg.setColorFilter(bgColor, PorterDuff.Mode.MULTIPLY);
             }
 
@@ -355,21 +335,26 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
     }
 
     private void addMessage(VKMessage msg) {
-        if (msg.out) return;
         if (msg.peerId != peerId) return;
+        if (isExist(msg.id)) return;
 
-        mids.add(msg.id);
+        add(msg, true);
 
         MessagesActivity root = (MessagesActivity) context;
-        LinearLayoutManager m = (LinearLayoutManager) root.getRecycler().getLayoutManager();
-        if (m.findLastCompletelyVisibleItemPosition() == getItemCount())
-            add(msg, true);
-        else {
-            add(msg, false);
+        root.checkMessagesCount();
+
+        LinearLayoutManager manager = (LinearLayoutManager) root.getRecycler().getLayoutManager();
+        if (manager.findLastVisibleItemPosition() == 0) {
+            root.getRecycler().smoothScrollToPosition(getMessagesCount());
+        }
+    }
+
+    private boolean isExist(int mid) {
+        for (VKMessage m : getValues()) {
+            if (m.id == mid) return true;
         }
 
-
-        root.checkMessagesCount();
+        return false;
     }
 
     private void readMessage(int id) {
