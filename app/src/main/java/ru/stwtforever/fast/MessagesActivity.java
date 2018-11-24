@@ -67,8 +67,6 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 		setContentView(R.layout.activity_messages);
 
 		getIntentData();
-		EventBus.getDefault().register(this);
-		
 		showPinned(pinned);
 		initViews();
 		checkCanWrite();
@@ -124,26 +122,6 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 
 		ViewUtils.applyToolbarStyles(toolbar);
 		noMessages.setVisibility(View.GONE);
-	}
-	
-	@Subscribe (threadMode = ThreadMode.MAIN)
-	public void onReceive(Object[] data) {
-		if (ArrayUtil.isEmpty(data)) return;
-		int type = data[0];
-		
-		if (type == 8) {//online
-			int id = data[1];
-			if (id != peerId) return;
-			currentUser.online = true;
-			currentUser.last_seen = data[2];
-		} else if (type == 9) {
-			int id = data[1];
-			if (id != peerId) return;
-			currentUser.online = false;
-			currentUser.last_seen = data[2];
-		}
-		
-		getSupportActionBar().setSubtitle(getUserSubtitle(currentUser));
 	}
 
 	public void onItemClick(View v, int i, VKMessage item) {
@@ -630,48 +608,9 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 	protected void onDestroy() {
 		super.onDestroy();
 		
-		EventBus.getDefault().unregister(this);
-
 		if (adapter != null) {
 			adapter.destroy();
 		}
-	}
-
-	private void sendMessage(final int position) {
-		adapter.getValues().get(position).status = VKMessage.STATUS_SENDING;
-		adapter.notifyDataSetChanged();
-		ThreadExecutor.execute(new AsyncCallback(this) {
-
-				int id;
-				VKMessage m;
-
-				@Override
-				public void ready() throws Exception {
-					m = adapter.getValues().get(position);
-					id = VKApi.messages().send().peerId(m.peerId).text(m.text).execute(Integer.class).get(0);
-				}
-
-				@Override
-				public void done() {
-					m.id = id;
-					m.status = VKMessage.STATUS_SENT;
-
-					ArrayList<VKMessage> msg = new ArrayList<>();
-					msg.add(m);
-					CacheStorage.insert(DBHelper.MESSAGES_TABLE, msg);
-
-					adapter.getValues().remove(position);
-					adapter.getValues().add(m);
-					adapter.notifyDataSetChanged();
-				}
-
-				@Override
-				public void error(Exception e) {
-					m.status = VKMessage.STATUS_ERROR;
-					adapter.getValues().remove(m);
-					adapter.notifyDataSetChanged();
-				}
-			});
 	}
 	
 	@Override

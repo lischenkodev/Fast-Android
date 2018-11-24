@@ -144,7 +144,9 @@ public class LoginActivity extends AppCompatActivity {
 
 				@Override
 				public void ready() throws Exception {
-					user = VKApi.users().get().userIds(id).fields(VKUser.FIELDS_DEFAULT).execute(VKUser.class).get(0);
+					ArrayList<Integer> ids = new ArrayList<>();
+					ids.add(id);
+					user = VKApi.users().get().userIds(ids).fields(VKUser.FIELDS_DEFAULT).execute(VKUser.class).get(0);
 
 					ArrayList<VKUser> users = new ArrayList<>();
 					users.add(user);

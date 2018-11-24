@@ -43,7 +43,7 @@
 	<string name="kicked_out_text">Вы были исключены</string>
 	<string name="user">Пользователь</string>
 	<string name="online_from">В сети с %s</string>
-	<string name="members_count">%s участников</string>
+	<string name="members_count">%d участников</string>
 	<string name="attachment">Вложение</string>
 	<string name="unknown">Неизвестно</string>
 	<string name="invited_by">Пригласил %s</string>
@@ -52,7 +52,7 @@
 	<string name="error_with_msg">Ошибка: %s</string>
 	<string name="clean_history">Очистить историю сообщений</string>
 	<string name="hide_typing_summary">«%1$s %2$s печатает&#8230;» не будет показываться пользователям</string>
-	<string name="about_toast">Версия: %1$s\nСборка: %2$s</string>
+	<string name="about_toast">Версия: %s\nСборка: %d</string>
 	<string name="copy">Скопировать</string>
 	<string name="exceptions">Исключения</string>
 	<string name="delete">Удалить</string>

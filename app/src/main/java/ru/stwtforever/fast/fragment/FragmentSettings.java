@@ -17,10 +17,8 @@ import java.util.*;
 
 import ru.stwtforever.fast.R;
 
-import static ru.stwtforever.fast.common.AppGlobal.*;
 import ru.stwtforever.fast.adapter.*;
 import android.support.v7.app.*;
-import org.greenrobot.eventbus.*;
 
 public class FragmentSettings extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener, ListView.OnItemClickListener {
 
@@ -28,9 +26,9 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
 	
 	private ExceptionAdapter adapter;
 	
-	private ArrayList<FException> excs;
+	private ArrayList<FException> exceptions;
 	
-	private Preference exceptions, exception, dark_theme, ota, clean_cache, clean_msg_cache, hide_typing, error, template, about, updates;
+	private Preference p_exceptions, exception, dark_theme, ota, clean_cache, clean_msg_cache, hide_typing, error, template, about, updates;
 	
 	public static final String KEY_EXCEPTIONS = "exceptions";
 	public static final String KEY_CLEAN_CACHE = "clean_all_cache";
@@ -58,7 +56,7 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
         setPreferencesFromResource(R.xml.prefs, rootKey);
 		
 		exception = findPreference(KEY_MAKE_EXCEPTION);
-		exceptions = findPreference(KEY_EXCEPTIONS);
+		p_exceptions = findPreference(KEY_EXCEPTIONS);
 		clean_msg_cache = findPreference(KEY_CLEAN_MESSAGES_CACHE);
 		clean_cache = findPreference(KEY_CLEAN_CACHE);
 		hide_typing = findPreference(KEY_HIDE_TYPING);
@@ -75,7 +73,7 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
 		exception.setOnPreferenceClickListener(this);
 		updates.setOnPreferenceClickListener(this);
 		about.setOnPreferenceClickListener(this);
-		exceptions.setOnPreferenceClickListener(this);
+		p_exceptions.setOnPreferenceClickListener(this);
 
 		ota.setOnPreferenceChangeListener(this);
 		dark_theme.setOnPreferenceChangeListener(this);
@@ -94,20 +92,20 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
     }
 
 	private void setExceptionsVisible() {
-		excs = CacheStorage.getExceptions();
+		exceptions = CacheStorage.getExceptions();
 
-		boolean hasExceptions = !ArrayUtil.isEmpty(excs);
-		exceptions.setVisible(hasExceptions);
+		boolean hasExceptions = !ArrayUtil.isEmpty(exceptions);
+		p_exceptions.setVisible(hasExceptions);
 	}
 
 	@Override
 	public boolean onPreferenceChange(Preference p, Object newVal) {
 		switch (p.getKey()) {
 			case KEY_DARK_STYLE:
-				switchTheme(newVal);
+				switchTheme((boolean) newVal);
 				break;
 			case KEY_ENABLE_OTA:
-				updates.setVisible(newVal);
+				updates.setVisible((boolean) newVal);
 				break;
 		}
 		return true;
@@ -118,12 +116,6 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
 		switch (pref.getKey()) {
 			case KEY_EXCEPTIONS:
 				showExceptionsDialog();
-				break;
-			case KEY_CLEAN_CACHE:
-				//dbHelper.dropTables(database);
-				break;
-			case KEY_CLEAN_MESSAGES_CACHE:
-				//dbHelper.dropMessagesTable(database);
 				break;
 			case KEY_MAKE_ERROR:
 				makeError();
@@ -168,7 +160,7 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
 		lv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 		lv.setOnItemClickListener(this);
 		
-		adapter = new ExceptionAdapter(getActivity(), excs);
+		adapter = new ExceptionAdapter(getActivity(), exceptions);
 		lv.setAdapter(adapter);
 		
 		AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());

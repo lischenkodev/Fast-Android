@@ -1,121 +1,138 @@
 package ru.stwtforever.fast.util;
 
-import android.*;
-import android.content.*;
-import android.content.res.*;
-import android.graphics.*;
-import android.net.*;
-import android.os.*;
-import android.preference.*;
-import android.support.annotation.*;
-import android.support.v4.graphics.*;
-import android.support.v7.app.*;
-import android.util.*;
-import android.view.*;
-import com.squareup.picasso.*;
-import java.io.*;
-import java.net.*;
-import java.text.*;
-import java.util.*;
-import ru.stwtforever.fast.common.*;
-import ru.stwtforever.fast.io.*;
-import android.widget.*;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
+import android.graphics.RectF;
+import android.net.ConnectivityManager;
+import android.os.Build;
+import android.preference.PreferenceManager;
+import android.support.annotation.ColorInt;
+import android.support.v4.graphics.ColorUtils;
+import android.support.v7.app.AlertDialog;
+import android.util.DisplayMetrics;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.Display;
+import android.view.WindowManager;
+import android.widget.Toast;
+
+import com.squareup.picasso.Transformation;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import ru.stwtforever.fast.R;
+import ru.stwtforever.fast.common.AppGlobal;
+import ru.stwtforever.fast.io.BytesOutputStream;
 
 public class Utils {
-	
-	public static SimpleDateFormat dateFormatter;
+
+    public static SimpleDateFormat dateFormatter;
     public static SimpleDateFormat dateMonthFormatter;
     public static SimpleDateFormat dateYearFormatter;
-	public static SimpleDateFormat dateFullFormatter;
-	
-	static {
+    public static SimpleDateFormat dateFullFormatter;
+
+    static {
         dateFormatter = new SimpleDateFormat("HH:mm"); // 15:57
         dateMonthFormatter = new SimpleDateFormat("d MMM"); // 23 Окт
         dateYearFormatter = new SimpleDateFormat("d MMM, yyyy"); // 23 Окт, 2015
-		dateFullFormatter = new SimpleDateFormat("dd.MM.yyyy, HH:mm");
+        dateFullFormatter = new SimpleDateFormat("dd.MM.yyyy, HH:mm");
     }
-	
-	public static void clearPreferences() {
-		try {
-			Runtime runtime = Runtime.getRuntime();
-			runtime.exec("pm clear " + "com.procsec.fast");
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public static void showNoInternetToast() {
-		Toast.makeText(AppGlobal.context, AppGlobal.context.getString(R.string.no_internet_connection), Toast.LENGTH_LONG).show();
-	}
-	
-	public static void checkConnection() {
-		if (!hasConnection()) showNoInternetToast();
-	}
-	
-	public static void logD(String tag, String message) {
-		Log.d(tag, message);
-	}
-	
-	public static void copyText(String text) {
+    public static void clearPreferences() {
+        try {
+            Runtime runtime = Runtime.getRuntime();
+            runtime.exec("pm clear " + "com.procsec.fast");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void showNoInternetToast() {
+        Toast.makeText(AppGlobal.context, AppGlobal.context.getString(R.string.no_internet_connection), Toast.LENGTH_LONG).show();
+    }
+
+    public static void checkConnection() {
+        if (!hasConnection()) showNoInternetToast();
+    }
+
+    public static void logD(String tag, String message) {
+        Log.d(tag, message);
+    }
+
+    public static void copyText(String text) {
         ClipboardManager cm = (ClipboardManager) AppGlobal.context.getSystemService(Context.CLIPBOARD_SERVICE);
         cm.setPrimaryClip(ClipData.newPlainText(null, text));
     }
-	
+
     public static float convertDpToPixel(float dp) {
         Resources resources = AppGlobal.context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
         float px = dp * ((float) metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
         return px;
     }
-	
-	public static String parseSize(long sizeInBytes) {
+
+    public static String parseSize(long sizeInBytes) {
         long unit = 1024;
         if (sizeInBytes < unit) return sizeInBytes + " B";
         int exp = (int) (Math.log(sizeInBytes) / Math.log(unit));
         String pre = ("KMGTPE").charAt(exp - 1) + ("i");
         return String.format(Locale.US, "%.1f %sB", sizeInBytes / Math.pow(unit, exp), pre);
     }
-	
-	public static String parseDate(long date) {
+
+    public static String parseDate(long date) {
         Date currentDate = new Date();
         Date msgDate = new Date(date);
 
         if (currentDate.getYear() > msgDate.getYear()) {
             return dateYearFormatter.format(date);
         } else if (currentDate.getMonth() > msgDate.getMonth()
-				   || currentDate.getDate() > msgDate.getDate()) {
+                || currentDate.getDate() > msgDate.getDate()) {
             return dateMonthFormatter.format(date);
         }
 
         return dateFormatter.format(date);
     }
-	
-	public static long getPeerId(int userId, int chatId, int groupId) {
+
+    public static long getPeerId(int userId, int chatId, int groupId) {
         return groupId > 0 ? (-groupId)
-			: chatId > 0 ? (2_000_000_000 + chatId)
-			: userId;
+                : chatId > 0 ? (2_000_000_000 + chatId)
+                : userId;
     }
-	
-	Point getRealScreenSize(Context context) {
+
+    public static Point getRealScreenSize(Context context) {
         WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         Display display = windowManager.getDefaultDisplay();
         Point size = new Point();
 
-        if (Build.VERSION.SDK_INT >= 17) {
-            display.getRealSize(size);
-        } else {
-            try {
-                size.x = Display.class.getMethod("getRawWidth").invoke(display);
-                size.y = Display.class.getMethod("getRawHeight").invoke(display);
-            } catch (Exception ignored) {}
-        }
-
+        display.getRealSize(size);
         return size;
     }
-	
-	public static byte[] serialize(Object source) {
+
+    public static byte[] serialize(Object source) {
         try {
             BytesOutputStream bos = new BytesOutputStream();
             ObjectOutputStream out = new ObjectOutputStream(bos);
@@ -128,8 +145,8 @@ public class Utils {
         }
         return null;
     }
-	
-	public static Object deserialize(byte[] source) {
+
+    public static Object deserialize(byte[] source) {
         if (ArrayUtil.isEmpty(source)) {
             return null;
         }
@@ -178,7 +195,7 @@ public class Utils {
         }
         return bm;
     }
-	
+
     public static int pxFromDp(int dp) {
         Resources resources = AppGlobal.context.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
@@ -198,12 +215,12 @@ public class Utils {
     }
 
     public static int getThemeAttrColor(int attr) {
-		TypedValue typedValue = new TypedValue();
-		Resources.Theme theme = AppGlobal.context.getTheme();
-		theme.resolveAttribute(R.attr.colorPrimary, typedValue, true);
-		@ColorInt int color = typedValue.data;
-		
-		return color;
+        TypedValue typedValue = new TypedValue();
+        Resources.Theme theme = AppGlobal.context.getTheme();
+        theme.resolveAttribute(R.attr.colorPrimary, typedValue, true);
+        @ColorInt int color = typedValue.data;
+
+        return color;
     }
 
     public static Bitmap getBitmapFromURL(String src) {

@@ -34,7 +34,7 @@ public class DrawerAdapter extends BaseListViewAdapter<Object[]> {
 	}
 	
 	public boolean isHover(int i) {
-		return getValues().get(i)[2];
+		return (boolean) getValues().get(i)[2];
 	}
 	
 	@Override
@@ -51,8 +51,8 @@ public class DrawerAdapter extends BaseListViewAdapter<Object[]> {
 		FontHelper.setFont(title, FontHelper.PS_REGULAR);
 		
 		String s = (String) item[0];
-		int i = item[1];
-		boolean select = item[2];
+		int i = (int) item[1];
+		boolean select = (boolean) item[2];
 		
 		Drawable ic = null;
 		

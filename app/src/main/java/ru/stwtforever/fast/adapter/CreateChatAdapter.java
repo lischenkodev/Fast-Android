@@ -10,6 +10,7 @@ import android.widget.*;
 import com.squareup.picasso.*;
 import java.util.*;
 import ru.stwtforever.fast.*;
+import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.api.model.*;
 import ru.stwtforever.fast.cls.*;
 import ru.stwtforever.fast.util.*;

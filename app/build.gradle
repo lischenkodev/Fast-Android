@@ -34,8 +34,4 @@ dependencies {
 
     implementation 'org.greenrobot:eventbus:3.1.1'
 
-    implementation 'net.yslibrary.keyboardvisibilityevent:keyboardvisibilityevent:2.1.0'
-
-    implementation 'com.loopj.android:android-async-http:1.4.9'
-
 }
