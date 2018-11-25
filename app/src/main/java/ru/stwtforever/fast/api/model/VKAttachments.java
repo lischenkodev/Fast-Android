@@ -1,12 +1,13 @@
 package ru.stwtforever.fast.api.model;
 
-import ru.stwtforever.fast.*;
-import ru.stwtforever.fast.util.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
-import java.io.*;
-import java.util.*;
+import java.io.Serializable;
+import java.util.ArrayList;
 
-import org.json.*;
+import ru.stwtforever.fast.R;
+import ru.stwtforever.fast.util.ArrayUtil;
 
 public class VKAttachments extends VKModel implements Serializable {
 
@@ -181,7 +182,7 @@ public class VKAttachments extends VKModel implements Serializable {
                 String attachment = o.optString(attach);
                 String[] s = attachment.split("_");
 
-                if (ArrayUtil.isEmpty(s)) return null;
+                if (ArrayUtil.isEmpty(s) || s.length == 1) return null;
 
                 int peerId = Integer.parseInt(s[0]);
                 int attId = Integer.parseInt(s[1]);

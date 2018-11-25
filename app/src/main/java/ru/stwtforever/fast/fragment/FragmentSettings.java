@@ -124,7 +124,7 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
                 showExceptionsDialog();
                 break;
             case KEY_MAKE_ERROR:
-                DialogHelper.showConfirmDialog(getString(R.string.are_you_sure), new DialogInterface.OnClickListener() {
+                DialogHelper.showConfirmDialog(getActivity(), getString(R.string.are_you_sure), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         makeError();
@@ -133,10 +133,10 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
 
                 break;
             case KEY_MAKE_EXCEPTION:
-                DialogHelper.showConfirmDialog(getString(R.string.are_you_sure), new DialogInterface.OnClickListener() {
+                DialogHelper.showConfirmDialog(getActivity(), getString(R.string.are_you_sure), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        makeError();
+                        makeException();
                         setExceptionsVisible();
                     }
                 }, null, true);

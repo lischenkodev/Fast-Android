@@ -1,10 +1,10 @@
 package ru.stwtforever.fast.helper;
 
+import android.content.Context;
 import android.content.DialogInterface;
 
 import androidx.appcompat.app.AlertDialog;
 import ru.stwtforever.fast.R;
-import ru.stwtforever.fast.common.AppGlobal;
 
 public class DialogHelper {
 
@@ -39,8 +39,8 @@ public class DialogHelper {
     }
 
 
-    public static void showConfirmDialog(String confirm_text, DialogInterface.OnClickListener positive, DialogInterface.OnClickListener negative, boolean cancelable) {
-        AlertDialog.Builder adb = new AlertDialog.Builder(AppGlobal.context);
+    public static void showConfirmDialog(Context context, String confirm_text, DialogInterface.OnClickListener positive, DialogInterface.OnClickListener negative, boolean cancelable) {
+        AlertDialog.Builder adb = new AlertDialog.Builder(context);
         adb.setTitle(R.string.confirmation);
         adb.setMessage(confirm_text);
         adb.setPositiveButton(R.string.yes, positive);
