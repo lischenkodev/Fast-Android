@@ -39,7 +39,7 @@ public class DialogHelper {
     }
 
 
-    public static AlertDialog showConfirmDialog(String confirm_text, DialogInterface.OnClickListener positive, DialogInterface.OnClickListener negative, boolean cancelable) {
+    public static void showConfirmDialog(String confirm_text, DialogInterface.OnClickListener positive, DialogInterface.OnClickListener negative, boolean cancelable) {
         AlertDialog.Builder adb = new AlertDialog.Builder(AppGlobal.context);
         adb.setTitle(R.string.confirmation);
         adb.setMessage(confirm_text);
@@ -47,6 +47,6 @@ public class DialogHelper {
         adb.setNegativeButton(R.string.no, negative);
         adb.setCancelable(cancelable);
 
-        return create(adb);
+        create(adb).show();
     }
 }
