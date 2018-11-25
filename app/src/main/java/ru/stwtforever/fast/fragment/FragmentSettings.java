@@ -56,6 +56,8 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
     public static final String KEY_HIDE_TYPING = "hide_typing";
     public static final String KEY_ENABLE_OTA = "ota";
 
+    public static final String DEFAULT_TEMPLATE_VALUE = "¯\\_(ツ)_/¯";
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -122,11 +124,22 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
                 showExceptionsDialog();
                 break;
             case KEY_MAKE_ERROR:
-                makeError();
+                DialogHelper.showConfirmDialog(getString(R.string.are_you_sure), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        makeError();
+                    }
+                }, null, true);
+
                 break;
             case KEY_MAKE_EXCEPTION:
-                makeException();
-                setExceptionsVisible();
+                DialogHelper.showConfirmDialog(getString(R.string.are_you_sure), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        makeError();
+                        setExceptionsVisible();
+                    }
+                }, null, true);
                 break;
             case KEY_UPDATES:
                 checkUpdates();

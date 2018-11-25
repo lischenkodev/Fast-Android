@@ -5,11 +5,6 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
 import android.text.Editable;
 import android.text.Html;
 import android.text.SpannableString;
@@ -36,6 +31,11 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import ru.stwtforever.fast.adapter.MessageAdapter;
 import ru.stwtforever.fast.api.UserConfig;
 import ru.stwtforever.fast.api.VKApi;
@@ -110,7 +110,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 
         layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
-        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        layoutManager.setOrientation(RecyclerView.VERTICAL);
 
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -133,7 +133,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 
             @Override
             public boolean onLongClick(View p1) {
-                String template = Utils.getPrefs().getString(FragmentSettings.KEY_MESSAGE_TEMPLATE, "( ͡° ͜ʖ ͡°)");
+                String template = Utils.getPrefs().getString(FragmentSettings.KEY_MESSAGE_TEMPLATE, FragmentSettings.DEFAULT_TEMPLATE_VALUE);
                 if (message.getText().length() == 0) {
                     message.setText(template);
                 } else {

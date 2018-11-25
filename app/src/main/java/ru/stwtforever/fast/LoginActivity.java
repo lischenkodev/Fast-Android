@@ -1,29 +1,35 @@
 package ru.stwtforever.fast;
 
-import android.content.*;
-import android.os.*;
-
-import androidx.appcompat.app.*;
-
-import android.view.*;
-import android.widget.*;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.squareup.picasso.*;
+import com.squareup.picasso.Callback;
+import com.squareup.picasso.Picasso;
 
-import java.util.*;
+import java.util.ArrayList;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import ru.stwtforever.fast.api.*;
-import ru.stwtforever.fast.api.model.*;
-import ru.stwtforever.fast.common.*;
-import ru.stwtforever.fast.concurrent.*;
-import ru.stwtforever.fast.db.*;
-import ru.stwtforever.fast.helper.*;
-import ru.stwtforever.fast.util.*;
-import ru.stwtforever.fast.view.*;
-
+import ru.stwtforever.fast.api.UserConfig;
+import ru.stwtforever.fast.api.VKApi;
+import ru.stwtforever.fast.api.model.VKUser;
+import ru.stwtforever.fast.common.OTAManager;
+import ru.stwtforever.fast.common.ThemeManager;
+import ru.stwtforever.fast.concurrent.AsyncCallback;
+import ru.stwtforever.fast.concurrent.ThreadExecutor;
+import ru.stwtforever.fast.db.CacheStorage;
+import ru.stwtforever.fast.db.DBHelper;
+import ru.stwtforever.fast.helper.FontHelper;
+import ru.stwtforever.fast.util.Requests;
 import ru.stwtforever.fast.util.ViewUtils;
+import ru.stwtforever.fast.view.CircleImageView;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -46,7 +52,6 @@ public class LoginActivity extends AppCompatActivity {
         name = findViewById(R.id.name);
         avatar = findViewById(R.id.avatar);
 
-        logo.setColorFilter(getResources().getColor(R.color.primary));
         name.setTypeface(FontHelper.getFont(FontHelper.PS_REGULAR));
 
         fab.setOnClickListener(closeClick);
@@ -61,7 +66,7 @@ public class LoginActivity extends AppCompatActivity {
                 ViewUtils.update();
                 finish();
                 startActivity(getIntent());
-                overridePendingTransition(R.anim.abc_fade_in, R.anim.abc_fade_out);
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
             }
         });
 

@@ -17,7 +17,7 @@
         android:layout_marginRight="30dp"
         android:layout_marginTop="50dp"
         android:layout_weight="0.4"
-        android:src="@drawable/logo_white_text" />
+        android:src="@drawable/logo_blue_text" />
 
     <FrameLayout
         android:id="@+id/card_container"

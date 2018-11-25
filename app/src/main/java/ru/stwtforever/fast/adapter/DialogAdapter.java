@@ -3,9 +3,6 @@ package ru.stwtforever.fast.adapter;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -24,6 +21,9 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.api.UserConfig;
 import ru.stwtforever.fast.api.VKUtils;
@@ -108,6 +108,9 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
             conversation.title = current.title;
             conversation.type = current.type;
             conversation.unread++;
+            conversation.disabled_forever = current.disabled_forever;
+            conversation.disabled_until = current.disabled_until;
+            conversation.no_sound = current.no_sound;
 
             if (conversation.last.out) {
                 conversation.unread = 0;
@@ -195,7 +198,7 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
         this.listener = listener;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder extends RecyclerView.ViewHolder {
 
         ImageView avatar;
         ImageView avatar_small;
