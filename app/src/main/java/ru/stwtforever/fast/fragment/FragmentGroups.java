@@ -2,13 +2,15 @@ package ru.stwtforever.fast.fragment;
 
 import android.content.*;
 import android.os.*;
-import android.support.annotation.Nullable;
-import android.support.v4.widget.*;
-import android.support.v7.widget.*;
-import android.util.*;
+import androidx.annotation.Nullable;
+
 import android.view.*;
 import android.widget.*;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.OrientationHelper;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import ru.stwtforever.fast.*;
 import ru.stwtforever.fast.adapter.*;
 import ru.stwtforever.fast.cls.*;
@@ -21,7 +23,7 @@ import ru.stwtforever.fast.api.model.*;
 
 import java.util.*;
 
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar;
 
 import ru.stwtforever.fast.util.ViewUtils;
 

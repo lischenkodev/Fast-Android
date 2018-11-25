@@ -1,20 +1,6 @@
 package ru.stwtforever.fast.fragment.material;
 
-import android.content.*;
-import android.net.*;
-import android.os.*;
-import android.support.annotation.*;
-import android.support.v4.app.*;
-import android.support.v7.app.*;
-import android.util.*;
-import android.view.*;
-import android.widget.*;
-import ru.stwtforever.fast.adapter.*;
-import ru.stwtforever.fast.util.*;
-import ru.stwtforever.fast.api.*;
-import ru.stwtforever.fast.api.model.*;
-import ru.stwtforever.fast.*;
-import java.util.*;
+import androidx.fragment.app.Fragment;
 
 
 public class FragmentVideos extends Fragment {

@@ -3,9 +3,9 @@ package ru.stwtforever.fast.adapter;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -34,7 +33,6 @@ import ru.stwtforever.fast.api.model.VKMessage;
 import ru.stwtforever.fast.api.model.VKUser;
 import ru.stwtforever.fast.cls.OnItemListener;
 import ru.stwtforever.fast.common.ThemeManager;
-import ru.stwtforever.fast.db.CacheStorage;
 import ru.stwtforever.fast.db.MemoryCache;
 import ru.stwtforever.fast.fragment.FragmentDialogs;
 import ru.stwtforever.fast.helper.FontHelper;

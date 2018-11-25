@@ -1,32 +1,29 @@
 package ru.stwtforever.fast;
 
 import android.content.*;
-import android.graphics.*;
 import android.os.*;
-import android.support.design.widget.*;
-import android.support.v7.app.*;
-import android.support.v7.widget.*;
+
+import androidx.appcompat.app.*;
+
 import android.view.*;
 import android.widget.*;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.*;
 
 import java.util.*;
 
+import androidx.cardview.widget.CardView;
 import ru.stwtforever.fast.api.*;
 import ru.stwtforever.fast.api.model.*;
 import ru.stwtforever.fast.common.*;
 import ru.stwtforever.fast.concurrent.*;
 import ru.stwtforever.fast.db.*;
 import ru.stwtforever.fast.helper.*;
-import ru.stwtforever.fast.service.*;
 import ru.stwtforever.fast.util.*;
 import ru.stwtforever.fast.view.*;
 
-import ru.stwtforever.fast.util.Utils;
 import ru.stwtforever.fast.util.ViewUtils;
-
-import android.view.View.*;
 
 public class LoginActivity extends AppCompatActivity {
 

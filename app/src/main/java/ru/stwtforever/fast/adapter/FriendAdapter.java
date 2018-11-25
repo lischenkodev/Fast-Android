@@ -2,7 +2,6 @@ package ru.stwtforever.fast.adapter;
 
 import android.graphics.*;
 import android.graphics.drawable.*;
-import android.support.v7.widget.*;
 import android.text.*;
 import android.view.*;
 import android.widget.*;
@@ -11,7 +10,7 @@ import com.squareup.picasso.*;
 
 import java.util.*;
 
-import ru.stwtforever.fast.*;
+import androidx.recyclerview.widget.RecyclerView;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.api.model.*;
 import ru.stwtforever.fast.cls.*;
@@ -19,7 +18,7 @@ import ru.stwtforever.fast.fragment.*;
 import ru.stwtforever.fast.util.*;
 import ru.stwtforever.fast.view.*;
 
-import android.support.v7.widget.PopupMenu;
+import androidx.appcompat.widget.PopupMenu;
 
 import ru.stwtforever.fast.util.Utils;
 

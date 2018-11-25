@@ -1,28 +1,39 @@
 package ru.stwtforever.fast.fragment;
 
-import android.content.*;
-import android.os.*;
-import android.support.v4.app.*;
-import android.support.v7.preference.*;
-import android.view.*;
-import android.widget.*;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.Toast;
 
-import ru.stwtforever.fast.*;
-import ru.stwtforever.fast.common.*;
-import ru.stwtforever.fast.concurrent.*;
-import ru.stwtforever.fast.db.*;
-import ru.stwtforever.fast.helper.*;
-import ru.stwtforever.fast.util.*;
-import ru.stwtforever.fast.api.*;
-import ru.stwtforever.fast.api.model.*;
+import java.util.ArrayList;
+import java.util.Date;
 
-import java.util.*;
-
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.TaskStackBuilder;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import ru.stwtforever.fast.MainActivity;
 import ru.stwtforever.fast.R;
-
-import ru.stwtforever.fast.adapter.*;
-
-import android.support.v7.app.*;
+import ru.stwtforever.fast.adapter.ExceptionAdapter;
+import ru.stwtforever.fast.api.UserConfig;
+import ru.stwtforever.fast.api.model.VKUser;
+import ru.stwtforever.fast.common.AppGlobal;
+import ru.stwtforever.fast.common.OTAManager;
+import ru.stwtforever.fast.common.ThemeManager;
+import ru.stwtforever.fast.concurrent.AsyncCallback;
+import ru.stwtforever.fast.concurrent.ThreadExecutor;
+import ru.stwtforever.fast.db.CacheStorage;
+import ru.stwtforever.fast.db.DBHelper;
+import ru.stwtforever.fast.helper.DialogHelper;
+import ru.stwtforever.fast.helper.PermissionHelper;
+import ru.stwtforever.fast.util.ArrayUtil;
+import ru.stwtforever.fast.util.FException;
+import ru.stwtforever.fast.util.Utils;
+import ru.stwtforever.fast.util.ViewUtils;
 
 public class FragmentSettings extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener, ListView.OnItemClickListener {
 

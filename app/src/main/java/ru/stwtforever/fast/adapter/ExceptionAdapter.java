@@ -1,12 +1,9 @@
 package ru.stwtforever.fast.adapter;
 
 import android.content.*;
-import android.support.v7.app.*;
 import android.view.*;
 import android.widget.*;
 import ru.stwtforever.fast.*;
-import ru.stwtforever.fast.db.*;
-import ru.stwtforever.fast.helper.*;
 import ru.stwtforever.fast.util.*;
 import java.util.*;
 import java.text.*;

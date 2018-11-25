@@ -1,17 +1,16 @@
 package ru.stwtforever.fast.view;
 
-import android.*;
 import android.content.*;
 import android.content.res.*;
 import android.graphics.*;
 import android.graphics.drawable.*;
 import android.net.*;
-import android.support.annotation.*;
-import android.support.v4.content.*;
+import androidx.annotation.*;
+import androidx.core.content.*;
 import android.util.*;
 import ru.stwtforever.fast.R;
 
-public class CircleImageView extends android.support.v7.widget.AppCompatImageView {
+public class CircleImageView extends androidx.appcompat.widget.AppCompatImageView {
 
     private static final ScaleType SCALE_TYPE = ScaleType.CENTER_CROP;
 

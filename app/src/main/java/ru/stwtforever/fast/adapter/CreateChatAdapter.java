@@ -1,15 +1,14 @@
 package ru.stwtforever.fast.adapter;
 
 import android.content.*;
-import android.graphics.*;
 import android.graphics.drawable.*;
-import android.support.v7.widget.*;
 import android.text.*;
 import android.view.*;
 import android.widget.*;
 import com.squareup.picasso.*;
 import java.util.*;
-import ru.stwtforever.fast.*;
+
+import androidx.recyclerview.widget.RecyclerView;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.api.model.*;
 import ru.stwtforever.fast.cls.*;

@@ -1,7 +1,7 @@
 package ru.stwtforever.fast.helper;
 import android.app.*;
 import android.content.pm.*;
-import android.support.transition.*;
+import androidx.transition.*;
 import android.os.*;
 
 public class PermissionHelper {

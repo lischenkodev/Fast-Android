@@ -1,13 +1,12 @@
 package ru.stwtforever.fast.api.method;
 
-import android.support.v4.util.*;
+import androidx.collection.ArrayMap;
 import ru.stwtforever.fast.util.*;
 import ru.stwtforever.fast.api.*;
 import ru.stwtforever.fast.api.model.*;
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import android.text.*;
 
 public class MethodSetter {
     private String name;

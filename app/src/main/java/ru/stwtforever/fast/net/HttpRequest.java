@@ -1,9 +1,9 @@
 package ru.stwtforever.fast.net;
 
+import androidx.collection.ArrayMap;
 import ru.stwtforever.fast.io.*;
 import java.io.*;
 import java.net.*;
-import android.support.v4.util.*;
 
 public class HttpRequest {
     public static final String GET = "GET";

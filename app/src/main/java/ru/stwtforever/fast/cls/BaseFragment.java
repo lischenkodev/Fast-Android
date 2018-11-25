@@ -1,7 +1,7 @@
 package ru.stwtforever.fast.cls;
 
-import android.support.v4.app.*;
-import android.support.v7.widget.*;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
 public abstract class BaseFragment extends Fragment {
 	

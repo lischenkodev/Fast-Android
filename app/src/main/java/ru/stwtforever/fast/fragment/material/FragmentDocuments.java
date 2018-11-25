@@ -1,11 +1,12 @@
 package ru.stwtforever.fast.fragment.material;
 
-import android.*;
 import android.os.*;
-import android.support.annotation.*;
-import android.support.v4.app.*;
+import androidx.annotation.*;
+
 import android.view.*;
 import android.widget.*;
+
+import androidx.fragment.app.Fragment;
 import ru.stwtforever.fast.R;
 
 

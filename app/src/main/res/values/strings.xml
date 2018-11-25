@@ -141,7 +141,6 @@
     <string name="pin_message">Pin message</string>
     <string name="confirm_pin">Do you really want to pin this message?</string>
     <string name="pinned_message">Pinned message</string>
-
     <string name="restart_longpoll">Restart longpoll</string>
     <string name="groups">Groups</string>
 </resources>

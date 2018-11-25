@@ -2,11 +2,13 @@ package ru.stwtforever.fast.adapter;
 
 import android.content.*;
 import android.graphics.drawable.*;
-import android.support.annotation.*;
-import android.support.v7.widget.*;
+import androidx.annotation.*;
+
 import android.view.*;
 
 import java.util.*;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 public abstract class BaseRecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
         extends RecyclerView.Adapter<VH> {

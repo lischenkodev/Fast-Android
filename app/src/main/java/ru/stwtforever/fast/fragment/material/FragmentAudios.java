@@ -1,12 +1,11 @@
 package ru.stwtforever.fast.fragment.material;
 
 
-import android.*;
 import android.os.*;
-import android.support.v4.app.*;
-import android.util.*;
 import android.view.*;
 import android.widget.*;
+
+import androidx.fragment.app.Fragment;
 import ru.stwtforever.fast.api.*;
 import ru.stwtforever.fast.api.model.*;
 import java.util.*;

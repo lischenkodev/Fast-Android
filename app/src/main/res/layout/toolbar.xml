@@ -7,7 +7,7 @@
 	android:id="@+id/tb_container"
 	android:orientation="vertical">
 
-	<android.support.v7.widget.Toolbar
+	<androidx.appcompat.widget.Toolbar
 		android:id="@+id/tb"
 		android:layout_height="?actionBarSize"
 		app:popupTheme="@style/AppTheme.PopupOverlay"

@@ -3,7 +3,7 @@ package ru.stwtforever.fast.service;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import android.support.v4.util.ArrayMap;
+import androidx.collection.ArrayMap;
 import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
@@ -18,7 +18,6 @@ import ru.stwtforever.fast.api.model.VKAttachments;
 import ru.stwtforever.fast.api.model.VKConversation;
 import ru.stwtforever.fast.api.model.VKLongPollServer;
 import ru.stwtforever.fast.api.model.VKMessage;
-import ru.stwtforever.fast.common.AppGlobal;
 import ru.stwtforever.fast.concurrent.LowThread;
 import ru.stwtforever.fast.db.CacheStorage;
 import ru.stwtforever.fast.db.DBHelper;

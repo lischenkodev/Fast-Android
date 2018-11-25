@@ -1,7 +1,7 @@
 package ru.stwtforever.fast.api;
 
 
-import android.support.annotation.*;
+import androidx.annotation.*;
 import android.text.*;
 import ru.stwtforever.fast.common.*;
 import ru.stwtforever.fast.io.*;

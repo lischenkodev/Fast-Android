@@ -1,13 +1,13 @@
 package ru.stwtforever.fast.view;
 
 import android.content.*;
-import android.support.design.widget.*;
-import android.support.v4.view.*;
+
+import androidx.core.view.*;
 import android.util.*;
 import android.view.*;
-import android.view.animation.*;
 import android.widget.*;
-import ru.stwtforever.fast.util.*;
+
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 public class FABBehaviour extends CoordinatorLayout.Behavior<LinearLayout> {
 	

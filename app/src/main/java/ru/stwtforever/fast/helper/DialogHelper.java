@@ -1,7 +1,6 @@
 package ru.stwtforever.fast.helper;
-import android.support.v7.app.*;
+import androidx.appcompat.app.*;
 import android.content.*;
-import android.view.View.*;
 
 public class DialogHelper {
 	

@@ -12,8 +12,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.View;
@@ -172,11 +172,7 @@ public class UpdateActivity extends AppCompatActivity {
 
                 b_download.setEnabled(true);
 
-                if (!important) {
-                    finish();
-                } else {
-                    finishAffinity();
-                }
+                if (important) finish();
             }
         };
 

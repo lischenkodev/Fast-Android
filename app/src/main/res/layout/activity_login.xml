@@ -8,7 +8,7 @@
 	android:orientation="vertical"
 	android:gravity="center">
 
-	<android.support.v7.widget.CardView
+	<androidx.cardview.widget.CardView
 		app:cardBackgroundColor="#ffffff"
 		app:cardCornerRadius="26dp"
 		app:cardElevation="0dp"
@@ -78,7 +78,7 @@
 
 		</LinearLayout>
 
-	</android.support.v7.widget.CardView>
+	</androidx.cardview.widget.CardView>
 
 </LinearLayout>
 

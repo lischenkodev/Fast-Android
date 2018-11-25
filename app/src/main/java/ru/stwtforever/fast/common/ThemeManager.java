@@ -1,8 +1,7 @@
 package ru.stwtforever.fast.common;
 
-import android.*;
 import android.graphics.*;
-import android.support.annotation.*;
+import androidx.annotation.*;
 import ru.stwtforever.fast.fragment.*;
 import ru.stwtforever.fast.util.*;
 import ru.stwtforever.fast.R;
