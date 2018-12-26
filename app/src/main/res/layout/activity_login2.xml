@@ -14,8 +14,8 @@
         android:layout_height="200dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp"
         android:layout_marginTop="50dp"
+        android:layout_marginRight="30dp"
         android:layout_weight="0.4"
         android:src="@drawable/logo_blue_text" />
 
@@ -23,20 +23,23 @@
         android:id="@+id/card_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="30dp"
         android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
         android:layout_weight="0.1"
-        android:paddingEnd="6dp"
-        android:paddingStart="6dp">
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp">
 
         <androidx.cardview.widget.CardView
             android:id="@+id/card"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginEnd="6dp"
             android:layout_marginStart="6dp"
-            app:cardBackgroundColor="?mainLightColor"
+            android:layout_marginEnd="6dp"
+            android:background="?selectableItemBackground"
+            app:cardPreventCornerOverlap="true"
+            android:backgroundTint="?mainLightColor"
+            app:cardUseCompatPadding="true"
             app:cardCornerRadius="14dp"
             app:cardElevation="2dp">
 

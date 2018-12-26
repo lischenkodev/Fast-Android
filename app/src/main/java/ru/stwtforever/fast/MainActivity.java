@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageButton;
@@ -55,9 +56,9 @@ public class MainActivity extends AppCompatActivity {
     private SlidingDrawer drawer;
     private DrawerAdapter adapter;
 
-    FragmentDialogs f_dialogs;
-    FragmentFriends f_friends;
-    FragmentGroups f_groups;
+    private FragmentDialogs f_dialogs = new FragmentDialogs();
+    private FragmentFriends f_friends = new FragmentFriends();
+    private FragmentGroups f_groups = new FragmentGroups();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,8 +94,6 @@ public class MainActivity extends AppCompatActivity {
                 drawer.animateClose();
             }
         });
-
-        initFragments();
 
         checkLogin();
 
@@ -177,13 +176,6 @@ public class MainActivity extends AppCompatActivity {
             AlertDialog alert = DialogHelper.create(adb);
             alert.show();
         }
-    }
-
-
-    private void initFragments() {
-        f_dialogs = new FragmentDialogs();
-        f_friends = new FragmentFriends();
-        f_groups = new FragmentGroups();
     }
 
     private void initToolbar() {
@@ -335,29 +327,31 @@ public class MainActivity extends AppCompatActivity {
         DBHelper.getInstance().close();
     }
 
-    private void replaceFragment(Fragment f) {
+    private void replaceFragment(Fragment fragment) {
+        FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
+
         List<Fragment> fragments = getSupportFragmentManager().getFragments();
 
-        if (fragments == null) {
-            getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, f).commit();
+        if (ArrayUtil.isEmpty(fragments)) {
+            tr.add(R.id.fragment_container, fragment, fragment.getClass().getSimpleName());
         } else {
-            boolean added = false;
-            final FragmentTransaction tr = getSupportFragmentManager().beginTransaction();
-            for (Fragment fr : fragments) {
-                if (fr == f) {
-                    added = true;
-                    tr.show(fr);
+            boolean exists = false;
+
+            for (Fragment f : fragments) {
+                if (f.getClass().getSimpleName().equals(fragment.getClass().getSimpleName())) {
+                    tr.show(f);
+                    exists = true;
                 } else {
-                    tr.hide(fr);
+                    tr.hide(f);
                 }
             }
 
-            if (!added) {
-                tr.add(R.id.fragment_container, f);
+            if (!exists) {
+                tr.add(R.id.fragment_container, fragment, fragment.getClass().getSimpleName());
             }
-
-            tr.commit();
         }
+
+        tr.commit();
     }
 
     private Fragment getVisibleFragment() {

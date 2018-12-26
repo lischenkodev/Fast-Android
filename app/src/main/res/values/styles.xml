@@ -1,6 +1,6 @@
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat.Light">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light">
 		<item name="colorPrimary">@color/colorPrimary</item>
 		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
 		<item name="colorAccent">@color/colorAccent</item>
@@ -18,9 +18,9 @@
         <item name="colorControlNormal">@android:color/white</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar" />
 
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light" />
 	
 	<style name="LoginTheme" parent="AppTheme.NoActionBar">
 		<item name="colorAccent">@android:color/white</item>
@@ -28,7 +28,7 @@
 		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
 	</style>
 		
-	<style name="LightTheme" parent="Theme.AppCompat.Light.NoActionBar">
+	<style name="LightTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
 		<item name="colorAccent">@color/colorAccent</item>
 		<item name="colorPrimary">@color/colorPrimary</item>
 		<item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -38,7 +38,7 @@
 		<item name="secondaryColor">#a9a9a9</item>
 	</style>
 
-	<style name="DarkTheme" parent="Theme.AppCompat.NoActionBar">
+	<style name="DarkTheme" parent="Theme.MaterialComponents.NoActionBar">
 		<item name="colorAccent">@color/colorAccentDark</item>
 		<item name="colorPrimary">@color/colorDarkPrimary</item>
 		<item name="colorPrimaryDark">@color/colorDarkPrimaryDark</item>
