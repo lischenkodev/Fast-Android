@@ -42,6 +42,7 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
     public static final String KEY_ABOUT = "about";
     public static final String KEY_UPDATES = "check_updates";
     public static final String KEY_HIDE_TYPING = "hide_typing";
+    public static final String KEY_NOT_READ_MESSAGES = "not_read";
     public static final String KEY_ENABLE_OTA = "ota";
 
     public static final String DEFAULT_TEMPLATE_VALUE = "¯\\_(ツ)_/¯";

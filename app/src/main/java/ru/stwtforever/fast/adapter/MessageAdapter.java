@@ -38,6 +38,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import ru.stwtforever.fast.MessagesActivity;
 import ru.stwtforever.fast.R;
+import ru.stwtforever.fast.api.VKApi;
 import ru.stwtforever.fast.api.VKUtils;
 import ru.stwtforever.fast.api.model.VKAudio;
 import ru.stwtforever.fast.api.model.VKConversation;
@@ -54,8 +55,11 @@ import ru.stwtforever.fast.api.model.VKVideo;
 import ru.stwtforever.fast.api.model.VKVoice;
 import ru.stwtforever.fast.common.AppGlobal;
 import ru.stwtforever.fast.common.ThemeManager;
+import ru.stwtforever.fast.concurrent.AsyncCallback;
+import ru.stwtforever.fast.concurrent.ThreadExecutor;
 import ru.stwtforever.fast.db.CacheStorage;
 import ru.stwtforever.fast.db.MemoryCache;
+import ru.stwtforever.fast.fragment.FragmentSettings;
 import ru.stwtforever.fast.helper.FontHelper;
 import ru.stwtforever.fast.util.ArrayUtil;
 import ru.stwtforever.fast.util.ColorUtil;
@@ -91,12 +95,37 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 readMessage((int) data[1]);
                 break;
             case 4:
-                addMessage(((VKConversation) data[1]).last);
+                VKConversation conversation = (VKConversation) data[1];
+
+                addMessage(conversation.last);
+
+                if (conversation.last.peerId == peerId && !Utils.getPrefs().getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
+                    readNewMessage(conversation.last);
+                }
                 break;
             case 5:
                 editMessage((VKMessage) data[1]);
                 break;
         }
+    }
+
+    private void readNewMessage(final VKMessage message) {
+        ThreadExecutor.execute(new AsyncCallback(((MessagesActivity) context)) {
+            @Override
+            public void ready() throws Exception {
+                VKApi.messages().markAsRead().peerId(message.peerId).execute(Integer.class);
+            }
+
+            @Override
+            public void done() {
+                readMessage(message.id);
+            }
+
+            @Override
+            public void error(Exception e) {
+
+            }
+        });
     }
 
     private void editMessage(VKMessage edited) {
@@ -122,7 +151,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
         MessagesActivity root = (MessagesActivity) context;
         root.checkMessagesCount();
-        root.getRecycler().smoothScrollToPosition(getItemCount());
+        root.getRecycler().smoothScrollToPosition(getItemCount() + 1);
     }
 
     private boolean isExist(long id) {
@@ -184,7 +213,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MessageAdapter.ViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull MessageAdapter.ViewHolder holder, int position) {
+        super.onBindViewHolder(holder, position);
         holder.bind(position);
     }
 

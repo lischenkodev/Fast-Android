@@ -33,6 +33,7 @@ import ru.stwtforever.fast.api.model.VKMessage;
 import ru.stwtforever.fast.api.model.VKUser;
 import ru.stwtforever.fast.common.ThemeManager;
 import ru.stwtforever.fast.db.MemoryCache;
+import ru.stwtforever.fast.fragment.FragmentDialogs;
 import ru.stwtforever.fast.helper.FontHelper;
 import ru.stwtforever.fast.util.ArrayUtil;
 import ru.stwtforever.fast.util.Utils;
@@ -56,13 +57,16 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
         switch (type) {
             case 3:
-                readMessage((int) data[1]);
+                int mId = (int) data[1];
+                readMessage(mId);
                 break;
             case 4:
-                addMessage((VKConversation) data[1]);
+                VKConversation conversation = (VKConversation) data[1];
+                addMessage(conversation);
                 break;
             case 5:
-                editMessage((VKMessage) data[1]);
+                VKMessage message = (VKMessage) data[1];
+                editMessage(message);
                 break;
         }
     }

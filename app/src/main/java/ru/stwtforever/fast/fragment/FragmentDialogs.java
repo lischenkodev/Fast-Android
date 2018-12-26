@@ -308,6 +308,29 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
     @Override
     public void onItemClick(View v, int position) {
         openChat(position);
+        VKConversation conversation = adapter.getItem(position);
+
+        if (!conversation.read && !Utils.getPrefs().getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
+            readMessage(position);
+        }
+    }
+
+    private void readMessage(final int position) {
+        ThreadExecutor.execute(new AsyncCallback(getActivity()) {
+            @Override
+            public void ready() throws Exception {
+                VKApi.messages().markAsRead().peerId(adapter.getItem(position).last.peerId).execute(Integer.class);
+            }
+
+            @Override
+            public void done() {
+            }
+
+            @Override
+            public void error(Exception e) {
+
+            }
+        });
     }
 
 

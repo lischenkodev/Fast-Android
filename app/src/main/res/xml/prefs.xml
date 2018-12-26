@@ -1,62 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.preference.PreferenceScreen
-	xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-	<androidx.preference.PreferenceCategory
+    <PreferenceCategory
         android:key="interface_"
-		android:title="@string/interface_">
+        android:title="@string/interface_">
 
-		<androidx.preference.SwitchPreferenceCompat
-			android:title="@string/dark_theme"
-			android:defaultValue="false"
-			android:key="dark_style" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="dark_style"
+            android:title="@string/dark_theme" />
 
-	</androidx.preference.PreferenceCategory>
+    </PreferenceCategory>
 
-	<androidx.preference.PreferenceCategory
+    <PreferenceCategory
         android:key="functional"
-		android:title="@string/functions">
+        android:title="@string/functions" />
 
-		<androidx.preference.EditTextPreference
-			android:id="@android:id/edit"
-			android:key="template"
-			android:defaultValue="¯\\_(ツ)_/¯"
-			android:summary="@string/message_template"
-			android:title="@string/template" />
+    <EditTextPreference
+        android:id="@android:id/edit"
+        android:defaultValue="¯\\_(ツ)_/¯"
+        android:key="template"
+        android:summary="@string/message_template"
+        android:title="@string/template" />
 
-	</androidx.preference.PreferenceCategory>
-	<androidx.preference.PreferenceCategory
+    <PreferenceCategory
         android:key="invisible"
-		android:title="@string/invisible">
-		
-		<androidx.preference.SwitchPreferenceCompat
-			android:key="hide_typing"
-			android:defaultValue="false"
-			android:title="@string/hide_typing_status" />
-		
-	</androidx.preference.PreferenceCategory>
-	<androidx.preference.PreferenceCategory
+        android:title="@string/invisible">
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="hide_typing"
+            android:title="@string/hide_typing_status" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="not_read"
+            android:summary="@string/let_messages_unread"
+            android:title="@string/not_read_messages" />
+
+    </PreferenceCategory>
+    <PreferenceCategory
         android:key="application"
-		android:title="@string/application">
+        android:title="@string/application">
 
-		<androidx.preference.PreferenceScreen
-			android:title="@string/about_app"
-			android:key="about" />
+        <PreferenceScreen
+            android:key="about"
+            android:title="@string/about_app" />
 
-	</androidx.preference.PreferenceCategory>
+    </PreferenceCategory>
 
-	<androidx.preference.PreferenceCategory
+    <PreferenceCategory
         android:key="updates"
-		android:title="@string/updates">
+        android:title="@string/updates">
 
-		<androidx.preference.SwitchPreferenceCompat
-			android:title="@string/ota"
-			android:defaultValue="false"
-			android:key="ota" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="ota"
+            android:title="@string/ota" />
 
-		<androidx.preference.PreferenceScreen
-			android:title="@string/check_updates"
-			android:key="check_updates" />
+        <PreferenceScreen
+            android:key="check_updates"
+            android:title="@string/check_updates" />
 
-	</androidx.preference.PreferenceCategory>
-</androidx.preference.PreferenceScreen>
+    </PreferenceCategory>
+</PreferenceScreen>
