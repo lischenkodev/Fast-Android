@@ -1,20 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	android:layout_height="wrap_content"
-	android:layout_width="match_parent"
-	android:id="@+id/tb_container"
-	android:orientation="vertical">
+<com.google.android.material.appbar.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/tb_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-	<androidx.appcompat.widget.Toolbar
-		android:id="@+id/tb"
-		android:layout_height="?actionBarSize"
-		app:popupTheme="@style/AppTheme.PopupOverlay"
-		android:layout_width="match_parent" />
-	<View
-		android:background="?android:attr/dividerVertical"
-		android:layout_width="match_parent"
-		android:layout_height="1dp"/>
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/tb"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        app:popupTheme="@style/AppTheme.PopupOverlay" />
 
-</LinearLayout>
+</com.google.android.material.appbar.AppBarLayout>

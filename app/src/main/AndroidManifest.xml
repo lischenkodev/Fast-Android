@@ -14,7 +14,8 @@
         android:icon="@mipmap/fast_dev"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
-        tools:targetApi="m">
+		tools:ignore="GoogleAppIndexingWarning"
+		tools:targetApi="m">
         <activity 
             android:name=".MainActivity"
 			android:theme="@style/AppTheme.NoActionBar"

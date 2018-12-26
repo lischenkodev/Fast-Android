@@ -1,31 +1,39 @@
 package ru.stwtforever.fast.fragment;
 
-import android.content.*;
-import android.os.*;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
+
+import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
-import android.view.*;
-import android.widget.*;
-
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import ru.stwtforever.fast.*;
-import ru.stwtforever.fast.adapter.*;
-import ru.stwtforever.fast.cls.*;
-import ru.stwtforever.fast.common.*;
-import ru.stwtforever.fast.concurrent.*;
-import ru.stwtforever.fast.db.*;
-import ru.stwtforever.fast.util.*;
-import ru.stwtforever.fast.api.*;
-import ru.stwtforever.fast.api.model.*;
-
-import java.util.*;
-
-import androidx.appcompat.widget.Toolbar;
-
+import ru.stwtforever.fast.MessagesActivity;
+import ru.stwtforever.fast.R;
+import ru.stwtforever.fast.adapter.FriendAdapter;
+import ru.stwtforever.fast.adapter.RecyclerAdapter;
+import ru.stwtforever.fast.api.UserConfig;
+import ru.stwtforever.fast.api.VKApi;
+import ru.stwtforever.fast.api.model.VKConversation;
+import ru.stwtforever.fast.api.model.VKUser;
+import ru.stwtforever.fast.cls.BaseFragment;
+import ru.stwtforever.fast.common.ThemeManager;
+import ru.stwtforever.fast.concurrent.AsyncCallback;
+import ru.stwtforever.fast.concurrent.ThreadExecutor;
+import ru.stwtforever.fast.db.CacheStorage;
+import ru.stwtforever.fast.db.DatabaseHelper;
+import ru.stwtforever.fast.util.ArrayUtil;
+import ru.stwtforever.fast.util.Utils;
 import ru.stwtforever.fast.util.ViewUtils;
 
 public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemLongClickListener, RecyclerAdapter.OnItemClickListener {
@@ -188,5 +196,60 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
         }
 
         startActivity(intent);
+    }
+
+    public void showDialog(final int position, View v) {
+        androidx.appcompat.widget.PopupMenu m = new androidx.appcompat.widget.PopupMenu(getActivity(), v);
+        m.inflate(R.menu.fragment_friends_funcs);
+        m.setOnMenuItemClickListener(new androidx.appcompat.widget.PopupMenu.OnMenuItemClickListener() {
+
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.remove_friend:
+                        showConfirmDeleteFriend(position);
+                        break;
+                }
+                return true;
+            }
+
+        });
+        m.show();
+    }
+
+    private void showConfirmDeleteFriend(final int position) {
+        AlertDialog.Builder adb = new AlertDialog.Builder(getContext());
+        adb.setTitle(R.string.confirmation);
+        adb.setMessage(R.string.confirm_delete_friend);
+        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deleteFriend(position);
+            }
+        });
+        adb.setNegativeButton(R.string.no, null);
+        adb.create().show();
+    }
+
+    private void deleteFriend(final int position) {
+        ThreadExecutor.execute(new AsyncCallback(getActivity()) {
+
+            @Override
+            public void ready() throws Exception {
+                VKApi.friends().delete().userId(adapter.getItem(position).getId()).execute(Integer.class);
+            }
+
+            @Override
+            public void done() {
+                adapter.remove(position);
+                adapter.notifyItemRemoved(position);
+                adapter.notifyItemRangeChanged(0, adapter.getItemCount(), adapter.getItem(adapter.getItemCount() - 1));
+            }
+
+            @Override
+            public void error(Exception e) {
+                Toast.makeText(getActivity(), getString(R.string.error) + "!", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

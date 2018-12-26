@@ -1,15 +1,29 @@
 package ru.stwtforever.fast.api;
 
-import android.util.*;
-import ru.stwtforever.fast.*;
-import ru.stwtforever.fast.common.*;
-import ru.stwtforever.fast.concurrent.*;
-import ru.stwtforever.fast.net.*;
-import ru.stwtforever.fast.util.*;
-import ru.stwtforever.fast.api.method.*;
-import ru.stwtforever.fast.api.model.*;
-import java.util.*;
-import org.json.*;
+import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
+import ru.stwtforever.fast.BuildConfig;
+import ru.stwtforever.fast.api.method.AppMethodSetter;
+import ru.stwtforever.fast.api.method.MessageMethodSetter;
+import ru.stwtforever.fast.api.method.MethodSetter;
+import ru.stwtforever.fast.api.method.UserMethodSetter;
+import ru.stwtforever.fast.api.model.VKApp;
+import ru.stwtforever.fast.api.model.VKAttachments;
+import ru.stwtforever.fast.api.model.VKConversation;
+import ru.stwtforever.fast.api.model.VKGroup;
+import ru.stwtforever.fast.api.model.VKLongPollServer;
+import ru.stwtforever.fast.api.model.VKMessage;
+import ru.stwtforever.fast.api.model.VKModel;
+import ru.stwtforever.fast.api.model.VKUser;
+import ru.stwtforever.fast.common.AppGlobal;
+import ru.stwtforever.fast.concurrent.ThreadExecutor;
+import ru.stwtforever.fast.net.HttpRequest;
+import ru.stwtforever.fast.util.ArrayUtil;
 
 public class VKApi {
     public static final String TAG = "Fast.VKApi";
@@ -76,7 +90,7 @@ public class VKApi {
                 VKMessage.lastHistoryCount = json.optJSONObject("response")
                         .optInt("count");
             }
-			
+
             for (int i = 0; i < array.length(); i++) {
                 JSONObject source = array.optJSONObject(i);
                 int unread = source.optInt("unread");
@@ -98,30 +112,30 @@ public class VKApi {
         } else if (cls == VKModel.class && url.contains("messages.getHistoryAttachments")) {
             return (ArrayList<T>) VKAttachments.parse(array);
         } else if (cls == VKConversation.class) {
-			if (url.contains("messages.getConversations")) {
+            if (url.contains("messages.getConversations")) {
                 VKConversation.count = json.optJSONObject("response").optInt("count");
             }
-			
-			for (int i = 0; i < array.length(); i++) {
+
+            for (int i = 0; i < array.length(); i++) {
                 JSONObject source = array.optJSONObject(i);
-				JSONObject conversation = source.optJSONObject("conversation");
-				JSONObject last_message = source.optJSONObject("last_message");
-				
-				VKConversation message = new VKConversation(conversation, last_message);
-				
-				JSONArray profiles = json.optJSONObject("response").optJSONArray("profiles");
-				if (profiles != null) {
-					message.profiles = VKUser.parse(profiles);
-				}
-				
-				JSONArray groups = json.optJSONObject("response").optJSONArray("groups");
-				if (groups != null) {
-					message.groups = VKGroup.parseGroups(groups);
-				}
-				
+                JSONObject conversation = source.optJSONObject("conversation");
+                JSONObject last_message = source.optJSONObject("last_message");
+
+                VKConversation message = new VKConversation(conversation, last_message);
+
+                JSONArray profiles = json.optJSONObject("response").optJSONArray("profiles");
+                if (profiles != null) {
+                    message.profiles = VKUser.parse(profiles);
+                }
+
+                JSONArray groups = json.optJSONObject("response").optJSONArray("groups");
+                if (groups != null) {
+                    message.groups = VKGroup.parseGroups(groups);
+                }
+
                 models.add((T) message);
             }
-		}
+        }
         return models;
     }
 
@@ -179,47 +193,60 @@ public class VKApi {
         }
     }
 
-    /** Methods for users */
+    /**
+     * Methods for users
+     */
     public static VKUsers users() {
         return new VKUsers();
     }
 
-    /** Methods for friends */
+    /**
+     * Methods for friends
+     */
     public static VKFriends friends() {
         return new VKFriends();
     }
 
-    /** Methods for messages */
+    /**
+     * Methods for messages
+     */
     public static VKMessages messages() {
         return new VKMessages();
     }
 
-    /** Methods for groups */
+    /**
+     * Methods for groups
+     */
     public static VKGroups groups() {
         return new VKGroups();
     }
 
-    /** Methods for apps */
+    /**
+     * Methods for apps
+     */
     public static VKApps apps() {
         return new VKApps();
     }
 
-    /** Methods for account */
+    /**
+     * Methods for account
+     */
     public static VKAccounts account() {
         return new VKAccounts();
     }
-	
-	public static VKStats stats() {
-		return new VKStats();
-	}
-	
-	public static class VKStats {
-		public VKStats() {}
-		
-		public MethodSetter trackVisitor() {
-			return new MethodSetter("stats.trackVisitor");
-		}
-	}
+
+    public static VKStats stats() {
+        return new VKStats();
+    }
+
+    public static class VKStats {
+        public VKStats() {
+        }
+
+        public MethodSetter trackVisitor() {
+            return new MethodSetter("stats.trackVisitor");
+        }
+    }
 
     public static class VKFriends {
         private VKFriends() {
@@ -228,6 +255,9 @@ public class VKApi {
 
         public MethodSetter get() {
             return new MethodSetter("friends.get");
+        }
+        public MethodSetter delete() {
+            return new MethodSetter("friends.delete");
         }
     }
 
@@ -245,7 +275,7 @@ public class VKApi {
         private VKMessages() {
 
         }
-		
+
         /**
          * Returns the list of dialogs of the current user
          */
@@ -259,18 +289,18 @@ public class VKApi {
         public MessageMethodSetter getById() {
             return new MessageMethodSetter("getById");
         }
-		
-		public MessageMethodSetter edit() {
-			return new MessageMethodSetter("edit");
-		}
-		
-		public MessageMethodSetter unpin() {
-			return new MessageMethodSetter("unpin");
-		}
-		
-		public MessageMethodSetter pin() {
-			return new MessageMethodSetter("pin");
-		}
+
+        public MessageMethodSetter edit() {
+            return new MessageMethodSetter("edit");
+        }
+
+        public MessageMethodSetter unpin() {
+            return new MessageMethodSetter("unpin");
+        }
+
+        public MessageMethodSetter pin() {
+            return new MessageMethodSetter("pin");
+        }
 
         /**
          * Returns a list of the current user's private messages,

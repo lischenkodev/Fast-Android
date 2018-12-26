@@ -1,17 +1,86 @@
 package ru.stwtforever.fast.db;
 
-import android.content.*;
-import android.database.*;
-import ru.stwtforever.fast.common.*;
-import ru.stwtforever.fast.util.*;
-import ru.stwtforever.fast.api.*;
-import ru.stwtforever.fast.api.model.*;
-import java.util.*;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.text.TextUtils;
 
-import static ru.stwtforever.fast.db.DatabaseHelper.*;
-import static ru.stwtforever.fast.common.AppGlobal.*;
+import java.util.ArrayList;
+import java.util.Locale;
 
-import android.text.*;
+import ru.stwtforever.fast.api.UserConfig;
+import ru.stwtforever.fast.api.model.VKAudio;
+import ru.stwtforever.fast.api.model.VKConversation;
+import ru.stwtforever.fast.api.model.VKGroup;
+import ru.stwtforever.fast.api.model.VKMessage;
+import ru.stwtforever.fast.api.model.VKPhoto;
+import ru.stwtforever.fast.api.model.VKPhotoSizes;
+import ru.stwtforever.fast.api.model.VKUser;
+import ru.stwtforever.fast.common.AppGlobal;
+import ru.stwtforever.fast.util.ArrayUtil;
+import ru.stwtforever.fast.util.FException;
+import ru.stwtforever.fast.util.Utils;
+
+import static ru.stwtforever.fast.common.AppGlobal.database;
+import static ru.stwtforever.fast.db.DatabaseHelper.ADMIN_LEVER;
+import static ru.stwtforever.fast.db.DatabaseHelper.ALBUM_ID;
+import static ru.stwtforever.fast.db.DatabaseHelper.ARTIST;
+import static ru.stwtforever.fast.db.DatabaseHelper.ATTACHMENTS;
+import static ru.stwtforever.fast.db.DatabaseHelper.AUDIO_ID;
+import static ru.stwtforever.fast.db.DatabaseHelper.CONVERSATION_TYPE;
+import static ru.stwtforever.fast.db.DatabaseHelper.DATE;
+import static ru.stwtforever.fast.db.DatabaseHelper.DEACTIVATED;
+import static ru.stwtforever.fast.db.DatabaseHelper.DESCRIPTION;
+import static ru.stwtforever.fast.db.DatabaseHelper.DIALOGS_TABLE;
+import static ru.stwtforever.fast.db.DatabaseHelper.DURATION;
+import static ru.stwtforever.fast.db.DatabaseHelper.EXCEPTION;
+import static ru.stwtforever.fast.db.DatabaseHelper.EXCEPTIONS_TABLE;
+import static ru.stwtforever.fast.db.DatabaseHelper.FAILED_MESSAGES_TABLE;
+import static ru.stwtforever.fast.db.DatabaseHelper.FIRST_NAME;
+import static ru.stwtforever.fast.db.DatabaseHelper.FRIENDS_TABLE;
+import static ru.stwtforever.fast.db.DatabaseHelper.FRIEND_ID;
+import static ru.stwtforever.fast.db.DatabaseHelper.FROM_ID;
+import static ru.stwtforever.fast.db.DatabaseHelper.FWD_MESSAGES;
+import static ru.stwtforever.fast.db.DatabaseHelper.GROUPS_TABLE;
+import static ru.stwtforever.fast.db.DatabaseHelper.GROUP_ID;
+import static ru.stwtforever.fast.db.DatabaseHelper.HEIGHT;
+import static ru.stwtforever.fast.db.DatabaseHelper.IMPORTANT;
+import static ru.stwtforever.fast.db.DatabaseHelper.IS_ADMIN;
+import static ru.stwtforever.fast.db.DatabaseHelper.IS_CLOSED;
+import static ru.stwtforever.fast.db.DatabaseHelper.IS_OUT;
+import static ru.stwtforever.fast.db.DatabaseHelper.LAST_MESSAGE;
+import static ru.stwtforever.fast.db.DatabaseHelper.LAST_NAME;
+import static ru.stwtforever.fast.db.DatabaseHelper.LAST_SEEN;
+import static ru.stwtforever.fast.db.DatabaseHelper.MEMBERS_COUNT;
+import static ru.stwtforever.fast.db.DatabaseHelper.MESSAGES_TABLE;
+import static ru.stwtforever.fast.db.DatabaseHelper.MESSAGE_ID;
+import static ru.stwtforever.fast.db.DatabaseHelper.NAME;
+import static ru.stwtforever.fast.db.DatabaseHelper.ONLINE;
+import static ru.stwtforever.fast.db.DatabaseHelper.ONLINE_APP;
+import static ru.stwtforever.fast.db.DatabaseHelper.ONLINE_MOBILE;
+import static ru.stwtforever.fast.db.DatabaseHelper.OWNER_ID;
+import static ru.stwtforever.fast.db.DatabaseHelper.PEER_ID;
+import static ru.stwtforever.fast.db.DatabaseHelper.PHOTOS_TABLE;
+import static ru.stwtforever.fast.db.DatabaseHelper.PHOTO_100;
+import static ru.stwtforever.fast.db.DatabaseHelper.PHOTO_200;
+import static ru.stwtforever.fast.db.DatabaseHelper.PHOTO_50;
+import static ru.stwtforever.fast.db.DatabaseHelper.PHOTO_SIZES;
+import static ru.stwtforever.fast.db.DatabaseHelper.PINNED_MESSAGE;
+import static ru.stwtforever.fast.db.DatabaseHelper.READ_STATE;
+import static ru.stwtforever.fast.db.DatabaseHelper.SCREEN_NAME;
+import static ru.stwtforever.fast.db.DatabaseHelper.SEX;
+import static ru.stwtforever.fast.db.DatabaseHelper.STATUS;
+import static ru.stwtforever.fast.db.DatabaseHelper.TEXT;
+import static ru.stwtforever.fast.db.DatabaseHelper.TIME;
+import static ru.stwtforever.fast.db.DatabaseHelper.TITLE;
+import static ru.stwtforever.fast.db.DatabaseHelper.TYPE;
+import static ru.stwtforever.fast.db.DatabaseHelper.UNREAD_COUNT;
+import static ru.stwtforever.fast.db.DatabaseHelper.UPDATE_TIME;
+import static ru.stwtforever.fast.db.DatabaseHelper.URL;
+import static ru.stwtforever.fast.db.DatabaseHelper.USERS_COUNT;
+import static ru.stwtforever.fast.db.DatabaseHelper.USERS_TABLE;
+import static ru.stwtforever.fast.db.DatabaseHelper.USER_ID;
+import static ru.stwtforever.fast.db.DatabaseHelper.WIDTH;
+import static ru.stwtforever.fast.db.DatabaseHelper._ID;
 
 public class CacheStorage {
     public static void checkOpen() {
@@ -22,9 +91,9 @@ public class CacheStorage {
 
     private static Cursor selectCursor(String table, String column, Object value) {
         return QueryBuilder.query()
-			.select("*").from(table)
-			.where(column.concat(" = ").concat(String.valueOf(value)))
-			.asCursor(database);
+                .select("*").from(table)
+                .where(column.concat(" = ").concat(String.valueOf(value)))
+                .asCursor(database);
     }
 
     private static Cursor selectCursor(String table, String column, int... ids) {
@@ -44,15 +113,15 @@ public class CacheStorage {
 
     private static Cursor selectCursor(String table, String where) {
         return QueryBuilder.query()
-			.select("*").from(table).where(where)
-			.asCursor(database);
+                .select("*").from(table).where(where)
+                .asCursor(database);
     }
 
     private static Cursor selectCursor(String table) {
-		checkOpen();
+        checkOpen();
         return QueryBuilder.query()
-			.select("*").from(table)
-			.asCursor(database);
+                .select("*").from(table)
+                .asCursor(database);
     }
 
     private static int getInt(Cursor cursor, String columnName) {
@@ -62,10 +131,10 @@ public class CacheStorage {
     private static String getString(Cursor cursor, String columnName) {
         return cursor.getString(cursor.getColumnIndex(columnName));
     }
-	
-	private static Long getLong(Cursor cursor, String columnName) {
-		return cursor.getLong(cursor.getColumnIndex(columnName));
-	}
+
+    private static Long getLong(Cursor cursor, String columnName) {
+        return cursor.getLong(cursor.getColumnIndex(columnName));
+    }
 
     private static byte[] getBlob(Cursor cursor, String columnName) {
         return cursor.getBlob(cursor.getColumnIndex(columnName));
@@ -98,29 +167,29 @@ public class CacheStorage {
         cursor.close();
         return null;
     }
-	
-	public static ArrayList<FException> getExceptions() {
-		Cursor cursor = selectCursor(EXCEPTIONS_TABLE);
 
-		ArrayList<FException> excs = new ArrayList<>(cursor.getCount());
-		while (cursor.moveToNext()) {
-			excs.add(parseException(cursor));
-		}
-		
-		cursor.close();
-		return excs;
-	}
-	
-	public static ArrayList<VKMessage> getFailedMessages(int peerId) {
-		Cursor c = selectCursor(FAILED_MESSAGES_TABLE, PEER_ID, peerId);
-		ArrayList<VKMessage> failed = new ArrayList<>(c.getCount());
-		while (c.moveToNext()) {
-			failed.add(parseFailed(c));
-		}
-		
-		c.close();
-		return failed;
-	}
+    public static ArrayList<FException> getExceptions() {
+        Cursor cursor = selectCursor(EXCEPTIONS_TABLE);
+
+        ArrayList<FException> excs = new ArrayList<>(cursor.getCount());
+        while (cursor.moveToNext()) {
+            excs.add(parseException(cursor));
+        }
+
+        cursor.close();
+        return excs;
+    }
+
+    public static ArrayList<VKMessage> getFailedMessages(int peerId) {
+        Cursor c = selectCursor(FAILED_MESSAGES_TABLE, PEER_ID, peerId);
+        ArrayList<VKMessage> failed = new ArrayList<>(c.getCount());
+        while (c.moveToNext()) {
+            failed.add(parseFailed(c));
+        }
+
+        c.close();
+        return failed;
+    }
 
     public static ArrayList<VKUser> getUsers(int ids) {
         Cursor cursor = selectCursor(USERS_TABLE, USER_ID, ids);
@@ -135,12 +204,12 @@ public class CacheStorage {
 
     public static ArrayList<VKUser> getFriends(int userId, boolean onlyOnline) {
         Cursor cursor = QueryBuilder.query()
-			.select("*")
-			.from(FRIENDS_TABLE)
-			.leftJoin(USERS_TABLE)
-			.on("friends.friend_id = users.user_id")
-			.where("friends.user_id = " + userId)
-			.asCursor(database);
+                .select("*")
+                .from(FRIENDS_TABLE)
+                .leftJoin(USERS_TABLE)
+                .on("friends.friend_id = users.user_id")
+                .where("friends.user_id = " + userId)
+                .asCursor(database);
 
         ArrayList<VKUser> users = new ArrayList<>(cursor.getCount());
 
@@ -218,14 +287,15 @@ public class CacheStorage {
 
     public static void insert(String table, ArrayList values) {
         if (!database.isOpen()) database = DatabaseHelper.getInstance().getWritableDatabase();
-		database.beginTransaction();
+        if (database.isDbLockedByCurrentThread()) return;
+        database.beginTransaction();
 
         ContentValues cv = new ContentValues();
         for (int i = 0; i < values.size(); i++) {
             switch (table) {
-				case EXCEPTIONS_TABLE:
-					putValues(cv, (FException) values.get(i));
-					break;
+                case EXCEPTIONS_TABLE:
+                    putValues(cv, (FException) values.get(i));
+                    break;
                 case USERS_TABLE:
                     putValues(cv, (VKUser) values.get(i), false);
                     break;
@@ -250,7 +320,7 @@ public class CacheStorage {
                     putValues(cv, (VKPhoto) values.get(i));
                     break;
             }
-			
+
             database.insert(table, null, cv);
             cv.clear();
         }
@@ -266,13 +336,13 @@ public class CacheStorage {
     public static void delete(String table) {
         database.delete(table, null, null);
     }
-	
-	private static FException parseException(Cursor c) {
-		FException e = new FException();
-		e.exception = getString(c, EXCEPTION);
-		e.time = getLong(c, TIME);
-		return e;
-	}
+
+    private static FException parseException(Cursor c) {
+        FException e = new FException();
+        e.exception = getString(c, EXCEPTION);
+        e.time = getLong(c, TIME);
+        return e;
+    }
 
     private static VKUser parseUser(Cursor cursor) {
         VKUser user = new VKUser();
@@ -290,27 +360,27 @@ public class CacheStorage {
         user.online = getInt(cursor, ONLINE) == 1;
         user.online_mobile = getInt(cursor, ONLINE_MOBILE) == 1;
         user.online_app = getInt(cursor, ONLINE_APP);
-		user.deactivated = getString(cursor, DEACTIVATED);
+        user.deactivated = getString(cursor, DEACTIVATED);
         user.sex = getInt(cursor, SEX);
         return user;
     }
 
     public static VKConversation parseDialog(Cursor cursor) {
         VKConversation c = new VKConversation();
-		
-		c.read = getInt(cursor, READ_STATE) == 1;
-		c.title = getString(cursor, TITLE);
-		c.membersCount = getInt(cursor, USERS_COUNT);
-		c.unread = getInt(cursor, UNREAD_COUNT);
-		
-		c.type = getString(cursor, CONVERSATION_TYPE);
-		
-		c.photo_50 = getString(cursor, PHOTO_50);
+
+        c.read = getInt(cursor, READ_STATE) == 1;
+        c.title = getString(cursor, TITLE);
+        c.membersCount = getInt(cursor, USERS_COUNT);
+        c.unread = getInt(cursor, UNREAD_COUNT);
+
+        c.type = getString(cursor, CONVERSATION_TYPE);
+
+        c.photo_50 = getString(cursor, PHOTO_50);
         c.photo_100 = getString(cursor, PHOTO_100);
-		c.photo_200 = getString(cursor, PHOTO_200);
-		
-		c.last = (VKMessage) Utils.deserialize(getBlob(cursor, LAST_MESSAGE));
-		c.pinned = (VKMessage) Utils.deserialize(getBlob(cursor, PINNED_MESSAGE));
+        c.photo_200 = getString(cursor, PHOTO_200);
+
+        c.last = (VKMessage) Utils.deserialize(getBlob(cursor, LAST_MESSAGE));
+        c.pinned = (VKMessage) Utils.deserialize(getBlob(cursor, PINNED_MESSAGE));
         return c;
     }
 
@@ -319,28 +389,28 @@ public class CacheStorage {
         VKMessage message = new VKMessage();
         message.id = getInt(cursor, MESSAGE_ID);
         message.peerId = getInt(cursor, PEER_ID);
-		message.fromId = getInt(cursor, FROM_ID);
+        message.fromId = getInt(cursor, FROM_ID);
         message.date = getInt(cursor, DATE);
         message.text = getString(cursor, TEXT);
         message.read = getInt(cursor, READ_STATE) == 1;
         message.out = getInt(cursor, IS_OUT) == 1;
         message.important = getInt(cursor, IMPORTANT) == 1;
-		message.status = getInt(cursor, STATUS);
-		message.update_time = getLong(cursor, UPDATE_TIME);
+        message.status = getInt(cursor, STATUS);
+        message.update_time = getLong(cursor, UPDATE_TIME);
         message.attachments = (ArrayList) Utils.deserialize(getBlob(cursor, ATTACHMENTS));
         message.fwd_messages = (ArrayList) Utils.deserialize(getBlob(cursor, FWD_MESSAGES));
         return message;
     }
-	
-	public static VKMessage parseFailed(Cursor c) {
-		VKMessage m = new VKMessage();
-		m.peerId = getInt(c, PEER_ID);
-		m.fromId = getInt(c, FROM_ID);
-		m.text = getString(c, TEXT);
-		m.status = VKMessage.STATUS_ERROR;
-		
-		return m;
-	}
+
+    public static VKMessage parseFailed(Cursor c) {
+        VKMessage m = new VKMessage();
+        m.peerId = getInt(c, PEER_ID);
+        m.fromId = getInt(c, FROM_ID);
+        m.text = getString(c, TEXT);
+        m.status = VKMessage.STATUS_ERROR;
+
+        return m;
+    }
 
     public static VKGroup parseGroup(Cursor cursor) {
         VKGroup group = new VKGroup();
@@ -355,7 +425,7 @@ public class CacheStorage {
         group.is_admin = getInt(cursor, IS_ADMIN) == 1;
         group.photo_50 = getString(cursor, PHOTO_50);
         group.photo_100 = getString(cursor, PHOTO_100);
-		group.photo_200 = getString(cursor, PHOTO_200);
+        group.photo_200 = getString(cursor, PHOTO_200);
         group.members_count = getInt(cursor, MEMBERS_COUNT);
         return group;
     }
@@ -369,14 +439,14 @@ public class CacheStorage {
         photo.date = getInt(cursor, DATE);
         photo.width = getInt(cursor, WIDTH);
         photo.height = getInt(cursor, HEIGHT);
-		photo.sizes = (VKPhotoSizes) Utils.deserialize(getBlob(cursor, PHOTO_SIZES));
+        photo.sizes = (VKPhotoSizes) Utils.deserialize(getBlob(cursor, PHOTO_SIZES));
         return photo;
     }
-	
-	private static void putValues(ContentValues values, FException e) {
-		values.put(EXCEPTION, e.exception);
-		values.put(TIME, e.time);
-	}
+
+    private static void putValues(ContentValues values, FException e) {
+        values.put(EXCEPTION, e.exception);
+        values.put(TIME, e.time);
+    }
 
     private static void putValues(ContentValues values, VKUser user, boolean friends) {
         if (friends) {
@@ -396,67 +466,67 @@ public class CacheStorage {
         values.put(STATUS, user.status);
         values.put(PHOTO_50, user.photo_50);
         values.put(PHOTO_100, user.photo_100);
-     	values.put(PHOTO_200, user.photo_200);
+        values.put(PHOTO_200, user.photo_200);
         values.put(SEX, user.sex);
     }
 
     private static void putValues(ContentValues values, VKConversation dialog) {
-		values.put(UNREAD_COUNT, dialog.unread);
+        values.put(UNREAD_COUNT, dialog.unread);
         values.put(READ_STATE, dialog.read);
-		values.put(USERS_COUNT, dialog.membersCount);
-		values.put(PHOTO_50, dialog.photo_50);
-		values.put(PHOTO_100, dialog.photo_100);
-		values.put(PHOTO_200, dialog.photo_200);
-		values.put(CONVERSATION_TYPE, dialog.type);
-		
-		if (dialog.last != null) {
-			values.put(LAST_MESSAGE, Utils.serialize(dialog.last));
-		}
-		
-		if (dialog.pinned != null) {
-			values.put(PINNED_MESSAGE, Utils.serialize(dialog.pinned));
-		}
-		
-		if (TextUtils.isEmpty(dialog.title)) {
-			if (dialog.last.fromId < 0) {
-				VKGroup g = getGroup(dialog.last.peerId);
-				if (g != null) {
-					values.put(TITLE, g.name);
-				} else {
-					values.put(TITLE, "");
-				}
-			} else {
-				VKUser u = getUser(dialog.last.peerId);
-				if (u != null) {
-					values.put(TITLE, u.toString());
-				} else {
-					values.put(TITLE, "");
-				}
-			}
-		} else {
-			values.put(TITLE, dialog.title);
-		}
+        values.put(USERS_COUNT, dialog.membersCount);
+        values.put(PHOTO_50, dialog.photo_50);
+        values.put(PHOTO_100, dialog.photo_100);
+        values.put(PHOTO_200, dialog.photo_200);
+        values.put(CONVERSATION_TYPE, dialog.type);
+
+        if (dialog.last != null) {
+            values.put(LAST_MESSAGE, Utils.serialize(dialog.last));
+        }
+
+        if (dialog.pinned != null) {
+            values.put(PINNED_MESSAGE, Utils.serialize(dialog.pinned));
+        }
+
+        if (TextUtils.isEmpty(dialog.title)) {
+            if (dialog.last.fromId < 0) {
+                VKGroup g = getGroup(dialog.last.peerId);
+                if (g != null) {
+                    values.put(TITLE, g.name);
+                } else {
+                    values.put(TITLE, "");
+                }
+            } else {
+                VKUser u = getUser(dialog.last.peerId);
+                if (u != null) {
+                    values.put(TITLE, u.toString());
+                } else {
+                    values.put(TITLE, "");
+                }
+            }
+        } else {
+            values.put(TITLE, dialog.title);
+        }
     }
 
-	private static void putValues(ContentValues values, VKMessage message) {
-		values.put(MESSAGE_ID, message.id);
+    private static void putValues(ContentValues values, VKMessage message) {
+        values.put(MESSAGE_ID, message.id);
         values.put(PEER_ID, message.peerId);
         values.put(TEXT, message.text);
         values.put(DATE, message.date);
         values.put(IS_OUT, message.out);
-		values.put(STATUS, message.status);
+        values.put(STATUS, message.status);
         values.put(READ_STATE, message.read);
-		values.put(UPDATE_TIME, message.update_time);
+        values.put(UPDATE_TIME, message.update_time);
 
-		values.put(IMPORTANT, message.important);
-		if (!ArrayUtil.isEmpty(message.attachments)) {
-			values.put(ATTACHMENTS, Utils.serialize(message.attachments));
-		}
-		if (!ArrayUtil.isEmpty(message.fwd_messages)) {
-			values.put(FWD_MESSAGES, Utils.serialize(message.fwd_messages));
-		}
-        
-	}
+        values.put(IMPORTANT, message.important);
+        if (!ArrayUtil.isEmpty(message.attachments)) {
+            values.put(ATTACHMENTS, Utils.serialize(message.attachments));
+        }
+        if (!ArrayUtil.isEmpty(message.fwd_messages)) {
+            values.put(FWD_MESSAGES, Utils.serialize(message.fwd_messages));
+        }
+
+    }
 
     private static void putValues(ContentValues values, VKGroup group) {
         values.put(GROUP_ID, group.id);

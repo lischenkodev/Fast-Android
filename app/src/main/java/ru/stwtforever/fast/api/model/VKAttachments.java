@@ -158,6 +158,7 @@ public class VKAttachments extends VKModel implements Serializable {
     }
 
     public static boolean isOneType(Class type, ArrayList<VKModel> attachments) {
+        if (true) return false;
         if (ArrayUtil.isEmpty(attachments) || type == null) return false;
 
         for (VKModel a : attachments) {

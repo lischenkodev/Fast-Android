@@ -46,22 +46,7 @@ public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHol
     }
 
     private void showDialog(final int position, View v) {
-        PopupMenu m = new PopupMenu(context, v);
-        m.inflate(R.menu.fragment_friends_funcs);
-        m.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.remove_friend:
-
-                        break;
-                }
-                return true;
-            }
-
-        });
-        m.show();
+        fragment.showDialog(position, v);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
