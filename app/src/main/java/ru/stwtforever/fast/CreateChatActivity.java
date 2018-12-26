@@ -3,11 +3,6 @@ package ru.stwtforever.fast;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -17,22 +12,27 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import ru.stwtforever.fast.adapter.CreateChatAdapter;
+import ru.stwtforever.fast.adapter.RecyclerAdapter;
 import ru.stwtforever.fast.api.UserConfig;
 import ru.stwtforever.fast.api.VKApi;
 import ru.stwtforever.fast.api.model.VKUser;
-import ru.stwtforever.fast.cls.OnItemListener;
 import ru.stwtforever.fast.common.ThemeManager;
 import ru.stwtforever.fast.concurrent.AsyncCallback;
 import ru.stwtforever.fast.concurrent.ThreadExecutor;
 import ru.stwtforever.fast.db.CacheStorage;
-import ru.stwtforever.fast.db.DBHelper;
+import ru.stwtforever.fast.db.DatabaseHelper;
 import ru.stwtforever.fast.util.ArrayUtil;
 import ru.stwtforever.fast.util.Requests;
 import ru.stwtforever.fast.util.Utils;
 import ru.stwtforever.fast.util.ViewUtils;
 
-public class CreateChatActivity extends AppCompatActivity implements OnItemListener, SwipeRefreshLayout.OnRefreshListener {
+public class CreateChatActivity extends AppCompatActivity implements RecyclerAdapter.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
 
     @Override
     public void onRefresh() {
@@ -40,18 +40,13 @@ public class CreateChatActivity extends AppCompatActivity implements OnItemListe
     }
 
     @Override
-    public void OnItemClick(View v, int position) {
+    public void onItemClick(View v, int position) {
         adapter.setSelected(position, !adapter.isSelected(position));
         adapter.notifyItemChanged(position);
         setTitle();
 
         isSelecting = adapter.getSelectedCount() > 0;
         invalidateOptionsMenu();
-    }
-
-    @Override
-    public void onItemLongClick(View v, int position) {
-        return;
     }
 
     private boolean loading;
@@ -106,7 +101,7 @@ public class CreateChatActivity extends AppCompatActivity implements OnItemListe
             return;
 
         if (offset != 0) {
-            adapter.add(users);
+            adapter.changeItems(users);
             adapter.notifyDataSetChanged();
             return;
         }
@@ -119,7 +114,7 @@ public class CreateChatActivity extends AppCompatActivity implements OnItemListe
 
         adapter = new CreateChatAdapter(this, users);
         list.setAdapter(adapter);
-        adapter.setListener(this);
+        adapter.setOnItemClickListener(this);
     }
 
     private void loadFriends(final int offset, final int count) {
@@ -144,11 +139,11 @@ public class CreateChatActivity extends AppCompatActivity implements OnItemListe
                 }
 
                 if (offset == 0) {
-                    CacheStorage.delete(DBHelper.FRIENDS_TABLE);
-                    CacheStorage.insert(DBHelper.FRIENDS_TABLE, users);
+                    CacheStorage.delete(DatabaseHelper.FRIENDS_TABLE);
+                    CacheStorage.insert(DatabaseHelper.FRIENDS_TABLE, users);
                 }
 
-                CacheStorage.insert(DBHelper.USERS_TABLE, users);
+                CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
             }
 
             @Override
@@ -173,13 +168,13 @@ public class CreateChatActivity extends AppCompatActivity implements OnItemListe
 
     private void setTitle() {
         String title = getString(R.string.select_friends);
-        String subtitle = "";
+        String subtitle;
 
 
         int selected = adapter == null ? 0 : adapter.getSelectedCount();
 
         if (selected > 0) {
-            subtitle = String.format(getString(R.string.selected_count), selected);
+            subtitle = String.format(getString(R.string.selected_count), String.valueOf(selected));
         } else {
             subtitle = "";
         }
@@ -205,7 +200,7 @@ public class CreateChatActivity extends AppCompatActivity implements OnItemListe
         list = findViewById(R.id.list);
 
         LinearLayoutManager manager = new LinearLayoutManager(this);
-        manager.setOrientation(LinearLayoutManager.VERTICAL);
+        manager.setOrientation(RecyclerView.VERTICAL);
 
         list.setHasFixedSize(true);
         list.setLayoutManager(manager);
@@ -231,14 +226,9 @@ public class CreateChatActivity extends AppCompatActivity implements OnItemListe
 
         Collection<VKUser> values = items.values();
 
-        ArrayList<VKUser> users = new ArrayList<>();
-
-        for (VKUser u : values) {
-            users.add(u);
-        }
+        ArrayList<VKUser> users = new ArrayList<>(values);
 
         createChat(users);
-
     }
 
     private void createChat(ArrayList<VKUser> users) {

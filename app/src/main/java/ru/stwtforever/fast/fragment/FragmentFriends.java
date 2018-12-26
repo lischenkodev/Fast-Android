@@ -2,13 +2,14 @@ package ru.stwtforever.fast.fragment;
 
 import android.content.*;
 import android.os.*;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import android.view.*;
 import android.widget.*;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.OrientationHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import ru.stwtforever.fast.*;
@@ -27,7 +28,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import ru.stwtforever.fast.util.ViewUtils;
 
-public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, OnItemListener {
+public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemLongClickListener, RecyclerAdapter.OnItemClickListener {
 
     public FragmentFriends() {
     }
@@ -41,22 +42,18 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
 
     private boolean loading;
 
-
     @Override
     public void onRefresh() {
         loadFriends(0, 0);
     }
 
     @Override
-    public void OnItemClick(View v, int position) {
-        VKUser user = adapter.getValues().get(position);
-        if (user == null) return;
-        Toast.makeText(getActivity(), user.toString(), Toast.LENGTH_SHORT).show();
+    public void onItemClick(View v, int position) {
+
     }
 
     @Override
     public void onItemLongClick(View v, int position) {
-        return;
     }
 
     @Override
@@ -66,12 +63,12 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_friends, container, false);
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         tb = view.findViewById(R.id.tb);
         ViewUtils.applyToolbarStyles(tb);
 
@@ -85,7 +82,7 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
         refreshLayout.setColorSchemeColors(ThemeManager.getAccent());
         refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.getBackground());
 
-        LinearLayoutManager manager = new LinearLayoutManager(getActivity(), OrientationHelper.VERTICAL, false);
+        LinearLayoutManager manager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
         list.setHasFixedSize(true);
         list.setLayoutManager(manager);
 
@@ -127,11 +124,11 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
                 }
 
                 if (offset == 0) {
-                    CacheStorage.delete(DBHelper.FRIENDS_TABLE);
-                    CacheStorage.insert(DBHelper.FRIENDS_TABLE, users);
+                    CacheStorage.delete(DatabaseHelper.FRIENDS_TABLE);
+                    CacheStorage.insert(DatabaseHelper.FRIENDS_TABLE, users);
                 }
 
-                CacheStorage.insert(DBHelper.USERS_TABLE, users);
+                CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
             }
 
             @Override
@@ -157,7 +154,7 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
             return;
 
         if (offset != 0) {
-            adapter.add(users);
+            adapter.changeItems(users);
             adapter.notifyDataSetChanged();
             return;
         }
@@ -170,7 +167,8 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
 
         adapter = new FriendAdapter(this, users);
         list.setAdapter(adapter);
-        adapter.setListener(this);
+        adapter.setOnItemClickListener(this);
+        adapter.setOnItemLongClickListener(this);
     }
 
     public void openChat(int position) {

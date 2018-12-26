@@ -49,7 +49,7 @@ import ru.stwtforever.fast.concurrent.AsyncCallback;
 import ru.stwtforever.fast.concurrent.LowThread;
 import ru.stwtforever.fast.concurrent.ThreadExecutor;
 import ru.stwtforever.fast.db.CacheStorage;
-import ru.stwtforever.fast.db.DBHelper;
+import ru.stwtforever.fast.db.DatabaseHelper;
 import ru.stwtforever.fast.db.MemoryCache;
 import ru.stwtforever.fast.fragment.FragmentSettings;
 import ru.stwtforever.fast.helper.DialogHelper;
@@ -356,7 +356,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
         msg.text = text;
         msg.fromId = UserConfig.userId;
         msg.peerId = peerId;
-        msg.id = adapter.getItem(adapter.getMessagesCount() - 1).id + 1;
+        msg.id = adapter.getItem(adapter.getItemCount() - 1).id + 1;
         msg.date = Calendar.getInstance().getTimeInMillis();
         msg.out = true;
         msg.status = VKMessage.STATUS_SENDING;
@@ -386,7 +386,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
                 busy = false;
                 msg.status = VKMessage.STATUS_SENT;
                 adapter.getValues().remove(msg);
-                adapter.add(msg, true);
+                adapter.add(msg);
                 adapter.notifyDataSetChanged();
             }
 
@@ -715,7 +715,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
         } else {
             adapter = new MessageAdapter(this, messages, peerId);
             recyclerView.setAdapter(adapter);
-            recyclerView.smoothScrollToPosition(adapter.getMessagesCount());
+            recyclerView.smoothScrollToPosition(adapter.getItemCount());
         }
     }
 
@@ -822,7 +822,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
                     return;
                 }
 
-                CacheStorage.insert(DBHelper.USERS_TABLE, users);
+                CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
                 MemoryCache.update(users);
             }
 
@@ -851,9 +851,9 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
                 Collections.reverse(messages);
                 if (offset == 0) {
                     CacheStorage.deleteMessages(peerId);
-                    CacheStorage.insert(DBHelper.MESSAGES_TABLE, messages);
+                    CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, messages);
                     createAdapter(messages);
-                    recyclerView.smoothScrollToPosition(adapter.getMessagesCount());
+                    recyclerView.smoothScrollToPosition(adapter.getItemCount());
                 } else {
                     insertMessages(messages);
                 }
@@ -898,7 +898,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 
             @Override
             public void done() {
-                CacheStorage.insert(DBHelper.USERS_TABLE, users);
+                CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
                 getSupportActionBar().setSubtitle(getSubtitleStatus());
             }
 

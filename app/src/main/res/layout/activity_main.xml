@@ -14,56 +14,5 @@
 	<include
 		layout="@layout/toolbar_bottom" />
 
-	<ru.stwtforever.fast.view.WrappingSlidingDrawer
-		android:id="@+id/drawer"
-		android:layout_gravity="bottom"
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:content="@+id/content"
-		android:handle="@+id/handle"
-		android:focusable="false"
-		android:clickable="false"
-		android:orientation="vertical"
-		android:layout_marginBottom="56dp"
-		android:visibility="gone">
-
-		<Button
-			android:id="@+id/handle"
-			android:layout_height="0dp"
-			android:layout_width="0dp"/>
-
-		<LinearLayout
-			android:id="@+id/content"
-			android:focusable="false"
-			android:clickable="false"
-			android:background="#00000000"
-			android:layout_height="wrap_content"
-			android:layout_width="match_parent"
-			android:gravity="bottom">
-
-			<RelativeLayout
-				android:background="?android:windowBackground"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content">
-
-				<ListView
-					android:id="@+id/drawer_list"
-					android:dividerHeight="-1dp"
-					android:layout_marginTop="9dp"
-					android:layout_marginBottom="8dp"
-					android:layout_width="match_parent"
-					android:layout_height="wrap_content"/>
-
-				<View
-					android:background="?android:attr/dividerVertical"
-					android:layout_width="match_parent"
-					android:layout_height="1dp"/>
-
-			</RelativeLayout>
-
-		</LinearLayout>
-
-	</ru.stwtforever.fast.view.WrappingSlidingDrawer>
-
 </FrameLayout>
 

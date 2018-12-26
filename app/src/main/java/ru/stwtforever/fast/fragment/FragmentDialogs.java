@@ -3,13 +3,6 @@ package ru.stwtforever.fast.fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.Nullable;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.OrientationHelper;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,10 +13,17 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import ru.stwtforever.fast.CreateChatActivity;
 import ru.stwtforever.fast.MessagesActivity;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.adapter.DialogAdapter;
+import ru.stwtforever.fast.adapter.RecyclerAdapter;
 import ru.stwtforever.fast.api.UserConfig;
 import ru.stwtforever.fast.api.VKApi;
 import ru.stwtforever.fast.api.model.VKConversation;
@@ -31,32 +31,22 @@ import ru.stwtforever.fast.api.model.VKGroup;
 import ru.stwtforever.fast.api.model.VKMessage;
 import ru.stwtforever.fast.api.model.VKUser;
 import ru.stwtforever.fast.cls.BaseFragment;
-import ru.stwtforever.fast.cls.OnItemListener;
 import ru.stwtforever.fast.common.ThemeManager;
 import ru.stwtforever.fast.concurrent.AsyncCallback;
 import ru.stwtforever.fast.concurrent.ThreadExecutor;
 import ru.stwtforever.fast.db.CacheStorage;
-import ru.stwtforever.fast.db.DBHelper;
+import ru.stwtforever.fast.db.DatabaseHelper;
 import ru.stwtforever.fast.db.MemoryCache;
 import ru.stwtforever.fast.service.LongPollService;
 import ru.stwtforever.fast.util.ArrayUtil;
 import ru.stwtforever.fast.util.Utils;
 import ru.stwtforever.fast.util.ViewUtils;
 
-public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, OnItemListener {
+public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener {
 
     public FragmentDialogs() {
     }
 
-    @Override
-    public void OnItemClick(View v, int position) {
-        openChat(position);
-    }
-
-    @Override
-    public void onItemLongClick(View v, int position) {
-        showDialog(position);
-    }
 
     private static final int DIALOGS_COUNT = 60;
 
@@ -130,7 +120,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
         refreshLayout.setOnRefreshListener(this);
         refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.getBackground());
 
-        LinearLayoutManager manager = new LinearLayoutManager(getActivity(), OrientationHelper.VERTICAL, false);
+        LinearLayoutManager manager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
         list.setHasFixedSize(true);
         list.setLayoutManager(manager);
 
@@ -211,7 +201,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
             return;
         }
         if (offset != 0) {
-            adapter.add(messages);
+            adapter.changeItems(messages);
             adapter.notifyDataSetChanged();
             return;
         }
@@ -221,9 +211,10 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
             adapter.notifyDataSetChanged();
             return;
         }
-        adapter = new DialogAdapter(this, messages);
+        adapter = new DialogAdapter(getActivity(), messages);
         list.setAdapter(adapter);
-        adapter.setListener(this);
+        adapter.setOnItemClickListener(this);
+        adapter.setOnItemLongClickListener(this);
     }
 
     private void getCachedDialogs() {
@@ -254,8 +245,8 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
                 }
 
                 if (offset == 0) {
-                    CacheStorage.delete(DBHelper.DIALOGS_TABLE);
-                    CacheStorage.insert(DBHelper.DIALOGS_TABLE, messages);
+                    CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE);
+                    CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, messages);
                 }
 
                 ArrayList<VKUser> users = messages.get(0).profiles;
@@ -268,13 +259,13 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
                 }
 
                 if (!ArrayUtil.isEmpty(last_messages))
-                    CacheStorage.insert(DBHelper.MESSAGES_TABLE, last_messages);
+                    CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, last_messages);
 
                 if (!ArrayUtil.isEmpty(users))
-                    CacheStorage.insert(DBHelper.USERS_TABLE, users);
+                    CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
 
                 if (!ArrayUtil.isEmpty(groups))
-                    CacheStorage.insert(DBHelper.GROUPS_TABLE, messages.get(0).groups);
+                    CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, messages.get(0).groups);
             }
 
             @Override
@@ -312,6 +303,17 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
         }
 
         startActivity(intent);
+    }
+
+    @Override
+    public void onItemClick(View v, int position) {
+        openChat(position);
+    }
+
+
+    @Override
+    public void onItemLongClick(View v, int position) {
+        showDialog(position);
     }
 }
 

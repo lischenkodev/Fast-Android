@@ -21,8 +21,8 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.api.UserConfig;
@@ -31,28 +31,21 @@ import ru.stwtforever.fast.api.model.VKConversation;
 import ru.stwtforever.fast.api.model.VKGroup;
 import ru.stwtforever.fast.api.model.VKMessage;
 import ru.stwtforever.fast.api.model.VKUser;
-import ru.stwtforever.fast.cls.OnItemListener;
 import ru.stwtforever.fast.common.ThemeManager;
 import ru.stwtforever.fast.db.MemoryCache;
-import ru.stwtforever.fast.fragment.FragmentDialogs;
 import ru.stwtforever.fast.helper.FontHelper;
 import ru.stwtforever.fast.util.ArrayUtil;
 import ru.stwtforever.fast.util.Utils;
 
-public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAdapter.ViewHolder> {
+public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter.ViewHolder> {
 
-    private int position;
-    private RecyclerView list;
-    private LinearLayoutManager manager;
-
-    private OnItemListener listener;
-
-    public DialogAdapter(FragmentDialogs fr, ArrayList<VKConversation> dialogs) {
-        super(fr.getActivity(), dialogs);
-        list = fr.getList();
-        manager = (LinearLayoutManager) list.getLayoutManager();
-
+    public DialogAdapter(Context context, ArrayList<VKConversation> dialogs) {
+        super(context, dialogs);
         EventBus.getDefault().register(this);
+    }
+
+    public static Drawable getOnlineIndicator(Context context, VKUser user) {
+        return ContextCompat.getDrawable(context, R.drawable.ic_online_circle);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -76,7 +69,7 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
 
     private int searchUserPosition(int user_id) {
         int index = -1;
-        for (int i = 0; i < getMessagesCount(); i++) {
+        for (int i = 0; i < getItemCount(); i++) {
             VKConversation conversation = getItem(i);
             if (conversation.isUser() && conversation.last.peerId == user_id) {
                 index = i;
@@ -176,29 +169,92 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
         return -1;
     }
 
-    private void initListener(View v, final int position) {
-        v.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                listener.OnItemClick(v, position);
-            }
-        });
-        v.setOnLongClickListener(new View.OnLongClickListener() {
-
-            @Override
-            public boolean onLongClick(View v) {
-                listener.onItemLongClick(v, position);
-                return true;
-            }
-        });
+    @NonNull
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = inflater.inflate(R.layout.fragment_dialogs_list, parent, false);
+        return new ViewHolder(v);
     }
 
-    public void setListener(OnItemListener listener) {
-        this.listener = listener;
+    @Override
+    public void onBindViewHolder(@NonNull DialogAdapter.ViewHolder holder, int position) {
+        super.onBindViewHolder(holder, position);
+        holder.bind(position);
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    public String getTitle(VKConversation item, VKUser user, VKGroup group) {
+        if (item == null) return null;
+
+        if (item.isGroup()) {
+            if (group != null)
+                return TextUtils.isEmpty(group.name) ? "" : group.name;
+        } else if (item.isUser()) {
+            if (user != null)
+                return TextUtils.isEmpty(user.toString()) ? "" : user.toString();
+        } else {
+            return TextUtils.isEmpty(item.title) ? "" : item.title;
+        }
+
+        return "";
+    }
+
+    public String getPhoto(VKConversation item, VKUser user, VKGroup group) {
+        if (item == null) return null;
+
+        if (item.isUser()) {
+            if (user != null)
+                return user.photo_100;
+        } else if (item.isGroup()) {
+            if (group != null)
+                return group.photo_100;
+        } else {
+            return item.photo_100;
+        }
+
+        return "";
+    }
+
+    public VKUser searchUser(int id) {
+        VKUser user = MemoryCache.getUser(id);
+        if (user == null) {
+            user = VKUser.EMPTY;
+        }
+        return user;
+    }
+
+    public VKGroup searchGroup(int id) {
+        VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(id));
+        if (group == null) {
+            group = VKGroup.EMPTY;
+        }
+        return group;
+    }
+
+    public int searchMessageIndex(int peerId) {
+        for (int i = 0; i < getValues().size(); i++) {
+            VKConversation conv = getItem(i);
+            if (conv.last.peerId == peerId) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public VKConversation searchMessage(int id) {
+        for (VKConversation c : getValues()) {
+            if (c.last.id == id) {
+                return c;
+            }
+        }
+        return null;
+    }
+
+    public void destroy() {
+        getValues().clear();
+        EventBus.getDefault().unregister(this);
+    }
+
+    class ViewHolder extends RecyclerView.ViewHolder {
 
         ImageView avatar;
         ImageView avatar_small;
@@ -212,27 +268,21 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
 
         LinearLayout container;
 
-        DialogAdapter adapter;
-        Context context;
-
         Drawable p_user, p_users;
 
         int c_pushes_enabled;
         int c_pushes_disabled;
 
-        ViewHolder(Context context, DialogAdapter adapter, View v) {
+        ViewHolder(View v) {
             super(v);
-
-            this.context = context;
-            this.adapter = adapter;
 
             UserConfig.updateUser();
 
             c_pushes_enabled = ThemeManager.getAccent();
             c_pushes_disabled = ThemeManager.isDark() ? 0xff454545 : 0xffcccccc;
 
-            p_user = adapter.getDrawable(R.drawable.placeholder_user);
-            p_users = adapter.getDrawable(R.drawable.placeholder_users);
+            p_user = getDrawable(R.drawable.placeholder_user);
+            p_users = getDrawable(R.drawable.placeholder_users);
 
             avatar = v.findViewById(R.id.avatar);
             avatar_small = v.findViewById(R.id.avatar_small);
@@ -253,16 +303,16 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
             counter.setBackground(gd);
         }
 
-        public void bind(final int position) {
-            VKConversation item = adapter.getItem(position);
+        void bind(final int position) {
+            VKConversation item = getItem(position);
             if (item == null) return;
             VKMessage last = item.last;
             if (last == null) return;
-            VKGroup group = adapter.searchGroup(last.fromId);
-            VKGroup peerGroup = adapter.searchGroup(last.peerId);
+            VKGroup group = searchGroup(last.fromId);
+            VKGroup peerGroup = searchGroup(last.peerId);
 
-            VKUser user = adapter.searchUser(last.fromId);
-            VKUser peerUser = adapter.searchUser(last.peerId);
+            VKUser user = searchUser(last.fromId);
+            VKUser peerUser = searchUser(last.peerId);
 
             FontHelper.setFont(title, FontHelper.PS_REGULAR);
 
@@ -273,7 +323,7 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
 
             body.setText(last.text);
 
-            title.setText(adapter.getTitle(item, peerUser, peerGroup));
+            title.setText(getTitle(item, peerUser, peerGroup));
 
             avatar_small.setVisibility((!item.isChat() && !last.out) ? View.GONE : View.VISIBLE);
 
@@ -348,118 +398,5 @@ public class DialogAdapter extends BaseRecyclerAdapter<VKConversation, DialogAda
                 }
             }
         }
-    }
-
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = inflater.inflate(R.layout.fragment_dialogs_list, parent, false);
-        return new ViewHolder(context, this, v);
-    }
-
-    @Override
-    public void onBindViewHolder(DialogAdapter.ViewHolder holder, int position) {
-        this.position = position;
-        initListener(holder.itemView, position);
-        holder.bind(position);
-    }
-
-    public int getCurrentPosition() {
-        return position;
-    }
-
-    public int getMessagesCount() {
-        return getValues().size();
-    }
-
-    public void add(ArrayList<VKConversation> messages) {
-        this.getValues().addAll(messages);
-    }
-
-    public void remove(int position) {
-        getValues().remove(position);
-    }
-
-
-    public String getTitle(VKConversation item, VKUser user, VKGroup group) {
-        if (item == null) return null;
-
-        if (item.isGroup()) {
-            if (group != null)
-                return TextUtils.isEmpty(group.name) ? "" : group.name;
-        } else if (item.isUser()) {
-            if (user != null)
-                return TextUtils.isEmpty(user.toString()) ? "" : user.toString();
-        } else {
-            return TextUtils.isEmpty(item.title) ? "" : item.title;
-        }
-
-        return "";
-    }
-
-    public String getPhoto(VKConversation item, VKUser user, VKGroup group) {
-        if (item == null) return null;
-
-        if (item.isUser()) {
-            if (user != null)
-                return user.photo_100;
-        } else if (item.isGroup()) {
-            if (group != null)
-                return group.photo_100;
-        } else {
-            return item.photo_100;
-        }
-
-        return "";
-    }
-
-    public void changeItems(ArrayList<VKConversation> messages) {
-        if (!ArrayUtil.isEmpty(messages)) {
-            this.getValues().clear();
-            this.getValues().addAll(messages);
-        }
-    }
-
-    public VKUser searchUser(int id) {
-        VKUser user = MemoryCache.getUser(id);
-        if (user == null) {
-            user = VKUser.EMPTY;
-        }
-        return user;
-    }
-
-    public VKGroup searchGroup(int id) {
-        VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(id));
-        if (group == null) {
-            group = VKGroup.EMPTY;
-        }
-        return group;
-    }
-
-    public int searchMessageIndex(int peerId) {
-        for (int i = 0; i < getValues().size(); i++) {
-            VKConversation conv = getItem(i);
-            if (conv.last.peerId == peerId) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public VKConversation searchMessage(int id) {
-        for (VKConversation c : getValues()) {
-            if (c.last.id == id) {
-                return c;
-            }
-        }
-        return null;
-    }
-
-    public void destroy() {
-        getValues().clear();
-        EventBus.getDefault().unregister(this);
-    }
-
-    public static Drawable getOnlineIndicator(Context context, VKUser user) {
-        return ContextCompat.getDrawable(context, R.drawable.ic_online_circle);
     }
 }

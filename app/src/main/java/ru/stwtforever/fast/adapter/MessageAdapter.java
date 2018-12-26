@@ -10,13 +10,10 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
-
-import androidx.recyclerview.widget.RecyclerView;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -37,6 +34,8 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import ru.stwtforever.fast.MessagesActivity;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.api.VKUtils;
@@ -64,243 +63,21 @@ import ru.stwtforever.fast.util.Utils;
 import ru.stwtforever.fast.view.BoundedLinearLayout;
 import ru.stwtforever.fast.view.CircleImageView;
 
-public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapter.ViewHolder> {
+public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.ViewHolder> {
 
     private int peerId;
 
-    private LayoutInflater inflater;
-
     private AttachmentInflater attacher;
-
     private DisplayMetrics metrics;
 
     public MessageAdapter(Context context, ArrayList<VKMessage> msgs, int peerId) {
         super(context, msgs);
 
         this.peerId = peerId;
-
-        this.inflater = LayoutInflater.from(context);
-
-        this.metrics = context.getResources().getDisplayMetrics();
         this.attacher = new AttachmentInflater();
+        this.metrics = context.getResources().getDisplayMetrics();
 
         EventBus.getDefault().register(this);
-    }
-
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-
-        CircleImageView avatar;
-        ImageView read;
-
-        TextView text;
-        TextView time;
-
-        LinearLayout main_container;
-
-        BoundedLinearLayout bubble;
-        LinearLayout attachments;
-        LinearLayout photos;
-        LinearLayout service_container;
-        LinearLayout messageContainer;
-
-        MessageAdapter adapter;
-        Context context;
-        DisplayMetrics metrics;
-        Space space;
-
-        Drawable circle, sending, error, placeholder;
-
-        public ViewHolder(Context context, MessageAdapter adapter, View v, DisplayMetrics metrics) {
-            super(v);
-            this.context = context;
-            this.adapter = adapter;
-            this.metrics = metrics;
-
-            space = v.findViewById(R.id.space);
-            text = v.findViewById(R.id.text);
-            time = v.findViewById(R.id.time);
-
-            placeholder = adapter.getDrawable(R.drawable.placeholder_user);
-
-            avatar = v.findViewById(R.id.avatar);
-            read = v.findViewById(R.id.read_indicator);
-
-            GradientDrawable circ = new GradientDrawable();
-            circ.setCornerRadius(100);
-            circ.setColor(ThemeManager.getAccent());
-
-            circle = circ;
-            sending = adapter.getDrawable(R.drawable.ic_vector_access_time);
-            error = adapter.getDrawable(R.drawable.ic_msg_error);
-
-            messageContainer = v.findViewById(R.id.messageContainer);
-            service_container = v.findViewById(R.id.service_container);
-            main_container = v.findViewById(R.id.root);
-            bubble = v.findViewById(R.id.bubble);
-            attachments = v.findViewById(R.id.attachments);
-            photos = v.findViewById(R.id.photos);
-        }
-
-        public void bind(final int position) {
-            final VKMessage item = adapter.getItem(position);
-            final VKUser user = adapter.searchUser(item.fromId);
-            final VKGroup group = adapter.searchGroup(VKGroup.toGroupId(item.fromId));
-
-            int editColor = 0;
-
-            if (item.isSelected()) {
-                editColor = ColorUtil.alphaColor(ThemeManager.getAccent(), 0.6f);
-            } else {
-                editColor = 0;
-            }
-
-            if (item.status == VKMessage.STATUS_SENDING) {
-                read.setImageDrawable(sending);
-            } else if (item.status == VKMessage.STATUS_SENT) {
-                read.setImageDrawable(circle);
-            } else {
-                read.setImageDrawable(error);
-            }
-
-            read.setVisibility(item.out ? item.read ? View.GONE : View.GONE : View.GONE);
-            space.setVisibility(item.isChat() ? View.VISIBLE : View.GONE);
-
-            main_container.setBackgroundColor(editColor);
-
-            String s = item.update_time > 0 ? adapter.getString(R.string.edited) + ", " : "";
-            String time_ = s + Utils.dateFormatter.format(item.isAdded ? item.date : item.date * 1000L);
-
-            time.setText(time_);
-
-            bubble.setVisibility(View.VISIBLE);
-
-            String avatar_link = null;
-
-            if (item.isFromUser()) {
-                avatar_link = user.photo_100;
-            } else if (item.isFromGroup()) {
-                avatar_link = group.photo_100;
-            }
-
-            if (TextUtils.isEmpty(avatar_link)) {
-                avatar.setImageDrawable(placeholder);
-            } else {
-                Picasso.get()
-                        .load(avatar_link)
-                        .priority(Picasso.Priority.HIGH)
-                        .placeholder(placeholder)
-                        .into(avatar);
-            }
-
-            avatar.setOnLongClickListener(new View.OnLongClickListener() {
-
-                @Override
-                public boolean onLongClick(View p1) {
-                    adapter.onAvatarLongClick(position);
-                    return true;
-                }
-            });
-
-            time.setGravity(item.out ? Gravity.END : Gravity.START);
-            messageContainer.setGravity(item.out ? Gravity.END : Gravity.START);
-
-            if (TextUtils.isEmpty(item.text)) {
-                text.setText("");
-                text.setVisibility(View.GONE);
-            } else {
-                text.setVisibility(View.VISIBLE);
-                text.setText(item.text.trim());
-            }
-
-            int textColor, timeColor, bgColor, linkColor;
-
-            if (item.out) {
-                textColor = Color.WHITE;
-                bgColor = ThemeManager.getAccent();
-                linkColor = Color.WHITE;
-            } else {
-                linkColor = ThemeManager.getAccent();
-                if (ThemeManager.isDark()) {
-                    textColor = 0xffeeeeee;
-                    bgColor = 0xff404040;
-                } else {
-                    textColor = 0xff1d1d1d;
-                    bgColor = Color.WHITE;
-                }
-            }
-
-            timeColor = ThemeManager.isDark() ? 0xffdddddd : 0xff404040;
-
-            text.setTextColor(textColor);
-            text.setLinkTextColor(linkColor);
-            time.setTextColor(timeColor);
-
-            bubble.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 3));
-
-            Drawable bg = context.getResources().getDrawable(R.drawable.msg_in_bg);
-
-
-            if (!TextUtils.isEmpty(item.actionType)) {
-                if (avatar.getVisibility() != View.GONE)
-                    avatar.setVisibility(View.GONE);
-
-                if (messageContainer.getVisibility() != View.GONE)
-                    messageContainer.setVisibility(View.GONE);
-
-                if (time.getVisibility() != View.GONE)
-                    time.setVisibility(View.GONE);
-
-                if (service_container.getVisibility() != View.VISIBLE)
-                    service_container.setVisibility(View.VISIBLE);
-                service_container.removeAllViews();
-
-                adapter.applyActionStyle(item, service_container);
-
-                bg.setTint(Color.TRANSPARENT);
-            } else {
-                if (avatar.getVisibility() != View.VISIBLE)
-                    avatar.setVisibility(View.VISIBLE);
-
-                if (time.getVisibility() != View.VISIBLE)
-                    time.setVisibility(View.VISIBLE);
-
-                if (messageContainer.getVisibility() != View.VISIBLE)
-                    messageContainer.setVisibility(View.VISIBLE);
-
-                if (service_container.getVisibility() != View.GONE)
-                    service_container.setVisibility(View.GONE);
-                bg.setColorFilter(bgColor, PorterDuff.Mode.MULTIPLY);
-            }
-
-            bubble.setBackground(bg);
-
-            if (!ArrayUtil.isEmpty(item.fwd_messages) || !ArrayUtil.isEmpty(item.attachments)) {
-                attachments.setVisibility(View.VISIBLE);
-                attachments.removeAllViews();
-
-                photos.setVisibility(View.VISIBLE);
-                photos.removeAllViews();
-            } else {
-                attachments.setVisibility(View.GONE);
-                photos.setVisibility(View.GONE);
-            }
-
-            if (!ArrayUtil.isEmpty(item.attachments)) {
-                adapter.showAttachments(item, this);
-            }
-
-            if (!ArrayUtil.isEmpty(item.fwd_messages)) {
-                adapter.showForwardedMessages(item, attachments);
-            }
-
-            if (!item.out && item.isChat()) {
-                avatar.setVisibility(View.VISIBLE);
-            } else {
-                avatar.setVisibility(View.GONE);
-            }
-
-            adapter.setOnClick(itemView, position, item);
-        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -341,11 +118,11 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
         if (msg.peerId != peerId) return;
         if (isExist(msg.id)) return;
 
-        add(msg, true);
+        add(msg);
 
         MessagesActivity root = (MessagesActivity) context;
         root.checkMessagesCount();
-        root.getRecycler().smoothScrollToPosition(getMessagesCount());
+        root.getRecycler().smoothScrollToPosition(getItemCount() - 1);
     }
 
     private boolean isExist(long id) {
@@ -378,7 +155,7 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
         return getValues().get(position).isSelected();
     }
 
-    public VKMessage searchMessage(Integer id) {
+    private VKMessage searchMessage(Integer id) {
         for (VKMessage m : getValues()) {
             if (m.id == id)
                 return m;
@@ -387,7 +164,7 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
         return null;
     }
 
-    public int searchPosition(VKMessage m) {
+    private int searchPosition(VKMessage m) {
         int index = -1;
 
         for (int i = 0; i < getValues().size(); i++) {
@@ -401,13 +178,13 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
     }
 
     @Override
-    public MessageAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public MessageAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = inflater.inflate(R.layout.activity_messages_list, parent, false);
-        return new ViewHolder(context, MessageAdapter.this, v, metrics);
+        return new ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(MessageAdapter.ViewHolder holder, final int position) {
+    public void onBindViewHolder(@NonNull MessageAdapter.ViewHolder holder, final int position) {
         holder.bind(position);
     }
 
@@ -493,6 +270,243 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
             } else {
                 attacher.empty(item, parent, getString(R.string.unknown));
             }
+        }
+    }
+
+    private void onAvatarLongClick(int position) {
+        VKUser user = CacheStorage.getUser(getValues().get(position).fromId);
+        if (user == null) return;
+
+        Toast.makeText(context, user.toString(), Toast.LENGTH_SHORT).show();
+    }
+
+
+    public void change(VKMessage message) {
+        for (int i = 0; i < getValues().size(); i++) {
+            if (getValues().get(i).date == message.date) {
+                notifyItemChanged(i);
+                return;
+            }
+        }
+    }
+
+    public void destroy() {
+        getValues().clear();
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    public int getItemCount() {
+        return super.getItemCount();
+    }
+
+    class ViewHolder extends RecyclerView.ViewHolder {
+
+        CircleImageView avatar;
+        ImageView read;
+
+        TextView text;
+        TextView time;
+
+        LinearLayout main_container;
+
+        BoundedLinearLayout bubble;
+        LinearLayout attachments;
+        LinearLayout photos;
+        LinearLayout service_container;
+        LinearLayout messageContainer;
+
+        Space space;
+
+        Drawable circle, sending, error, placeholder;
+
+        ViewHolder(View v) {
+            super(v);
+
+            space = v.findViewById(R.id.space);
+            text = v.findViewById(R.id.text);
+            time = v.findViewById(R.id.time);
+
+            placeholder = getDrawable(R.drawable.placeholder_user);
+
+            avatar = v.findViewById(R.id.avatar);
+            read = v.findViewById(R.id.read_indicator);
+
+            GradientDrawable circ = new GradientDrawable();
+            circ.setCornerRadius(100);
+            circ.setColor(ThemeManager.getAccent());
+
+            circle = circ;
+            sending = getDrawable(R.drawable.ic_vector_access_time);
+            error = getDrawable(R.drawable.ic_msg_error);
+
+            messageContainer = v.findViewById(R.id.messageContainer);
+            service_container = v.findViewById(R.id.service_container);
+            main_container = v.findViewById(R.id.root);
+            bubble = v.findViewById(R.id.bubble);
+            attachments = v.findViewById(R.id.attachments);
+            photos = v.findViewById(R.id.photos);
+        }
+
+        void bind(final int position) {
+            final VKMessage item = getItem(position);
+            final VKUser user = searchUser(item.fromId);
+            final VKGroup group = searchGroup(VKGroup.toGroupId(item.fromId));
+
+            int editColor;
+
+            if (item.isSelected()) {
+                editColor = ColorUtil.alphaColor(ThemeManager.getAccent(), 0.6f);
+            } else {
+                editColor = 0;
+            }
+
+            if (item.status == VKMessage.STATUS_SENDING) {
+                read.setImageDrawable(sending);
+            } else if (item.status == VKMessage.STATUS_SENT) {
+                read.setImageDrawable(circle);
+            } else {
+                read.setImageDrawable(error);
+            }
+
+            read.setVisibility(item.out ? item.read ? View.GONE : View.GONE : View.GONE);
+            space.setVisibility(item.isChat() ? View.VISIBLE : View.GONE);
+
+            main_container.setBackgroundColor(editColor);
+
+            String s = item.update_time > 0 ? getString(R.string.edited) + ", " : "";
+            String time_ = s + Utils.dateFormatter.format(item.isAdded ? item.date : item.date * 1000L);
+
+            time.setText(time_);
+
+            bubble.setVisibility(View.VISIBLE);
+
+            String avatar_link = null;
+
+            if (item.isFromUser()) {
+                avatar_link = user.photo_100;
+            } else if (item.isFromGroup()) {
+                avatar_link = group.photo_100;
+            }
+
+            if (TextUtils.isEmpty(avatar_link)) {
+                avatar.setImageDrawable(placeholder);
+            } else {
+                Picasso.get()
+                        .load(avatar_link)
+                        .priority(Picasso.Priority.HIGH)
+                        .placeholder(placeholder)
+                        .into(avatar);
+            }
+
+            avatar.setOnLongClickListener(new View.OnLongClickListener() {
+
+                @Override
+                public boolean onLongClick(View p1) {
+                    onAvatarLongClick(position);
+                    return true;
+                }
+            });
+
+            time.setGravity(item.out ? Gravity.END : Gravity.START);
+            messageContainer.setGravity(item.out ? Gravity.END : Gravity.START);
+
+            if (TextUtils.isEmpty(item.text)) {
+                text.setText("");
+                text.setVisibility(View.GONE);
+            } else {
+                text.setVisibility(View.VISIBLE);
+                text.setText(item.text.trim());
+            }
+
+            int textColor, timeColor, bgColor, linkColor;
+
+            if (item.out) {
+                textColor = Color.WHITE;
+                bgColor = ThemeManager.getAccent();
+                linkColor = Color.WHITE;
+            } else {
+                linkColor = ThemeManager.getAccent();
+                if (ThemeManager.isDark()) {
+                    textColor = 0xffeeeeee;
+                    bgColor = 0xff404040;
+                } else {
+                    textColor = 0xff1d1d1d;
+                    bgColor = Color.WHITE;
+                }
+            }
+
+            timeColor = ThemeManager.isDark() ? 0xffdddddd : 0xff404040;
+
+            text.setTextColor(textColor);
+            text.setLinkTextColor(linkColor);
+            time.setTextColor(timeColor);
+
+            bubble.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 3));
+
+            Drawable bg = context.getResources().getDrawable(R.drawable.msg_in_bg);
+
+
+            if (!TextUtils.isEmpty(item.actionType)) {
+                if (avatar.getVisibility() != View.GONE)
+                    avatar.setVisibility(View.GONE);
+
+                if (messageContainer.getVisibility() != View.GONE)
+                    messageContainer.setVisibility(View.GONE);
+
+                if (time.getVisibility() != View.GONE)
+                    time.setVisibility(View.GONE);
+
+                if (service_container.getVisibility() != View.VISIBLE)
+                    service_container.setVisibility(View.VISIBLE);
+                service_container.removeAllViews();
+
+                applyActionStyle(item, service_container);
+
+                bg.setTint(Color.TRANSPARENT);
+            } else {
+                if (avatar.getVisibility() != View.VISIBLE)
+                    avatar.setVisibility(View.VISIBLE);
+
+                if (time.getVisibility() != View.VISIBLE)
+                    time.setVisibility(View.VISIBLE);
+
+                if (messageContainer.getVisibility() != View.VISIBLE)
+                    messageContainer.setVisibility(View.VISIBLE);
+
+                if (service_container.getVisibility() != View.GONE)
+                    service_container.setVisibility(View.GONE);
+                bg.setColorFilter(bgColor, PorterDuff.Mode.MULTIPLY);
+            }
+
+            bubble.setBackground(bg);
+
+            if (!ArrayUtil.isEmpty(item.fwd_messages) || !ArrayUtil.isEmpty(item.attachments)) {
+                attachments.setVisibility(View.VISIBLE);
+                attachments.removeAllViews();
+
+                photos.setVisibility(View.VISIBLE);
+                photos.removeAllViews();
+            } else {
+                attachments.setVisibility(View.GONE);
+                photos.setVisibility(View.GONE);
+            }
+
+            if (!ArrayUtil.isEmpty(item.attachments)) {
+                showAttachments(item, this);
+            }
+
+            if (!ArrayUtil.isEmpty(item.fwd_messages)) {
+                showForwardedMessages(item, attachments);
+            }
+
+            if (!item.out && item.isChat()) {
+                avatar.setVisibility(View.VISIBLE);
+            } else {
+                avatar.setVisibility(View.GONE);
+            }
+
+            setOnClick(itemView, position, item);
         }
     }
 
@@ -697,7 +711,7 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
             parent.addView(v);
         }
 
-        public void voice(VKMessage item, ViewGroup parent, VKVoice source) {
+        void voice(VKMessage item, ViewGroup parent, VKVoice source) {
             View v = inflater.inflate(R.layout.msg_attach_audio, parent, false);
 
             TextView title = v.findViewById(R.id.audioTitle);
@@ -950,55 +964,5 @@ public class MessageAdapter extends BaseRecyclerAdapter<VKMessage, MessageAdapte
                 }
             });
         }
-    }
-
-    private void onAvatarLongClick(int position) {
-        VKUser user = CacheStorage.getUser(getValues().get(position).fromId);
-        if (user == null) return;
-
-        Toast.makeText(context, user.toString(), Toast.LENGTH_SHORT).show();
-    }
-
-    public int getMessagesCount() {
-        return getValues().size();
-    }
-
-    public void changeItems(ArrayList<VKMessage> messages) {
-        if (!ArrayUtil.isEmpty(messages)) {
-            this.getValues().clear();
-            this.getValues().addAll(messages);
-        }
-    }
-
-    public void add(VKMessage message, boolean anim) {
-        getValues().add(message);
-        if (anim) {
-            notifyItemInserted(getValues().size() - 1);
-        } else {
-            notifyDataSetChanged();
-        }
-    }
-
-    public void insert(ArrayList<VKMessage> messages) {
-        this.getValues().addAll(0, messages);
-    }
-
-    public void change(VKMessage message) {
-        for (int i = 0; i < getValues().size(); i++) {
-            if (getValues().get(i).date == message.date) {
-                notifyItemChanged(i);
-                return;
-            }
-        }
-    }
-
-    public void destroy() {
-        getValues().clear();
-        EventBus.getDefault().unregister(this);
-    }
-
-    @Override
-    public int getItemCount() {
-        return super.getItemCount();
     }
 }

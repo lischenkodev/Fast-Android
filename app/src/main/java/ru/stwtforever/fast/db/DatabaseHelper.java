@@ -4,7 +4,7 @@ import android.database.sqlite.*;
 import android.util.*;
 import ru.stwtforever.fast.common.*;
 
-public class DBHelper extends SQLiteOpenHelper {
+public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String LOG_TAG = "Fast DB";
 
 	//last_db_change date = 19.11.18
@@ -261,17 +261,17 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String SQL_DElETE_STATS_MESSAGES = "DROP TABLE IF EXISTS " + STATS_MESSAGES_TABLE;
     private static final String SQL_DELETE_FAILED_MESSAGES = "DROP TABLE IF EXISTS " + FAILED_MESSAGES_TABLE;
 
-    private static DBHelper instance;
+    private static DatabaseHelper instance;
 
-    public synchronized static DBHelper getInstance() {
+    public synchronized static DatabaseHelper getInstance() {
         if (instance == null) {
-            instance = new DBHelper();
+            instance = new DatabaseHelper();
         }
 
         return instance;
     }
 
-    private DBHelper() {
+    private DatabaseHelper() {
         super(AppGlobal.context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 

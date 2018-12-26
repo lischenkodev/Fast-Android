@@ -1,76 +1,51 @@
 package ru.stwtforever.fast.adapter;
 
-import android.graphics.*;
-import android.graphics.drawable.*;
-import android.text.*;
-import android.view.*;
-import android.widget.*;
+import android.content.Context;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.TextView;
 
-import com.squareup.picasso.*;
+import com.squareup.picasso.Picasso;
 
-import java.util.*;
+import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
 import ru.stwtforever.fast.R;
-import ru.stwtforever.fast.api.model.*;
-import ru.stwtforever.fast.cls.*;
-import ru.stwtforever.fast.fragment.*;
-import ru.stwtforever.fast.util.*;
-import ru.stwtforever.fast.view.*;
-
-import androidx.appcompat.widget.PopupMenu;
-
+import ru.stwtforever.fast.api.model.VKUser;
+import ru.stwtforever.fast.fragment.FragmentFriends;
 import ru.stwtforever.fast.util.Utils;
+import ru.stwtforever.fast.view.CircleImageView;
 
-public class FriendAdapter extends BaseRecyclerAdapter<VKUser, FriendAdapter.ViewHolder> {
-
-    private int position;
+public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHolder> {
 
     private FragmentFriends fragment;
 
-    private OnItemListener listener;
-
-    public FriendAdapter(FragmentFriends fragment, ArrayList<VKUser> friends) {
-        super(fragment.getActivity(), friends);
-        this.fragment = fragment;
-    }
-
-    private void initListener(View v, final int position) {
-        v.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                listener.OnItemClick(v, position);
-            }
-        });
-        v.setOnLongClickListener(new View.OnLongClickListener() {
-
-            @Override
-            public boolean onLongClick(View v) {
-                listener.onItemLongClick(v, position);
-                return true;
-            }
-        });
-    }
-
-    public void setListener(OnItemListener listener) {
-        this.listener = listener;
+    public FriendAdapter(FragmentFriends context, ArrayList<VKUser> friends) {
+        super(context.getContext(), friends);
+        this.fragment = context;
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = inflater.inflate(R.layout.fragment_friends_list, parent, false);
-        return new ViewHolder(fragment, FriendAdapter.this, v);
+        return new ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, final int position) {
-        this.position = position;
-        initListener(holder.itemView, position);
+    public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
+        super.onBindViewHolder(holder, position);
         holder.bind(position);
     }
 
-    private void showFuncsDialog(final int position, View v) {
+    private void showDialog(final int position, View v) {
         PopupMenu m = new PopupMenu(context, v);
         m.inflate(R.menu.fragment_friends_funcs);
         m.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
@@ -89,30 +64,7 @@ public class FriendAdapter extends BaseRecyclerAdapter<VKUser, FriendAdapter.Vie
         m.show();
     }
 
-    public int getPosition() {
-        return position;
-    }
-
-    public int getFriendsSize() {
-        return getValues().size();
-    }
-
-    public void add(ArrayList<VKUser> friends) {
-        this.getValues().addAll(friends);
-    }
-
-    public void remove(int position) {
-        getValues().remove(position);
-    }
-
-    public void changeItems(ArrayList<VKUser> friends) {
-        if (!ArrayUtil.isEmpty(friends)) {
-            this.getValues().clear();
-            this.getValues().addAll(friends);
-        }
-    }
-
-    public static class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder {
 
         CircleImageView avatar;
         CircleImageView online;
@@ -121,20 +73,15 @@ public class FriendAdapter extends BaseRecyclerAdapter<VKUser, FriendAdapter.Vie
         TextView lastSeen;
 
         ImageButton message;
-        ImageButton funcs;
+        ImageButton functions;
 
-        FriendAdapter adapter;
-        FragmentFriends ff;
 
         Drawable placeholder;
 
-        ViewHolder(FragmentFriends ff, FriendAdapter adapter, View v) {
+        ViewHolder(View v) {
             super(v);
 
-            this.ff = ff;
-            this.adapter = adapter;
-
-            placeholder = adapter.getDrawable(R.drawable.placeholder_user);
+            placeholder = getDrawable(R.drawable.placeholder_user);
 
             avatar = v.findViewById(R.id.avatar);
             online = v.findViewById(R.id.online);
@@ -143,30 +90,28 @@ public class FriendAdapter extends BaseRecyclerAdapter<VKUser, FriendAdapter.Vie
             name = v.findViewById(R.id.name);
 
             message = v.findViewById(R.id.message);
-            funcs = v.findViewById(R.id.funcs);
+            functions = v.findViewById(R.id.funcs);
         }
 
-        public void bind(final int position) {
+        void bind(final int position) {
             message.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
-                    ff.openChat(position);
+                    fragment.openChat(position);
                 }
-
             });
 
-
-            funcs.setOnClickListener(new View.OnClickListener() {
+            functions.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
-                    adapter.showFuncsDialog(position, v);
+                    showDialog(position, v);
                 }
 
             });
 
-            VKUser user = adapter.getItem(position);
+            VKUser user = getItem(position);
 
             name.setText(user.toString());
 
@@ -178,7 +123,7 @@ public class FriendAdapter extends BaseRecyclerAdapter<VKUser, FriendAdapter.Vie
                 online.setVisibility(View.GONE);
             }
 
-            String seen_text = adapter.context.getString(user.sex == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w);
+            String seen_text = getString(user.sex == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w);
 
             String seen = String.format(seen_text, Utils.dateFormatter.format(user.last_seen * 1000));
 

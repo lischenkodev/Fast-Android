@@ -3,7 +3,6 @@ package ru.stwtforever.fast.adapter;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import androidx.recyclerview.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,19 +13,32 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.ShowCreateChatActivity;
 import ru.stwtforever.fast.api.UserConfig;
 import ru.stwtforever.fast.api.model.VKUser;
 import ru.stwtforever.fast.view.CircleImageView;
 
-public class ShowCreateAdapter extends BaseRecyclerAdapter<VKUser, ShowCreateAdapter.ViewHolder> {
+public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter.ViewHolder> {
 
     public ShowCreateAdapter(Context context, ArrayList<VKUser> users) {
         super(context, users);
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = inflater.inflate(R.layout.activity_create_show_list, parent, false);
+        return new ViewHolder(v);
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull ShowCreateAdapter.ViewHolder holder, int position) {
+        holder.bind(position);
+    }
+
+    class ViewHolder extends RecyclerView.ViewHolder {
 
         CircleImageView avatar;
         CircleImageView online;
@@ -36,14 +48,8 @@ public class ShowCreateAdapter extends BaseRecyclerAdapter<VKUser, ShowCreateAda
         TextView name;
         TextView invited_by;
 
-        Context context;
-        ShowCreateAdapter adapter;
-
-        public ViewHolder(Context context, ShowCreateAdapter adapter, View v) {
+        ViewHolder(View v) {
             super(v);
-            this.context = context;
-            this.adapter = adapter;
-
             remove = v.findViewById(R.id.remove);
 
             avatar = v.findViewById(R.id.avatar);
@@ -53,14 +59,14 @@ public class ShowCreateAdapter extends BaseRecyclerAdapter<VKUser, ShowCreateAda
             invited_by = v.findViewById(R.id.last_seen);
         }
 
-        public void bind(final int position) {
-            VKUser user = adapter.getItem(position);
+        void bind(final int position) {
+            VKUser user = getItem(position);
 
             name.setText(user.toString());
 
             online.setVisibility(user.online ? View.VISIBLE : View.GONE);
 
-            String text = String.format(adapter.getString(R.string.invited_by), UserConfig.user.toString());
+            String text = String.format(getString(R.string.invited_by), UserConfig.user.toString());
             invited_by.setText(text);
 
             if (TextUtils.isEmpty(user.photo_100)) {
@@ -76,10 +82,10 @@ public class ShowCreateAdapter extends BaseRecyclerAdapter<VKUser, ShowCreateAda
 
                 @Override
                 public void onClick(View p1) {
-                    if (adapter.getValues().size() >= 2) {
-                        adapter.getValues().remove(position);
-                        adapter.notifyItemRemoved(position);
-                        adapter.notifyItemRangeChanged(0, adapter.getValues().size());
+                    if (getValues().size() >= 2) {
+                        remove(position);
+                        notifyItemRemoved(position);
+                        notifyItemRangeChanged(0, getItemCount(), getItem(getItemCount() - 1));
                     } else {
                         ((ShowCreateChatActivity) context).finish();
                     }
@@ -87,16 +93,5 @@ public class ShowCreateAdapter extends BaseRecyclerAdapter<VKUser, ShowCreateAda
 
             });
         }
-    }
-
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = inflater.inflate(R.layout.activity_create_show_list, parent, false);
-        return new ViewHolder(context, this, v);
-    }
-
-    @Override
-    public void onBindViewHolder(ShowCreateAdapter.ViewHolder holder, int position) {
-        holder.bind(position);
     }
 }

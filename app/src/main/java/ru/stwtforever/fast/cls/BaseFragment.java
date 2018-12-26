@@ -5,7 +5,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public abstract class BaseFragment extends Fragment {
 	
-	protected CharSequence title;
+	protected CharSequence title = "";
 	private RecyclerView list;
 	
 	public BaseFragment(String title) {
@@ -13,8 +13,6 @@ public abstract class BaseFragment extends Fragment {
 	}
 	
 	public BaseFragment() {
-		this.title = "";
-		this.list = null;
 	}
 	
 	protected CharSequence getTitle() {

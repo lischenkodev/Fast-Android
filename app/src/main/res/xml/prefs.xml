@@ -42,10 +42,6 @@
 		<androidx.preference.PreferenceScreen
 			android:title="@string/about_app"
 			android:key="about" />
-		
-		<androidx.preference.PreferenceScreen
-			android:title="@string/show_exceptions"
-			android:key="exceptions" />
 
 	</androidx.preference.PreferenceCategory>
 
@@ -61,20 +57,6 @@
 		<androidx.preference.PreferenceScreen
 			android:title="@string/check_updates"
 			android:key="check_updates" />
-
-	</androidx.preference.PreferenceCategory>
-
-	<androidx.preference.PreferenceCategory
-        android:key="debug"
-		android:title="@string/debug">
-
-		<androidx.preference.PreferenceScreen
-			android:title="@string/custom_error"
-			android:key="do_error" />
-		
-		<androidx.preference.PreferenceScreen
-			android:title="@string/custom_exception"
-			android:key="do_exception" />
 
 	</androidx.preference.PreferenceCategory>
 </androidx.preference.PreferenceScreen>

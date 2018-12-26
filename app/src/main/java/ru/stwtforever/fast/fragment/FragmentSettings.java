@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -18,16 +17,12 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import ru.stwtforever.fast.MainActivity;
 import ru.stwtforever.fast.R;
-import ru.stwtforever.fast.adapter.ExceptionAdapter;
 import ru.stwtforever.fast.api.UserConfig;
 import ru.stwtforever.fast.api.model.VKUser;
 import ru.stwtforever.fast.common.AppGlobal;
 import ru.stwtforever.fast.common.OTAManager;
 import ru.stwtforever.fast.common.ThemeManager;
-import ru.stwtforever.fast.concurrent.AsyncCallback;
-import ru.stwtforever.fast.concurrent.ThreadExecutor;
 import ru.stwtforever.fast.db.CacheStorage;
-import ru.stwtforever.fast.db.DBHelper;
 import ru.stwtforever.fast.helper.DialogHelper;
 import ru.stwtforever.fast.helper.PermissionHelper;
 import ru.stwtforever.fast.util.ArrayUtil;
@@ -40,19 +35,15 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
     public FragmentSettings() {
     }
 
-    private ExceptionAdapter adapter;
 
     private ArrayList<FException> exceptions;
 
-    private Preference p_exceptions, exception, dark_theme, ota, hide_typing, error, template, about, updates;
+    private Preference p_exceptions, dark_theme, ota, hide_typing, template, about, updates;
 
-    public static final String KEY_EXCEPTIONS = "exceptions";
     public static final String KEY_DARK_STYLE = "dark_style";
     public static final String KEY_MESSAGE_TEMPLATE = "template";
     public static final String KEY_ABOUT = "about";
     public static final String KEY_UPDATES = "check_updates";
-    public static final String KEY_MAKE_ERROR = "do_error";
-    public static final String KEY_MAKE_EXCEPTION = "do_exception";
     public static final String KEY_HIDE_TYPING = "hide_typing";
     public static final String KEY_ENABLE_OTA = "ota";
 
@@ -68,18 +59,13 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
         UserConfig.updateUser();
         setPreferencesFromResource(R.xml.prefs, rootKey);
 
-        exception = findPreference(KEY_MAKE_EXCEPTION);
-        p_exceptions = findPreference(KEY_EXCEPTIONS);
         hide_typing = findPreference(KEY_HIDE_TYPING);
-        error = findPreference(KEY_MAKE_ERROR);
         template = findPreference(KEY_MESSAGE_TEMPLATE);
         dark_theme = findPreference(KEY_DARK_STYLE);
         about = findPreference(KEY_ABOUT);
         updates = findPreference(KEY_UPDATES);
         ota = findPreference(KEY_ENABLE_OTA);
 
-        error.setOnPreferenceClickListener(this);
-        exception.setOnPreferenceClickListener(this);
         updates.setOnPreferenceClickListener(this);
         about.setOnPreferenceClickListener(this);
         p_exceptions.setOnPreferenceClickListener(this);
@@ -120,27 +106,6 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
     @Override
     public boolean onPreferenceClick(Preference pref) {
         switch (pref.getKey()) {
-            case KEY_EXCEPTIONS:
-                showExceptionsDialog();
-                break;
-            case KEY_MAKE_ERROR:
-                DialogHelper.showConfirmDialog(getActivity(), getString(R.string.are_you_sure), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        makeError();
-                    }
-                }, null, true);
-
-                break;
-            case KEY_MAKE_EXCEPTION:
-                DialogHelper.showConfirmDialog(getActivity(), getString(R.string.are_you_sure), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        makeException();
-                        setExceptionsVisible();
-                    }
-                }, null, true);
-                break;
             case KEY_UPDATES:
                 checkUpdates();
                 break;
@@ -169,59 +134,6 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
         });
 
         DialogHelper.create(adb).show();
-    }
-
-    private void showExceptionsDialog() {
-        ListView lv = new ListView(getActivity());
-        lv.setDividerHeight(-1);
-        lv.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-        lv.setOnItemClickListener(this);
-
-        adapter = new ExceptionAdapter(getActivity(), exceptions);
-        lv.setAdapter(adapter);
-
-        AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
-        adb.setTitle(R.string.exceptions);
-        adb.setView(lv);
-        adb.setNeutralButton(R.string.delete, new DialogInterface.OnClickListener() {
-
-            @Override
-            public void onClick(DialogInterface p1, int p2) {
-                CacheStorage.delete(DBHelper.EXCEPTIONS_TABLE);
-                setExceptionsVisible();
-            }
-
-        });
-        adb.setPositiveButton(android.R.string.ok, null);
-
-        DialogHelper.create(adb).show();
-    }
-
-    private void makeError() {
-        String s = getString(R.string.custom_error);
-        Integer.valueOf(s);
-    }
-
-    private void makeException() {
-        ThreadExecutor.execute(new AsyncCallback(getActivity()) {
-
-            @Override
-            public void ready() throws Exception {
-                String sm = getString(R.string.custom_exception);
-                Integer.valueOf(sm);
-            }
-
-            @Override
-            public void done() {
-                setExceptionsVisible();
-            }
-
-            @Override
-            public void error(Exception e) {
-                setExceptionsVisible();
-            }
-
-        });
     }
 
     private void checkUpdates() {

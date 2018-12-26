@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/groups"
+            android:icon="@drawable/md_groups"
+            android:title="@string/groups" />
+
+    </group>
+    <group android:id="@+id/some_group">
+        <item
+            android:id="@+id/settings"
+            android:icon="@drawable/md_settings"
+            android:title="@string/settings" />
+
+        <item
+            android:id="@+id/left"
+            android:icon="@drawable/md_exit_to_app"
+            android:title="@string/logout" />
+    </group>
+
+</menu>
