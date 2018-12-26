@@ -122,7 +122,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
         MessagesActivity root = (MessagesActivity) context;
         root.checkMessagesCount();
-        root.getRecycler().smoothScrollToPosition(getItemCount() - 1);
+        root.getRecycler().smoothScrollToPosition(getItemCount());
     }
 
     private boolean isExist(long id) {

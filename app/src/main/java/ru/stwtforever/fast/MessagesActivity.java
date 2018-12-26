@@ -61,7 +61,7 @@ import ru.stwtforever.fast.util.ViewUtils;
 public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 
     private Toolbar toolbar;
-    private RecyclerView recyclerView;
+    private RecyclerView list;
     private ImageButton send, smiles, unpin;
     private EditText message;
     private ProgressBar progress;
@@ -117,7 +117,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setTitle(title);
 
-        recyclerView.setLayoutManager(layoutManager);
+        list.setLayoutManager(layoutManager);
 
         message.addTextChangedListener(this);
 
@@ -307,7 +307,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 
                 adapter.getValues().add(m);
                 adapter.notifyDataSetChanged();
-                recyclerView.smoothScrollToPosition(adapter.getItemCount());
+                list.smoothScrollToPosition(adapter.getItemCount());
             }
 
             @Override
@@ -337,7 +337,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 
                 adapter.getValues().add(m);
                 adapter.notifyDataSetChanged();
-                recyclerView.smoothScrollToPosition(adapter.getItemCount());
+                list.smoothScrollToPosition(adapter.getItemCount());
             }
 
             @Override
@@ -365,7 +365,9 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 
         adapter.getValues().add(msg);
         adapter.notifyItemInserted(adapter.getItemCount() - 1);
-        recyclerView.smoothScrollToPosition(adapter.getValues().size());
+        list.smoothScrollToPosition(adapter.getItemCount() - 1);
+
+        final int size = adapter.getItemCount();
 
         ThreadExecutor.execute(new AsyncCallback(this) {
 
@@ -385,9 +387,13 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
                 checkMessagesCount();
                 busy = false;
                 msg.status = VKMessage.STATUS_SENT;
-                adapter.getValues().remove(msg);
-                adapter.add(msg);
-                adapter.notifyDataSetChanged();
+
+                if (adapter.getItemCount() > size) {
+                    int i = adapter.getValues().indexOf(msg);
+                    adapter.remove(i);
+                    adapter.add(msg);
+                    adapter.notifyItemRangeChanged(0, adapter.getItemCount(), msg);
+                }
             }
 
             @Override
@@ -395,7 +401,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
                 e.printStackTrace();
                 busy = false;
                 msg.status = VKMessage.STATUS_ERROR;
-                adapter.notifyDataSetChanged();
+                adapter.notifyItemChanged(adapter.getItemCount() - 1, msg);
             }
         });
 
@@ -492,12 +498,13 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
         });
     }
 
-    private void editMessage(final int pos, final int messageId, final String oldText, final String newText) {
+    private void editMessage(final int position, final int messageId, final String oldText, final String newText) {
         if (busy) return;
         busy = true;
 
-        adapter.getValues().get(pos).status = VKMessage.STATUS_SENDING;
-        adapter.notifyItemChanged(pos);
+        final VKMessage msg = adapter.getValues().get(position);
+        msg.status = VKMessage.STATUS_SENDING;
+        adapter.notifyItemChanged(position, msg);
         ThreadExecutor.execute(new AsyncCallback(this) {
 
             int res;
@@ -510,7 +517,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
                         .text(newText)
                         .messageId(messageId)
                         .keepForwardMessages(true)
-                        .attachment(adapter.getItem(pos).attachments)
+                        .attachment(msg.attachments)
                         .keepSnippets(true)
                         .dontParseLinks(false)
                         .execute(Integer.class).get(0);
@@ -519,10 +526,10 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
             @Override
             public void done() {
                 busy = false;
-                adapter.getValues().get(pos).text = newText;
-                adapter.getValues().get(pos).status = VKMessage.STATUS_SENT;
-                adapter.getValues().get(pos).setSelected(false);
-                adapter.notifyItemChanged(pos);
+                adapter.getValues().get(position).text = newText;
+                adapter.getValues().get(position).status = VKMessage.STATUS_SENT;
+                adapter.getValues().get(position).setSelected(false);
+                adapter.notifyItemChanged(position, msg);
 
                 editing = false;
 
@@ -533,8 +540,8 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
             @Override
             public void error(Exception e) {
                 busy = false;
-                adapter.getValues().get(pos).status = VKMessage.STATUS_ERROR;
-                adapter.notifyItemChanged(pos);
+                adapter.getValues().get(position).status = VKMessage.STATUS_ERROR;
+                adapter.notifyItemChanged(position, msg);
                 Toast.makeText(MessagesActivity.this, getString(R.string.error), Toast.LENGTH_SHORT).show();
             }
         });
@@ -548,7 +555,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
         } else {
             String s = message.getText().toString();
 
-            applyBtnStyle(!(s != null && !s.trim().isEmpty()));
+            applyBtnStyle(TextUtils.isEmpty(s.trim()));
         }
     }
 
@@ -557,7 +564,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
         @Override
         public void onClick(View v) {
             String s = message.getText().toString();
-            if (s != null && !s.trim().isEmpty()) {
+            if (!s.trim().isEmpty()) {
                 text = s;
 
                 sendMessage();
@@ -618,7 +625,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
                             }, 10000);
                         }
                     });
-                } catch (Exception e) {
+                } catch (Exception ignored) {
                 }
             }
 
@@ -673,7 +680,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
         chat_panel = findViewById(R.id.chat_panel);
         smiles = findViewById(R.id.smiles);
         toolbar = findViewById(R.id.tb);
-        recyclerView = findViewById(R.id.list);
+        list = findViewById(R.id.list);
         send = findViewById(R.id.send);
         message = findViewById(R.id.message);
         progress = findViewById(R.id.progress);
@@ -681,7 +688,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
     }
 
     public RecyclerView getRecycler() {
-        return recyclerView;
+        return list;
     }
 
     private void getIntentData() {
@@ -714,8 +721,8 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
             adapter.notifyDataSetChanged();
         } else {
             adapter = new MessageAdapter(this, messages, peerId);
-            recyclerView.setAdapter(adapter);
-            recyclerView.smoothScrollToPosition(adapter.getItemCount());
+            list.setAdapter(adapter);
+            list.smoothScrollToPosition(adapter.getItemCount());
         }
     }
 
@@ -853,7 +860,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
                     CacheStorage.deleteMessages(peerId);
                     CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, messages);
                     createAdapter(messages);
-                    recyclerView.smoothScrollToPosition(adapter.getItemCount());
+                    list.smoothScrollToPosition(adapter.getItemCount());
                 } else {
                     insertMessages(messages);
                 }

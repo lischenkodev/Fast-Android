@@ -214,6 +214,6 @@ public class VKAttachments extends VKModel implements Serializable {
             }
         }
 
-        return new ArrayList<VKModel>();
+        return new ArrayList<>();
     }
 }

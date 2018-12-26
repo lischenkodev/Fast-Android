@@ -1,5 +1,6 @@
 package ru.stwtforever.fast.api.method;
 
+import ru.stwtforever.fast.api.model.VKAttachments;
 import ru.stwtforever.fast.api.model.VKModel;
 import ru.stwtforever.fast.util.*;
 
