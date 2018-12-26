@@ -220,12 +220,12 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                     CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, messages)
                 }
 
-                val users = messages!![0].profiles
-                val groups = messages!![0].groups
+                val users = messages[0].profiles
+                val groups = messages[0].groups
                 val last_messages = ArrayList<VKMessage>()
 
-                for (i in messages!!.indices) {
-                    val last = messages!![i].last
+                for (i in messages.indices) {
+                    val last = messages[i].last
                     last_messages.add(last)
                 }
 
@@ -236,7 +236,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                     CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
 
                 if (!ArrayUtil.isEmpty(groups))
-                    CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, messages!![0].groups)
+                    CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, messages[0].groups)
             }
 
             override fun done() {
@@ -244,7 +244,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                 createAdapter(messages, offset)
                 refreshLayout!!.isRefreshing = false
 
-                if (!messages!!.isEmpty()) {
+                if (!messages.isEmpty()) {
                     loading = false
                 }
             }
@@ -306,7 +306,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
     companion object {
 
 
-        private val DIALOGS_COUNT = 60
+        private const val DIALOGS_COUNT = 60
     }
 }
 

@@ -12,17 +12,13 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-
-import com.squareup.picasso.Picasso
-
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-import org.greenrobot.eventbus.ThreadMode
-
-import java.util.ArrayList
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
+import com.squareup.picasso.Picasso
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import ru.stwtforever.fast.R
 import ru.stwtforever.fast.api.UserConfig
 import ru.stwtforever.fast.api.VKUtils
@@ -35,6 +31,7 @@ import ru.stwtforever.fast.db.MemoryCache
 import ru.stwtforever.fast.helper.FontHelper
 import ru.stwtforever.fast.util.ArrayUtil
 import ru.stwtforever.fast.util.Utils
+import java.util.*
 
 class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversation>) : RecyclerAdapter<VKConversation, DialogAdapter.ViewHolder>(context, dialogs) {
 
@@ -99,7 +96,7 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
             conversation.title = current.title
             conversation.can_write = current.can_write
             conversation.type = current.type
-            conversation.unread++
+            conversation.unread = current.unread + 1
             conversation.disabled_forever = current.disabled_forever
             conversation.disabled_until = current.disabled_until
             conversation.no_sound = current.no_sound
@@ -109,16 +106,16 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
                 conversation.read = false
             }
 
-            values.removeAt(index)
-            values.add(0, conversation)
+            remove(index)
+            add(0, conversation)
             notifyItemInserted(itemCount - 1)
-            notifyItemRangeChanged(0, itemCount, getItem(itemCount - 1))
+            notifyItemRangeChanged(0, itemCount, conversation)
         } else {
             if (!conversation.last.out)
                 conversation.unread++
             values.add(0, conversation)
             notifyItemInserted(itemCount - 1)
-            notifyItemRangeChanged(0, itemCount, getItem(itemCount - 1))
+            notifyItemRangeChanged(0, itemCount, conversation)
         }
     }
 
@@ -145,7 +142,7 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
         last.update_time = edited.update_time
         last.attachments = edited.attachments
 
-        notifyItemChanged(position)
+        notifyItemChanged(position, current)
     }
 
     private fun searchPosition(mId: Int): Int {
@@ -323,24 +320,21 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
 
             avatar_small.visibility = if (!item.isChat && !last.out) View.GONE else View.VISIBLE
 
-            val peerAvatar: String
+            var peerAvatar: String
 
-            if (item.isGroup) {
-                peerAvatar = peerGroup!!.photo_100
-            } else if (item.isUser) {
-                peerAvatar = peerUser!!.photo_100
-            } else {
-                peerAvatar = item.photo_100
+            peerAvatar = when {
+                item.isGroup -> peerGroup!!.photo_100
+                item.isUser -> peerUser!!.photo_100
+                else -> if (item.photo_100 == null) "" else item.photo_100
             }
 
-            val fromAvatar: String
+            var fromAvatar: String
 
-            if (last.out && !item.isChat) {
-                fromAvatar = UserConfig.user.photo_100
-            } else
-                fromAvatar = if (item.isFromUser) user!!.photo_100 else group!!.photo_100
+            fromAvatar = if (last.out && !item.isChat)
+                UserConfig.user.photo_100 else
+                if (item.isFromUser) user!!.photo_100 else group!!.photo_100
 
-            if (TextUtils.isEmpty(fromAvatar)) {
+            if (TextUtils.isEmpty(fromAvatar.trim())) {
                 avatar_small.setImageDrawable(p_user)
             } else {
                 Picasso.get()
@@ -350,7 +344,7 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
                         .into(avatar_small)
             }
 
-            if (TextUtils.isEmpty(peerAvatar)) {
+            if (TextUtils.isEmpty(peerAvatar.trim())) {
                 avatar.setImageDrawable(if (item.isChat) p_users else p_user)
             } else {
                 Picasso.get()

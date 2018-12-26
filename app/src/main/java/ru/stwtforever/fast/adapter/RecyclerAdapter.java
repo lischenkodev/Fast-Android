@@ -62,6 +62,10 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
         this.values = items;
     }
 
+    public void add(int index, T item) {
+        getValues().add(index, item);
+    }
+
     public void add(T item) {
         getValues().add(item);
     }
