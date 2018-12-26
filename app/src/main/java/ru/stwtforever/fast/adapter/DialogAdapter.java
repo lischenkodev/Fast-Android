@@ -33,7 +33,6 @@ import ru.stwtforever.fast.api.model.VKMessage;
 import ru.stwtforever.fast.api.model.VKUser;
 import ru.stwtforever.fast.common.ThemeManager;
 import ru.stwtforever.fast.db.MemoryCache;
-import ru.stwtforever.fast.fragment.FragmentDialogs;
 import ru.stwtforever.fast.helper.FontHelper;
 import ru.stwtforever.fast.util.ArrayUtil;
 import ru.stwtforever.fast.util.Utils;
@@ -102,7 +101,9 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
             conversation.photo_50 = current.photo_50;
             conversation.photo_100 = current.photo_100;
             conversation.photo_200 = current.photo_200;
+            conversation.pinned = current.pinned;
             conversation.title = current.title;
+            conversation.can_write = current.can_write;
             conversation.type = current.type;
             conversation.unread++;
             conversation.disabled_forever = current.disabled_forever;

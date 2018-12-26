@@ -98,9 +98,9 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messages);
 
+        initViews();
         getIntentData();
         showPinned(pinned);
-        initViews();
         checkCanWrite();
 
         if (ThemeManager.isDark())
@@ -712,6 +712,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 
     private void checkPinnedExists() {
         Space space = findViewById(R.id.space);
+        toolbar.setElevation(pinned == null ? 8 : 0);
         space.setVisibility(pinned == null ? View.GONE : View.VISIBLE);
     }
 
@@ -722,7 +723,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
         } else {
             adapter = new MessageAdapter(this, messages, peerId);
             list.setAdapter(adapter);
-            list.smoothScrollToPosition(adapter.getItemCount());
+            list.smoothScrollToPosition(adapter.getItemCount() + 1);
         }
     }
 

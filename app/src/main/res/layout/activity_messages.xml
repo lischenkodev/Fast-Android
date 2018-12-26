@@ -1,135 +1,126 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	android:id="@+id/llMessageHistory"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:fitsSystemWindows="true"
-	android:background="?android:windowBackground"
-	android:orientation="vertical">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/llMessageHistory"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:windowBackground"
+    android:orientation="vertical">
 
-	<include
-		layout="@layout/toolbar"/>
+    <include layout="@layout/toolbar" />
 
-	<LinearLayout
-		android:orientation="vertical"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-		<include
-			layout="@layout/action_toolbar"/>
+        <include layout="@layout/action_toolbar" />
 
-	</LinearLayout>
+    </LinearLayout>
 
-	<RelativeLayout
-		android:layout_width="wrap_content"
-		android:layout_marginTop="?actionBarSize"
-		android:layout_height="match_parent"
-		android:id="@+id/activitymessagesRelativeLayout1">
+    <RelativeLayout
+        android:id="@+id/activitymessagesRelativeLayout1"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?actionBarSize">
 
-		<ProgressBar
-			android:id="@+id/progress"
-			android:layout_width="56dp"
-			android:layout_height="56dp"
-			android:layout_centerInParent="true"
-			android:visibility="gone"/>
-		
-		<Space
-			android:id="@+id/space"
-			android:layout_height="56dp"
-			android:layout_width="match_parent" />
+        <ProgressBar
+            android:id="@+id/progress"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_centerInParent="true"
+            android:visibility="gone" />
 
-		<androidx.recyclerview.widget.RecyclerView
-			android:id="@+id/list"
-			android:scrollbars="vertical"
-			android:layout_below="@+id/space"
-			android:fadeScrollbars="true"
-			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:layout_above="@+id/lll"/>
+        <Space
+            android:id="@+id/space"
+            android:layout_width="match_parent"
+            android:layout_height="56dp" />
 
-		<RelativeLayout
-			android:layout_gravity="bottom"
-			android:layout_height="wrap_content"
-			android:id="@+id/lll"
-			android:layout_width="match_parent"
-			android:layout_alignParentBottom="true"
-			android:orientation="vertical">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@+id/lll"
+            android:layout_below="@+id/space"
+            android:fadeScrollbars="true"
+            android:scrollbars="vertical" />
 
-			<LinearLayout
-				android:id="@+id/chat_panel"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:gravity="center_vertical"
-				android:orientation="horizontal"
-				android:weightSum="1"
-				android:background="@drawable/chat_panel_bg"
-				android:padding="10dp"
-				android:layout_marginBottom="-2dp">
+        <RelativeLayout
+            android:id="@+id/lll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="bottom"
+            android:orientation="vertical">
 
-				<EditText
-					android:id="@+id/message"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:background="#00000000"
-					android:gravity="center_vertical"
-					android:hint="@string/tap_to_type"
-					android:inputType="textCapSentences|textMultiLine"
-					android:layout_weight="1.0"
-					android:textColorHint="#C4C4C4"
-					android:maxLines="6"
-					android:padding="10dp"/>
+            <LinearLayout
+                android:id="@+id/chat_panel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="-2dp"
+                android:background="@drawable/chat_panel_bg"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="10dp"
+                android:weightSum="1">
 
-				<ImageButton
-					android:src="@drawable/md_online_status"
-					android:layout_width="45dp"
-					android:layout_height="45dp"
-					android:layout_marginLeft="4dp"
-					android:tint="#cccccc"
-					android:background="?selectableItemBackgroundBorderless"
-					android:layout_gravity="bottom"
-					android:id="@+id/smiles"/>
+                <EditText
+                    android:id="@+id/message"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1.0"
+                    android:background="#00000000"
+                    android:gravity="center_vertical"
+                    android:hint="@string/tap_to_type"
+                    android:inputType="textCapSentences|textMultiLine"
+                    android:maxLines="6"
+                    android:padding="10dp"
+                    android:textColorHint="#C4C4C4" />
 
-				<ImageButton
-					android:id="@+id/send"
-					android:layout_width="45dp"
-					android:layout_height="45dp"
-					android:tint="#ffffff"
-					android:src="@drawable/md_mic"
-					android:layout_marginLeft="4dp"
-					android:layout_gravity="bottom"/>
+                <ImageButton
+                    android:id="@+id/smiles"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginLeft="4dp"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:src="@drawable/md_online_status"
+                    android:tint="#cccccc" />
 
-			</LinearLayout>
+                <ImageButton
+                    android:id="@+id/send"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginLeft="4dp"
+                    android:src="@drawable/md_mic"
+                    android:tint="#ffffff" />
 
-		</RelativeLayout>
+            </LinearLayout>
 
-		<TextView
-			android:layout_height="wrap_content"
-			android:layout_width="wrap_content"
-			android:text="@string/no_messages_message"
-			android:id="@+id/text_no_messages"
-			android:textColor="#cccccc"
-			android:layout_centerInParent="true"
-			android:textSize="18sp"
-			android:visibility="gone"/>
+        </RelativeLayout>
 
-	</RelativeLayout>
+        <TextView
+            android:id="@+id/text_no_messages"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="@string/no_messages_message"
+            android:textColor="#cccccc"
+            android:textSize="18sp"
+            android:visibility="gone" />
 
-	<include layout="@layout/pinned_message" />
+    </RelativeLayout>
 
-	<View
-		android:background="?android:attr/dividerVertical"
-		android:layout_width="match_parent"
-		android:layout_height="1dp"
-		android:layout_marginTop="?actionBarSize"/>
+    <include
+        layout="@layout/pinned_message" />
 
-	<View
-		android:background="?android:attr/dividerVertical"
-		android:layout_width="match_parent"
-		android:layout_height="1dp"
-		android:id="@+id/line"
-		android:layout_below="@+id/pinned_msg_container"/>
+    <View
+        android:id="@+id/line"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:layout_below="@+id/pinned_msg_container"
+        android:background="@drawable/message_drop_shadow_dark"
+        android:rotation="180" />
 
 </RelativeLayout>
 
