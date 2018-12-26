@@ -6,10 +6,8 @@ import android.content.pm.*;
 import android.database.sqlite.*;
 import android.os.*;
 
-import ru.stwtforever.fast.concurrent.*;
 import ru.stwtforever.fast.db.*;
 import ru.stwtforever.fast.util.*;
-import ru.stwtforever.fast.api.*;
 
 import java.util.*;
 
@@ -59,13 +57,13 @@ public class AppGlobal extends Application {
         ArrayList<FException> e = new ArrayList<>();
         e.add(new FException(s, System.currentTimeMillis()));
 
-        CacheStorage.insert(DBHelper.EXCEPTIONS_TABLE, e);
+        CacheStorage.insert(DatabaseHelper.EXCEPTIONS_TABLE, e);
     }
 
     public static void onLaunch() {
         ThemeManager.init();
         preferences = Utils.getPrefs();
-        database = DBHelper.getInstance().getWritableDatabase();
+        database = DatabaseHelper.getInstance().getWritableDatabase();
         locale = Locale.getDefault();
     }
 
@@ -73,7 +71,7 @@ public class AppGlobal extends Application {
         ArrayList<FException> exc = new ArrayList<>();
         exc.add(new FException(Log.getStackTraceString(e), Calendar.getInstance().getTimeInMillis()));
 
-        CacheStorage.insert(DBHelper.EXCEPTIONS_TABLE, exc);
+        CacheStorage.insert(DatabaseHelper.EXCEPTIONS_TABLE, exc);
     }
 
     public static boolean isDebug() {

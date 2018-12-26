@@ -8,15 +8,15 @@ import ru.stwtforever.fast.api.*;
 import ru.stwtforever.fast.api.model.*;
 import java.util.*;
 
-import static ru.stwtforever.fast.db.DBHelper.*;
+import static ru.stwtforever.fast.db.DatabaseHelper.*;
 import static ru.stwtforever.fast.common.AppGlobal.*;
-import android.icu.util.*;
+
 import android.text.*;
 
 public class CacheStorage {
     public static void checkOpen() {
         if (!database.isOpen()) {
-            database = DBHelper.getInstance().getWritableDatabase();
+            database = DatabaseHelper.getInstance().getWritableDatabase();
         }
     }
 
@@ -217,7 +217,7 @@ public class CacheStorage {
 
 
     public static void insert(String table, ArrayList values) {
-        if (!database.isOpen()) database = DBHelper.getInstance().getWritableDatabase();
+        if (!database.isOpen()) database = DatabaseHelper.getInstance().getWritableDatabase();
 		database.beginTransaction();
 
         ContentValues cv = new ContentValues();

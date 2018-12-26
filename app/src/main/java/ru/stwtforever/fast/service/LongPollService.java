@@ -20,7 +20,7 @@ import ru.stwtforever.fast.api.model.VKLongPollServer;
 import ru.stwtforever.fast.api.model.VKMessage;
 import ru.stwtforever.fast.concurrent.LowThread;
 import ru.stwtforever.fast.db.CacheStorage;
-import ru.stwtforever.fast.db.DBHelper;
+import ru.stwtforever.fast.db.DatabaseHelper;
 import ru.stwtforever.fast.net.HttpRequest;
 import ru.stwtforever.fast.util.Utils;
 
@@ -150,7 +150,7 @@ public class LongPollService extends Service {
 
             ArrayList<VKMessage> m = new ArrayList<>();
             m.add(conversation.last);
-            CacheStorage.insert(DBHelper.MESSAGES_TABLE, m);
+            CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, m);
 
             EventBus.getDefault().postSticky(new Object[]{4, conversation});
         }
@@ -174,7 +174,7 @@ public class LongPollService extends Service {
             ArrayList<VKMessage> m = new ArrayList<>();
             m.add(msg);
 
-            CacheStorage.insert(DBHelper.MESSAGES_TABLE, m);
+            CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, m);
 
             EventBus.getDefault().post(new Object[]{5, msg});
         }

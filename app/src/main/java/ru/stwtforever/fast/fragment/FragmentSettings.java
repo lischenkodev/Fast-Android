@@ -35,10 +35,7 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
     public FragmentSettings() {
     }
 
-
-    private ArrayList<FException> exceptions;
-
-    private Preference p_exceptions, dark_theme, ota, hide_typing, template, about, updates;
+    private Preference dark_theme, ota, hide_typing, template, about, updates;
 
     public static final String KEY_DARK_STYLE = "dark_style";
     public static final String KEY_MESSAGE_TEMPLATE = "template";
@@ -68,26 +65,16 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
 
         updates.setOnPreferenceClickListener(this);
         about.setOnPreferenceClickListener(this);
-        p_exceptions.setOnPreferenceClickListener(this);
 
         ota.setOnPreferenceChangeListener(this);
         dark_theme.setOnPreferenceChangeListener(this);
 
         updates.setVisible(Utils.getPrefs().getBoolean(KEY_ENABLE_OTA, false));
 
-        setExceptionsVisible();
-
         VKUser user = UserConfig.user;
         if (user == null) return;
         String hide_typing_summary = String.format(getString(R.string.hide_typing_summary), user.name, user.surname.substring(0, 1) + ".");
         hide_typing.setSummary(hide_typing_summary);
-    }
-
-    private void setExceptionsVisible() {
-        exceptions = CacheStorage.getExceptions();
-
-        boolean hasExceptions = !ArrayUtil.isEmpty(exceptions);
-        p_exceptions.setVisible(hasExceptions);
     }
 
     @Override

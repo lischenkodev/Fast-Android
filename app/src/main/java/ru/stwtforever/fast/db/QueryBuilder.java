@@ -93,7 +93,7 @@ public class QueryBuilder {
      * Creates new cursor by this query
      */
     public Cursor asCursor(SQLiteDatabase db) {
-		if (!db.isOpen()) db = DBHelper.getInstance().getWritableDatabase();
+		if (!db.isOpen()) db = DatabaseHelper.getInstance().getWritableDatabase();
         return db.rawQuery(toString(), null);
     }
 

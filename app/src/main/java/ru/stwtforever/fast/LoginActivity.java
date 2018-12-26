@@ -25,7 +25,7 @@ import ru.stwtforever.fast.common.ThemeManager;
 import ru.stwtforever.fast.concurrent.AsyncCallback;
 import ru.stwtforever.fast.concurrent.ThreadExecutor;
 import ru.stwtforever.fast.db.CacheStorage;
-import ru.stwtforever.fast.db.DBHelper;
+import ru.stwtforever.fast.db.DatabaseHelper;
 import ru.stwtforever.fast.helper.FontHelper;
 import ru.stwtforever.fast.util.Requests;
 import ru.stwtforever.fast.util.ViewUtils;
@@ -157,7 +157,7 @@ public class LoginActivity extends AppCompatActivity {
                 ArrayList<VKUser> users = new ArrayList<>();
                 users.add(user);
 
-                CacheStorage.insert(DBHelper.USERS_TABLE, users);
+                CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
 
                 UserConfig.updateUser();
             }
