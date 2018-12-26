@@ -8,7 +8,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 import androidx.appcompat.app.AlertDialog;
@@ -22,10 +21,8 @@ import ru.stwtforever.fast.api.model.VKUser;
 import ru.stwtforever.fast.common.AppGlobal;
 import ru.stwtforever.fast.common.OTAManager;
 import ru.stwtforever.fast.common.ThemeManager;
-import ru.stwtforever.fast.db.CacheStorage;
 import ru.stwtforever.fast.helper.DialogHelper;
 import ru.stwtforever.fast.helper.PermissionHelper;
-import ru.stwtforever.fast.util.ArrayUtil;
 import ru.stwtforever.fast.util.FException;
 import ru.stwtforever.fast.util.Utils;
 import ru.stwtforever.fast.util.ViewUtils;
@@ -76,6 +73,8 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
         if (user == null) return;
         String hide_typing_summary = String.format(getString(R.string.hide_typing_summary), user.name, user.surname.substring(0, 1) + ".");
         hide_typing.setSummary(hide_typing_summary);
+
+        ota.setEnabled(false);
     }
 
     @Override

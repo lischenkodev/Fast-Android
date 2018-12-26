@@ -143,4 +143,7 @@
     <string name="restart_longpoll">Перезапустить лонгполл</string>
     <string name="groups">Группы</string>
     <string name="are_you_sure">Вы уверены?</string>
+    <string name="confirm_delete_friend">Вы действительно хотите удалить этого друга?</string>
+    <string name="let_messages_unread">Оставлять сообщения непрочитанными</string>
+    <string name="not_read_messages">Не читать сообщения</string>
 </resources>
