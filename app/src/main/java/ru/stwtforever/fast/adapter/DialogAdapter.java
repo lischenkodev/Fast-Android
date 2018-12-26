@@ -117,12 +117,14 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
             getValues().remove(index);
             getValues().add(0, conversation);
-            notifyDataSetChanged();
+            notifyItemInserted(getItemCount() - 1);
+            notifyItemRangeChanged(0, getItemCount(), getItem(getItemCount() - 1));
         } else {
             if (!conversation.last.out)
                 conversation.unread++;
             getValues().add(0, conversation);
-            notifyDataSetChanged();
+            notifyItemInserted(getItemCount() - 1);
+            notifyItemRangeChanged(0, getItemCount(), getItem(getItemCount() - 1));
         }
     }
 
@@ -135,7 +137,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         current.read = true;
         current.unread = 0;
 
-        notifyItemChanged(position);
+        notifyItemChanged(position, current);
     }
 
     private void editMessage(VKMessage edited) {
