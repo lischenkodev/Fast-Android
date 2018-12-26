@@ -333,7 +333,9 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     class ViewHolder extends RecyclerView.ViewHolder {
 
         CircleImageView avatar;
+        CircleImageView important_bg;
         ImageView read;
+        ImageView important;
 
         TextView text;
         TextView time;
@@ -361,12 +363,10 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             avatar = v.findViewById(R.id.avatar);
             read = v.findViewById(R.id.read_indicator);
+            important = v.findViewById(R.id.important);
+            important_bg = v.findViewById(R.id.important_bg);
 
-            GradientDrawable circ = new GradientDrawable();
-            circ.setCornerRadius(100);
-            circ.setColor(ThemeManager.getAccent());
-
-            circle = circ;
+            circle = new ColorDrawable(read.getImageTintList().getDefaultColor());
             sending = getDrawable(R.drawable.ic_vector_access_time);
             error = getDrawable(R.drawable.ic_msg_error);
 
@@ -398,6 +398,9 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             } else {
                 read.setImageDrawable(error);
             }
+
+            important.setVisibility(item.important ? View.VISIBLE : View.GONE);
+            important_bg.setVisibility(important.getVisibility());
 
             read.setVisibility(item.out ? item.read ? View.GONE : View.GONE : View.GONE);
             space.setVisibility(item.isChat() ? View.VISIBLE : View.GONE);
@@ -530,11 +533,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 showForwardedMessages(item, attachments);
             }
 
-            if (!item.out && item.isChat()) {
-                avatar.setVisibility(View.VISIBLE);
-            } else {
-                avatar.setVisibility(View.GONE);
-            }
+            avatar.setVisibility(item.out ? View.GONE : View.VISIBLE);
 
             setOnClick(itemView, position, item);
         }
