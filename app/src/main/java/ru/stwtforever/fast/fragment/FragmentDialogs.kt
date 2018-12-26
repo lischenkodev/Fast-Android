@@ -4,7 +4,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -27,7 +26,6 @@ import ru.stwtforever.fast.api.VKApi
 import ru.stwtforever.fast.api.model.VKConversation
 import ru.stwtforever.fast.api.model.VKGroup
 import ru.stwtforever.fast.api.model.VKMessage
-import ru.stwtforever.fast.api.model.VKUser
 import ru.stwtforever.fast.cls.BaseFragment
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.concurrent.AsyncCallback
@@ -169,7 +167,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         getDialogs(0, DIALOGS_COUNT)
     }
 
-    private fun createAdapter(messages: ArrayList<VKConversation>?, offset: Int) {
+    private fun createAdapter(messages: ArrayList<VKConversation>, offset: Int) {
         if (ArrayUtil.isEmpty(messages)) {
             return
         }
@@ -207,7 +205,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
 
         refreshLayout!!.isRefreshing = true
         ThreadExecutor.execute(object : AsyncCallback(activity) {
-            private var messages: ArrayList<VKConversation>? = null
+            private lateinit var messages: ArrayList<VKConversation>
 
             @Throws(Exception::class)
             override fun ready() {

@@ -21,6 +21,7 @@ import org.greenrobot.eventbus.ThreadMode
 
 import java.util.ArrayList
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import ru.stwtforever.fast.R
 import ru.stwtforever.fast.api.UserConfig
@@ -35,7 +36,7 @@ import ru.stwtforever.fast.helper.FontHelper
 import ru.stwtforever.fast.util.ArrayUtil
 import ru.stwtforever.fast.util.Utils
 
-class DialogAdapter(context: Context, dialogs: ArrayList<VKConversation>) : RecyclerAdapter<VKConversation, DialogAdapter.ViewHolder>(context, dialogs) {
+class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversation>) : RecyclerAdapter<VKConversation, DialogAdapter.ViewHolder>(context, dialogs) {
 
     init {
         EventBus.getDefault().register(this)
