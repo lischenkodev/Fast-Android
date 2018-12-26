@@ -95,9 +95,9 @@ public class VKConversation extends VKModel implements Serializable {
 
             JSONObject p = ch.optJSONObject("photo");
             if (p != null) {
-                photo_50 = p.optString("photo_50");
-                photo_100 = p.optString("photo_100");
-                photo_200 = p.optString("photo_200");
+                photo_50 = p.optString("photo_50", "");
+                photo_100 = p.optString("photo_100", "");
+                photo_200 = p.optString("photo_200", "");
             }
 
             JSONObject acl = ch.optJSONObject("acl");

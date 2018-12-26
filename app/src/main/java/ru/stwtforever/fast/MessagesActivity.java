@@ -365,7 +365,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 
         adapter.getValues().add(msg);
         adapter.notifyItemInserted(adapter.getItemCount() - 1);
-        list.smoothScrollToPosition(adapter.getItemCount() - 1);
+        list.smoothScrollToPosition(adapter.getItemCount() + 1);
 
         final int size = adapter.getItemCount();
 

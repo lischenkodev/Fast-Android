@@ -51,9 +51,9 @@ public class VKUser extends VKModel implements Serializable {
         this.surname = source.optString("last_name", "");
         this.deactivated = source.optString("deactivated");
 
-        this.photo_50 = source.optString("photo_50");
-        this.photo_100 = source.optString("photo_100");
-        this.photo_200 = source.optString("photo_200");
+        this.photo_50 = source.optString("photo_50", "");
+        this.photo_100 = source.optString("photo_100", "");
+        this.photo_200 = source.optString("photo_200", "");
 
         this.screen_name = source.optString("screen_name");
         this.online = source.optInt("online") == 1;

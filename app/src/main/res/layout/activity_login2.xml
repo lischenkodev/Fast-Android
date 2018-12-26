@@ -4,7 +4,7 @@
     android:id="@+id/main_login_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?colorPrimary"
+    android:background="?android:windowBackground"
     android:orientation="vertical"
     android:weightSum="1.0">
 

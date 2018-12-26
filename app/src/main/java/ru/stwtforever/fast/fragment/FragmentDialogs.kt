@@ -65,7 +65,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.fragment_dialogs, container, false)
+        return inflater.inflate(R.layout.fragment_list, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -162,12 +162,12 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         adb.show()
     }
 
-    internal fun getMessages() {
+    private fun getMessages() {
         getCachedDialogs()
         getDialogs(0, DIALOGS_COUNT)
     }
 
-    private fun createAdapter(messages: ArrayList<VKConversation>, offset: Int) {
+    private fun createAdapter(messages: ArrayList<VKConversation>?, offset: Int) {
         if (ArrayUtil.isEmpty(messages)) {
             return
         }
@@ -182,7 +182,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
             adapter!!.notifyDataSetChanged()
             return
         }
-        adapter = DialogAdapter(activity, messages)
+        adapter = messages?.let { DialogAdapter(activity, it) }
         list!!.adapter = adapter
         adapter!!.setOnItemClickListener(this)
         adapter!!.setOnItemLongClickListener(this)
@@ -211,7 +211,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
             override fun ready() {
                 messages = VKApi.messages().conversations.filter("all").extended(true).offset(offset).count(count).execute(VKConversation::class.java)
 
-                if (messages!!.isEmpty()) {
+                if (messages.isEmpty()) {
                     loading = true
                 }
 

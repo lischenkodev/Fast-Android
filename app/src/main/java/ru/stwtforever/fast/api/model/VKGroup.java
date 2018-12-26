@@ -97,9 +97,9 @@ public class VKGroup extends VKModel implements Serializable {
                 break;
         }
 
-        this.photo_50 = source.optString("photo_50");
-        this.photo_100 = source.optString("photo_100");
-        this.photo_200 = source.optString("photo_200");
+        this.photo_50 = source.optString("photo_50", "");
+        this.photo_100 = source.optString("photo_100", "");
+        this.photo_200 = source.optString("photo_200", "");
 
         this.description = source.optString("description");
         this.status = source.optString("status");

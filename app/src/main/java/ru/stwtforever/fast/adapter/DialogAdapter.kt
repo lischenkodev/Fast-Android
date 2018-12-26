@@ -299,6 +299,7 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
         }
 
         fun bind(position: Int) {
+            if (position == -1) return
             val item = getItem(position) ?: return
             val last = item.last ?: return
             val group = searchGroup(last.fromId)
@@ -332,7 +333,8 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
 
             fromAvatar = if (last.out && !item.isChat)
                 UserConfig.user.photo_100 else
-                if (item.isFromUser) user!!.photo_100 else group!!.photo_100
+                if (item.isFromUser) if (user!!.photo_100 == null) "" else user.photo_100
+                else if (group!!.photo_100 == null) "" else group.photo_100
 
             if (TextUtils.isEmpty(fromAvatar.trim())) {
                 avatar_small.setImageDrawable(p_user)
