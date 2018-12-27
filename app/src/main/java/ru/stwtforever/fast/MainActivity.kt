@@ -1,5 +1,6 @@
 package ru.stwtforever.fast
 
+import android.Manifest
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -121,6 +122,10 @@ class MainActivity : AppCompatActivity() {
 
         if (UserConfig.isLoggedIn()) {
             trackVisitor()
+        }
+
+        if (!PermissionHelper.isGrantedPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            PermissionHelper.requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, 44)
         }
     }
 

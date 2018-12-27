@@ -9,8 +9,8 @@ android {
         applicationId "ru.stwtforever.fast"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 574
-        versionName "0.5 Alpha 4"
+        versionCode 2
+        versionName "0.6 Beta 1"
     }
     buildTypes {
         release {

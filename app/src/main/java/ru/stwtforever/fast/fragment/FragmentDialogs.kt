@@ -168,13 +168,13 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         }
         if (offset != 0) {
             adapter!!.changeItems(messages)
-            adapter!!.notifyDataSetChanged()
+            adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, adapter!!.getItem(adapter!!.itemCount - 1))
             return
         }
 
         if (adapter != null) {
             adapter!!.changeItems(messages)
-            adapter!!.notifyDataSetChanged()
+            adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, adapter!!.getItem(adapter!!.itemCount - 1))
             return
         }
         adapter = messages?.let { DialogAdapter(activity, it) }
