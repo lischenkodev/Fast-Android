@@ -114,7 +114,7 @@ class LoginActivity : AppCompatActivity() {
     private fun getCurrentUser(id: Int) {
         ThreadExecutor.execute(object : AsyncCallback(this) {
 
-            lateinit var user: VKUser
+            var user: VKUser? = null
 
             @Throws(Exception::class)
             override fun ready() {
@@ -122,7 +122,7 @@ class LoginActivity : AppCompatActivity() {
                 ids.add(id)
                 user = VKApi.users().get().userIds(ids).fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java)[0]
 
-                val users = ArrayList<VKUser>()
+                val users = ArrayList<VKUser?>()
                 users.add(user)
 
                 CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)

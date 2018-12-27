@@ -4,12 +4,13 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
-import androidx.annotation.ColorInt;
-import androidx.appcompat.widget.Toolbar;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.ColorRes;
+import androidx.appcompat.widget.Toolbar;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.common.AppGlobal;
 import ru.stwtforever.fast.common.ThemeManager;
@@ -96,16 +97,13 @@ public class ViewUtils {
         }
     }
 
-
     static @ColorInt
     int getColor() {
         return getColor(R.color.colorPrimary);
     }
 
-    static @ColorInt
-    int getColor(int resId) {
+    private static @ColorInt
+    int getColor(@ColorRes int resId) {
         return AppGlobal.context.getResources().getColor(resId);
     }
-
-    ;
 }

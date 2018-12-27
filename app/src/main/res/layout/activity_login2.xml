@@ -37,11 +37,11 @@
             android:layout_marginStart="6dp"
             android:layout_marginEnd="6dp"
             android:background="?selectableItemBackground"
-            app:cardPreventCornerOverlap="true"
             android:backgroundTint="?mainLightColor"
-            app:cardUseCompatPadding="true"
             app:cardCornerRadius="14dp"
-            app:cardElevation="2dp">
+            app:cardElevation="2dp"
+            app:cardPreventCornerOverlap="true"
+            app:cardUseCompatPadding="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -82,30 +82,25 @@
 
     </FrameLayout>
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="100dp"
         android:layout_gravity="bottom"
         android:layout_weight="0.5"
+        android:gravity="center"
         android:orientation="vertical">
-
-        <Space
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_gravity="center" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
             android:src="@drawable/ic_arrow_forward"
-            android:tint="@color/primary"
+            android:tint="?colorAccent"
             app:backgroundTint="?mainLightColor"
             app:borderWidth="0dp"
             app:fabSize="normal" />
 
-    </FrameLayout>
+    </LinearLayout>
 
 </LinearLayout>
 

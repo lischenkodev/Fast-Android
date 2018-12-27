@@ -279,7 +279,7 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
             UserConfig.updateUser()
 
             c_pushes_enabled = ThemeManager.getAccent()
-            c_pushes_disabled = if (ThemeManager.isDark()) -0xbababb else 0xffcccccc.toInt()
+            c_pushes_disabled = if (ThemeManager.isDark()) -0xbababb else 0xff999999.toInt()
 
             p_user = getDrawable(R.drawable.placeholder_user)
             p_users = getDrawable(R.drawable.placeholder_users)

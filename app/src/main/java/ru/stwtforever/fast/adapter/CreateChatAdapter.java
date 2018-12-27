@@ -5,7 +5,6 @@ import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -15,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.recyclerview.widget.RecyclerView;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.api.model.VKUser;
@@ -94,7 +94,7 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
 
         LinearLayout root;
 
-        CheckBox selected;
+        AppCompatCheckBox selected;
 
         Drawable placeholder;
 

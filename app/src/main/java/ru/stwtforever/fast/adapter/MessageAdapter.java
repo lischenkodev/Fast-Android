@@ -167,7 +167,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         if (isExist(msg.id)) return;
 
         add(msg);
-        notifyItemRangeChanged(0, getItemCount(), msg);
+        notifyItemRangeChanged(0, getItemCount(), null);
 
         MessagesActivity root = (MessagesActivity) context;
         root.checkMessagesCount();

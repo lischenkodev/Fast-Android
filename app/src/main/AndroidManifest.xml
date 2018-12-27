@@ -27,15 +27,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".TestActivity" />
         <activity
             android:name=".CreateChatActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ShowCreateChatActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".UpdateActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".SettingsActivity"
