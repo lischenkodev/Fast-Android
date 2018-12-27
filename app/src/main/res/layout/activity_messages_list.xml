@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -26,21 +27,6 @@
                 android:layout_gravity="center"
                 android:src="@drawable/placeholder_user" />
 
-            <ru.stwtforever.fast.view.CircleImageView
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_gravity="end|bottom"
-                android:id="@+id/important_bg"
-                android:src="?android:windowBackground" />
-
-            <ImageView
-                android:id="@+id/important"
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_gravity="bottom|end"
-                android:src="@drawable/ic_stars_black_24dp"
-                android:tint="?colorAccent" />
-
         </FrameLayout>
 
         <ru.stwtforever.fast.view.CircleImageView
@@ -62,9 +48,9 @@
                 android:id="@+id/bubble"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="6dp"
+                android:layout_marginStart="6dp"
                 android:layout_marginTop="4dp"
-                android:layout_marginRight="6dp"
+                android:layout_marginEnd="6dp"
                 android:background="@drawable/msg_in_bg"
                 android:minHeight="40dp"
                 android:orientation="vertical"
@@ -98,7 +84,7 @@
                 android:id="@+id/photos"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="14dp"
+                android:layout_marginStart="14dp"
                 android:layout_marginTop="4dp"
                 android:orientation="vertical" />
 
@@ -121,12 +107,22 @@
 
         <TextView
             android:id="@+id/time"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center|end"
-            android:text="03:15"
+            android:layout_weight="1"
             android:textSize="10sp"
-            android:visibility="visible" />
+            android:visibility="visible"
+            tools:text="03:15" />
+
+        <ImageView
+            android:id="@+id/important"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="1dp"
+            android:src="@drawable/ic_stars_black_24dp"
+            android:tint="?colorAccent" />
 
     </LinearLayout>
 

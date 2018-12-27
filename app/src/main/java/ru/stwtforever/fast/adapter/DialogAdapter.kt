@@ -100,6 +100,9 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
             conversation.disabled_forever = current.disabled_forever
             conversation.disabled_until = current.disabled_until
             conversation.no_sound = current.no_sound
+            conversation.group_channel = current.isChannel
+            conversation.type = current.type
+
 
             if (conversation.last.out) {
                 conversation.unread = 0

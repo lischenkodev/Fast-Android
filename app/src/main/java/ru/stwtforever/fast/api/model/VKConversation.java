@@ -124,7 +124,7 @@ public class VKConversation extends VKModel implements Serializable {
         last.flag = a.optInt(2);
         last.peerId = a.optInt(3);
         last.date = a.optLong(4);
-        last.text = StringUtils.unescapeHtml3(a.optString(5));
+        last.text = StringUtils.unescape(a.optString(5));
         c.read = ((last.flag & VKMessage.UNREAD) == 0);
         last.read = c.read;
         last.out = (last.flag & VKMessage.OUTBOX) != 0;
@@ -150,7 +150,7 @@ public class VKConversation extends VKModel implements Serializable {
         return c;
     }
 
-    public static String getType(int peerId) {
+    private static String getType(int peerId) {
         if (peerId > 2_000_000_00) return TYPE_CHAT;
         if (VKGroup.isGroupId(peerId)) return TYPE_GROUP;
         return TYPE_USER;

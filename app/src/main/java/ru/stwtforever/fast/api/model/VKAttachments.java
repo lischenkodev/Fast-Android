@@ -126,7 +126,7 @@ public class VKAttachments extends VKModel implements Serializable {
             if (isOneType(attachments.get(0).getClass(), attachments)) {
                 return String.valueOf(attachments.size()) + " " + getAttachmentString(attachments).toLowerCase();
             } else {
-                return String.valueOf(attachments.size()) + getString(R.string.attachments_lot).toLowerCase();
+                return String.valueOf(attachments.size()) + " " + getString(R.string.attachments_lot).toLowerCase();
             }
         }
 

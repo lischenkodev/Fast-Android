@@ -206,8 +206,12 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
         pnd.setOnClickListener(new View.OnClickListener() {
 
             @Override
-            public void onClick(View p1) {
-                showAlertPinned(pinned);
+            public void onClick(View v) {
+
+                if (adapter.contains(pinned.id)) {
+                    list.scrollToPosition(adapter.findPosition(pinned.id));
+                } else
+                    showAlertPinned(pinned);
             }
 
         });
@@ -285,7 +289,6 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 
     private void pinMessage(final int position) {
         if (pinned != null && pinned.id == adapter.getItem(position).id) return;
-        Toast.makeText(this, adapter.getItem(position).id + "", Toast.LENGTH_LONG).show();
         ThreadExecutor.execute(new AsyncCallback(this) {
 
             VKMessage msg;
@@ -301,18 +304,11 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
                 conversation.pinned = msg;
                 pinned = msg;
                 showPinned(msg);
-                VKMessage m = new VKMessage();
-                m.fromId = UserConfig.userId;
-                m.actionType = VKMessage.ACTION_CHAT_PIN_MESSAGE;
-
-                adapter.getValues().add(m);
-                adapter.notifyDataSetChanged();
-                list.smoothScrollToPosition(adapter.getItemCount());
             }
 
             @Override
             public void error(Exception e) {
-                Toast.makeText(MessagesActivity.this, getString(R.string.error) + "\nmId = " + adapter.getItem(position).id + "\npeerId = " + peerId, Toast.LENGTH_LONG).show();
+                Toast.makeText(MessagesActivity.this, getString(R.string.error), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -322,7 +318,7 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 
             @Override
             public void ready() throws Exception {
-                VKApi.messages().unpin().peerId(peerId).execute(Integer.class).get(0);
+                VKApi.messages().unpin().peerId(peerId).execute(null);
             }
 
             @Override
@@ -330,14 +326,6 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
                 conversation.pinned = null;
                 pinned = null;
                 showPinned(null);
-
-                VKMessage m = new VKMessage();
-                m.fromId = UserConfig.userId;
-                m.actionType = VKMessage.ACTION_CHAT_UNPIN_MESSAGE;
-
-                adapter.getValues().add(m);
-                adapter.notifyDataSetChanged();
-                list.smoothScrollToPosition(adapter.getItemCount());
             }
 
             @Override

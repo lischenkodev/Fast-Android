@@ -39,20 +39,20 @@ public class LongPollService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.e(TAG, "onCreate");
+        Log.d(TAG, "onCreate");
         launchLongpoll();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.e(TAG, "onStartCommand");
+        Log.d(TAG, "onStartCommand");
         super.onStartCommand(intent, flags, startId);
         return START_STICKY;
     }
 
     @Override
     public void onDestroy() {
-        Log.e(TAG, "onDestroy");
+        Log.d(TAG, "onDestroy");
         super.onDestroy();
     }
 
@@ -115,7 +115,7 @@ public class LongPollService extends Service {
                     e.printStackTrace();
                     server = null;
                     error = true;
-                    continue;
+                    run();
                 }
 
             }

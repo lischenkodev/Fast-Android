@@ -2,16 +2,15 @@ package ru.stwtforever.fast.api.model;
 
 import android.text.TextUtils;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+
+import androidx.annotation.NonNull;
 
 public class VKDoc extends VKModel implements Serializable {
 
-	public static final int TYPE_NONE = 0;
+    public static final int TYPE_NONE = 0;
     public static final int TYPE_TEXT = 1;
     public static final int TYPE_ARCHIVE = 2;
     public static final int TYPE_GIF = 3;
@@ -20,7 +19,7 @@ public class VKDoc extends VKModel implements Serializable {
     public static final int TYPE_VIDEO = 6;
     public static final int TYPE_BOOK = 7;
     public static final int TYPE_UNKNOWN = 8;
-	
+
     public int id;
     public int owner_id;
     public String title;
@@ -30,20 +29,23 @@ public class VKDoc extends VKModel implements Serializable {
     public String access_key;
     public int type;
     public VKPhotoSizes photo_sizes;
-	
-	public VKVoice voice;
-	public VKGraffiti graffiti;
-	
-	public VKDoc() {}
-	
-	public VKDoc(int peerId, int attId) {
-		this.owner_id = peerId;
-		this.id = attId;
-	}
 
-    public VKDoc(JSONObject source) {
-		tag = VKAttachments.TYPE_DOC;
-		
+    public VKVoice voice;
+    public VKGraffiti graffiti;
+
+    public boolean isGrafftiti = false, isVoice = false, isPhoto = false;
+
+    public VKDoc() {
+    }
+
+    VKDoc(int peerId, int attId) {
+        this.owner_id = peerId;
+        this.id = attId;
+    }
+
+    VKDoc(JSONObject source) {
+        tag = VKAttachments.TYPE_DOC;
+
         this.id = source.optInt("id");
         this.owner_id = source.optInt("owner_id");
         this.title = source.optString("title");
@@ -55,20 +57,19 @@ public class VKDoc extends VKModel implements Serializable {
         this.type = source.optInt("type");
 
         JSONObject preview = source.optJSONObject("preview");
-        if (preview != null && preview.has("photo")) {
-            JSONArray sizes = preview.optJSONObject("photo")
-				.optJSONArray("sizes");
 
-            photo_sizes = new VKPhotoSizes(sizes);
+        if (preview != null) {
+            if (preview.has("photo")) {
+                isPhoto = true;
+                photo_sizes = new VKPhotoSizes(preview.optJSONObject("photo").optJSONArray("sizes"));
+            } else if (preview.has("audio_message")) {
+                isVoice = true;
+                voice = new VKVoice(preview.optJSONObject("audio_message"));
+            } else if (preview.has("graffiti")) {
+                isGrafftiti = true;
+                graffiti = new VKGraffiti(preview.optJSONObject("graffiti"));
+            }
         }
-		
-		if (preview != null && preview.has("audio_message")) {
-			voice = new VKVoice(preview.optJSONObject("audio_message"));
-		}
-		
-		if (preview != null && preview.has("graffiti")) {
-			graffiti = new VKGraffiti(preview.optJSONObject("graffiti"));
-		}
     }
 
     public String toAttachmentString() {
@@ -80,8 +81,9 @@ public class VKDoc extends VKModel implements Serializable {
         return result.toString();
     }
 
+    @NonNull
     @Override
     public String toString() {
         return title;
-	}
+    }
 }

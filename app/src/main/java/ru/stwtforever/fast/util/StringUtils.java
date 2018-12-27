@@ -5,7 +5,17 @@ import java.util.HashMap;
 
 public class StringUtils {
 
-    public static final String unescapeHtml3(final String input) {
+    public static String unescape(String input) {
+        return input
+                .replace("gt;", ">")
+                .replace("lt;", "<")
+                .replace("quot;", "\"")
+                .replace("<br>", "\n")
+                .replace("<br/>", "\n")
+                .replace("amp;", "&");
+    }
+
+    public static String unescapeHtml3(String input) {
         StringWriter writer = null;
         int len = input.length();
         int i = 1;
@@ -81,6 +91,8 @@ public class StringUtils {
             writer.append(input.substring(st, len));
             return writer.toString();
         }
+
+        input.replace("<br>", "\n").replace("<br/>", "\n");
         return input;
     }
 
@@ -89,6 +101,8 @@ public class StringUtils {
             {"&", "amp"}, // & - ampersand
             {"<", "lt"}, // < - less-than
             {">", "gt"}, // > - greater-than
+            {"<br>", "\n"}, //new line
+            {"<br/>", ""}, //new line
 
             // Mapping to escape ISO-8859-1 characters to their named HTML 3.x equivalents.
             {"\u00A0", "nbsp"}, // non-breaking space
@@ -195,7 +209,7 @@ public class StringUtils {
     private static final HashMap<String, CharSequence> lookupMap;
 
     static {
-        lookupMap = new HashMap<String, CharSequence>();
+        lookupMap = new HashMap<>();
         for (final CharSequence[] seq : ESCAPES)
             lookupMap.put(seq[1].toString(), seq[0]);
     }

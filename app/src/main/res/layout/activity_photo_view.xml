@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+
+    <androidx.viewpager.widget.ViewPager
+        android:id="@+id/pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:background="#44000000"
+        app:titleTextColor="#ffffff" />
+
+    <LinearLayout
+        android:id="@+id/items"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom"
+        android:background="#44000000"
+        android:gravity="center"
+        android:weightSum="0.9">
+
+        <ImageButton
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.3"
+            android:background="?selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_favorite_black_24dp"
+            android:tint="#ffffff" />
+
+
+        <ImageButton
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.3"
+            android:background="?selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_mode_comment_black_24dp"
+            android:tint="#ffffff" />
+
+
+        <ImageButton
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.3"
+            android:background="?selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_share_black_24dp"
+            android:tint="#ffffff" />
+
+    </LinearLayout>
+</FrameLayout>

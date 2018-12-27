@@ -64,5 +64,10 @@
             android:enabled="true"
             android:exported="true" />
 
+        <activity
+            android:name=".PhotoViewActivity"
+            android:configChanges="screenSize|orientation|density"
+            android:theme="@style/AppTheme.NoActionBar" />
     </application>
+
 </manifest>
