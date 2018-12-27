@@ -147,4 +147,5 @@
     <string name="confirm_delete_friend">Are you really want to delete this friend?</string>
     <string name="let_messages_unread">Let messages unread</string>
     <string name="not_read_messages">Not read messages</string>
+    <string name="chat_creator">Creator of the chat</string>
 </resources>

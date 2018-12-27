@@ -48,19 +48,4 @@
             android:title="@string/about_app" />
 
     </PreferenceCategory>
-
-    <PreferenceCategory
-        android:key="updates"
-        android:title="@string/updates">
-
-        <SwitchPreference
-            android:defaultValue="false"
-            android:key="ota"
-            android:title="@string/ota" />
-
-        <PreferenceScreen
-            android:key="check_updates"
-            android:title="@string/check_updates" />
-
-    </PreferenceCategory>
 </PreferenceScreen>

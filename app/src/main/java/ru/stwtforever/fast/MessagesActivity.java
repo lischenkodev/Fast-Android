@@ -700,7 +700,6 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
 
     private void checkPinnedExists() {
         Space space = findViewById(R.id.space);
-        toolbar.setElevation(pinned == null ? 8 : 0);
         space.setVisibility(pinned == null ? View.GONE : View.VISIBLE);
     }
 
@@ -726,7 +725,6 @@ public class MessagesActivity extends AppCompatActivity implements TextWatcher {
         ArrayList<VKMessage> messages = CacheStorage.getMessages(peerId);
         if (!ArrayUtil.isEmpty(messages)) {
             createAdapter(messages);
-            return;
         }
     }
 

@@ -83,7 +83,7 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
         tb.setTitle(title);
 
         list = view.findViewById(R.id.list);
-        setList(list);
+        setRecyclerView(list);
 
         refreshLayout = view.findViewById(R.id.refresh);
         refreshLayout.setOnRefreshListener(this);

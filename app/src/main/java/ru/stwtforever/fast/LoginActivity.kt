@@ -16,7 +16,6 @@ import com.squareup.picasso.Picasso
 import ru.stwtforever.fast.api.UserConfig
 import ru.stwtforever.fast.api.VKApi
 import ru.stwtforever.fast.api.model.VKUser
-import ru.stwtforever.fast.common.OTAManager
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.concurrent.AsyncCallback
 import ru.stwtforever.fast.concurrent.ThreadExecutor
@@ -108,7 +107,6 @@ class LoginActivity : AppCompatActivity() {
             VKApi.config = config
 
             getCurrentUser(id)
-            checkUpdates()
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
@@ -168,9 +166,5 @@ class LoginActivity : AppCompatActivity() {
                 })
 
         fab!!.show()
-    }
-
-    private fun checkUpdates() {
-        OTAManager.checkUpdate(this, false)
     }
 }

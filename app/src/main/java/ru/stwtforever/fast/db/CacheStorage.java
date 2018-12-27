@@ -17,7 +17,6 @@ import ru.stwtforever.fast.api.model.VKPhotoSizes;
 import ru.stwtforever.fast.api.model.VKUser;
 import ru.stwtforever.fast.common.AppGlobal;
 import ru.stwtforever.fast.util.ArrayUtil;
-import ru.stwtforever.fast.util.FException;
 import ru.stwtforever.fast.util.Utils;
 
 import static ru.stwtforever.fast.common.AppGlobal.database;
@@ -31,9 +30,9 @@ import static ru.stwtforever.fast.db.DatabaseHelper.DATE;
 import static ru.stwtforever.fast.db.DatabaseHelper.DEACTIVATED;
 import static ru.stwtforever.fast.db.DatabaseHelper.DESCRIPTION;
 import static ru.stwtforever.fast.db.DatabaseHelper.DIALOGS_TABLE;
+import static ru.stwtforever.fast.db.DatabaseHelper.DISABLED_FOREVER;
+import static ru.stwtforever.fast.db.DatabaseHelper.DISABLED_UNTIL;
 import static ru.stwtforever.fast.db.DatabaseHelper.DURATION;
-import static ru.stwtforever.fast.db.DatabaseHelper.EXCEPTION;
-import static ru.stwtforever.fast.db.DatabaseHelper.EXCEPTIONS_TABLE;
 import static ru.stwtforever.fast.db.DatabaseHelper.FAILED_MESSAGES_TABLE;
 import static ru.stwtforever.fast.db.DatabaseHelper.FIRST_NAME;
 import static ru.stwtforever.fast.db.DatabaseHelper.FRIENDS_TABLE;
@@ -54,6 +53,7 @@ import static ru.stwtforever.fast.db.DatabaseHelper.MEMBERS_COUNT;
 import static ru.stwtforever.fast.db.DatabaseHelper.MESSAGES_TABLE;
 import static ru.stwtforever.fast.db.DatabaseHelper.MESSAGE_ID;
 import static ru.stwtforever.fast.db.DatabaseHelper.NAME;
+import static ru.stwtforever.fast.db.DatabaseHelper.NO_SOUND;
 import static ru.stwtforever.fast.db.DatabaseHelper.ONLINE;
 import static ru.stwtforever.fast.db.DatabaseHelper.ONLINE_APP;
 import static ru.stwtforever.fast.db.DatabaseHelper.ONLINE_MOBILE;
@@ -70,7 +70,6 @@ import static ru.stwtforever.fast.db.DatabaseHelper.SCREEN_NAME;
 import static ru.stwtforever.fast.db.DatabaseHelper.SEX;
 import static ru.stwtforever.fast.db.DatabaseHelper.STATUS;
 import static ru.stwtforever.fast.db.DatabaseHelper.TEXT;
-import static ru.stwtforever.fast.db.DatabaseHelper.TIME;
 import static ru.stwtforever.fast.db.DatabaseHelper.TITLE;
 import static ru.stwtforever.fast.db.DatabaseHelper.TYPE;
 import static ru.stwtforever.fast.db.DatabaseHelper.UNREAD_COUNT;
@@ -166,18 +165,6 @@ public class CacheStorage {
 
         cursor.close();
         return null;
-    }
-
-    public static ArrayList<FException> getExceptions() {
-        Cursor cursor = selectCursor(EXCEPTIONS_TABLE);
-
-        ArrayList<FException> excs = new ArrayList<>(cursor.getCount());
-        while (cursor.moveToNext()) {
-            excs.add(parseException(cursor));
-        }
-
-        cursor.close();
-        return excs;
     }
 
     public static ArrayList<VKMessage> getFailedMessages(int peerId) {
@@ -293,29 +280,21 @@ public class CacheStorage {
         ContentValues cv = new ContentValues();
         for (int i = 0; i < values.size(); i++) {
             switch (table) {
-                case EXCEPTIONS_TABLE:
-                    putValues(cv, (FException) values.get(i));
-                    break;
                 case USERS_TABLE:
                     putValues(cv, (VKUser) values.get(i), false);
                     break;
-
                 case FRIENDS_TABLE:
                     putValues(cv, (VKUser) values.get(i), true);
                     break;
-
                 case DIALOGS_TABLE:
                     putValues(cv, (VKConversation) values.get(i));
                     break;
-
                 case MESSAGES_TABLE:
                     putValues(cv, (VKMessage) values.get(i));
                     break;
-
                 case GROUPS_TABLE:
                     putValues(cv, (VKGroup) values.get(i));
                     break;
-
                 case PHOTOS_TABLE:
                     putValues(cv, (VKPhoto) values.get(i));
                     break;
@@ -335,13 +314,6 @@ public class CacheStorage {
 
     public static void delete(String table) {
         database.delete(table, null, null);
-    }
-
-    private static FException parseException(Cursor c) {
-        FException e = new FException();
-        e.exception = getString(c, EXCEPTION);
-        e.time = getLong(c, TIME);
-        return e;
     }
 
     private static VKUser parseUser(Cursor cursor) {
@@ -372,6 +344,10 @@ public class CacheStorage {
         c.title = getString(cursor, TITLE);
         c.membersCount = getInt(cursor, USERS_COUNT);
         c.unread = getInt(cursor, UNREAD_COUNT);
+
+        c.no_sound = getInt(cursor, NO_SOUND) == 1;
+        c.disabled_forever = getInt(cursor, DISABLED_FOREVER) == 1;
+        c.disabled_until = getInt(cursor, DISABLED_UNTIL);
 
         c.type = getString(cursor, CONVERSATION_TYPE);
 
@@ -443,11 +419,6 @@ public class CacheStorage {
         return photo;
     }
 
-    private static void putValues(ContentValues values, FException e) {
-        values.put(EXCEPTION, e.exception);
-        values.put(TIME, e.time);
-    }
-
     private static void putValues(ContentValues values, VKUser user, boolean friends) {
         if (friends) {
             values.put(USER_ID, UserConfig.userId);
@@ -478,6 +449,9 @@ public class CacheStorage {
         values.put(PHOTO_100, dialog.photo_100);
         values.put(PHOTO_200, dialog.photo_200);
         values.put(CONVERSATION_TYPE, dialog.type);
+        values.put(DISABLED_FOREVER, dialog.disabled_forever);
+        values.put(DISABLED_UNTIL, dialog.disabled_until);
+        values.put(NO_SOUND, dialog.no_sound);
 
         if (dialog.last != null) {
             values.put(LAST_MESSAGE, Utils.serialize(dialog.last));

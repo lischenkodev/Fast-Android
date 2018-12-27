@@ -66,7 +66,7 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
 
             online.setVisibility(user.online ? View.VISIBLE : View.GONE);
 
-            String text = String.format(getString(R.string.invited_by), UserConfig.user.toString());
+            String text = user.id == UserConfig.userId ? getString(R.string.chat_creator) : getString(R.string.invited_by, UserConfig.user.toString());
             invited_by.setText(text);
 
             if (TextUtils.isEmpty(user.photo_100)) {
@@ -77,6 +77,8 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
                         .placeholder(new ColorDrawable(Color.TRANSPARENT))
                         .into(avatar);
             }
+
+            remove.setVisibility(user.id == UserConfig.userId ? View.GONE : View.VISIBLE);
 
             remove.setOnClickListener(new View.OnClickListener() {
 

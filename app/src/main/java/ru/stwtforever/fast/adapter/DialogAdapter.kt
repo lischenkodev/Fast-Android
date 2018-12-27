@@ -9,6 +9,7 @@ import android.text.TextUtils
 import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -265,6 +266,7 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
         var counter: TextView
 
         var container: LinearLayout
+        var counter_container: FrameLayout
 
         var p_user: Drawable
         var p_users: Drawable
@@ -277,7 +279,7 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
             UserConfig.updateUser()
 
             c_pushes_enabled = ThemeManager.getAccent()
-            c_pushes_disabled = if (ThemeManager.isDark()) -0xbababb else -0x333334
+            c_pushes_disabled = if (ThemeManager.isDark()) -0xbababb else 0xffcccccc.toInt()
 
             p_user = getDrawable(R.drawable.placeholder_user)
             p_users = getDrawable(R.drawable.placeholder_users)
@@ -293,6 +295,7 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
             counter = v.findViewById(R.id.counter)
 
             container = v.findViewById(R.id.container)
+            counter_container = v.findViewById(R.id.counter_container)
 
             val gd = GradientDrawable()
             gd.setColor(ThemeManager.getAccent())
@@ -390,6 +393,8 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
                     online.visibility = View.GONE
                 }
             }
+
+            counter_container.visibility = if (item.read) View.GONE else View.VISIBLE
         }
     }
 

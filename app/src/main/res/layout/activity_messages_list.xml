@@ -68,15 +68,16 @@
                     android:autoLink="all"
                     android:gravity="start|center"
                     android:linksClickable="true"
-                    android:textSize="12sp" />
+                    android:textSize="14sp"
+                    tools:text="Body" />
 
                 <LinearLayout
                     android:id="@+id/attachments"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:orientation="vertical"
-                    android:padding="3dp" />
+                    android:padding="4dp" />
 
             </ru.stwtforever.fast.view.BoundedLinearLayout>
 
@@ -93,6 +94,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/time_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
@@ -107,20 +109,19 @@
 
         <TextView
             android:id="@+id/time"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center|end"
-            android:layout_weight="1"
-            android:textSize="10sp"
+            android:textSize="12sp"
             android:visibility="visible"
             tools:text="03:15" />
 
         <ImageView
             android:id="@+id/important"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
             android:layout_marginStart="4dp"
-            android:layout_marginTop="1dp"
+            android:layout_marginTop="2dp"
             android:src="@drawable/ic_stars_black_24dp"
             android:tint="?colorAccent" />
 

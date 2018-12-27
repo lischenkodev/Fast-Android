@@ -1,21 +1,21 @@
 package ru.stwtforever.fast.common;
 
-import android.app.*;
-import android.content.*;
-import android.content.pm.*;
-import android.database.sqlite.*;
-import android.os.*;
-
-import ru.stwtforever.fast.db.*;
-import ru.stwtforever.fast.util.*;
-
-import java.util.*;
-
-import android.util.*;
+import android.app.Application;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Handler;
 
 import com.microsoft.appcenter.AppCenter;
 import com.microsoft.appcenter.analytics.Analytics;
 import com.microsoft.appcenter.crashes.Crashes;
+
+import java.util.Locale;
+
+import ru.stwtforever.fast.db.DatabaseHelper;
+import ru.stwtforever.fast.util.Utils;
 
 public class AppGlobal extends Application {
 
@@ -53,25 +53,11 @@ public class AppGlobal extends Application {
         }
     }
 
-    public static void putException(String s) {
-        ArrayList<FException> e = new ArrayList<>();
-        e.add(new FException(s, System.currentTimeMillis()));
-
-        CacheStorage.insert(DatabaseHelper.EXCEPTIONS_TABLE, e);
-    }
-
     public static void onLaunch() {
         ThemeManager.init();
         preferences = Utils.getPrefs();
         database = DatabaseHelper.getInstance().getWritableDatabase();
         locale = Locale.getDefault();
-    }
-
-    public static void putException(Exception e) {
-        ArrayList<FException> exc = new ArrayList<>();
-        exc.add(new FException(Log.getStackTraceString(e), Calendar.getInstance().getTimeInMillis()));
-
-        CacheStorage.insert(DatabaseHelper.EXCEPTIONS_TABLE, exc);
     }
 
     public static boolean isDebug() {

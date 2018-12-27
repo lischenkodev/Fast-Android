@@ -27,7 +27,7 @@
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:layout_gravity="bottom|end"
-                android:src="#00000000" />
+                android:src="@drawable/placeholder_user" />
 
             <ru.stwtforever.fast.view.CircleImageView
                 android:id="@+id/online"
@@ -49,22 +49,42 @@
             android:gravity="center"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/title"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
-                android:layout_marginStart="4dp"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:textSize="18sp"
-                tools:text="Имя Фамилия" />
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginBottom="4dp"
+                    android:layout_weight="1"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:textSize="18sp"
+                    tools:text="Имя Фамилия" />
+
+                <TextView
+                    android:id="@+id/date"
+                    android:layout_width="40dp"
+                    android:layout_height="22dp"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:minWidth="40dp"
+                    android:padding="2dp"
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    android:textSize="12sp"
+                    tools:text="Дата" />
+
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/body_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="2dp"
                 android:layout_marginTop="2dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
@@ -74,12 +94,13 @@
                     android:layout_width="35dp"
                     android:layout_height="28dp"
                     android:layout_marginEnd="6dp"
-                    android:src="?colorAccent" />
+                    android:src="@drawable/placeholder_user" />
 
                 <TextView
                     android:id="@+id/body"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:gravity="center_vertical"
                     android:maxLines="1"
                     android:singleLine="true"
@@ -87,66 +108,35 @@
                     android:textSize="12sp"
                     tools:text="Сообщение" />
 
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginStart="6dp"
-            android:layout_weight="0"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:paddingEnd="4dp"
-            android:paddingStart="0dp"
-            android:weightSum="1.0">
-
-            <TextView
-                android:id="@+id/date"
-                android:layout_width="match_parent"
-                android:layout_height="22dp"
-                android:layout_weight="0"
-                android:gravity="center"
-                android:maxLines="1"
-                android:minWidth="40dp"
-                android:padding="2dp"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textSize="12sp"
-                tools:text="Дата" />
-
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1.0"
-                android:gravity="center">
-
-                <TextView
-                    android:id="@+id/counter"
-                    android:layout_width="wrap_content"
+                <FrameLayout
+                    android:id="@+id/counter_container"
+                    android:layout_width="40dp"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="2dp"
                     android:gravity="center"
-                    android:minHeight="20dp"
-                    android:minWidth="20dp"
-                    android:padding="5dp"
-                    android:textColor="#FFFFFF"
-                    android:textSize="9sp" />
+                    android:padding="2dp">
 
-                <ru.stwtforever.fast.view.CircleImageView
-                    android:id="@+id/icon_out_message"
-                    android:layout_width="8dp"
-                    android:layout_height="8dp"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="4dp"
-                    android:src="?colorAccent" />
+                    <TextView
+                        android:id="@+id/counter"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:minWidth="20dp"
+                        android:minHeight="20dp"
+                        android:padding="5dp"
+                        android:textColor="#FFFFFF"
+                        android:textSize="9sp" />
 
-            </FrameLayout>
+                    <ru.stwtforever.fast.view.CircleImageView
+                        android:id="@+id/icon_out_message"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_gravity="center"
+                        android:src="?colorAccent" />
 
+                </FrameLayout>
+            </LinearLayout>
         </LinearLayout>
-
     </LinearLayout>
-
 </LinearLayout>
 

@@ -1,14 +1,15 @@
 package ru.stwtforever.fast.db;
 
-import android.database.sqlite.*;
-import android.util.*;
-import ru.stwtforever.fast.common.*;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+
+import ru.stwtforever.fast.common.AppGlobal;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String LOG_TAG = "Fast DB";
 
-	//last_db_change date = 19.11.18
-    private static final int DATABASE_VERSION = 14;
+    //last_db_change date = 27.12.18
+    private static final int DATABASE_VERSION = 15;
     private static final String DATABASE_NAME = "cache.db";
 
     /**
@@ -26,20 +27,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String USER_GROUP_TABLE = "user_group";
     public static final String STATS_MESSAGES_TABLE = "stats_messages";
     public static final String FAILED_MESSAGES_TABLE = "failed_messages";
-	public static final String EXCEPTIONS_TABLE = "exceptions";
-	
+
     /**
      * Columns
      */
     public static final String _ID = "_id";
-	public static final String CONVERSATION_TYPE = "type";
+    public static final String CONVERSATION_TYPE = "type";
     public static final String USER_ID = "user_id";
     public static final String OWNER_ID = "owner_id";
     public static final String GROUP_ID = "group_id";
     public static final String FRIEND_ID = "friend_id";
     public static final String AUDIO_ID = "audio_id";
     public static final String FROM_ID = "from_id";
-	public static final String PEER_ID = "peer_id";
+    public static final String PEER_ID = "peer_id";
     public static final String DOC_ID = "doc_id";
     public static final String ALBUM_ID = "album_id";
     public static final String LYRICS_ID = "lyrics_id";
@@ -85,7 +85,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DURATION = "duration";
     public static final String URL = "url";
     public static final String SIZE = "size";
-	public static final String PHOTO_SIZES = "photo_sizes";
+    public static final String PHOTO_SIZES = "photo_sizes";
     public static final String EXT = "ext";
     public static final String NAME = "name";
     public static final String SCREEN_NAME = "screen_name";
@@ -95,159 +95,155 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String TYPE = "type";
     public static final String DESCRIPTION = "description";
     public static final String MEMBERS_COUNT = "members_count";
-	public static final String PINNED_MESSAGE = "pinned_message";
-	public static final String LAST_MESSAGE = "last_message";
-	public static final String UPDATE_TIME = "update_time";
-	
-	public static final String EXCEPTION = "exception";
-	public static final String TIME = "time";
+    public static final String PINNED_MESSAGE = "pinned_message";
+    public static final String LAST_MESSAGE = "last_message";
+    public static final String UPDATE_TIME = "update_time";
+    public static final String DISABLED_FOREVER = "disabled_forever";
+    public static final String DISABLED_UNTIL = "disabled_until";
+    public static final String NO_SOUND = "no_sound";
 
     private static final String SQL_CREATE_TABLE_USERS = "CREATE TABLE " + USERS_TABLE +
-	" (" + USER_ID + " INTEGER PRIMARY KEY ON CONFLICT REPLACE, " +
-	" [" + FIRST_NAME + "] VARCHAR(255), " +
-	" [" + LAST_NAME + "] VARCHAR(255), " +
-	" [" + SCREEN_NAME + "] VARCHAR(255), " +
-	" [" + NICKNAME + "] VARCHAR(255), " +
-	" [" + ONLINE + "] INTEGER, " +
-	" [" + ONLINE_MOBILE + "] INTEGER, " +
-	" [" + ONLINE_APP + "] INTEGER, " +
-	" [" + STATUS + "] VARCHAR(255), " +
-	" [" + IS_FRIEND + "] VARCHAR(255), " +
-	" [" + LAST_SEEN + "] INTEGER, " +
-	" [" + PHOTO_50 + "] VARCHAR(255), " +
-	" [" + PHOTO_100 + "] VARCHAR(255), " +
-	" [" + PHOTO_200 + "] VARCHAR(255), " +
-	" [" + PHOTO_400 + "] VARCHAR(255), " +
-	" [" + PHOTO_MAX + "] VARCHAR(255), " +
-	" [" + DEACTIVATED + "] VARCHAR(255), " +
-	" [" + SEX + "] INTEGER" +
-	");";
+            " (" + USER_ID + " INTEGER PRIMARY KEY ON CONFLICT REPLACE, " +
+            " [" + FIRST_NAME + "] VARCHAR(255), " +
+            " [" + LAST_NAME + "] VARCHAR(255), " +
+            " [" + SCREEN_NAME + "] VARCHAR(255), " +
+            " [" + NICKNAME + "] VARCHAR(255), " +
+            " [" + ONLINE + "] INTEGER, " +
+            " [" + ONLINE_MOBILE + "] INTEGER, " +
+            " [" + ONLINE_APP + "] INTEGER, " +
+            " [" + STATUS + "] VARCHAR(255), " +
+            " [" + IS_FRIEND + "] VARCHAR(255), " +
+            " [" + LAST_SEEN + "] INTEGER, " +
+            " [" + PHOTO_50 + "] VARCHAR(255), " +
+            " [" + PHOTO_100 + "] VARCHAR(255), " +
+            " [" + PHOTO_200 + "] VARCHAR(255), " +
+            " [" + PHOTO_400 + "] VARCHAR(255), " +
+            " [" + PHOTO_MAX + "] VARCHAR(255), " +
+            " [" + DEACTIVATED + "] VARCHAR(255), " +
+            " [" + SEX + "] INTEGER" +
+            ");";
 
     private static final String SQL_CREATE_TABLE_FRIENDS = "CREATE TABLE " + FRIENDS_TABLE +
-	" (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-	" [" + USER_ID + "] INTEGER, " +
-	" [" + FRIEND_ID + "] INTEGER " +
-	");";
+            " (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            " [" + USER_ID + "] INTEGER, " +
+            " [" + FRIEND_ID + "] INTEGER " +
+            ");";
 
     private static final String SQL_CREATE_TABLE_DIALOGS = "CREATE TABLE " + DIALOGS_TABLE +
-	" (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-	" [" + MESSAGE_ID + "] INTEGER, " +
-	" [" + PEER_ID + "] INTEGER, " +
-	" [" + CONVERSATION_TYPE + "] VARCHAR(5), " +
-	" [" + FROM_ID + "] INTEGER, " +
-	" [" + TITLE + "] VARCHAR(255), " +
-	" [" + TEXT + "] VARCHAR(255), " +
-	" [" + IS_OUT + "] INTEGER, " +
-	" [" + READ_STATE + "] INTEGER, " +
-	" [" + USERS_COUNT + "] INTEGER, " +
-	" [" + UNREAD_COUNT + "] INTEGER, " +
-	" [" + DATE + "] INTEGER , " +
-	" [" + PHOTO_50 + "] VARCHAR(255), " +
-	" [" + PHOTO_100 + "] VARCHAR(255)," +
-	" [" + PHOTO_200 + "] VARCHAR(255), " +
-	" [" + ATTACHMENTS + "] BLOB, " +
-	" [" + FWD_MESSAGES + "] BLOB, " +
-	" [" + PINNED_MESSAGE + "] BLOB, " +
-	" [" + LAST_MESSAGE + "] BLOB" +
-	");";
+            " (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            " [" + MESSAGE_ID + "] INTEGER, " +
+            " [" + PEER_ID + "] INTEGER, " +
+            " [" + CONVERSATION_TYPE + "] VARCHAR(5), " +
+            " [" + FROM_ID + "] INTEGER, " +
+            " [" + TITLE + "] VARCHAR(255), " +
+            " [" + TEXT + "] VARCHAR(255), " +
+            " [" + IS_OUT + "] INTEGER, " +
+            " [" + READ_STATE + "] INTEGER, " +
+            " [" + USERS_COUNT + "] INTEGER, " +
+            " [" + UNREAD_COUNT + "] INTEGER, " +
+            " [" + DATE + "] INTEGER , " +
+            " [" + PHOTO_50 + "] VARCHAR(255), " +
+            " [" + PHOTO_100 + "] VARCHAR(255)," +
+            " [" + PHOTO_200 + "] VARCHAR(255), " +
+            " [" + DISABLED_FOREVER + "] INTEGER, " +
+            " [" + DISABLED_UNTIL + "] INTEGER, " +
+            " [" + NO_SOUND + "] INTEGER, " +
+            " [" + ATTACHMENTS + "] BLOB, " +
+            " [" + FWD_MESSAGES + "] BLOB, " +
+            " [" + PINNED_MESSAGE + "] BLOB, " +
+            " [" + LAST_MESSAGE + "] BLOB" +
+            ");";
 
     private final static String SQL_CREATE_TABLE_MESSAGES = "CREATE TABLE " + MESSAGES_TABLE +
-	" (" + _ID + " INTEGER PRIMARY KEY, " +
-	" [" + MESSAGE_ID + "] INTEGER, " +
-	" [" + PEER_ID + "] INTEGER, " +
-	" [" + FROM_ID + "] INTEGER, " +
-	" [" + TEXT + "] VARCHAR(255), " +
-	" [" + STATUS + "] INTEGER, " +
-	" [" + UPDATE_TIME + "] LONG, " +
-	" [" + DATE + "] INTEGER, " +
-	" [" + READ_STATE + "] INTEGER, " +
-	" [" + IS_OUT + "] INTEGER, " +
-	" [" + IMPORTANT + "] INTEGER, " +
-	" [" + ATTACHMENTS + "] BLOB, " +
-	" [" + FWD_MESSAGES + "] BLOB" +
-	");";
+            " (" + _ID + " INTEGER PRIMARY KEY, " +
+            " [" + MESSAGE_ID + "] INTEGER, " +
+            " [" + PEER_ID + "] INTEGER, " +
+            " [" + FROM_ID + "] INTEGER, " +
+            " [" + TEXT + "] VARCHAR(255), " +
+            " [" + STATUS + "] INTEGER, " +
+            " [" + UPDATE_TIME + "] LONG, " +
+            " [" + DATE + "] INTEGER, " +
+            " [" + READ_STATE + "] INTEGER, " +
+            " [" + IS_OUT + "] INTEGER, " +
+            " [" + IMPORTANT + "] INTEGER, " +
+            " [" + ATTACHMENTS + "] BLOB, " +
+            " [" + FWD_MESSAGES + "] BLOB" +
+            ");";
 
 
     private final static String SQL_CREATE_TABLE_STATS_MESSAGES = "CREATE TABLE " + STATS_MESSAGES_TABLE +
-	" (" + _ID + " INTEGER PRIMARY KEY, " +
-	" [" + PEER_ID + "] INTEGER, " +
-	" [" + FROM_ID + "] INTEGER, " +
-	" [" + TOTAL_COUNT + "] INTEGER, " +
-	" [" + INCOMING_COUNT + "] INTEGER, " +
-	" [" + OUTGOING_COUNT + "] INTEGER" +
-	");";
+            " (" + _ID + " INTEGER PRIMARY KEY, " +
+            " [" + PEER_ID + "] INTEGER, " +
+            " [" + FROM_ID + "] INTEGER, " +
+            " [" + TOTAL_COUNT + "] INTEGER, " +
+            " [" + INCOMING_COUNT + "] INTEGER, " +
+            " [" + OUTGOING_COUNT + "] INTEGER" +
+            ");";
 
     private final static String SQL_CREATE_TABLE_AUDIOS = "CREATE TABLE " + AUDIOS_TABLE +
-	" (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-	" [" + AUDIO_ID + "] INTEGER, " +
-	" [" + OWNER_ID + "] INTEGER, " +
-	" [" + ARTIST + "] VARCHAR(255), " +
-	" [" + TITLE + "] VARCHAR(255), " +
-	" [" + DURATION + "] INTEGER, " +
-	" [" + URL + "] VARCHAR(255), " +
-	" [" + LYRICS_ID + "] INTEGER " +
-	");";
+            " (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            " [" + AUDIO_ID + "] INTEGER, " +
+            " [" + OWNER_ID + "] INTEGER, " +
+            " [" + ARTIST + "] VARCHAR(255), " +
+            " [" + TITLE + "] VARCHAR(255), " +
+            " [" + DURATION + "] INTEGER, " +
+            " [" + URL + "] VARCHAR(255), " +
+            " [" + LYRICS_ID + "] INTEGER " +
+            ");";
 
     private final static String SQL_CREATE_TABLE_PHOTOS = "CREATE TABLE " + PHOTOS_TABLE +
-	" (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-	" [" + ALBUM_ID + "] INTEGER, " +
-	" [" + OWNER_ID + "] INTEGER, " +
-	" [" + WIDTH + "] INTEGER, " +
-	" [" + HEIGHT + "] INTEGER, " +
-	" [" + DATE + "] INTEGER, " +
-	" [" + TEXT + "] VARCHAR(255), " +
-	" [" + PHOTO_SIZES + "] BLOB" +
-	");";
+            " (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            " [" + ALBUM_ID + "] INTEGER, " +
+            " [" + OWNER_ID + "] INTEGER, " +
+            " [" + WIDTH + "] INTEGER, " +
+            " [" + HEIGHT + "] INTEGER, " +
+            " [" + DATE + "] INTEGER, " +
+            " [" + TEXT + "] VARCHAR(255), " +
+            " [" + PHOTO_SIZES + "] BLOB" +
+            ");";
 
     private final static String SQL_CREATE_TABLE_DOCS = "CREATE TABLE " + DOCS_TABLE +
-	" (" + _ID + " INTEGER PRIMARY KEY, " +
-	" [" + DOC_ID + "] INTEGER, " +
-	" [" + OWNER_ID + "] INTEGER, " +
-	" [" + TITLE + "] VARCHAR(255), " +
-	" [" + SIZE + "] INTEGER, " +
-	" [" + TYPE + "] INTEGER, " +
-	" [" + EXT + "] VARCHAR(255), " +
-	" [" + URL + "] VARCHAR(255), " +
-	" [" + PHOTO_100 + "] VARCHAR(255), " +
-	" [" + PHOTO_130 + "] VARCHAR(255)" +
-	");";
+            " (" + _ID + " INTEGER PRIMARY KEY, " +
+            " [" + DOC_ID + "] INTEGER, " +
+            " [" + OWNER_ID + "] INTEGER, " +
+            " [" + TITLE + "] VARCHAR(255), " +
+            " [" + SIZE + "] INTEGER, " +
+            " [" + TYPE + "] INTEGER, " +
+            " [" + EXT + "] VARCHAR(255), " +
+            " [" + URL + "] VARCHAR(255), " +
+            " [" + PHOTO_100 + "] VARCHAR(255), " +
+            " [" + PHOTO_130 + "] VARCHAR(255)" +
+            ");";
 
     private final static String SQL_CREATE_TABLE_GROUPS = "CREATE TABLE " + GROUPS_TABLE +
-	" (" + GROUP_ID + " INTEGER PRIMARY KEY ON CONFLICT REPLACE, " +
-	" [" + NAME + "] VARCHAR(255), " +
-	" [" + SCREEN_NAME + "] VARCHAR(255), " +
-	" [" + DESCRIPTION + "] VARCHAR(255), " +
-	" [" + STATUS + "] VARCHAR(255), " +
-	" [" + TYPE + "] INTEGER, " +
-	" [" + IS_CLOSED + "] INTEGER, " +
-	" [" + IS_ADMIN + "] INTEGER, " +
-	" [" + ADMIN_LEVER + "] INTEGER, " +
-	" [" + PHOTO_50 + "] VARCHAR(255), " +
-	" [" + PHOTO_100 + "] VARCHAR(255), " +
-	" [" + PHOTO_200 + "] VARCHAR(255), " +
-	" [" + MEMBERS_COUNT + "] INTEGER " +
-	");";
+            " (" + GROUP_ID + " INTEGER PRIMARY KEY ON CONFLICT REPLACE, " +
+            " [" + NAME + "] VARCHAR(255), " +
+            " [" + SCREEN_NAME + "] VARCHAR(255), " +
+            " [" + DESCRIPTION + "] VARCHAR(255), " +
+            " [" + STATUS + "] VARCHAR(255), " +
+            " [" + TYPE + "] INTEGER, " +
+            " [" + IS_CLOSED + "] INTEGER, " +
+            " [" + IS_ADMIN + "] INTEGER, " +
+            " [" + ADMIN_LEVER + "] INTEGER, " +
+            " [" + PHOTO_50 + "] VARCHAR(255), " +
+            " [" + PHOTO_100 + "] VARCHAR(255), " +
+            " [" + PHOTO_200 + "] VARCHAR(255), " +
+            " [" + MEMBERS_COUNT + "] INTEGER " +
+            ");";
 
     private final static String SQL_CREATE_TABLE_USER_GROUP = "CREATE TABLE " + USER_GROUP_TABLE +
-	" (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-	" [" + GROUP_ID + "] INTEGER, " +
-	" [" + USER_ID + "] INTEGER " +
-	");";
+            " (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            " [" + GROUP_ID + "] INTEGER, " +
+            " [" + USER_ID + "] INTEGER " +
+            ");";
 
     private final static String SQL_CREATE_TABLE_FAILED_MESSAGES = "CREATE TABLE " + FAILED_MESSAGES_TABLE +
-	" (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-	" [" + PEER_ID + "] INTEGER, " +
-	" [" + FROM_ID + "] INTEGER, " +
-	" [" + TEXT + "] VARCHAR(255)" +
-	");";
-	
-	private static final String SQL_CREATE_TABLE_EXCEPTIONS = "CREATE TABLE " + EXCEPTIONS_TABLE +
-	" (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-	" [" + EXCEPTION + "] longtext, " +
-	" [" + TIME + "] integer " +
-	");";
-	
-	private static final String SQL_DELETE_EXCEPTIONS = "DROP TABLE IF EXISTS " + EXCEPTIONS_TABLE;
+            " (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            " [" + PEER_ID + "] INTEGER, " +
+            " [" + FROM_ID + "] INTEGER, " +
+            " [" + TEXT + "] VARCHAR(255)" +
+            ");";
+
     private static final String SQL_DELETE_DOCS = "DROP TABLE IF EXISTS " + DOCS_TABLE;
     private static final String SQL_DELETE_USERS = "DROP TABLE IF EXISTS " + USERS_TABLE;
     private static final String SQL_DELETE_AUDIOS = "DROP TABLE IF EXISTS " + AUDIOS_TABLE;
@@ -277,7 +273,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-		db.execSQL(SQL_CREATE_TABLE_EXCEPTIONS);
         db.execSQL(SQL_CREATE_TABLE_DOCS);
         db.execSQL(SQL_CREATE_TABLE_USERS);
         db.execSQL(SQL_CREATE_TABLE_GROUPS);
@@ -290,26 +285,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_TABLE_STATS_MESSAGES);
         db.execSQL(SQL_CREATE_TABLE_FAILED_MESSAGES);
 
-        Log.w(LOG_TAG, "Database created");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Log.w(LOG_TAG, "Database upgraded from " + oldVersion + " to " + newVersion + " version");
-
         dropTables(db);
         onCreate(db);
     }
-	
-	public void dropMessagesTable(SQLiteDatabase db) {
-		db.execSQL(SQL_DELETE_DIALOGS);
-		db.execSQL(SQL_DELETE_MESSAGES);
-		db.execSQL(SQL_CREATE_TABLE_DIALOGS);
-		db.execSQL(SQL_CREATE_TABLE_MESSAGES);
-	}
+
+    public void dropMessagesTable(SQLiteDatabase db) {
+        db.execSQL(SQL_DELETE_DIALOGS);
+        db.execSQL(SQL_DELETE_MESSAGES);
+        db.execSQL(SQL_CREATE_TABLE_DIALOGS);
+        db.execSQL(SQL_CREATE_TABLE_MESSAGES);
+    }
 
     public void dropTables(SQLiteDatabase db) {
-		db.execSQL(SQL_DELETE_EXCEPTIONS);
         db.execSQL(SQL_DELETE_DOCS);
         db.execSQL(SQL_DELETE_USERS);
         db.execSQL(SQL_DELETE_AUDIOS);

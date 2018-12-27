@@ -7,15 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-
-import org.greenrobot.eventbus.EventBus
-
-import java.util.ArrayList
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import org.greenrobot.eventbus.EventBus
 import ru.stwtforever.fast.CreateChatActivity
 import ru.stwtforever.fast.MessagesActivity
 import ru.stwtforever.fast.R
@@ -33,14 +30,16 @@ import ru.stwtforever.fast.concurrent.ThreadExecutor
 import ru.stwtforever.fast.db.CacheStorage
 import ru.stwtforever.fast.db.DatabaseHelper
 import ru.stwtforever.fast.db.MemoryCache
-import ru.stwtforever.fast.service.LongPollService
 import ru.stwtforever.fast.util.ArrayUtil
 import ru.stwtforever.fast.util.Utils
 import ru.stwtforever.fast.util.ViewUtils
+import java.util.*
 
 class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener {
 
     private var refreshLayout: SwipeRefreshLayout? = null
+
+    private var list: RecyclerView? = null
 
     private var tb: Toolbar? = null
 
@@ -69,7 +68,8 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val list: RecyclerView? = view.findViewById(R.id.list)
+        list = view.findViewById(R.id.list)
+        setRecyclerView(list)
         tb = view.findViewById(R.id.tb)
 
         ViewUtils.applyToolbarStyles(tb!!)
@@ -78,11 +78,8 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
 
         tb!!.inflateMenu(R.menu.fragment_dialogs_menu)
         tb!!.setOnMenuItemClickListener { item ->
-            if (item.itemId == R.id.create_chat) {
-                startActivity(Intent(activity, CreateChatActivity::class.java))
-            } else if (item.itemId == R.id.restart_longpoll) {
-                activity!!.stopService(Intent(activity, LongPollService::class.java))
-                activity!!.startService(Intent(activity, LongPollService::class.java))
+            when (item.itemId) {
+                R.id.create_chat -> startActivity(Intent(activity, CreateChatActivity::class.java))
             }
             true
         }
@@ -92,8 +89,6 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
             item.icon.setTint(ViewUtils.mainColor)
         }
 
-        setList(list)
-
         refreshLayout = view.findViewById(R.id.refresh)
         refreshLayout!!.setColorSchemeColors(ThemeManager.getAccent())
         refreshLayout!!.setOnRefreshListener(this)
@@ -101,7 +96,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
 
         val manager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
         list!!.setHasFixedSize(true)
-        list.layoutManager = manager
+        list!!.layoutManager = manager
 
         getMessages()
     }

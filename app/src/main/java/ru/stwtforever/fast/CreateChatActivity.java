@@ -1,7 +1,6 @@
 package ru.stwtforever.fast;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,7 +45,6 @@ public class CreateChatActivity extends AppCompatActivity implements RecyclerAda
         setTitle();
 
         isSelecting = adapter.getSelectedCount() > 0;
-        invalidateOptionsMenu();
     }
 
     private boolean loading;
@@ -79,7 +77,6 @@ public class CreateChatActivity extends AppCompatActivity implements RecyclerAda
             super.onBackPressed();
 
         setTitle();
-        invalidateOptionsMenu();
     }
 
     private void getFriends() {
@@ -91,6 +88,7 @@ public class CreateChatActivity extends AppCompatActivity implements RecyclerAda
 
         if (ArrayUtil.isEmpty(users)) {
             loadFriends(0, 0);
+            return;
         }
 
         createAdapter(users, 0);
@@ -102,19 +100,26 @@ public class CreateChatActivity extends AppCompatActivity implements RecyclerAda
 
         if (offset != 0) {
             adapter.changeItems(users);
-            adapter.notifyDataSetChanged();
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount(), null);
             return;
         }
 
         if (adapter != null) {
             adapter.changeItems(users);
-            adapter.notifyDataSetChanged();
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount(), null);
             return;
         }
 
         adapter = new CreateChatAdapter(this, users);
         list.setAdapter(adapter);
         adapter.setOnItemClickListener(this);
+
+        tb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                list.scrollToPosition(0);
+            }
+        });
     }
 
     private void loadFriends(final int offset, final int count) {
@@ -154,6 +159,7 @@ public class CreateChatActivity extends AppCompatActivity implements RecyclerAda
                 if (!users.isEmpty()) {
                     loading = false;
                 }
+
                 setTitle();
             }
 
@@ -220,8 +226,6 @@ public class CreateChatActivity extends AppCompatActivity implements RecyclerAda
     }
 
     private void getUsers() {
-        if (!isSelecting) return;
-
         HashMap<Integer, VKUser> items = adapter.getSelectedPositions();
 
         Collection<VKUser> values = items.values();
@@ -232,6 +236,9 @@ public class CreateChatActivity extends AppCompatActivity implements RecyclerAda
     }
 
     private void createChat(ArrayList<VKUser> users) {
+        VKUser user = UserConfig.getUser();
+        users.add(0, user);
+
         Bundle b = new Bundle();
         b.putSerializable("users", users);
 
@@ -256,18 +263,7 @@ public class CreateChatActivity extends AppCompatActivity implements RecyclerAda
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        MenuItem create = menu.getItem(0);
-
-        int color = 0;
-
-        color = isSelecting ? ViewUtils.mainColor : Color.LTGRAY;
-
-        create.getIcon().setTint(color);
-
-        create.setEnabled(isSelecting);
-
+        menu.findItem(R.id.create).getIcon().setTint(ViewUtils.mainColor);
         return super.onPrepareOptionsMenu(menu);
     }
-
-
-} 
+}

@@ -1,9 +1,8 @@
 package ru.stwtforever.fast.concurrent;
 
-import android.app.*;
-import java.lang.ref.*;
-import ru.stwtforever.fast.common.*;
-import ru.stwtforever.fast.util.*;
+import android.app.Activity;
+
+import java.lang.ref.WeakReference;
 
 public abstract class AsyncCallback implements Runnable {
     private WeakReference<Activity> ref;
@@ -23,7 +22,6 @@ public abstract class AsyncCallback implements Runnable {
         try {
             ready();
         } catch (final Exception e) {
-			AppGlobal.putException(e);
             e.printStackTrace();
 			
             if (ref != null && ref.get() != null) {

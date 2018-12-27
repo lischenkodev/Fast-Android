@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -58,19 +59,19 @@ public class FragmentGroups extends BaseFragment implements SwipeRefreshLayout.O
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_list, container, false);
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         tb = view.findViewById(R.id.tb);
         ViewUtils.applyToolbarStyles(tb);
 
         tb.setTitle(title);
 
         list = view.findViewById(R.id.list);
-        setList(list);
+        setRecyclerView(list);
 
         refreshLayout = view.findViewById(R.id.refresh);
         refreshLayout.setOnRefreshListener(this);

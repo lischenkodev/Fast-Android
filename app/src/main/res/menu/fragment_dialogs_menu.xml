@@ -1,10 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item
-        android:id="@+id/restart_longpoll"
-        android:icon="@drawable/ic_refresh_black_24dp"
-        android:title="@string/restart_longpoll"
-        app:showAsAction="ifRoom" />
+    
     <item
         android:id="@+id/create_chat"
         android:icon="@drawable/md_add"

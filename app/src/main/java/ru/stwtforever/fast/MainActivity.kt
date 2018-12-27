@@ -1,6 +1,5 @@
 package ru.stwtforever.fast
 
-import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
@@ -9,14 +8,11 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ImageButton
 import android.widget.LinearLayout
-
-import org.greenrobot.eventbus.EventBus
-import org.greenrobot.eventbus.Subscribe
-
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
 import ru.stwtforever.fast.api.UserConfig
 import ru.stwtforever.fast.api.VKApi
 import ru.stwtforever.fast.api.model.VKUser
@@ -81,7 +77,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (visibleFragment === f) {
-            (f as BaseFragment).list.scrollToPosition(0)
+            (f as BaseFragment).recyclerView.scrollToPosition(0)
         }
     }
 

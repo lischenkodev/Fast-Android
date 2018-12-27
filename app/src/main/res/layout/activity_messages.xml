@@ -111,13 +111,13 @@
 
     </RelativeLayout>
 
-    <include
-        layout="@layout/pinned_message" />
+    <include layout="@layout/pinned_message" />
 
     <View
         android:id="@+id/line"
         android:layout_width="match_parent"
         android:layout_height="5dp"
+        android:alpha="0.3"
         android:layout_below="@+id/pinned_msg_container"
         android:background="@drawable/message_drop_shadow_dark"
         android:rotation="180" />

@@ -167,7 +167,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         if (isExist(msg.id)) return;
 
         add(msg);
-        notifyItemInserted(getItemCount() - 1);
         notifyItemRangeChanged(0, getItemCount(), msg);
 
         MessagesActivity root = (MessagesActivity) context;
@@ -367,6 +366,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         LinearLayout photos;
         LinearLayout service_container;
         LinearLayout messageContainer;
+        LinearLayout time_container;
 
         Space space;
 
@@ -395,6 +395,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             bubble = v.findViewById(R.id.bubble);
             attachments = v.findViewById(R.id.attachments);
             photos = v.findViewById(R.id.photos);
+            time_container = v.findViewById(R.id.time_container);
         }
 
         void bind(final int position) {
@@ -426,6 +427,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             String time_ = s + Utils.dateFormatter.format(item.isAdded ? item.date : item.date * 1000L);
 
             time.setText(time_);
+            time_container.setGravity(item.out ? Gravity.END : Gravity.START);
 
             important.setVisibility(item.important ? View.VISIBLE : View.GONE);
 
@@ -578,7 +580,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                             }
                         });
             } catch (Exception e) {
-                AppGlobal.putException(e);
+                e.printStackTrace();
             }
         }
 

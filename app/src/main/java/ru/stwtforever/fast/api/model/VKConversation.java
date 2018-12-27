@@ -181,7 +181,7 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public boolean isNotificationsDisabled() {
-        return disabled_forever || disabled_until > 0;
+        return disabled_forever || disabled_until > 0 || no_sound;
 
     }
 }
