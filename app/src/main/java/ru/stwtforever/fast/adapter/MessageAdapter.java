@@ -75,6 +75,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     private AttachmentInflater attacher;
     private DisplayMetrics metrics;
 
+    private boolean isBusy = false;
+
     public MessageAdapter(Context context, ArrayList<VKMessage> msgs, int peerId) {
         super(context, msgs);
 
@@ -92,8 +94,12 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         int type = (int) data[0];
 
         switch (type) {
+            case -1:
+                isBusy = false;
+                break;
             case 3:
-                readMessage((int) data[1]);
+                if (!isBusy)
+                    readMessage((int) data[1]);
                 break;
             case 4:
                 VKConversation conversation = (VKConversation) data[1];
@@ -305,7 +311,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             if (attach instanceof VKAudio) {
                 attacher.audio(item, parent, (VKAudio) attach);
             } else if (attach instanceof VKPhoto) {
-                attacher.photo(item, images, (VKPhoto) attach, -1);
+                attacher.photo(item, images, (VKPhoto) attach, -1, bubble == null);
             } else if (attach instanceof VKSticker) {
                 if (bubble != null) {
                     bubble.setBackgroundColor(Color.TRANSPARENT);
@@ -671,7 +677,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             parent.addView(v);
         }
 
-        public void photo(final VKMessage item, ViewGroup parent, final VKPhoto source, int width) {
+        public void photo(final VKMessage item, ViewGroup parent, final VKPhoto source, int width, boolean fromForward) {
             ImageView image = (ImageView) inflater.inflate(R.layout.msg_attach_photo, parent, false);
 
             image.setLayoutParams(getParams(source.width, source.height, -1));
@@ -681,20 +687,21 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 public void onClick(View v) {
                     Intent intent = new Intent(context, PhotoViewActivity.class);
 
-                    ArrayList<String> urls = new ArrayList<>();
+                    ArrayList<VKPhoto> urls = new ArrayList<>();
 
                     for (VKModel m : item.attachments) {
                         if (m instanceof VKPhoto) {
-                            urls.add(((VKPhoto) m).sizes.forType("y").src);
+                            urls.add((VKPhoto) m);
                         }
                     }
 
                     intent.putExtra("photo", urls);
                     context.startActivity(intent);
+                    isBusy = true;
                 }
             });
 
-            loadImage(image, source.sizes.forType("m").src, source.sizes.forType("x").src);
+            loadImage(image, source.sizes.forType("m").src, source.getMaxSize());
             parent.addView(image);
         }
 
@@ -745,7 +752,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             if (!ArrayUtil.isEmpty(source.attachments)) {
                 LinearLayout container = v.findViewById(R.id.msgAttachments);
-                inflateAttachments(item, container, container, source.attachments, null, -1);
+                inflateAttachments(source, container, container, source.attachments, null, -1);
             }
 
             if (!ArrayUtil.isEmpty(source.fwd_messages)) {

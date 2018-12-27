@@ -147,5 +147,12 @@
     <string name="confirm_delete_friend">Are you really want to delete this friend?</string>
     <string name="let_messages_unread">Let messages unread</string>
     <string name="not_read_messages">Not read messages</string>
+
     <string name="chat_creator">Creator of the chat</string>
+    <string name="save">Save</string>
+    <string name="copy_link">Copy link</string>
+    <string name="photo_of_photo">%1$s of %2$s</string>
+    <string name="url_copied_text">Url copied to clipboard</string>
+    <string name="photo_saved_in_downloads_directory">Photo saved in downloads directory</string>
+    <string name="fast_rqrs_prmsn_for_save_photo">Fast requires permission for save photo</string>
 </resources>

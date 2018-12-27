@@ -6,7 +6,7 @@
     android:layout_marginTop="?actionBarSize"
     android:background="?android:windowBackground"
     android:orientation="vertical"
-    android:visibility="gone">
+    android:visibility="visible">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -34,16 +34,18 @@
                     android:layout_height="wrap_content"
                     android:gravity="center_vertical"
                     android:paddingStart="6dp"
+                    android:paddingEnd="0dp"
                     android:singleLine="true"
                     android:textColor="?mainColor" />
 
                 <TextView
                     android:id="@+id/date"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="0.7"
                     android:gravity="center_vertical"
                     android:paddingStart="6dp"
+                    android:paddingEnd="0dp"
                     android:singleLine="true"
                     android:textColor="?secondaryColor"
                     android:textSize="12sp" />

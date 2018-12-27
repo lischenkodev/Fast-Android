@@ -15,16 +15,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import ru.stwtforever.fast.PhotoViewActivity;
+import ru.stwtforever.fast.api.model.VKPhoto;
 import ru.stwtforever.fast.util.Utils;
 
 public class FragmentPhotoView extends Fragment {
 
-    private String url;
+    private VKPhoto photo;
 
-    public static FragmentPhotoView newInstance(String url) {
+    public static FragmentPhotoView newInstance(VKPhoto photo) {
         FragmentPhotoView fragment = new FragmentPhotoView();
         Bundle b = new Bundle();
-        b.putString("url", url);
+        b.putSerializable("photo", photo);
         fragment.setArguments(b);
         return fragment;
     }
@@ -33,7 +34,7 @@ public class FragmentPhotoView extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        url = getArguments().getString("url", "");
+        photo = (VKPhoto) getArguments().getSerializable("photo");
     }
 
     @Nullable
@@ -50,8 +51,10 @@ public class FragmentPhotoView extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if (!TextUtils.isEmpty(url) && Utils.hasConnection()) {
-            loadImage(url);
+        String max_size = photo.getMaxSize();
+
+        if (!TextUtils.isEmpty(max_size) && Utils.hasConnection()) {
+            loadImage(max_size);
         }
 
         getView().setOnClickListener(new View.OnClickListener() {
@@ -67,5 +70,9 @@ public class FragmentPhotoView extends Fragment {
             Picasso.get().load(url).placeholder(new ColorDrawable(Color.GRAY)).into(((ImageView) getView()));
         } catch (Exception ignored) {
         }
+    }
+
+    public String getUrl() {
+        return photo.getMaxSize();
     }
 }

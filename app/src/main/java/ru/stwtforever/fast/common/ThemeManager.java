@@ -31,9 +31,9 @@ public class ThemeManager {
 	
 	private static void getTheme() {
 		if (dark) {
-			current_theme = R.style.DarkTheme;
+			current_theme = R.style.AppTheme_Dark;
 		} else {
-			current_theme = R.style.LightTheme;
+			current_theme = R.style.AppTheme_Light;
 		}
 	}
 	

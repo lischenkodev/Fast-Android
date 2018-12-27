@@ -28,6 +28,7 @@ public class VKPhotoSizes extends VKModel implements Serializable {
     public PhotoSize forType(String type) {
         for (PhotoSize size : sizes) {
             if (size.type.equals(type)) {
+
                 return size;
             }
         }

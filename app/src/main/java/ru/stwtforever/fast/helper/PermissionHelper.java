@@ -1,4 +1,5 @@
 package ru.stwtforever.fast.helper;
+import android.annotation.TargetApi;
 import android.app.*;
 import android.content.pm.*;
 import androidx.transition.*;
@@ -79,11 +80,13 @@ public class PermissionHelper {
 		return granted;
 	}
 	
+	@TargetApi(Build.VERSION_CODES.M)
 	public static void requestPermission(String permission, int request_code) {
 		if (context == null || permission == null || isL()) return;
 		context.requestPermissions(new String[]{permission}, request_code);
 	}
 	
+	@TargetApi(Build.VERSION_CODES.M)
 	public static void requestPermissions(String[] permissions, int request_code) {
 		if (context == null || permissions == null || isL()) return;
 		context.requestPermissions(permissions, request_code);

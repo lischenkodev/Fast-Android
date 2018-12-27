@@ -16,10 +16,8 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.net.ConnectivityManager;
+import android.os.Environment;
 import android.preference.PreferenceManager;
-import androidx.annotation.ColorInt;
-import androidx.core.graphics.ColorUtils;
-import androidx.appcompat.app.AlertDialog;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
@@ -31,6 +29,8 @@ import com.squareup.picasso.Transformation;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -42,6 +42,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import androidx.annotation.ColorInt;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.graphics.ColorUtils;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.common.AppGlobal;
 import ru.stwtforever.fast.io.BytesOutputStream;
@@ -295,4 +298,48 @@ public class Utils {
             return "round";
         }
     }
+
+    public static void saveFileByUrl(String link) throws Exception {
+        URL url = new URL(link);
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        urlConnection.setRequestMethod("GET");
+        urlConnection.setDoOutput(false);
+        urlConnection.connect();
+
+        File directory = new File(Environment.getExternalStorageDirectory() + "/Download");
+
+        if (!directory.exists()) directory.mkdir();
+
+        String name = link.substring(link.lastIndexOf("/") + 1, link.length());
+
+        File file = new File(directory, name);
+
+        int i = 1;
+        while (file.exists()) {
+            String fileName = link.substring(link.lastIndexOf("/") + 1);
+
+            int dotIndex = fileName.lastIndexOf(".");
+
+            String name_ = fileName.substring(0, dotIndex);
+            String ext = fileName.substring(dotIndex);
+            name_ += "-" + i;
+
+            fileName = name_ + ext;
+
+            file = new File(directory, fileName);
+            i++;
+        }
+
+        FileOutputStream fileOutput = new FileOutputStream(file);
+        InputStream inputStream = urlConnection.getInputStream();
+
+        byte[] buffer = new byte[1024];
+        int bufferLength;
+
+        while ((bufferLength = inputStream.read(buffer)) > 0) {
+            fileOutput.write(buffer, 0, bufferLength);
+        }
+        fileOutput.close();
+    }
 }
+
