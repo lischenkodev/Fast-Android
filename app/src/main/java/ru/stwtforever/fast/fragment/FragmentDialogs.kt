@@ -8,14 +8,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import org.greenrobot.eventbus.EventBus
 import ru.stwtforever.fast.CreateChatActivity
-import ru.stwtforever.fast.MainActivity
 import ru.stwtforever.fast.MessagesActivity
 import ru.stwtforever.fast.R
 import ru.stwtforever.fast.adapter.DialogAdapter
@@ -27,12 +25,13 @@ import ru.stwtforever.fast.api.model.VKGroup
 import ru.stwtforever.fast.api.model.VKMessage
 import ru.stwtforever.fast.api.model.VKUser
 import ru.stwtforever.fast.cls.BaseFragment
+import ru.stwtforever.fast.common.AppGlobal
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.concurrent.AsyncCallback
 import ru.stwtforever.fast.concurrent.ThreadExecutor
-import ru.stwtforever.fast.db.CacheStorage
-import ru.stwtforever.fast.db.DatabaseHelper
-import ru.stwtforever.fast.db.MemoryCache
+import ru.stwtforever.fast.database.CacheStorage
+import ru.stwtforever.fast.database.DatabaseHelper
+import ru.stwtforever.fast.database.MemoryCache
 import ru.stwtforever.fast.util.ArrayUtil
 import ru.stwtforever.fast.util.Utils
 import ru.stwtforever.fast.util.ViewUtils
@@ -82,7 +81,15 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         tb!!.inflateMenu(R.menu.fragment_dialogs_menu)
         tb!!.setOnMenuItemClickListener { item ->
             when (item.itemId) {
-                R.id.create_chat -> startActivity(Intent(activity, CreateChatActivity::class.java))
+                R.id.create_chat -> {
+                    startActivity(Intent(activity, CreateChatActivity::class.java))
+                }
+                R.id.clear_messages_cache -> {
+                    DatabaseHelper.getInstance().dropMessagesTable(AppGlobal.database)
+                    adapter!!.clear()
+                    adapter!!.notifyDataSetChanged()
+                    getDialogs(0, DIALOGS_COUNT)
+                }
             }
             true
         }
@@ -91,7 +98,6 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
             val item = tb!!.menu.getItem(i)
             item.icon.setTint(ViewUtils.mainColor)
         }
-
 
         refreshLayout = view.findViewById(R.id.refresh)
         refreshLayout!!.setColorSchemeColors(ThemeManager.getAccent())
@@ -103,32 +109,6 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         list!!.layoutManager = manager
 
         getMessages()
-
-        initSearchView()
-    }
-
-    private fun initSearchView() {
-        val search = tb!!.menu.findItem(R.id.search)
-
-        val searchView: SearchView = search!!.actionView as SearchView
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextChange(newText: String?): Boolean {
-                adapter!!.isEditing = true
-                adapter!!.filter(newText!!.toLowerCase())
-                return false
-            }
-
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                if (!searchView.isIconified)
-                    searchView.isIconified = true
-
-                adapter!!.isEditing = false
-                search.collapseActionView()
-                return false
-            }
-
-        })
-
     }
 
     private fun showDialog(position: Int) {
@@ -160,17 +140,19 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
 
                     private fun deleteDialog() {
                         ThreadExecutor.execute(object : AsyncCallback(activity) {
-                            internal var response = -1
+
+                            val message = adapter!!.values[position]
 
                             @Throws(Exception::class)
                             override fun ready() {
-                                val m = adapter!!.values[position]
-                                response = VKApi.messages().deleteConversation().peerId(m.last.peerId.toLong()).execute(Int::class.java)[0]
+
+                                VKApi.messages().deleteConversation().peerId(message.last.peerId.toLong()).execute(Int::class.java)
                             }
 
                             override fun done() {
-                                adapter!!.values.removeAt(position)
-                                adapter!!.notifyDataSetChanged()
+                                adapter!!.remove(position)
+                                adapter!!.notifyItemRemoved(position)
+                                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, message)
                             }
 
                             override fun error(e: Exception) {
@@ -196,6 +178,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         if (ArrayUtil.isEmpty(messages)) {
             return
         }
+
         if (offset != 0) {
             adapter!!.changeItems(messages)
             adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, adapter!!.getItem(adapter!!.itemCount - 1))
@@ -256,8 +239,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                 val messages = ArrayList<VKMessage>()
 
                 for (i in conversations.indices) {
-                    val last = conversations[i].last
-                    messages.add(last)
+                    messages.add(conversations[i].last)
                 }
 
                 if (!ArrayUtil.isEmpty(messages))
@@ -267,7 +249,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                     CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
 
                 if (!ArrayUtil.isEmpty(groups))
-                    CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, conversations[0].groups)
+                    CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, groups)
             }
 
             override fun done() {
@@ -327,17 +309,6 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
 
             }
         })
-    }
-
-    fun onBackPressed(activity: MainActivity) {
-        val adapter = list!!.adapter as DialogAdapter
-        if (adapter.isEditing) {
-            adapter.isEditing = false
-            val search = tb!!.menu.findItem(R.id.search)
-            search.collapseActionView()
-        } else {
-            activity.backPressed()
-        }
     }
 
     override fun onItemLongClick(v: View, position: Int) {

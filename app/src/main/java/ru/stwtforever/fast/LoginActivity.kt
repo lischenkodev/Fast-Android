@@ -19,8 +19,8 @@ import ru.stwtforever.fast.api.model.VKUser
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.concurrent.AsyncCallback
 import ru.stwtforever.fast.concurrent.ThreadExecutor
-import ru.stwtforever.fast.db.CacheStorage
-import ru.stwtforever.fast.db.DatabaseHelper
+import ru.stwtforever.fast.database.CacheStorage
+import ru.stwtforever.fast.database.DatabaseHelper
 import ru.stwtforever.fast.helper.FontHelper
 import ru.stwtforever.fast.util.Requests
 import ru.stwtforever.fast.util.ViewUtils

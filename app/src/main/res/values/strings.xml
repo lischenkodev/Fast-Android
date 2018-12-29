@@ -155,4 +155,5 @@
     <string name="url_copied_text">Url copied to clipboard</string>
     <string name="photo_saved_in_downloads_directory">Photo saved in downloads directory</string>
     <string name="fast_rqrs_prmsn_for_save_photo">Fast requires permission for save photo</string>
+    <string name="clear_cache">Clear cache</string>
 </resources>

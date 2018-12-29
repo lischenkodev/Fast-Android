@@ -87,7 +87,7 @@ public class HttpRequest {
         InputStream input = connection.getInputStream();
 
         String encoding = connection.getHeaderField("Content-Encoding");
-        if (encoding != null && "gzip".equalsIgnoreCase(encoding)) {
+        if ("gzip".equalsIgnoreCase(encoding)) {
             input = EasyStreams.gzip(input);
         }
         return input;

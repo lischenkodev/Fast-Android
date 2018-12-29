@@ -21,8 +21,8 @@ import ru.stwtforever.fast.cls.BaseFragment
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.concurrent.AsyncCallback
 import ru.stwtforever.fast.concurrent.ThreadExecutor
-import ru.stwtforever.fast.db.DatabaseHelper
-import ru.stwtforever.fast.db.MemoryCache
+import ru.stwtforever.fast.database.DatabaseHelper
+import ru.stwtforever.fast.database.MemoryCache
 import ru.stwtforever.fast.fragment.FragmentDialogs
 import ru.stwtforever.fast.fragment.FragmentFriends
 import ru.stwtforever.fast.fragment.FragmentGroups
@@ -251,17 +251,6 @@ class MainActivity : AppCompatActivity() {
         EventBus.getDefault().unregister(this)
         MemoryCache.clear()
         DatabaseHelper.getInstance().close()
-    }
-
-    override fun onBackPressed() {
-        if (visibleFragment == f_dialogs) {
-            f_dialogs.onBackPressed(this)
-        } else
-            backPressed()
-    }
-
-    fun backPressed() {
-        super.onBackPressed()
     }
 
     private fun replaceFragment(fragment: Fragment) {

@@ -1,4 +1,4 @@
-package ru.stwtforever.fast.db;
+package ru.stwtforever.fast.database;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -284,7 +284,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_TABLE_USER_GROUP);
         db.execSQL(SQL_CREATE_TABLE_STATS_MESSAGES);
         db.execSQL(SQL_CREATE_TABLE_FAILED_MESSAGES);
-
     }
 
     @Override

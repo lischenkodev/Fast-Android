@@ -8,7 +8,7 @@ import ru.stwtforever.fast.io.*;
 import ru.stwtforever.fast.api.model.*;
 import java.io.*;
 import org.json.*;
-import ru.stwtforever.fast.db.*;
+import ru.stwtforever.fast.database.*;
 
 public class UserConfig {
 	

@@ -19,7 +19,7 @@ import ru.stwtforever.fast.api.model.VKMessage;
 import ru.stwtforever.fast.api.model.VKModel;
 import ru.stwtforever.fast.api.model.VKUser;
 import ru.stwtforever.fast.common.AppGlobal;
-import ru.stwtforever.fast.db.CacheStorage;
+import ru.stwtforever.fast.database.CacheStorage;
 import ru.stwtforever.fast.util.ArrayUtil;
 
 public class VKUtils {

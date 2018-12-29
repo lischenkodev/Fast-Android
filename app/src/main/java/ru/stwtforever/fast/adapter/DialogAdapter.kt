@@ -28,8 +28,8 @@ import ru.stwtforever.fast.api.model.VKGroup
 import ru.stwtforever.fast.api.model.VKMessage
 import ru.stwtforever.fast.api.model.VKUser
 import ru.stwtforever.fast.common.ThemeManager
-import ru.stwtforever.fast.db.CacheStorage
-import ru.stwtforever.fast.db.MemoryCache
+import ru.stwtforever.fast.database.CacheStorage
+import ru.stwtforever.fast.database.MemoryCache
 import ru.stwtforever.fast.helper.FontHelper
 import ru.stwtforever.fast.util.ArrayUtil
 import ru.stwtforever.fast.util.Utils
@@ -313,7 +313,7 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
                 else -> ""
             } ?: ""
 
-            if (TextUtils.isEmpty(fromAvatar.trim())) {
+            if (TextUtils.isEmpty(fromAvatar)) {
                 avatar_small.setImageDrawable(p_user)
             } else {
                 Picasso.get()
@@ -323,7 +323,7 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
                         .into(avatar_small)
             }
 
-            if (TextUtils.isEmpty(peerAvatar.trim())) {
+            if (TextUtils.isEmpty(peerAvatar)) {
                 avatar.setImageDrawable(when {
                     item.isChat -> p_users
                     else -> p_user

@@ -12,6 +12,7 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+import ru.stwtforever.fast.util.ArrayUtil;
 
 public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
         extends RecyclerView.Adapter<VH> {
@@ -86,6 +87,11 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
 
     public void remove(int position) {
         getValues().remove(position);
+    }
+
+    public void clear() {
+        if (!ArrayUtil.isEmpty(getValues()))
+            getValues().clear();
     }
 
     public void setOnItemClickListener(OnItemClickListener l) {

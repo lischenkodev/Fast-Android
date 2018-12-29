@@ -19,8 +19,8 @@ import ru.stwtforever.fast.api.model.VKConversation;
 import ru.stwtforever.fast.api.model.VKLongPollServer;
 import ru.stwtforever.fast.api.model.VKMessage;
 import ru.stwtforever.fast.concurrent.LowThread;
-import ru.stwtforever.fast.db.CacheStorage;
-import ru.stwtforever.fast.db.DatabaseHelper;
+import ru.stwtforever.fast.database.CacheStorage;
+import ru.stwtforever.fast.database.DatabaseHelper;
 import ru.stwtforever.fast.net.HttpRequest;
 import ru.stwtforever.fast.util.Utils;
 

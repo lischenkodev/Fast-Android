@@ -1,4 +1,4 @@
-package ru.stwtforever.fast.db;
+package ru.stwtforever.fast.database;
 
 import android.database.*;
 import android.database.sqlite.*;
