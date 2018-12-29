@@ -253,6 +253,17 @@ class MainActivity : AppCompatActivity() {
         DatabaseHelper.getInstance().close()
     }
 
+    override fun onBackPressed() {
+        if (visibleFragment == f_dialogs) {
+            f_dialogs.onBackPressed(this)
+        } else
+            backPressed()
+    }
+
+    fun backPressed() {
+        super.onBackPressed()
+    }
+
     private fun replaceFragment(fragment: Fragment) {
         val tr = supportFragmentManager.beginTransaction()
 

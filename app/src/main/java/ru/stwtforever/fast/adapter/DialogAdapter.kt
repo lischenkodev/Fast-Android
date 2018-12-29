@@ -28,6 +28,7 @@ import ru.stwtforever.fast.api.model.VKGroup
 import ru.stwtforever.fast.api.model.VKMessage
 import ru.stwtforever.fast.api.model.VKUser
 import ru.stwtforever.fast.common.ThemeManager
+import ru.stwtforever.fast.db.CacheStorage
 import ru.stwtforever.fast.db.MemoryCache
 import ru.stwtforever.fast.helper.FontHelper
 import ru.stwtforever.fast.util.ArrayUtil
@@ -188,70 +189,37 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
     }
 
     fun getTitle(item: VKConversation?, user: VKUser?, group: VKGroup?): String? {
-        if (item == null) return null
-
-        if (item.isGroup) {
-            if (group != null)
-                return if (TextUtils.isEmpty(group.name)) "" else group.name
-        } else if (item.isUser) {
-            if (user != null)
-                return if (TextUtils.isEmpty(user.toString())) "" else user.toString()
-        } else {
-            return if (TextUtils.isEmpty(item.title)) "" else item.title
-        }
-
-        return ""
+        return when {
+            item!!.isGroup -> group!!.name
+            item.isUser -> user!!.toString()
+            else -> item.title
+        } ?: ""
     }
 
     fun getPhoto(item: VKConversation?, user: VKUser?, group: VKGroup?): String? {
-        if (item == null) return null
-
-        if (item.isUser) {
-            if (user != null)
-                return user.photo_100
-        } else if (item.isGroup) {
-            if (group != null)
-                return group.photo_100
-        } else {
-            return item.photo_100
-        }
-
-        return ""
+        return when {
+            item!!.isGroup -> group!!.photo_200
+            item.isUser -> user!!.photo_200
+            else -> item.photo_200
+        } ?: ""
     }
 
     fun searchUser(id: Int): VKUser? {
-        var user: VKUser? = MemoryCache.getUser(id)
-        if (user == null) {
-            user = VKUser.EMPTY
-        }
-        return user
+        return MemoryCache.getUser(id) ?: VKUser.EMPTY
     }
 
     fun searchGroup(id: Int): VKGroup? {
-        var group: VKGroup? = MemoryCache.getGroup(VKGroup.toGroupId(id))
-        if (group == null) {
-            group = VKGroup.EMPTY
-        }
-        return group
+        return MemoryCache.getGroup(VKGroup.toGroupId(id)) ?: VKGroup.EMPTY
     }
 
-    fun searchMessageIndex(peerId: Int): Int {
+    private fun searchMessageIndex(peerId: Int): Int {
         for (i in 0 until values.size) {
-            val conv = getItem(i)
-            if (conv.last.peerId == peerId) {
+            val conversation = getItem(i)
+            if (conversation.last.peerId == peerId) {
                 return i
             }
         }
         return -1
-    }
-
-    fun searchMessage(id: Int): VKConversation? {
-        for (c in values) {
-            if (c.last.id == id) {
-                return c
-            }
-        }
-        return null
     }
 
     fun destroy() {
@@ -333,20 +301,17 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
 
             avatar_small.visibility = if (!item.isChat && !last.out) View.GONE else View.VISIBLE
 
-            var peerAvatar: String
+            val peerAvatar: String = when {
+                item.isGroup -> peerGroup!!.photo_200
+                item.isUser -> peerUser!!.photo_200
+                else -> item.photo_200
+            } ?: ""
 
-            peerAvatar = when {
-                item.isGroup -> peerGroup!!.photo_100
-                item.isUser -> peerUser!!.photo_100
-                else -> if (item.photo_100 == null) "" else item.photo_100
-            }
-
-            var fromAvatar: String
-
-            fromAvatar = if (last.out && !item.isChat)
-                UserConfig.user.photo_100 else
-                if (item.isFromUser) if (user!!.photo_100 == null) "" else user.photo_100
-                else if (group!!.photo_100 == null) "" else group.photo_100
+            val fromAvatar: String = when {
+                item.isFromGroup -> group!!.photo_100
+                item.isFromUser -> if (last.out && !item.isChat) UserConfig.user.photo_100 else user!!.photo_100
+                else -> ""
+            } ?: ""
 
             if (TextUtils.isEmpty(fromAvatar.trim())) {
                 avatar_small.setImageDrawable(p_user)
@@ -359,7 +324,10 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
             }
 
             if (TextUtils.isEmpty(peerAvatar.trim())) {
-                avatar.setImageDrawable(if (item.isChat) p_users else p_user)
+                avatar.setImageDrawable(when {
+                    item.isChat -> p_users
+                    else -> p_user
+                })
             } else {
                 Picasso.get()
                         .load(peerAvatar)
@@ -387,21 +355,46 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
                 body.text = Html.fromHtml(body_)
             }
 
-            counter.visibility = if (!last.out && item.unread > 0) View.VISIBLE else View.GONE
-            out.visibility = if (last.out && !item.read) View.VISIBLE else View.GONE
-
-            if (item.isGroup || item.isChat) {
-                online.visibility = View.GONE
-            } else {
-                if (peerUser!!.online) {
-                    online.visibility = View.VISIBLE
-                } else {
-                    online.visibility = View.GONE
-                }
+            counter.visibility = when {
+                !last.out && item.unread > 0 -> View.VISIBLE
+                else -> View.GONE
             }
 
-            counter_container.visibility = if (item.read) View.GONE else View.VISIBLE
+            out.visibility = when {
+                last.out && !item.read -> View.VISIBLE
+                else -> View.GONE
+            }
+
+            online.visibility = when {
+                peerUser!!.online -> View.VISIBLE
+                else -> View.GONE
+            }
+
+            counter_container.visibility = when {
+                item.read -> View.GONE
+                else -> View.VISIBLE
+            }
         }
+    }
+
+    override fun onQueryItem(item: VKConversation?, lowerQuery: String?): Boolean {
+        if (item == null) return false
+
+        if (item.isUser) {
+            val user = CacheStorage.getUser(item.last.peerId) ?: return false
+            if (user.toString().toLowerCase().contains(lowerQuery as CharSequence)) return true
+        }
+
+        if (item.isGroup) {
+            val group = CacheStorage.getGroup(item.last.peerId) ?: return false
+            if (group.name.toLowerCase().contains(lowerQuery as CharSequence)) return true
+        }
+
+        if (item.isChat || item.isChannel) {
+            if (item.title.toLowerCase().contains(lowerQuery as CharSequence)) return true
+        }
+
+        return false
     }
 
     companion object {

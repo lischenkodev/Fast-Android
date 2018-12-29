@@ -1,7 +1,6 @@
 package ru.stwtforever.fast.api.model;
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.json.JSONObject;
 
@@ -44,7 +43,6 @@ public class VKPhoto extends VKModel implements Serializable {
 
     public VKPhoto(JSONObject source) {
         tag = VKAttachments.TYPE_PHOTO;
-        logSource(TAG, source.toString());
         this.id = source.optInt("id");
         this.owner_id = source.optInt("owner_id");
         this.album_id = source.optInt("album_id");
@@ -68,7 +66,6 @@ public class VKPhoto extends VKModel implements Serializable {
     }
 
     public static VKPhoto parseFromAttach(JSONObject o) {
-        logSource(TAG, o.toString());
         VKPhoto p = new VKPhoto();
         p.height = o.optInt("heigh");
         p.width = o.optInt("width");
@@ -81,10 +78,6 @@ public class VKPhoto extends VKModel implements Serializable {
         p.access_key = o.optString("access_key");
 
         return p;
-    }
-
-    private static void logSource(String tag, String value) {
-        Log.d(tag, value);
     }
 
     public String getMaxSize() {

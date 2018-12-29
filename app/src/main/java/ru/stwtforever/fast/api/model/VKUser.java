@@ -10,11 +10,12 @@ import java.util.ArrayList;
 
 public class VKUser extends VKModel implements Serializable {
 
-    public static final String FIELDS_DEFAULT = "photo_50, photo_100, photo_200, status, screen_name, online, online_mobile, last_seen, verified, sex, site";
+    public static final String FIELDS_DEFAULT = "photo_50,photo_100,photo_200,status,screen_name,online,online_mobile,last_seen,verified,sex";
 
     public int id;
     public String name;
     public String surname;
+
     public String screen_name;
     public boolean online;
     public boolean online_mobile;
@@ -60,7 +61,6 @@ public class VKUser extends VKModel implements Serializable {
         this.status = source.optString("status");
         this.online_mobile = source.optInt("online_mobile") == 1;
         this.verified = source.optInt("verified") == 1;
-
 
         this.sex = source.optInt("sex");
         if (this.online_mobile) {

@@ -24,6 +24,20 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
     private OnItemClickListener click;
     private OnItemLongClickListener long_click;
 
+    public boolean isEditing() {
+        return editing;
+    }
+
+    public void setEditing(boolean editing) {
+        this.editing = editing;
+        if (!editing) {
+            changeItems(cleanValues);
+            notifyItemRangeChanged(0, getItemCount());
+        }
+    }
+
+    protected boolean editing;
+
     RecyclerAdapter(Context context, ArrayList<T> values) {
         this.context = context;
         this.values = values;
@@ -59,7 +73,7 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
     }
 
     public void changeItems(ArrayList<T> items) {
-        this.values = items;
+        this.values = new ArrayList<>(items);
     }
 
     public void add(int index, T item) {
@@ -125,10 +139,10 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
             }
         }
 
-        notifyDataSetChanged();
+        notifyItemRangeChanged(0, getItemCount());
     }
 
-    private boolean onQueryItem(T item, String lowerQuery) {
+    protected boolean onQueryItem(T item, String lowerQuery) {
         return false;
     }
 

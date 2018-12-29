@@ -8,12 +8,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import org.greenrobot.eventbus.EventBus
 import ru.stwtforever.fast.CreateChatActivity
+import ru.stwtforever.fast.MainActivity
 import ru.stwtforever.fast.MessagesActivity
 import ru.stwtforever.fast.R
 import ru.stwtforever.fast.adapter.DialogAdapter
@@ -23,6 +25,7 @@ import ru.stwtforever.fast.api.VKApi
 import ru.stwtforever.fast.api.model.VKConversation
 import ru.stwtforever.fast.api.model.VKGroup
 import ru.stwtforever.fast.api.model.VKMessage
+import ru.stwtforever.fast.api.model.VKUser
 import ru.stwtforever.fast.cls.BaseFragment
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.concurrent.AsyncCallback
@@ -89,6 +92,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
             item.icon.setTint(ViewUtils.mainColor)
         }
 
+
         refreshLayout = view.findViewById(R.id.refresh)
         refreshLayout!!.setColorSchemeColors(ThemeManager.getAccent())
         refreshLayout!!.setOnRefreshListener(this)
@@ -99,6 +103,32 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         list!!.layoutManager = manager
 
         getMessages()
+
+        initSearchView()
+    }
+
+    private fun initSearchView() {
+        val search = tb!!.menu.findItem(R.id.search)
+
+        val searchView: SearchView = search!!.actionView as SearchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextChange(newText: String?): Boolean {
+                adapter!!.isEditing = true
+                adapter!!.filter(newText!!.toLowerCase())
+                return false
+            }
+
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                if (!searchView.isIconified)
+                    searchView.isIconified = true
+
+                adapter!!.isEditing = false
+                search.collapseActionView()
+                return false
+            }
+
+        })
+
     }
 
     private fun showDialog(position: Int) {
@@ -200,46 +230,52 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
 
         refreshLayout!!.isRefreshing = true
         ThreadExecutor.execute(object : AsyncCallback(activity) {
-            private lateinit var messages: ArrayList<VKConversation>
+            private lateinit var conversations: ArrayList<VKConversation>
 
             @Throws(Exception::class)
             override fun ready() {
-                messages = VKApi.messages().conversations.filter("all").extended(true).offset(offset).count(count).execute(VKConversation::class.java)
+                conversations = VKApi.messages().conversations
+                        .filter("all")
+                        .extended(true)
+                        .fields(VKUser.FIELDS_DEFAULT)
+                        .offset(offset)
+                        .count(count)
+                        .execute(VKConversation::class.java)
 
-                if (messages.isEmpty()) {
+                if (conversations.isEmpty()) {
                     loading = true
                 }
 
                 if (offset == 0) {
                     CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE)
-                    CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, messages)
+                    CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, conversations)
                 }
 
-                val users = messages[0].profiles
-                val groups = messages[0].groups
-                val last_messages = ArrayList<VKMessage>()
+                val users = conversations[0].profiles
+                val groups = conversations[0].groups
+                val messages = ArrayList<VKMessage>()
 
-                for (i in messages.indices) {
-                    val last = messages[i].last
-                    last_messages.add(last)
+                for (i in conversations.indices) {
+                    val last = conversations[i].last
+                    messages.add(last)
                 }
 
-                if (!ArrayUtil.isEmpty(last_messages))
-                    CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, last_messages)
+                if (!ArrayUtil.isEmpty(messages))
+                    CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, messages)
 
                 if (!ArrayUtil.isEmpty(users))
                     CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
 
                 if (!ArrayUtil.isEmpty(groups))
-                    CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, messages[0].groups)
+                    CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, conversations[0].groups)
             }
 
             override fun done() {
                 EventBus.getDefault().postSticky(MemoryCache.getUser(UserConfig.userId))
-                createAdapter(messages, offset)
+                createAdapter(conversations, offset)
                 refreshLayout!!.isRefreshing = false
 
-                if (!messages.isEmpty()) {
+                if (!conversations.isEmpty()) {
                     loading = false
                 }
             }
@@ -293,6 +329,16 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         })
     }
 
+    fun onBackPressed(activity: MainActivity) {
+        val adapter = list!!.adapter as DialogAdapter
+        if (adapter.isEditing) {
+            adapter.isEditing = false
+            val search = tb!!.menu.findItem(R.id.search)
+            search.collapseActionView()
+        } else {
+            activity.backPressed()
+        }
+    }
 
     override fun onItemLongClick(v: View, position: Int) {
         showDialog(position)
