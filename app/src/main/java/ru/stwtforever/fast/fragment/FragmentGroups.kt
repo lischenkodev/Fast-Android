@@ -6,7 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
+
+import java.util.ArrayList
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,7 +15,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import ru.stwtforever.fast.MessagesActivity
 import ru.stwtforever.fast.R
 import ru.stwtforever.fast.adapter.FriendAdapter
-import ru.stwtforever.fast.adapter.RecyclerAdapter
 import ru.stwtforever.fast.api.UserConfig
 import ru.stwtforever.fast.api.VKApi
 import ru.stwtforever.fast.api.model.VKConversation
@@ -28,30 +28,22 @@ import ru.stwtforever.fast.database.DatabaseHelper
 import ru.stwtforever.fast.util.ArrayUtil
 import ru.stwtforever.fast.util.Utils
 import ru.stwtforever.fast.util.ViewUtils
-import java.util.*
 
-class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemLongClickListener, RecyclerAdapter.OnItemClickListener {
+class FragmentGroups : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
     private var list: RecyclerView? = null
     private var refreshLayout: SwipeRefreshLayout? = null
 
-    private var adapter: FriendAdapter? = null
+    private val adapter: FriendAdapter? = null
 
     private var tb: Toolbar? = null
 
     private var loading: Boolean = false
 
-    private var noItems: View? = null
 
     override fun onRefresh() {
         loadFriends(0, 0)
     }
-
-    override fun onItemClick(v: View, position: Int) {
-
-    }
-
-    override fun onItemLongClick(v: View, position: Int) {}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         this.title = getString(R.string.fragment_friends)
@@ -64,7 +56,6 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         tb = view.findViewById(R.id.tb)
-        noItems = view.findViewById(R.id.no_items_layout)
 
         tb!!.title = title
 
@@ -132,10 +123,6 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                 if (!users!!.isEmpty()) {
                     loading = false
                 }
-
-                val count: Int = adapter!!.getItem(0)!!.friends_count
-
-                tb!!.title = "$title" + if (adapter!!.itemCount == 0) "" else " ($count)"
             }
 
             override fun error(e: Exception) {
@@ -145,51 +132,25 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         })
     }
 
-    private fun checkCount() {
-        noItems!!.visibility = when {
-            adapter == null -> View.VISIBLE
-            adapter!!.itemCount == 0 -> View.VISIBLE
-            else -> View.GONE
-        }
-    }
-
     private fun createAdapter(users: ArrayList<VKUser>, offset: Int) {
-        checkCount()
-
-        if (ArrayUtil.isEmpty(users)) {
+        if (ArrayUtil.isEmpty(users))
             return
-        }
-
-        checkCount()
-
-        val isEmpty: Boolean = if (adapter == null) false else adapter!!.itemCount == 0
 
         if (offset != 0) {
             adapter!!.changeItems(users)
-            if (isEmpty)
-                adapter!!.notifyItemRangeInserted(0, adapter!!.itemCount)
-            else
-                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount)
+            adapter.notifyDataSetChanged()
             return
         }
-
-        checkCount()
 
         if (adapter != null) {
-            adapter!!.changeItems(users)
-            if (isEmpty)
-                adapter!!.notifyItemRangeInserted(0, adapter!!.itemCount)
-            else
-                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount)
+            adapter.changeItems(users)
+            adapter.notifyDataSetChanged()
             return
         }
 
-        adapter = FriendAdapter(this, users)
+        //adapter = new FriendAdapter(this, users);
         list!!.adapter = adapter
-        adapter!!.setOnItemClickListener(this)
-        adapter!!.setOnItemLongClickListener(this)
 
-        checkCount()
     }
 
     fun openChat(position: Int) {
@@ -200,55 +161,14 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         intent.putExtra("photo", user.photo_200)
         intent.putExtra("peer_id", user.id)
 
-        val canWrite = !user.isDeactivated
+        val can_write = !user.isDeactivated
 
-        intent.putExtra("can_write", canWrite)
+        intent.putExtra("can_write", can_write)
 
-        if (!canWrite) {
+        if (!can_write) {
             intent.putExtra("reason", VKConversation.REASON_USER_BLOCKED_DELETED)
         }
 
         startActivity(intent)
-    }
-
-    fun showDialog(position: Int, v: View) {
-        val m = androidx.appcompat.widget.PopupMenu(activity!!, v)
-        m.inflate(R.menu.fragment_friends_funcs)
-        m.setOnMenuItemClickListener { item ->
-            when (item.itemId) {
-                R.id.remove_friend -> showConfirmDeleteFriend(position)
-            }
-            true
-        }
-        m.show()
-    }
-
-    private fun showConfirmDeleteFriend(position: Int) {
-        val adb = AlertDialog.Builder(context!!)
-        adb.setTitle(R.string.confirmation)
-        adb.setMessage(R.string.confirm_delete_friend)
-        adb.setPositiveButton(R.string.yes) { dialog, which -> deleteFriend(position) }
-        adb.setNegativeButton(R.string.no, null)
-        adb.create().show()
-    }
-
-    private fun deleteFriend(position: Int) {
-        ThreadExecutor.execute(object : AsyncCallback(activity) {
-
-            @Throws(Exception::class)
-            override fun ready() {
-                VKApi.friends().delete().userId(adapter!!.getItem(position).getId()).execute(Int::class.java)
-            }
-
-            override fun done() {
-                adapter!!.remove(position)
-                adapter!!.notifyItemRemoved(position)
-                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, adapter!!.getItem(adapter!!.itemCount - 1))
-            }
-
-            override fun error(e: Exception) {
-                Toast.makeText(activity, getString(R.string.error) + "!", Toast.LENGTH_SHORT).show()
-            }
-        })
     }
 }

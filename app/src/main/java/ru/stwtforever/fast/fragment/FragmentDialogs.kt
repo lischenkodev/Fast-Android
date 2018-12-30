@@ -77,8 +77,6 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         setRecyclerView(list)
         tb = view.findViewById(R.id.tb)
 
-        ViewUtils.applyToolbarStyles(tb!!)
-
         tb!!.title = title
 
         tb!!.inflateMenu(R.menu.fragment_dialogs_menu)

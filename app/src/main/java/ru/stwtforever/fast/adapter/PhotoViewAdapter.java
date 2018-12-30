@@ -22,7 +22,7 @@ public class PhotoViewAdapter extends FragmentPagerAdapter {
         fragments = new Fragment[items.size()];
 
         for (int i = 0; i < fragments.length; i++) {
-            fragments[i] = FragmentPhotoView.newInstance(items.get(i));
+            fragments[i] = FragmentPhotoView.Companion.newInstance(items.get(i));
         }
     }
 

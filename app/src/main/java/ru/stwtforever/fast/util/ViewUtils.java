@@ -10,7 +10,6 @@ import android.widget.ImageView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
-import androidx.appcompat.widget.Toolbar;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.common.AppGlobal;
 import ru.stwtforever.fast.common.ThemeManager;
@@ -79,24 +78,6 @@ public class ViewUtils {
                 w.getDecorView().setSystemUiVisibility(light_sb);
             }
         }
-    }
-
-    public static void applyToolbarStyles(Toolbar tb) {
-        //tb.setPopupTheme(popupTheme);
-        //tb.setBackgroundColor(primaryColor);
-
-        //tb.setTitleTextColor(mainColor);
-        //tb.setSubtitleTextColor(secondaryColor);
-
-        /*if (tb.getOverflowIcon() != null) {
-            tb.getOverflowIcon().setTint(mainColor);
-        }
-
-        if (tb.getNavigationIcon() != null) {
-            tb.getNavigationIcon().setTint(mainColor);
-        }*/
-
-
     }
 
     static @ColorInt
