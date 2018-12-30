@@ -8,12 +8,9 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 import ru.stwtforever.fast.api.UserConfig;
-import ru.stwtforever.fast.api.model.VKAudio;
 import ru.stwtforever.fast.api.model.VKConversation;
 import ru.stwtforever.fast.api.model.VKGroup;
 import ru.stwtforever.fast.api.model.VKMessage;
-import ru.stwtforever.fast.api.model.VKPhoto;
-import ru.stwtforever.fast.api.model.VKPhotoSizes;
 import ru.stwtforever.fast.api.model.VKUser;
 import ru.stwtforever.fast.common.AppGlobal;
 import ru.stwtforever.fast.util.ArrayUtil;
@@ -21,10 +18,7 @@ import ru.stwtforever.fast.util.Utils;
 
 import static ru.stwtforever.fast.common.AppGlobal.database;
 import static ru.stwtforever.fast.database.DatabaseHelper.ADMIN_LEVER;
-import static ru.stwtforever.fast.database.DatabaseHelper.ALBUM_ID;
-import static ru.stwtforever.fast.database.DatabaseHelper.ARTIST;
 import static ru.stwtforever.fast.database.DatabaseHelper.ATTACHMENTS;
-import static ru.stwtforever.fast.database.DatabaseHelper.AUDIO_ID;
 import static ru.stwtforever.fast.database.DatabaseHelper.CONVERSATION_TYPE;
 import static ru.stwtforever.fast.database.DatabaseHelper.DATE;
 import static ru.stwtforever.fast.database.DatabaseHelper.DEACTIVATED;
@@ -32,16 +26,14 @@ import static ru.stwtforever.fast.database.DatabaseHelper.DESCRIPTION;
 import static ru.stwtforever.fast.database.DatabaseHelper.DIALOGS_TABLE;
 import static ru.stwtforever.fast.database.DatabaseHelper.DISABLED_FOREVER;
 import static ru.stwtforever.fast.database.DatabaseHelper.DISABLED_UNTIL;
-import static ru.stwtforever.fast.database.DatabaseHelper.DURATION;
-import static ru.stwtforever.fast.database.DatabaseHelper.FAILED_MESSAGES_TABLE;
 import static ru.stwtforever.fast.database.DatabaseHelper.FIRST_NAME;
 import static ru.stwtforever.fast.database.DatabaseHelper.FRIENDS_TABLE;
 import static ru.stwtforever.fast.database.DatabaseHelper.FRIEND_ID;
 import static ru.stwtforever.fast.database.DatabaseHelper.FROM_ID;
 import static ru.stwtforever.fast.database.DatabaseHelper.FWD_MESSAGES;
+import static ru.stwtforever.fast.database.DatabaseHelper.GROUPS;
 import static ru.stwtforever.fast.database.DatabaseHelper.GROUPS_TABLE;
 import static ru.stwtforever.fast.database.DatabaseHelper.GROUP_ID;
-import static ru.stwtforever.fast.database.DatabaseHelper.HEIGHT;
 import static ru.stwtforever.fast.database.DatabaseHelper.IMPORTANT;
 import static ru.stwtforever.fast.database.DatabaseHelper.IS_ADMIN;
 import static ru.stwtforever.fast.database.DatabaseHelper.IS_CLOSED;
@@ -57,13 +49,10 @@ import static ru.stwtforever.fast.database.DatabaseHelper.NO_SOUND;
 import static ru.stwtforever.fast.database.DatabaseHelper.ONLINE;
 import static ru.stwtforever.fast.database.DatabaseHelper.ONLINE_APP;
 import static ru.stwtforever.fast.database.DatabaseHelper.ONLINE_MOBILE;
-import static ru.stwtforever.fast.database.DatabaseHelper.OWNER_ID;
 import static ru.stwtforever.fast.database.DatabaseHelper.PEER_ID;
-import static ru.stwtforever.fast.database.DatabaseHelper.PHOTOS_TABLE;
 import static ru.stwtforever.fast.database.DatabaseHelper.PHOTO_100;
 import static ru.stwtforever.fast.database.DatabaseHelper.PHOTO_200;
 import static ru.stwtforever.fast.database.DatabaseHelper.PHOTO_50;
-import static ru.stwtforever.fast.database.DatabaseHelper.PHOTO_SIZES;
 import static ru.stwtforever.fast.database.DatabaseHelper.PINNED_MESSAGE;
 import static ru.stwtforever.fast.database.DatabaseHelper.READ_STATE;
 import static ru.stwtforever.fast.database.DatabaseHelper.SCREEN_NAME;
@@ -74,12 +63,10 @@ import static ru.stwtforever.fast.database.DatabaseHelper.TITLE;
 import static ru.stwtforever.fast.database.DatabaseHelper.TYPE;
 import static ru.stwtforever.fast.database.DatabaseHelper.UNREAD_COUNT;
 import static ru.stwtforever.fast.database.DatabaseHelper.UPDATE_TIME;
-import static ru.stwtforever.fast.database.DatabaseHelper.URL;
+import static ru.stwtforever.fast.database.DatabaseHelper.USERS;
 import static ru.stwtforever.fast.database.DatabaseHelper.USERS_COUNT;
 import static ru.stwtforever.fast.database.DatabaseHelper.USERS_TABLE;
 import static ru.stwtforever.fast.database.DatabaseHelper.USER_ID;
-import static ru.stwtforever.fast.database.DatabaseHelper.WIDTH;
-import static ru.stwtforever.fast.database.DatabaseHelper._ID;
 
 public class CacheStorage {
     public static void checkOpen() {
@@ -155,27 +142,6 @@ public class CacheStorage {
         }
         cursor.close();
         return null;
-    }
-
-    public static VKPhoto getPhoto(int id) {
-        Cursor cursor = selectCursor(PHOTOS_TABLE, _ID, id);
-        if (cursor.moveToFirst()) {
-            return parsePhoto(cursor);
-        }
-
-        cursor.close();
-        return null;
-    }
-
-    public static ArrayList<VKMessage> getFailedMessages(int peerId) {
-        Cursor c = selectCursor(FAILED_MESSAGES_TABLE, PEER_ID, peerId);
-        ArrayList<VKMessage> failed = new ArrayList<>(c.getCount());
-        while (c.moveToNext()) {
-            failed.add(parseFailed(c));
-        }
-
-        c.close();
-        return failed;
     }
 
     public static ArrayList<VKUser> getUsers(int ids) {
@@ -295,9 +261,6 @@ public class CacheStorage {
                 case GROUPS_TABLE:
                     putValues(cv, (VKGroup) values.get(i));
                     break;
-                case PHOTOS_TABLE:
-                    putValues(cv, (VKPhoto) values.get(i));
-                    break;
             }
 
             database.insert(table, null, cv);
@@ -337,31 +300,34 @@ public class CacheStorage {
         return user;
     }
 
-    public static VKConversation parseDialog(Cursor cursor) {
-        VKConversation c = new VKConversation();
+    @SuppressWarnings("unchecked")
+    private static VKConversation parseDialog(Cursor cursor) {
+        VKConversation dialog = new VKConversation();
 
-        c.read = getInt(cursor, READ_STATE) == 1;
-        c.title = getString(cursor, TITLE);
-        c.membersCount = getInt(cursor, USERS_COUNT);
-        c.unread = getInt(cursor, UNREAD_COUNT);
+        dialog.read = getInt(cursor, READ_STATE) == 1;
+        dialog.title = getString(cursor, TITLE);
+        dialog.membersCount = getInt(cursor, USERS_COUNT);
+        dialog.unread = getInt(cursor, UNREAD_COUNT);
 
-        c.no_sound = getInt(cursor, NO_SOUND) == 1;
-        c.disabled_forever = getInt(cursor, DISABLED_FOREVER) == 1;
-        c.disabled_until = getInt(cursor, DISABLED_UNTIL);
+        dialog.no_sound = getInt(cursor, NO_SOUND) == 1;
+        dialog.disabled_forever = getInt(cursor, DISABLED_FOREVER) == 1;
+        dialog.disabled_until = getInt(cursor, DISABLED_UNTIL);
 
-        c.type = getString(cursor, CONVERSATION_TYPE);
+        dialog.type = getString(cursor, CONVERSATION_TYPE);
 
-        c.photo_50 = getString(cursor, PHOTO_50);
-        c.photo_100 = getString(cursor, PHOTO_100);
-        c.photo_200 = getString(cursor, PHOTO_200);
+        dialog.photo_50 = getString(cursor, PHOTO_50);
+        dialog.photo_100 = getString(cursor, PHOTO_100);
+        dialog.photo_200 = getString(cursor, PHOTO_200);
 
-        c.last = (VKMessage) Utils.deserialize(getBlob(cursor, LAST_MESSAGE));
-        c.pinned = (VKMessage) Utils.deserialize(getBlob(cursor, PINNED_MESSAGE));
-        return c;
+        dialog.last = (VKMessage) Utils.deserialize(getBlob(cursor, LAST_MESSAGE));
+        dialog.pinned = (VKMessage) Utils.deserialize(getBlob(cursor, PINNED_MESSAGE));
+        dialog.conversation_users = (ArrayList) Utils.deserialize(getBlob(cursor, USERS));
+        dialog.conversation_groups = (ArrayList) Utils.deserialize(getBlob(cursor, GROUPS));
+        return dialog;
     }
 
     @SuppressWarnings("unchecked")
-    public static VKMessage parseMessage(Cursor cursor) {
+    private static VKMessage parseMessage(Cursor cursor) {
         VKMessage message = new VKMessage();
         message.id = getInt(cursor, MESSAGE_ID);
         message.peerId = getInt(cursor, PEER_ID);
@@ -375,20 +341,12 @@ public class CacheStorage {
         message.update_time = getLong(cursor, UPDATE_TIME);
         message.attachments = (ArrayList) Utils.deserialize(getBlob(cursor, ATTACHMENTS));
         message.fwd_messages = (ArrayList) Utils.deserialize(getBlob(cursor, FWD_MESSAGES));
+        message.history_users = (ArrayList) Utils.deserialize(getBlob(cursor, USERS));
+        message.history_groups = (ArrayList) Utils.deserialize(getBlob(cursor, GROUPS));
         return message;
     }
 
-    public static VKMessage parseFailed(Cursor c) {
-        VKMessage m = new VKMessage();
-        m.peerId = getInt(c, PEER_ID);
-        m.fromId = getInt(c, FROM_ID);
-        m.text = getString(c, TEXT);
-        m.status = VKMessage.STATUS_ERROR;
-
-        return m;
-    }
-
-    public static VKGroup parseGroup(Cursor cursor) {
+    private static VKGroup parseGroup(Cursor cursor) {
         VKGroup group = new VKGroup();
         group.id = getInt(cursor, GROUP_ID);
         group.name = getString(cursor, NAME);
@@ -404,19 +362,6 @@ public class CacheStorage {
         group.photo_200 = getString(cursor, PHOTO_200);
         group.members_count = getInt(cursor, MEMBERS_COUNT);
         return group;
-    }
-
-    public static VKPhoto parsePhoto(Cursor cursor) {
-        VKPhoto photo = new VKPhoto();
-        photo.id = getInt(cursor, _ID);
-        photo.album_id = getInt(cursor, ALBUM_ID);
-        photo.owner_id = getInt(cursor, OWNER_ID);
-        photo.text = getString(cursor, TEXT);
-        photo.date = getInt(cursor, DATE);
-        photo.width = getInt(cursor, WIDTH);
-        photo.height = getInt(cursor, HEIGHT);
-        photo.sizes = (VKPhotoSizes) Utils.deserialize(getBlob(cursor, PHOTO_SIZES));
-        return photo;
     }
 
     private static void putValues(ContentValues values, VKUser user, boolean friends) {
@@ -451,7 +396,16 @@ public class CacheStorage {
         values.put(CONVERSATION_TYPE, dialog.type);
         values.put(DISABLED_FOREVER, dialog.disabled_forever);
         values.put(DISABLED_UNTIL, dialog.disabled_until);
+
         values.put(NO_SOUND, dialog.no_sound);
+
+        if (!ArrayUtil.isEmpty(dialog.conversation_groups)) {
+            values.put(GROUPS, Utils.serialize(dialog.conversation_groups));
+        }
+
+        if (!ArrayUtil.isEmpty(dialog.conversation_users)) {
+            values.put(USERS, Utils.serialize(dialog.conversation_users));
+        }
 
         if (dialog.last != null) {
             values.put(LAST_MESSAGE, Utils.serialize(dialog.last));
@@ -493,6 +447,15 @@ public class CacheStorage {
         values.put(UPDATE_TIME, message.update_time);
 
         values.put(IMPORTANT, message.important);
+
+        if (!ArrayUtil.isEmpty(message.history_groups)) {
+            values.put(GROUPS, Utils.serialize(message.history_groups));
+        }
+
+        if (!ArrayUtil.isEmpty(message.history_users)) {
+            values.put(USERS, Utils.serialize(message.history_users));
+        }
+
         if (!ArrayUtil.isEmpty(message.attachments)) {
             values.put(ATTACHMENTS, Utils.serialize(message.attachments));
         }
@@ -515,25 +478,5 @@ public class CacheStorage {
         values.put(PHOTO_50, group.photo_50);
         values.put(PHOTO_100, group.photo_100);
         values.put(MEMBERS_COUNT, group.members_count);
-    }
-
-    private static void putValues(ContentValues values, VKPhoto photo) {
-        values.put(_ID, photo.id);
-        values.put(ALBUM_ID, photo.album_id);
-        values.put(OWNER_ID, photo.owner_id);
-        values.put(WIDTH, photo.width);
-        values.put(HEIGHT, photo.height);
-        values.put(TEXT, photo.text);
-        values.put(DATE, photo.date);
-        values.put(PHOTO_SIZES, Utils.serialize(photo.sizes));
-    }
-
-    private static void putValues(ContentValues values, VKAudio audio) {
-        values.put(AUDIO_ID, audio.id);
-        values.put(OWNER_ID, audio.owner_id);
-        values.put(ARTIST, audio.artist);
-        values.put(TITLE, audio.title);
-        values.put(DURATION, audio.duration);
-        values.put(URL, audio.url);
     }
 }

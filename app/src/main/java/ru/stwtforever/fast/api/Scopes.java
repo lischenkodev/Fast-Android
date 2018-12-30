@@ -14,7 +14,7 @@ public class Scopes {
     public static final String PAGES = "pages";
     public static final String STATUS = "status";
     public static final String WALL = "wall";
-    public static final String GROUPS = "groups";
+    public static final String GROUPS = "conversation_groups";
     public static final String MESSAGES = "messages";
     public static final String NOTIFICATIONS = "notifications";
     public static final String STATS = "stats";

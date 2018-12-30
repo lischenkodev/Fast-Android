@@ -91,8 +91,9 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                         adapter!!.clear()
                         adapter!!.notifyDataSetChanged()
                     }
-                    getDialogs(0, DIALOGS_COUNT)
                     checkCount()
+                    getDialogs(0, DIALOGS_COUNT)
+
                 }
             }
             true
@@ -241,7 +242,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
 
         refreshLayout!!.isRefreshing = true
         ThreadExecutor.execute(object : AsyncCallback(activity) {
-            private lateinit var conversations: ArrayList<VKConversation>
+            var conversations: ArrayList<VKConversation>? = null
 
             @Throws(Exception::class)
             override fun ready() {
@@ -253,7 +254,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                         .count(count)
                         .execute(VKConversation::class.java)
 
-                if (conversations.isEmpty()) {
+                if (conversations!!.isEmpty()) {
                     loading = true
                 }
 
@@ -262,12 +263,12 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                     CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, conversations)
                 }
 
-                val users = conversations[0].profiles
-                val groups = conversations[0].groups
+                val users = conversations!![0].conversation_users
+                val groups = conversations!![0].conversation_groups
                 val messages = ArrayList<VKMessage>()
 
-                for (i in conversations.indices) {
-                    messages.add(conversations[i].last)
+                for (i in conversations!!.indices) {
+                    messages.add(conversations!![i].last)
                 }
 
                 if (!ArrayUtil.isEmpty(messages))
@@ -285,7 +286,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                 createAdapter(conversations, offset)
                 refreshLayout!!.isRefreshing = false
 
-                if (!conversations.isEmpty()) {
+                if (!conversations!!.isEmpty()) {
                     loading = false
                 }
 

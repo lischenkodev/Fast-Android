@@ -92,6 +92,16 @@ public class VKApi {
         } else if (cls == VKMessage.class) {
             if (url.contains("messages.getHistory")) {
                 VKMessage.lastHistoryCount = json.optJSONObject("response").optInt("count");
+
+                JSONArray groups = json.optJSONObject("response").optJSONArray("groups");
+                if (groups != null && groups.length() > 0) {
+                    VKMessage.groups = VKGroup.parse(groups);
+                }
+
+                JSONArray profiles = json.optJSONObject("response").optJSONArray("profiles");
+                if (profiles != null && profiles.length() > 0) {
+                    VKMessage.users = VKUser.parse(profiles);
+                }
             }
 
             for (int i = 0; i < array.length(); i++) {
@@ -117,6 +127,17 @@ public class VKApi {
         } else if (cls == VKConversation.class) {
             if (url.contains("messages.getConversations")) {
                 VKConversation.count = json.optJSONObject("response").optInt("count");
+
+                JSONArray groups = json.optJSONObject("response").optJSONArray("groups");
+                if (groups != null && groups.length() > 0) {
+                    VKConversation.groups = VKGroup.parse(groups);
+                }
+
+                JSONArray profiles = json.optJSONObject("response").optJSONArray("profiles");
+                if (profiles != null && profiles.length() > 0) {
+                    VKConversation.users = VKUser.parse(profiles);
+                }
+
             }
 
             for (int i = 0; i < array.length(); i++) {
@@ -125,16 +146,6 @@ public class VKApi {
                 JSONObject json_last_message = source.optJSONObject("last_message");
 
                 VKConversation conversation = new VKConversation(json_conversation, json_last_message);
-
-                JSONArray profiles = json.optJSONObject("response").optJSONArray("profiles");
-                if (profiles != null && profiles.length() > 0) {
-                    conversation.profiles = VKUser.parse(profiles);
-                }
-
-                JSONArray groups = json.optJSONObject("response").optJSONArray("groups");
-                if (groups != null && groups.length() > 0) {
-                    conversation.groups = VKGroup.parse(groups);
-                }
 
                 models.add((T) conversation);
             }
@@ -218,7 +229,7 @@ public class VKApi {
     }
 
     /**
-     * Methods for groups
+     * Methods for conversation_groups
      */
     public static VKGroups groups() {
         return new VKGroups();
@@ -534,11 +545,11 @@ public class VKApi {
 
     public static class VKGroups {
         public MethodSetter getById() {
-            return new MethodSetter("groups.getById");
+            return new MethodSetter("conversation_groups.getById");
         }
 
         public MethodSetter join() {
-            return new MethodSetter("groups.join");
+            return new MethodSetter("conversation_groups.join");
         }
     }
 

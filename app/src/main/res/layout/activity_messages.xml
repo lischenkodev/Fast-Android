@@ -114,7 +114,8 @@
     <LinearLayout
         android:id="@+id/pinned_msg_container"
         android:layout_width="match_parent"
-        android:layout_height="56dp">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="?actionBarSize">
 
         <include layout="@layout/pinned_message" />
     </LinearLayout>

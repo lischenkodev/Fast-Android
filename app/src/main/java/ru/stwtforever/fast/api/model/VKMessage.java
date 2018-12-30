@@ -1,19 +1,22 @@
 package ru.stwtforever.fast.api.model;
 
-import android.util.*;
+import android.util.Log;
 
-import ru.stwtforever.fast.api.*;
-import ru.stwtforever.fast.api.model.*;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import java.io.*;
-import java.util.*;
+import java.io.Serializable;
+import java.util.ArrayList;
 
-import org.json.*;
+import ru.stwtforever.fast.api.UserConfig;
 
 public class VKMessage extends VKModel implements Serializable {
 
     public static int count;
     public static int lastHistoryCount;
+    public static ArrayList<VKUser> users;
+    public static ArrayList<VKGroup> groups;
 
     public static final int UNREAD = 1;        //сообщение не прочитано
     public static final int OUTBOX = 2;        //исходящее сообщение
@@ -72,9 +75,12 @@ public class VKMessage extends VKModel implements Serializable {
     public ArrayList<VKModel> attachments = new ArrayList<>();
     public ArrayList<VKMessage> fwd_messages;
 
+    public ArrayList<VKUser> history_users;
+    public ArrayList<VKGroup> history_groups;
+
     public long update_time;
 
-    public static final String TAG = "FVKMessage";
+    private static final String TAG = "FVKMessage";
 
     public static boolean isDeleted(int flags) {
         return (flags & DELETED) != 0;
@@ -88,7 +94,7 @@ public class VKMessage extends VKModel implements Serializable {
         return (flags & UNREAD) != 0;
     }
 
-    public static VKMessage parseFromAttach(JSONObject o) {
+    static VKMessage parseFromAttach(JSONObject o) {
         VKMessage m = new VKMessage();
 
         m.date = o.optLong("date");
@@ -107,7 +113,7 @@ public class VKMessage extends VKModel implements Serializable {
         return m;
     }
 
-    public static ArrayList<VKMessage> parseAttMessages(JSONArray a) throws JSONException {
+    private static ArrayList<VKMessage> parseAttMessages(JSONArray a) throws JSONException {
         ArrayList<VKMessage> ms = new ArrayList<>();
 
         for (int i = 0; i < a.length(); i++) {
@@ -125,6 +131,9 @@ public class VKMessage extends VKModel implements Serializable {
         Log.d(TAG, o.toString());
 
         status = VKMessage.STATUS_SENT;
+
+        history_groups = groups;
+        history_users = users;
 
         date = o.optLong("date");
         fromId = o.optInt("from_id");

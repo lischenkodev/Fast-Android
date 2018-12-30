@@ -13,6 +13,8 @@ import ru.stwtforever.fast.util.StringUtils;
 public class VKConversation extends VKModel implements Serializable {
 
     public static int count;
+    public static ArrayList<VKUser> users = new ArrayList<>();
+    public static ArrayList<VKGroup> groups = new ArrayList<>();
 
     public int conversations_count;
 
@@ -47,8 +49,8 @@ public class VKConversation extends VKModel implements Serializable {
     public String photo_50, photo_100, photo_200;
 
     //other
-    public ArrayList<VKUser> profiles;
-    public ArrayList<VKGroup> groups;
+    public ArrayList<VKUser> conversation_users;
+    public ArrayList<VKGroup> conversation_groups;
 
     //acl
     public boolean can_change_pin, can_change_info, can_change_invite_link, can_invite, can_promote_users, can_see_invite_link;
@@ -64,6 +66,9 @@ public class VKConversation extends VKModel implements Serializable {
 
     public VKConversation(JSONObject o, JSONObject msg) throws JSONException {
         conversations_count = count;
+        conversation_groups = groups;
+        conversation_users = users;
+
         last = new VKMessage(msg);
 
         read_in = o.optInt("in_read");

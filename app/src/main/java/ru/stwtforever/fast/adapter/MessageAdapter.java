@@ -177,7 +177,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
         MessagesActivity root = (MessagesActivity) context;
         root.checkMessagesCount();
-        root.getRecycler().smoothScrollToPosition(getItemCount() + 1);
+        root.getRecycler().smoothScrollToPosition(getItemCount() - 1);
     }
 
     private boolean isExist(long id) {
@@ -242,18 +242,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     public void onBindViewHolder(@NonNull MessageAdapter.ViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
         holder.bind(position);
-    }
-
-    private void setOnClick(View v, final int i, final VKMessage item) {
-        if (v == null || !(TextUtils.isEmpty(item.actionType))) return;
-
-        v.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                ((MessagesActivity) context).onItemClick(v, i, item);
-            }
-        });
     }
 
     private VKUser searchUser(int id) {
@@ -560,8 +548,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             avatar.setVisibility(item.out ? View.GONE : View.VISIBLE);
             space.setVisibility(avatar.getVisibility());
-
-            setOnClick(itemView, position, item);
         }
     }
 
