@@ -165,27 +165,27 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         msg.update_time = edited.update_time;
         msg.attachments = edited.attachments;
 
-        notifyItemChanged(position, msg);
+        notifyItemChanged(position, null);
     }
 
     private void addMessage(VKMessage msg) {
         if (msg.peerId != peerId) return;
-        if (isExist(msg.id)) return;
+
+        if (isContains(msg.randomId)) return;
 
         add(msg);
-        notifyItemRangeChanged(0, getItemCount(), null);
-
-        MessagesActivity root = (MessagesActivity) context;
-        root.checkMessagesCount();
-        root.getRecycler().smoothScrollToPosition(getItemCount() - 1);
+        notifyItemInserted(getItemCount() - 1);
+        ((MessagesActivity) context).handleNewMessage();
     }
 
-    private boolean isExist(long id) {
+    private boolean isContains(long randomId) {
+        boolean contains = false;
+
         for (VKMessage m : getValues()) {
-            if (m.id == id) return true;
+            if (m.randomId == randomId) contains = true;
         }
 
-        return false;
+        return contains;
     }
 
     private void readMessage(int id) {

@@ -3,7 +3,6 @@ package ru.stwtforever.fast.service;
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
-import androidx.collection.ArrayMap;
 import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
@@ -12,6 +11,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import androidx.collection.ArrayMap;
 import ru.stwtforever.fast.api.UserConfig;
 import ru.stwtforever.fast.api.VKApi;
 import ru.stwtforever.fast.api.model.VKAttachments;
@@ -135,7 +135,7 @@ public class LongPollService extends Service {
             params.put("act", "a_check");
             params.put("key", server.key);
             params.put("ts", String.valueOf(server.ts));
-            params.put("wait", "25");
+            params.put("wait", "30");
             params.put("mode", "238");
             params.put("version", "3");
 
@@ -147,11 +147,6 @@ public class LongPollService extends Service {
 
         private void messageEvent(JSONArray item) {
             VKConversation conversation = VKConversation.parseFromLongPoll(item);
-
-            ArrayList<VKMessage> m = new ArrayList<>();
-            m.add(conversation.last);
-            CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, m);
-
             EventBus.getDefault().postSticky(new Object[]{4, conversation});
         }
 

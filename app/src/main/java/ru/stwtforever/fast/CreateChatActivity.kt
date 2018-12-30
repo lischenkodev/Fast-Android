@@ -7,10 +7,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
-
-import java.util.ArrayList
-import java.util.HashMap
-
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -30,10 +26,12 @@ import ru.stwtforever.fast.util.ArrayUtil
 import ru.stwtforever.fast.util.Requests
 import ru.stwtforever.fast.util.Utils
 import ru.stwtforever.fast.util.ViewUtils
+import java.util.*
 
 class CreateChatActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
 
     private var loading: Boolean = false
+    private var noItems: View? = null
 
     private var tb: Toolbar? = null
     private var list: RecyclerView? = null
@@ -179,6 +177,8 @@ class CreateChatActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickListe
     }
 
     private fun initViews() {
+        noItems = findViewById(R.id.no_items_layout)
+
         tb = findViewById(R.id.tb)
         setTitle()
 

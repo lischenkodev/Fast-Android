@@ -101,7 +101,7 @@ class WebViewLoginActivity : AppCompatActivity() {
 
             if (!TextUtils.isEmpty(token) && !TextUtils.isEmpty(uId)) {
                 ThreadExecutor.execute(object : AsyncCallback(this@WebViewLoginActivity) {
-                    internal var id: Int = 0
+                    var id: Int = 0
 
                     override fun ready() {
                         id = Integer.parseInt(uId)
@@ -171,7 +171,7 @@ class WebViewLoginActivity : AppCompatActivity() {
             webView!!.visibility = View.VISIBLE
         }
 
-        override fun onPageStarted(view: WebView, url: String, favicon: Bitmap) {
+        override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
             parseUrl(url)
         }

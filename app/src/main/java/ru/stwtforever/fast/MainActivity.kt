@@ -181,8 +181,8 @@ class MainActivity : AppCompatActivity() {
                 adb.setNeutralButton(R.string.copy) { _, _ -> Utils.copyText(trace) }
                 DialogHelper.create(adb).show()
             }
-            val alert = DialogHelper.create(adb)
-            alert.show()
+
+            adb.create().show()
         }
     }
 

@@ -150,8 +150,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
 
                             @Throws(Exception::class)
                             override fun ready() {
-
-                                VKApi.messages().deleteConversation().peerId(message.last.peerId.toLong()).execute(Int::class.java)
+                                VKApi.messages().deleteConversation().peerId(message.last.peerId.toLong()).execute()
                             }
 
                             override fun done() {
@@ -333,7 +332,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         ThreadExecutor.execute(object : AsyncCallback(activity) {
             @Throws(Exception::class)
             override fun ready() {
-                VKApi.messages().markAsRead().peerId(adapter!!.getItem(position).last.peerId.toLong()).execute(Int::class.java)
+                VKApi.messages().markAsRead().peerId(adapter!!.getItem(position).last.peerId.toLong()).execute()
             }
 
             override fun done() {}

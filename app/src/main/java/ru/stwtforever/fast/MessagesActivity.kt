@@ -1,10 +1,7 @@
 package ru.stwtforever.fast
 
 import android.content.DialogInterface
-import android.graphics.Color
 import android.graphics.PorterDuff
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.text.*
@@ -19,23 +16,21 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.squareup.picasso.Picasso
 import ru.stwtforever.fast.adapter.MessageAdapter
 import ru.stwtforever.fast.adapter.RecyclerAdapter
 import ru.stwtforever.fast.api.UserConfig
 import ru.stwtforever.fast.api.VKApi
 import ru.stwtforever.fast.api.VKUtils
 import ru.stwtforever.fast.api.model.VKConversation
-import ru.stwtforever.fast.api.model.VKGroup
 import ru.stwtforever.fast.api.model.VKMessage
 import ru.stwtforever.fast.api.model.VKUser
+import ru.stwtforever.fast.cls.WrapContentLinearLayoutManager
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.concurrent.AsyncCallback
 import ru.stwtforever.fast.concurrent.LowThread
 import ru.stwtforever.fast.concurrent.ThreadExecutor
 import ru.stwtforever.fast.database.CacheStorage
 import ru.stwtforever.fast.database.DatabaseHelper
-import ru.stwtforever.fast.database.MemoryCache
 import ru.stwtforever.fast.fragment.FragmentSettings
 import ru.stwtforever.fast.helper.DialogHelper
 import ru.stwtforever.fast.helper.FontHelper
@@ -75,14 +70,13 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
     private var subtitle: String? = null
     private var photo: String? = null
 
-    private var noMessages: TextView? = null
+    private var noItems: View? = null
 
     private var timer: Timer? = null
 
     private var pinned: VKMessage? = null
     private var last: VKMessage? = null
     private var conversation: VKConversation? = null
-
     private var currentUser: VKUser? = null
 
     private var pnd: LinearLayout? = null
@@ -146,26 +140,20 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
                 chatPanel!!.background.setColorFilter(ThemeManager.getBackground(), PorterDuff.Mode.MULTIPLY)
             }
 
-        layoutManager = LinearLayoutManager(this)
+        layoutManager = WrapContentLinearLayoutManager(this)
         layoutManager!!.stackFromEnd = true
         layoutManager!!.orientation = RecyclerView.VERTICAL
+
+        recycler!!.layoutManager = layoutManager
 
         setSupportActionBar(toolbar)
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         supportActionBar!!.setDisplayShowHomeEnabled(true)
         supportActionBar!!.title = title
 
-        recycler!!.layoutManager = layoutManager
-
         message!!.addTextChangedListener(this)
 
         subtitle = subtitleStatus
-
-        getCachedMessages()
-
-        if (Utils.hasConnection()) {
-            getHistory(0)
-        }
 
         smiles!!.setOnLongClickListener {
             val template = Utils.getPrefs().getString(FragmentSettings.KEY_MESSAGE_TEMPLATE, FragmentSettings.DEFAULT_TEMPLATE_VALUE)
@@ -185,22 +173,11 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
         send!!.background = gd
         send!!.setImageResource(R.drawable.md_mic)
 
-        noMessages!!.visibility = View.GONE
-
-        loadImage()
+        getCachedMessages()
     }
 
     fun getRecycler(): RecyclerView? {
         return recycler
-    }
-
-    private fun loadImage() {
-        try {
-            val icon = Picasso.get().load(photo).placeholder(ColorDrawable(Color.RED)).get()
-            runOnUiThread { supportActionBar!!.setIcon(BitmapDrawable(icon)) }
-        } catch (e: Exception) {
-            runOnUiThread { supportActionBar!!.setIcon(null) }
-        }
     }
 
     override fun onItemClick(v: View?, position: Int) {
@@ -330,7 +307,7 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
             @Throws(Exception::class)
             override fun ready() {
                 msg = adapter!!.getItem(position)
-                VKApi.messages().pin().peerId(peerId.toLong()).messageId(msg!!.id).execute<Any>(null)
+                VKApi.messages().pin().peerId(peerId.toLong()).messageId(msg!!.id).execute()
             }
 
             override fun done() {
@@ -350,7 +327,7 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
 
             @Throws(Exception::class)
             override fun ready() {
-                VKApi.messages().unpin().peerId(peerId.toLong()).execute<Any>(null)
+                VKApi.messages().unpin().peerId(peerId.toLong()).execute()
             }
 
             override fun done() {
@@ -371,26 +348,28 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
         busy = true
 
         val msg = VKMessage()
-        msg.text = text
+        msg.text = text!!.trim()
         msg.fromId = UserConfig.userId
         msg.peerId = peerId
         msg.date = Calendar.getInstance().timeInMillis
         msg.out = true
         msg.status = VKMessage.STATUS_SENDING
         msg.isAdded = true
-        msg.randomId = Random().nextLong()
+        msg.randomId = Random().nextInt()
 
-        adapter!!.values.add(msg)
-        adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, null)
-        recycler!!.smoothScrollToPosition(adapter!!.itemCount + 1)
+        adapter!!.add(msg)
+        adapter!!.notifyItemInserted(adapter!!.itemCount - 1)
+        recycler!!.smoothScrollToPosition(adapter!!.itemCount - 1)
 
         val size = adapter!!.itemCount
 
         ThreadExecutor.execute(object : AsyncCallback(this) {
 
+            var id: Int = -1
+
             @Throws(Exception::class)
             override fun ready() {
-                msg.id = VKApi.messages().send().peerId(peerId.toLong()).randomId(msg.randomId).text(text!!.trim { it <= ' ' }).execute(Int::class.java)[0]
+                id = VKApi.messages().send().peerId(peerId.toLong()).randomId(msg.randomId).text(text!!.trim()).execute(Int::class.java)[0]
             }
 
             override fun done() {
@@ -402,13 +381,14 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
 
                 checkMessagesCount()
                 busy = false
+                msg.id = id
                 msg.status = VKMessage.STATUS_SENT
 
                 if (adapter!!.itemCount > size) {
-                    val i = adapter!!.values.indexOf(msg)
+                    val i = adapter!!.getPosition(msg)
                     adapter!!.remove(i)
                     adapter!!.add(msg)
-                    adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, msg)
+                    adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, null)
                 }
             }
 
@@ -449,12 +429,16 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
 
     override fun onBackPressed() {
         if (editing) {
-            editing = false
-            applyStyles(editing)
-            message!!.setText("")
-            checkHovered()
+            setNotEditing()
         } else
             super.onBackPressed()
+    }
+
+    private fun setNotEditing() {
+        editing = false
+        applyStyles(editing)
+        message!!.setText("")
+        checkHovered()
     }
 
     private fun checkHovered() {
@@ -472,34 +456,30 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
     }
 
     private fun deleteMessage(pos: Int, every: Boolean?, spam: Boolean?) {
-        if (busy) return
-        busy = true
         ThreadExecutor.execute(object : AsyncCallback(this) {
 
             @Throws(Exception::class)
             override fun ready() {
-                val id = adapter!!.values[pos].id
+                val id = adapter!!.getItem(pos).id
                 VKApi.messages()
                         .delete()
                         .messageIds(id)
                         .every(every)
                         .spam(spam)
-                        .execute(Int::class.java)
+                        .execute()
             }
 
             override fun done() {
-                busy = false
                 if (adapter!!.isHover(pos)) {
                     adapter!!.showHover(pos, false)
                 }
 
-                adapter!!.values.removeAt(pos)
-                adapter!!.notifyDataSetChanged()
+                adapter!!.remove(pos)
+                adapter!!.notifyItemRemoved(pos)
                 checkMessagesCount()
             }
 
             override fun error(e: Exception) {
-                busy = false
                 Toast.makeText(this@MessagesActivity, getString(R.string.error), Toast.LENGTH_LONG).show()
             }
         })
@@ -511,14 +491,12 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
 
         val msg = adapter!!.values[position]
         msg.status = VKMessage.STATUS_SENDING
-        adapter!!.notifyItemChanged(position, msg)
+        adapter!!.notifyItemChanged(position, null)
         ThreadExecutor.execute(object : AsyncCallback(this) {
-
-            internal var res: Int = 0
 
             @Throws(Exception::class)
             override fun ready() {
-                res = VKApi.messages()
+                VKApi.messages()
                         .edit()
                         .peerId(peerId.toLong())
                         .text(newText)
@@ -527,15 +505,17 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
                         .attachment(msg.attachments)
                         .keepSnippets(true)
                         .dontParseLinks(false)
-                        .execute(Int::class.java)[0]
+                        .execute()
             }
 
             override fun done() {
                 busy = false
-                adapter!!.values[position].text = newText
-                adapter!!.values[position].status = VKMessage.STATUS_SENT
-                adapter!!.values[position].isSelected = false
-                adapter!!.notifyItemChanged(position, msg)
+
+                msg.text = newText
+                msg.status = VKMessage.STATUS_SENT
+                msg.isSelected = false
+
+                adapter!!.notifyItemChanged(position, null)
 
                 editing = false
 
@@ -545,8 +525,8 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
 
             override fun error(e: Exception) {
                 busy = false
-                adapter!!.values[position].status = VKMessage.STATUS_ERROR
-                adapter!!.notifyItemChanged(position, msg)
+                msg.status = VKMessage.STATUS_ERROR
+                adapter!!.notifyItemChanged(position, null)
                 Toast.makeText(this@MessagesActivity, getString(R.string.error), Toast.LENGTH_SHORT).show()
             }
         })
@@ -582,7 +562,7 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
         typing = true
         LowThread(Runnable {
             try {
-                VKApi.messages().setActivity().peerId(peerId.toLong()).execute(Int::class.java)
+                VKApi.messages().setActivity().peerId(peerId.toLong()).execute()
                 runOnUiThread {
                     timer = Timer()
                     timer!!.schedule(object : TimerTask() {
@@ -626,9 +606,9 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            android.R.id.home -> finish()
+            android.R.id.home -> if (editing) setNotEditing() else finish()
             R.id.menuUpdate -> if (!loading && !editing) {
-                adapter!!.values.clear()
+                adapter!!.clear()
                 getHistory(0)
             }
         }
@@ -644,7 +624,7 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
         send = findViewById(R.id.send)
         message = findViewById(R.id.message)
         progress = findViewById(R.id.progress)
-        noMessages = findViewById(R.id.text_no_messages)
+        noItems = findViewById(R.id.no_items_layout)
     }
 
     private fun getIntentData() {
@@ -671,41 +651,23 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
         space.visibility = if (pinned == null) View.GONE else View.VISIBLE
     }
 
-    private fun createAdapter(messages: ArrayList<VKMessage>, offset: Int) {
-        checkMessagesCount()
-
+    private fun createAdapter(messages: ArrayList<VKMessage>) {
         if (ArrayUtil.isEmpty(messages)) {
             return
         }
 
-        checkMessagesCount()
+        if (adapter == null) {
+            adapter = MessageAdapter(this, messages, peerId)
+            adapter!!.setOnItemClickListener(this)
+            recycler!!.adapter = adapter
+            recycler!!.scrollToPosition(adapter!!.itemCount)
 
-        val isEmpty: Boolean = if (adapter == null) false else adapter!!.itemCount == 0
-
-        if (offset != 0) {
-            adapter!!.changeItems(messages)
-            if (isEmpty)
-                adapter!!.notifyItemRangeInserted(0, adapter!!.itemCount)
-            else
-                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, null)
+            checkMessagesCount()
             return
         }
 
-        checkMessagesCount()
-
-        if (adapter != null) {
-            adapter!!.changeItems(messages)
-            if (isEmpty)
-                adapter!!.notifyItemRangeInserted(0, adapter!!.itemCount)
-            else
-                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, null)
-            return
-        }
-
-        adapter = MessageAdapter(this, messages, peerId)
-        recycler!!.adapter = adapter
-        adapter!!.setOnItemClickListener(this)
-        recycler!!.scrollToPosition(adapter!!.itemCount)
+        adapter!!.changeItems(messages)
+        adapter!!.notifyDataSetChanged()
 
         checkMessagesCount()
     }
@@ -713,75 +675,33 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
     private fun getCachedMessages() {
         val messages = CacheStorage.getMessages(peerId)
         if (!ArrayUtil.isEmpty(messages)) {
-            createAdapter(messages, 0)
+            createAdapter(messages)
+        }
+
+        if (Utils.hasConnection()) {
+            getHistory(0)
         }
     }
 
     private fun getUserSubtitle(user: VKUser?): String {
         return when {
             user!!.online -> getString(R.string.online)
-            else -> getString(when (user.sex == VKUser.Sex.MALE) {
-                true -> R.string.last_seen_m
-                false -> R.string.last_seen_w
-            }, Utils.dateFormatter.format(user.lastSeen * 1000))
+            else -> {
+                getString(when (user.sex == VKUser.Sex.MALE) {
+                    true -> R.string.last_seen_m
+                    false -> R.string.last_seen_w
+                }, Utils.dateFormatter.format(user.lastSeen * 1000))
+            }
 
         } ?: ""
     }
 
     fun checkMessagesCount() {
-        if (adapter == null) return
-
-        val count = adapter!!.values.size
-
-        if (count > 0) {
-            noMessages!!.visibility = View.GONE
-        } else {
-            noMessages!!.visibility = View.VISIBLE
+        noItems!!.visibility = when {
+            adapter == null -> View.VISIBLE
+            adapter!!.itemCount == 0 -> View.VISIBLE
+            else -> View.GONE
         }
-    }
-
-    private fun getUserIds(ids: HashSet<Int>, messages: ArrayList<VKMessage>) {
-        for (m in messages) {
-            if (!VKGroup.isGroupId(m.fromId)) {
-                ids.add(m.fromId)
-            }
-            if (m.peerId < 2000000000) {
-                ids.add(m.peerId)
-            }
-        }
-        for (msg in messages) {
-            if (!ArrayUtil.isEmpty(msg.fwd_messages)) {
-                getUserIds(ids, msg.fwd_messages)
-            }
-        }
-    }
-
-    private fun getUsers(messages: ArrayList<VKMessage>) {
-        val ids = HashSet<Int>()
-        getUserIds(ids, messages)
-
-        ThreadExecutor.execute(object : AsyncCallback(this) {
-
-            var users: ArrayList<VKUser>? = null
-
-            @Throws(Exception::class)
-            override fun ready() {
-                users = VKApi.users().get().userIds(ids).fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java)
-            }
-
-            override fun done() {
-                if (ArrayUtil.isEmpty(users)) {
-                    return
-                }
-
-                CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
-                MemoryCache.update(users)
-            }
-
-            override fun error(e: Exception) {
-                Toast.makeText(this@MessagesActivity, getString(R.string.error), Toast.LENGTH_LONG).show()
-            }
-        })
     }
 
     private fun getHistory(offset: Int) {
@@ -817,7 +737,7 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
             }
 
             override fun done() {
-                createAdapter(messages!!, 0)
+                createAdapter(messages!!)
 
                 supportActionBar!!.subtitle = subtitleStatus
             }
@@ -897,8 +817,9 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
 
     private fun showDeleteInDialog(position: Int) {
         val m = adapter!!.getItem(position)
+
         if (m.status == VKMessage.STATUS_ERROR) {
-            adapter!!.values.removeAt(position)
+            adapter!!.remove(position)
             adapter!!.notifyDataSetChanged()
             return
         }
@@ -942,6 +863,11 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
         adb.setPositiveButton(R.string.yes) { _, _ -> deleteMessage(position, entries[0], null) }
 
         DialogHelper.create(adb, every, values, click)
+    }
+
+    fun handleNewMessage() {
+        checkMessagesCount()
+        recycler!!.smoothScrollToPosition(adapter!!.itemCount - 1)
     }
 
     companion object {

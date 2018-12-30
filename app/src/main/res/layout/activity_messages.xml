@@ -76,8 +76,9 @@
                     android:padding="10dp"
                     android:textColorHint="#C4C4C4" />
 
-                <ImageButton
+                <androidx.appcompat.widget.AppCompatImageButton
                     android:id="@+id/smiles"
+                    style="@style/Widget.MaterialComponents.Button.Icon"
                     android:layout_width="45dp"
                     android:layout_height="45dp"
                     android:layout_gravity="bottom"
@@ -86,8 +87,9 @@
                     android:src="@drawable/md_online_status"
                     android:tint="#cccccc" />
 
-                <ImageButton
+                <androidx.appcompat.widget.AppCompatImageButton
                     android:id="@+id/send"
+                    style="@style/Widget.MaterialComponents.Button.Icon"
                     android:layout_width="45dp"
                     android:layout_height="45dp"
                     android:layout_gravity="bottom"
@@ -99,16 +101,17 @@
 
         </RelativeLayout>
 
-        <TextView
-            android:id="@+id/text_no_messages"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="@string/no_messages_message"
-            android:textColor="#cccccc"
-            android:textSize="18sp"
-            android:visibility="gone" />
+        <LinearLayout
+            android:id="@+id/no_items_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginBottom="40dp"
+            android:visibility="visible">
 
+            <include layout="@layout/no_items" />
+
+        </LinearLayout>
     </RelativeLayout>
 
     <LinearLayout

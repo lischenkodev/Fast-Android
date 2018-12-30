@@ -1,91 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	xmlns:tools="http://schemas.android.com/tools"
-	android:layout_width="match_parent"
-	android:layout_height="wrap_content"
-	android:orientation="horizontal"
-	android:foreground="?selectableItemBackground"
-	android:id="@+id/root"
-	android:gravity="center_vertical">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:foreground="?selectableItemBackground"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
 
-	<LinearLayout
-		android:id="@+id/container"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:weightSum="1.0"
-		android:padding="6dp"
-		android:layout_marginLeft="6dp"
-		android:layout_marginRight="6dp"
-		android:layout_weight="1.0">
+    <LinearLayout
+        android:id="@+id/container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp"
+        android:layout_marginRight="6dp"
+        android:layout_weight="1.0"
+        android:padding="6dp"
+        android:weightSum="1.0">
 
-		<FrameLayout
-			android:layout_width="wrap_content"
-			android:layout_weight="0"
-			android:layout_height="wrap_content">
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0">
 
-			<ru.stwtforever.fast.view.CircleImageView
-				android:id="@+id/avatar"
-				android:layout_width="50dp"
-				android:layout_height="50dp"
-				android:src="?colorAccent"
-				android:layout_gravity="bottom|right"/>
+            <ru.stwtforever.fast.view.CircleImageView
+                android:id="@+id/avatar"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_gravity="bottom|end"
+                android:src="?colorAccent" />
 
-			<ru.stwtforever.fast.view.CircleImageView
-				android:id="@+id/online"
-				android:layout_width="14dp"
-				android:layout_height="14dp"
-				android:src="?colorAccent"
-				app:border_color="?android:windowBackground"
-				app:border_width="2dp"
-				android:layout_gravity="bottom|right"
-				android:layout_margin="3dp"/>
+            <ru.stwtforever.fast.view.CircleImageView
+                android:id="@+id/online"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_gravity="bottom|end"
+                android:layout_margin="3dp"
+                android:src="?colorAccent"
+                app:border_color="?android:windowBackground"
+                app:border_width="2dp" />
 
-		</FrameLayout>
+        </FrameLayout>
 
-		<LinearLayout
-			android:orientation="vertical"
-			android:layout_height="match_parent"
-			android:layout_width="wrap_content"
-			android:layout_marginStart="10dp"
-			android:layout_weight="1.0"
-			android:gravity="center_vertical"
-			android:padding="4dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1.0"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:padding="4dp">
 
-			<TextView
-				android:id="@+id/name"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:singleLine="true"
-				android:maxLines="1"
-				android:textSize="16sp"
-				tools:text="Имя Фамилия"/>
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/ps_regular"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textSize="16sp"
+                tools:text="Имя Фамилия" />
 
-			<TextView
-				android:layout_height="wrap_content"
-				android:layout_width="wrap_content"
-				android:id="@+id/last_seen"/>
+            <TextView
+                android:id="@+id/last_seen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
-		</LinearLayout>
+        </LinearLayout>
 
-	</LinearLayout>
+    </LinearLayout>
 
-	<LinearLayout
-		android:orientation="vertical"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-		<ImageButton
-			android:layout_width="40dp"
-			android:background="?selectableItemBackgroundBorderless"
-			android:layout_height="40dp"
-			android:tint="#cccccc"
-			android:src="@drawable/md_clear"
-			android:layout_marginRight="6dp"
-			android:id="@+id/remove"/>
+        <ImageButton
+            android:id="@+id/remove"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginRight="6dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:src="@drawable/md_clear"
+            android:tint="#cccccc" />
 
-	</LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>
 

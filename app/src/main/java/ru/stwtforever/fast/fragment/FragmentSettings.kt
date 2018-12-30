@@ -26,7 +26,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         PermissionHelper.init(activity)
     }
 
-    override fun onCreatePreferences(savedInstanceState: Bundle, rootKey: String) {
+    override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         UserConfig.updateUser()
         setPreferencesFromResource(R.xml.prefs, rootKey)
 

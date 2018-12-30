@@ -58,6 +58,7 @@
                 android:layout_marginBottom="4dp"
                 android:maxLines="1"
                 android:singleLine="true"
+                android:fontFamily="@font/ps_regular"
                 android:textSize="18sp"
                 tools:text="Имя Фамилия" />
 

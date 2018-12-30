@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import androidx.annotation.Nullable;
 import androidx.collection.ArrayMap;
 import ru.stwtforever.fast.api.UserConfig;
 import ru.stwtforever.fast.api.VKApi;
@@ -64,8 +65,8 @@ public class MethodSetter {
     }
 
     public String getParams() {
-		if (params == null || (params != null && params.size() == 0)) return "";
-		
+        if (params == null || (params != null && params.size() == 0)) return "";
+
         StringBuilder buffer = new StringBuilder();
         try {
 
@@ -87,15 +88,19 @@ public class MethodSetter {
         return buffer.toString();
     }
 
-    public <E> ArrayList<E> execute(Class<E> cls) throws Exception {
+    public void execute() throws Exception {
+        VKApi.execute(getSignedUrl(), null);
+    }
+
+    public <E> ArrayList<E> execute(@Nullable Class<E> cls) throws Exception {
         return VKApi.execute(getSignedUrl(), cls);
     }
 
-    public <E> void execute(Class<E> cls, VKApi.OnResponseListener<E> listener) {
+    public <E> void execute(@Nullable Class<E> cls, VKApi.OnResponseListener<E> listener) {
         VKApi.execute(getSignedUrl(), cls, listener);
     }
 
-    public <E extends VKModel> ArrayList<E> tryExecute(Class<E> cls) {
+    public <E extends VKModel> ArrayList<E> tryExecute(@Nullable Class<E> cls) {
         try {
             return execute(cls);
         } catch (Exception e) {

@@ -1,10 +1,10 @@
 package ru.stwtforever.fast.api.method;
 
-import ru.stwtforever.fast.api.model.VKAttachments;
-import ru.stwtforever.fast.api.model.VKModel;
-import ru.stwtforever.fast.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
-import java.util.*;
+import ru.stwtforever.fast.api.model.VKModel;
+import ru.stwtforever.fast.util.ArrayUtil;
 
 /**
  * Method setter for users
@@ -215,7 +215,7 @@ public class MessageMethodSetter extends MethodSetter {
      * Unique ID used to prevent re-sending of the same message
      * (Not necessarily)
      */
-    public MessageMethodSetter randomId(Long value) {
+    public MessageMethodSetter randomId(int value) {
         put("random_id", value);
         return this;
     }

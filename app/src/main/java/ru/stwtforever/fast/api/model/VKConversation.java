@@ -1,5 +1,7 @@
 package ru.stwtforever.fast.api.model;
 
+import android.util.Log;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -126,15 +128,15 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public static VKConversation parseFromLongPoll(JSONArray a) {
-        VKConversation c = new VKConversation();
+        VKConversation conversation = new VKConversation();
         VKMessage last = new VKMessage();
         last.id = a.optInt(1);
         last.flag = a.optInt(2);
         last.peerId = a.optInt(3);
         last.date = a.optLong(4);
         last.text = StringUtils.unescape(a.optString(5));
-        c.read = ((last.flag & VKMessage.UNREAD) == 0);
-        last.read = c.read;
+        conversation.read = ((last.flag & VKMessage.UNREAD) == 0);
+        last.read = conversation.read;
         last.out = (last.flag & VKMessage.OUTBOX) != 0;
         last.fromId = last.out ? UserConfig.userId : last.peerId;
 
@@ -143,9 +145,9 @@ public class VKConversation extends VKModel implements Serializable {
             last.fromId = o.optInt("from");
         }
 
-        last.randomId = a.optLong(8);
+        last.randomId = a.optInt(8);
 
-        c.type = getType(last.peerId);
+        conversation.type = getType(last.peerId);
 
         JSONObject attachments = a.optJSONObject(7);
 
@@ -153,9 +155,11 @@ public class VKConversation extends VKModel implements Serializable {
             last.attachments = VKAttachments.parseFromLongPoll(attachments);
         }
 
-        c.last = last;
+        conversation.last = last;
 
-        return c;
+        Log.d("FVKConversation", a.toString());
+
+        return conversation;
     }
 
     private static String getType(int peerId) {

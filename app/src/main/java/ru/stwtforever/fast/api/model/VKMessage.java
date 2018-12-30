@@ -54,7 +54,7 @@ public class VKMessage extends VKModel implements Serializable {
     public int id;
     public int peerId;
     public int fromId;
-    public Long randomId;
+    public int randomId;
     public int mask;
     public int status;
     public int flag;
@@ -144,7 +144,7 @@ public class VKMessage extends VKModel implements Serializable {
         text = o.optString("text");
         chatMessageId = o.optInt("conversation_message_id");
         important = o.optBoolean("important");
-        randomId = o.optLong("random_id");
+        randomId = o.optInt("random_id");
         update_time = o.optLong("update_time");
 
         if (o.has("action")) {

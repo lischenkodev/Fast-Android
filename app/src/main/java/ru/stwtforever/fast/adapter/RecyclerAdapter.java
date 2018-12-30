@@ -73,6 +73,19 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
         getValues().addAll(items);
     }
 
+    public T getLastItem() {
+        if (getItemCount() == 0) return getItem(0);
+        return getItem(getItemCount() - 1);
+    }
+
+    public T getFirstItem() {
+        return getItem(0);
+    }
+
+    public int getPosition(T item) {
+        return getValues().indexOf(item);
+    }
+
     public void changeItems(ArrayList<T> items) {
         this.values = new ArrayList<>(items);
     }
@@ -124,6 +137,8 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
     }
 
     public T getItem(int position) {
+        if (position == getItemCount())
+            position--;
         return values.get(position);
     }
 
