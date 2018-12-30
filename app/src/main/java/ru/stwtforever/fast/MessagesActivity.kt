@@ -185,10 +185,14 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
 
         if (!TextUtils.isEmpty(item.actionType)) return
 
-        when (item.out) {
-            true -> showOutDialog(position)
-            false -> showInDialog(position)
-        }
+        showAlertDialog(position);
+    }
+
+    private fun showAlertDialog(position: Int) {
+
+
+        val adb = AlertDialog.Builder(this)
+        
     }
 
     private fun checkCanWrite() {
@@ -381,7 +385,9 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
 
                 checkMessagesCount()
                 busy = false
-                msg.id = id
+
+                adapter!!.getItem(adapter!!.getPosition(msg)).id = id
+
                 msg.status = VKMessage.STATUS_SENT
 
                 if (adapter!!.itemCount > size) {
@@ -629,7 +635,7 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
 
     private fun getIntentData() {
         val intent = intent
-        this.conversation = intent.getSerializableExtra("conversation") as VKConversation
+        this.conversation = intent.getSerializableExtra("conversation") as VKConversation?
         this.title = intent.getStringExtra("title")
         this.photo = intent.getStringExtra("photo")
         this.peerId = intent.getIntExtra("peer_id", -1)
@@ -874,5 +880,4 @@ class MessagesActivity : AppCompatActivity(), TextWatcher, RecyclerAdapter.OnIte
 
         const val MESSAGES_COUNT = 60
     }
-
 }

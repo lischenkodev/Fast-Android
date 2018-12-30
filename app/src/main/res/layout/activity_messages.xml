@@ -78,7 +78,6 @@
 
                 <androidx.appcompat.widget.AppCompatImageButton
                     android:id="@+id/smiles"
-                    style="@style/Widget.MaterialComponents.Button.Icon"
                     android:layout_width="45dp"
                     android:layout_height="45dp"
                     android:layout_gravity="bottom"
@@ -89,7 +88,6 @@
 
                 <androidx.appcompat.widget.AppCompatImageButton
                     android:id="@+id/send"
-                    style="@style/Widget.MaterialComponents.Button.Icon"
                     android:layout_width="45dp"
                     android:layout_height="45dp"
                     android:layout_gravity="bottom"
