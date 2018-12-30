@@ -14,6 +14,8 @@ public class VKConversation extends VKModel implements Serializable {
 
     public static int count;
 
+    public int conversations_count;
+
     public static final String TYPE_CHAT = "chat";
     public static final String TYPE_USER = "user";
     public static final String TYPE_GROUP = "group";
@@ -61,6 +63,7 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public VKConversation(JSONObject o, JSONObject msg) throws JSONException {
+        conversations_count = count;
         last = new VKMessage(msg);
 
         read_in = o.optInt("in_read");

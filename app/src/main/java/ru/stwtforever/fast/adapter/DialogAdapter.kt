@@ -119,13 +119,11 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
 
             remove(index)
             add(0, conversation)
-            notifyItemInserted(itemCount - 1)
             notifyItemRangeChanged(0, itemCount, conversation)
         } else {
             if (!conversation.last.out)
                 conversation.unread++
-            values.add(0, conversation)
-            notifyItemInserted(itemCount - 1)
+            add(0, conversation)
             notifyItemRangeChanged(0, itemCount, conversation)
         }
     }
@@ -196,11 +194,19 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
         } ?: ""
     }
 
-    fun getPhoto(item: VKConversation?, user: VKUser?, group: VKGroup?): String? {
+    fun getPhoto(item: VKConversation?, peerUser: VKUser?, peerGroup: VKGroup?): String? {
         return when {
-            item!!.isGroup -> group!!.photo_200
-            item.isUser -> user!!.photo_200
+            item!!.isGroup -> peerGroup!!.photo_100
+            item.isUser -> peerUser!!.photo_200
             else -> item.photo_200
+        } ?: ""
+    }
+
+    fun getFromPhoto(item: VKConversation?, last: VKMessage?, fromUser: VKUser?, fromGroup: VKGroup?): String? {
+        return when {
+            item!!.isFromGroup -> fromGroup!!.photo_100
+            item.isFromUser -> if (last!!.out && !item.isChat) UserConfig.user.photo_100 else fromUser!!.photo_100
+            else -> ""
         } ?: ""
     }
 
@@ -282,10 +288,10 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
             if (position == -1) return
             val item = getItem(position) ?: return
             val last = item.last ?: return
-            val group = searchGroup(last.fromId)
+            val fromGroup = searchGroup(last.fromId)
             val peerGroup = searchGroup(last.peerId)
 
-            val user = searchUser(last.fromId)
+            val fromUser = searchUser(last.fromId)
             val peerUser = searchUser(last.peerId)
 
             FontHelper.setFont(title, FontHelper.PS_REGULAR)
@@ -301,17 +307,8 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
 
             avatar_small.visibility = if (!item.isChat && !last.out) View.GONE else View.VISIBLE
 
-            val peerAvatar: String = when {
-                item.isGroup -> peerGroup!!.photo_200
-                item.isUser -> peerUser!!.photo_200
-                else -> item.photo_200
-            } ?: ""
-
-            val fromAvatar: String = when {
-                item.isFromGroup -> group!!.photo_100
-                item.isFromUser -> if (last.out && !item.isChat) UserConfig.user.photo_100 else user!!.photo_100
-                else -> ""
-            } ?: ""
+            val peerAvatar: String = getPhoto(item, peerUser!!, peerGroup!!) ?: ""
+            val fromAvatar: String = getFromPhoto(item, last, fromUser!!, fromGroup!!) ?: ""
 
             if (TextUtils.isEmpty(fromAvatar)) {
                 avatar_small.setImageDrawable(p_user)

@@ -203,7 +203,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
             if (isEmpty)
                 adapter!!.notifyItemRangeInserted(0, adapter!!.itemCount)
             else
-                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount)
+                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, null)
             return
         }
 
@@ -214,7 +214,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
             if (isEmpty)
                 adapter!!.notifyItemRangeInserted(0, adapter!!.itemCount)
             else
-                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount)
+                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, null)
             return
         }
 
@@ -290,6 +290,10 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                 if (!conversations.isEmpty()) {
                     loading = false
                 }
+
+                val count: Int = adapter!!.getItem(0)!!.conversations_count
+
+                tb!!.title = "$title" + if (adapter!!.itemCount == 0) "" else " ($count)"
             }
 
             override fun error(e: Exception) {

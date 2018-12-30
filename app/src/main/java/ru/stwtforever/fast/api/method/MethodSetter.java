@@ -1,12 +1,15 @@
 package ru.stwtforever.fast.api.method;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import androidx.collection.ArrayMap;
-import ru.stwtforever.fast.util.*;
-import ru.stwtforever.fast.api.*;
-import ru.stwtforever.fast.api.model.*;
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import ru.stwtforever.fast.api.UserConfig;
+import ru.stwtforever.fast.api.VKApi;
+import ru.stwtforever.fast.api.model.VKModel;
+import ru.stwtforever.fast.util.ArrayUtil;
 
 public class MethodSetter {
     private String name;
@@ -144,7 +147,7 @@ public class MethodSetter {
     }
 
     /**
-     * Profile fields separated by ','
+     * Profile/Group fields separated by ','
      */
     public MethodSetter fields(String values) {
         return put("fields", values);

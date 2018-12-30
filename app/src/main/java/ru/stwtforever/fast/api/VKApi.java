@@ -82,13 +82,16 @@ public class VKApi {
         ArrayList<T> models = new ArrayList<>(array.length());
 
         if (cls == VKUser.class) {
+            if (url.contains("friends.get")) {
+                VKUser.count = json.optJSONObject("response").optInt("count");
+            }
+
             for (int i = 0; i < array.length(); i++) {
                 models.add((T) new VKUser(array.optJSONObject(i)));
             }
         } else if (cls == VKMessage.class) {
             if (url.contains("messages.getHistory")) {
-                VKMessage.lastHistoryCount = json.optJSONObject("response")
-                        .optInt("count");
+                VKMessage.lastHistoryCount = json.optJSONObject("response").optInt("count");
             }
 
             for (int i = 0; i < array.length(); i++) {
@@ -118,22 +121,22 @@ public class VKApi {
 
             for (int i = 0; i < array.length(); i++) {
                 JSONObject source = array.optJSONObject(i);
-                JSONObject conversation = source.optJSONObject("conversation");
-                JSONObject last_message = source.optJSONObject("last_message");
+                JSONObject json_conversation = source.optJSONObject("conversation");
+                JSONObject json_last_message = source.optJSONObject("last_message");
 
-                VKConversation message = new VKConversation(conversation, last_message);
+                VKConversation conversation = new VKConversation(json_conversation, json_last_message);
 
                 JSONArray profiles = json.optJSONObject("response").optJSONArray("profiles");
-                if (profiles != null) {
-                    message.profiles = VKUser.parse(profiles);
+                if (profiles != null && profiles.length() > 0) {
+                    conversation.profiles = VKUser.parse(profiles);
                 }
 
                 JSONArray groups = json.optJSONObject("response").optJSONArray("groups");
-                if (groups != null) {
-                    message.groups = VKGroup.parseGroups(groups);
+                if (groups != null && groups.length() > 0) {
+                    conversation.groups = VKGroup.parse(groups);
                 }
 
-                models.add((T) message);
+                models.add((T) conversation);
             }
         }
         return models;
@@ -147,7 +150,7 @@ public class VKApi {
                 try {
                     ArrayList<E> models = execute(url, cls);
                     if (listener != null) {
-                        AppGlobal.handler.post(new SuccessCallback<E>(listener, models));
+                        AppGlobal.handler.post(new SuccessCallback<>(listener, models));
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -256,6 +259,7 @@ public class VKApi {
         public MethodSetter get() {
             return new MethodSetter("friends.get");
         }
+
         public MethodSetter delete() {
             return new MethodSetter("friends.delete");
         }

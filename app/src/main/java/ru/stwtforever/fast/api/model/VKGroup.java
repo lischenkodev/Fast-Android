@@ -1,7 +1,8 @@
 package ru.stwtforever.fast.api.model;
 
+import android.util.Log;
+
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
@@ -75,6 +76,8 @@ public class VKGroup extends VKModel implements Serializable {
      * @param source the json source to parse
      */
     public VKGroup(JSONObject source) {
+        Log.d("FVKGroup", source.toString());
+
         this.id = source.optInt("id");
         this.name = source.optString("name");
         this.screen_name = source.optString("screen_name");
@@ -106,9 +109,8 @@ public class VKGroup extends VKModel implements Serializable {
         this.members_count = source.optLong("members_count");
     }
 	
-	public static ArrayList<VKGroup> parseGroups(JSONArray array) {
-		ArrayList<VKGroup> groups = new ArrayList<>();
-		
+	public static ArrayList<VKGroup> parse(JSONArray array) {
+		ArrayList<VKGroup> groups = new ArrayList<>(array.length());
 		for (int i = 0; i < array.length(); i++) {
 			VKGroup group = new VKGroup((JSONObject) array.opt(i));
 			groups.add(group);
@@ -164,14 +166,5 @@ public class VKGroup extends VKModel implements Serializable {
 
         private Type() {
         }
-    }
-
-    /**
-     * Community cover
-     */
-    // TODO: add support for cover
-    public class Cover {
-        public boolean enabled;
-        // ...
     }
 }

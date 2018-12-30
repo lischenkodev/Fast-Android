@@ -10,6 +10,10 @@ import java.util.ArrayList;
 
 public class VKUser extends VKModel implements Serializable {
 
+    public static int count;
+
+    public int friends_count;
+
     public static final String FIELDS_DEFAULT = "photo_50,photo_100,photo_200,status,screen_name,online,online_mobile,last_seen,verified,sex";
 
     public int id;
@@ -47,6 +51,7 @@ public class VKUser extends VKModel implements Serializable {
     }
 
     public VKUser(JSONObject source) {
+        friends_count = count;
         this.id = source.optInt("id");
         this.name = source.optString("first_name", "...");
         this.surname = source.optString("last_name", "");
