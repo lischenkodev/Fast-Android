@@ -190,6 +190,8 @@ class MainActivity : AppCompatActivity() {
         filter = bottom_toolbar!!.findViewById(R.id.tb_filter)
         menu = bottom_toolbar!!.findViewById(R.id.tb_menu)
 
+        findViewById<View>(R.id.toolbar)!!.setBackgroundColor(ViewUtils.primaryColor)
+
         filter!!.isEnabled = false
         filter!!.drawable.setTint(Color.GRAY)
 

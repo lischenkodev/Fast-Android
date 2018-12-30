@@ -65,7 +65,7 @@
 
                 <EditText
                     android:id="@+id/message"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1.0"
                     android:background="#00000000"
@@ -81,7 +81,7 @@
                     android:layout_width="45dp"
                     android:layout_height="45dp"
                     android:layout_gravity="bottom"
-                    android:layout_marginLeft="4dp"
+                    android:layout_marginStart="4dp"
                     android:background="?selectableItemBackgroundBorderless"
                     android:src="@drawable/md_online_status"
                     android:tint="#cccccc" />
@@ -91,7 +91,7 @@
                     android:layout_width="45dp"
                     android:layout_height="45dp"
                     android:layout_gravity="bottom"
-                    android:layout_marginLeft="4dp"
+                    android:layout_marginStart="4dp"
                     android:src="@drawable/md_mic"
                     android:tint="#ffffff" />
 
@@ -111,14 +111,20 @@
 
     </RelativeLayout>
 
-    <include layout="@layout/pinned_message" />
+    <LinearLayout
+        android:id="@+id/pinned_msg_container"
+        android:layout_width="match_parent"
+        android:layout_height="56dp">
+
+        <include layout="@layout/pinned_message" />
+    </LinearLayout>
 
     <View
         android:id="@+id/line"
         android:layout_width="match_parent"
         android:layout_height="5dp"
-        android:alpha="0.3"
         android:layout_below="@+id/pinned_msg_container"
+        android:alpha="0.3"
         android:background="@drawable/message_drop_shadow_dark"
         android:rotation="180" />
 

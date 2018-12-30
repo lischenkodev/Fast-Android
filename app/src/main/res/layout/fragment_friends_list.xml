@@ -1,101 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	xmlns:tools="http://schemas.android.com/tools"
-	android:layout_width="match_parent"
-	android:layout_height="80dp"
-	android:orientation="horizontal"
-	android:gravity="center_vertical">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
 
-	<LinearLayout
-		android:id="@+id/container"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:weightSum="1.0"
-		android:padding="6dp"
-		android:layout_marginLeft="6dp"
-		android:layout_marginRight="2dp">
+    <LinearLayout
+        android:id="@+id/container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="6dp"
+        android:layout_marginRight="2dp"
+        android:padding="6dp"
+        android:weightSum="1.0">
 
-		<FrameLayout
-			android:layout_width="wrap_content"
-			android:layout_weight="0"
-			android:layout_height="wrap_content">
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0">
 
-			<ru.stwtforever.fast.view.CircleImageView
-				android:id="@+id/avatar"
-				android:layout_width="60dp"
-				android:layout_height="60dp"
-				android:src="@drawable/placeholder_user"
-				android:layout_gravity="bottom|right"/>
+            <ru.stwtforever.fast.view.CircleImageView
+                android:id="@+id/avatar"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_gravity="bottom|right"
+                android:src="@drawable/placeholder_user" />
 
-			<ru.stwtforever.fast.view.CircleImageView
-				android:id="@+id/online"
-				android:layout_width="14dp"
-				android:layout_height="14dp"
-				android:src="?colorAccent"
-				app:border_color="?android:windowBackground"
-				app:border_width="2dp"
-				android:layout_gravity="bottom|right"
-				android:layout_margin="3dp"/>
+            <ru.stwtforever.fast.view.CircleImageView
+                android:id="@+id/online"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:layout_gravity="bottom|right"
+                android:layout_margin="3dp"
+                android:src="?colorAccent"
+                app:border_color="?android:windowBackground"
+                app:border_width="2dp" />
 
-		</FrameLayout>
+        </FrameLayout>
 
-		<LinearLayout
-			android:orientation="vertical"
-			android:layout_height="match_parent"
-			android:layout_width="wrap_content"
-			android:layout_marginStart="10dp"
-			android:layout_weight="1.0"
-			android:gravity="center_vertical"
-			android:padding="4dp">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1.0"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:padding="4dp">
 
-			<TextView
-				android:id="@+id/name"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:singleLine="true"
-				android:maxLines="1"
-				android:textSize="18sp"
-				tools:text="Имя Фамилия"
-				android:layout_marginBottom="4dp"/>
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:fontFamily="@font/ps_regular"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textSize="18sp"
+                tools:text="Имя Фамилия" />
 
-			<TextView
-				android:layout_height="wrap_content"
-				android:layout_width="wrap_content"
-				android:id="@+id/last_seen"/>
+            <TextView
+                android:id="@+id/last_seen"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
 
-		</LinearLayout>
+        </LinearLayout>
 
-		<LinearLayout
-			android:orientation="horizontal"
-			android:layout_width="wrap_content"
-			android:layout_height="match_parent"
-			android:layout_marginStart="10dp"
-			android:gravity="center_vertical">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-			<ImageButton
-				android:layout_width="wrap_content"
-				android:background="?selectableItemBackgroundBorderless"
-				android:layout_height="wrap_content"
-				android:tint="?colorAccent"
-				android:src="@drawable/md_mail"
-				android:padding="10dp"
-				android:id="@+id/message"/>
+            <ImageButton
+                android:id="@+id/message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?selectableItemBackgroundBorderless"
+                android:padding="10dp"
+                android:src="@drawable/md_mail"
+                android:tint="?colorAccent" />
 
-			<ImageButton
-				android:background="?selectableItemBackgroundBorderless"
-				android:src="@drawable/md_arrow_up"
-				android:layout_width="wrap_content"
-				android:tint="?mainColor"
-				android:layout_height="wrap_content"
-				android:padding="10dp"
-				android:id="@+id/funcs"
-				android:layout_marginLeft="-6dp"/>
+            <ImageButton
+                android:id="@+id/functions"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="-6dp"
+                android:background="?selectableItemBackgroundBorderless"
+                android:padding="10dp"
+                android:src="@drawable/md_arrow_up"
+                android:tint="?mainColor" />
 
-		</LinearLayout>
+        </LinearLayout>
 
-	</LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>
 

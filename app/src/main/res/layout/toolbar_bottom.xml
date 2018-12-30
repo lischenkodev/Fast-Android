@@ -4,16 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="56dp"
     android:layout_gravity="bottom"
-    android:background="?android:windowBackground"
+    android:background="?colorPrimaryDark"
     android:clickable="true"
     android:focusable="true"
     android:gravity="center"
     android:orientation="vertical">
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="?android:attr/dividerVertical" />
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -25,8 +20,8 @@
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="55dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="55dp"
             android:background="?selectableItemBackgroundBorderless"
             android:src="@drawable/md_filter"
             android:tint="?colorAccent" />
@@ -63,8 +58,8 @@
             android:layout_height="45dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="55dp"
-            android:layout_marginRight="20dp"
+            android:layout_marginStart="55dp"
+            android:layout_marginEnd="20dp"
             android:background="?selectableItemBackgroundBorderless"
             android:src="@drawable/md_burger"
             android:tint="?colorAccent" />

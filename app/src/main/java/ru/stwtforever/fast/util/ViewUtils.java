@@ -82,19 +82,21 @@ public class ViewUtils {
     }
 
     public static void applyToolbarStyles(Toolbar tb) {
-        tb.setPopupTheme(popupTheme);
-        tb.setBackgroundColor(primaryColor);
+        //tb.setPopupTheme(popupTheme);
+        //tb.setBackgroundColor(primaryColor);
 
-        tb.setTitleTextColor(mainColor);
-        tb.setSubtitleTextColor(secondaryColor);
+        //tb.setTitleTextColor(mainColor);
+        //tb.setSubtitleTextColor(secondaryColor);
 
-        if (tb.getOverflowIcon() != null) {
+        /*if (tb.getOverflowIcon() != null) {
             tb.getOverflowIcon().setTint(mainColor);
         }
 
         if (tb.getNavigationIcon() != null) {
             tb.getNavigationIcon().setTint(mainColor);
-        }
+        }*/
+
+
     }
 
     static @ColorInt

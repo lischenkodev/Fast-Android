@@ -49,6 +49,8 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
 
     private var loading: Boolean = false
 
+    private var noItems: View? = null
+
     override fun onRefresh() {
         getDialogs(0, DIALOGS_COUNT)
     }
@@ -71,6 +73,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         list = view.findViewById(R.id.list)
+        noItems = view.findViewById(R.id.no_items_layout)
         setRecyclerView(list)
         tb = view.findViewById(R.id.tb)
 
@@ -86,9 +89,12 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                 }
                 R.id.clear_messages_cache -> {
                     DatabaseHelper.getInstance().dropMessagesTable(AppGlobal.database)
-                    adapter!!.clear()
-                    adapter!!.notifyDataSetChanged()
+                    if (adapter != null) {
+                        adapter!!.clear()
+                        adapter!!.notifyDataSetChanged()
+                    }
                     getDialogs(0, DIALOGS_COUNT)
+                    checkCount()
                 }
             }
             true
@@ -174,26 +180,50 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         getDialogs(0, DIALOGS_COUNT)
     }
 
+    private fun checkCount() {
+        noItems!!.visibility = when {
+            adapter == null -> View.VISIBLE
+            adapter!!.itemCount == 0 -> View.VISIBLE
+            else -> View.GONE
+        }
+    }
+
     private fun createAdapter(messages: ArrayList<VKConversation>?, offset: Int) {
+        checkCount()
         if (ArrayUtil.isEmpty(messages)) {
             return
         }
 
+        checkCount()
+
+        val isEmpty: Boolean = if (adapter == null) false else adapter!!.itemCount == 0
+
         if (offset != 0) {
             adapter!!.changeItems(messages)
-            adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, adapter!!.getItem(adapter!!.itemCount - 1))
+            if (isEmpty)
+                adapter!!.notifyItemRangeInserted(0, adapter!!.itemCount)
+            else
+                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount)
             return
         }
 
+        checkCount()
+
         if (adapter != null) {
             adapter!!.changeItems(messages)
-            adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, adapter!!.getItem(adapter!!.itemCount - 1))
+            if (isEmpty)
+                adapter!!.notifyItemRangeInserted(0, adapter!!.itemCount)
+            else
+                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount)
             return
         }
+
         adapter = messages?.let { DialogAdapter(activity, it) }
         list!!.adapter = adapter
         adapter!!.setOnItemClickListener(this)
         adapter!!.setOnItemLongClickListener(this)
+
+        checkCount()
     }
 
     private fun getCachedDialogs() {

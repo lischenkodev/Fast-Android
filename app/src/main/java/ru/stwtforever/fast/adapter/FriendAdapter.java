@@ -1,11 +1,9 @@
 package ru.stwtforever.fast.adapter;
 
-import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -16,7 +14,6 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.api.model.VKUser;
@@ -75,7 +72,7 @@ public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHol
             name = v.findViewById(R.id.name);
 
             message = v.findViewById(R.id.message);
-            functions = v.findViewById(R.id.funcs);
+            functions = v.findViewById(R.id.functions);
         }
 
         void bind(final int position) {
