@@ -1,57 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical"
-	android:layout_width="match_parent"
-	android:layout_height="match_parent"
-	android:gravity="center">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="10dp">
 
-	<LinearLayout
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:orientation="vertical"
-		android:gravity="center"
-		android:padding="10dp">
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/token"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/token"
+        android:lines="1"
+        android:maxLines="1" />
 
-		<EditText
-			android:layout_width="200dp"
-			android:layout_height="wrap_content"
-			android:hint="Токен"
-			android:id="@+id/token"/>
-
-		<EditText
-			android:layout_width="200dp"
-			android:layout_height="wrap_content"
-			android:layout_marginTop="8dp"
-			android:digits="0123456789"
-			android:hint="User ID"
-			android:id="@+id/user_id"
-			android:inputType="number"/>
-
-	</LinearLayout>
-
-	<LinearLayout
-		android:orientation="horizontal"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:gravity="center|end"
-		android:paddingEnd="4dp">
-
-		<Button
-			android:layout_width="wrap_content"
-			style="?android:attr/buttonBarButtonStyle"
-			android:layout_height="wrap_content"
-			android:text="@android:string/cancel"
-			android:id="@+id/cancel"/>
-
-		<Button
-			android:layout_width="wrap_content"
-			style="?android:attr/buttonBarButtonStyle"
-			android:layout_height="wrap_content"
-			android:text="@android:string/ok"
-			android:id="@+id/ok"/>
-
-	</LinearLayout>
-
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/user_id"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:digits="0123456789"
+        android:hint="@string/user_id"
+        android:inputType="number" />
 </LinearLayout>
 

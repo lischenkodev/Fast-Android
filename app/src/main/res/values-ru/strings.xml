@@ -155,4 +155,5 @@
     <string name="fast_rqrs_prmsn_for_save_photo">Fast требует разрешение для сохранения фотографий</string>
     <string name="clear_cache">Очистить кэш</string>
     <string name="so_empty">Так пусто&#8230;</string>
+    <string name="token">Токен</string>
 </resources>

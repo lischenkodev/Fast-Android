@@ -12,7 +12,6 @@ import android.view.View
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
@@ -25,7 +24,6 @@ import ru.stwtforever.fast.api.UserConfig
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.concurrent.AsyncCallback
 import ru.stwtforever.fast.concurrent.ThreadExecutor
-import ru.stwtforever.fast.helper.FontHelper
 import ru.stwtforever.fast.util.ViewUtils
 
 class WebViewLoginActivity : AppCompatActivity() {
@@ -84,22 +82,14 @@ class WebViewLoginActivity : AppCompatActivity() {
         adb.setView(v)
         adb.setMessage(R.string.token_login_message)
 
-        val ok = v.findViewById<Button>(R.id.ok)
-        val cancel = v.findViewById<Button>(R.id.cancel)
-
         val etToken = v.findViewById<EditText>(R.id.token)
         val etUserId = v.findViewById<EditText>(R.id.user_id)
 
-        FontHelper.setFont(arrayOf(etToken, etUserId), FontHelper.PS_REGULAR)
-
-        val dialog = adb.create()
-        dialog.show()
-
-        ok.setOnClickListener {
+        adb.setPositiveButton(android.R.string.ok, ({ _, _ ->
             val token = etToken.text.toString()
             val uId = etUserId.text.toString()
 
-            if (!TextUtils.isEmpty(token) && !TextUtils.isEmpty(uId)) {
+            if (!token.trim().isEmpty() && !uId.trim().isEmpty()) {
                 ThreadExecutor.execute(object : AsyncCallback(this@WebViewLoginActivity) {
                     var id: Int = 0
 
@@ -113,7 +103,6 @@ class WebViewLoginActivity : AppCompatActivity() {
                         intent.putExtra("id", id)
                         setResult(Activity.RESULT_OK, intent)
                         finish()
-                        dialog.dismiss()
                     }
 
                     override fun error(e: Exception) {
@@ -121,9 +110,9 @@ class WebViewLoginActivity : AppCompatActivity() {
                     }
                 })
             }
-        }
-
-        cancel.setOnClickListener { dialog.dismiss() }
+        }))
+        adb.setNegativeButton(android.R.string.cancel, null)
+        adb.create().show()
     }
 
     override fun onBackPressed() {

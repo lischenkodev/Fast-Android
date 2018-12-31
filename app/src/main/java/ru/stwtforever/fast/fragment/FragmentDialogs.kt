@@ -194,14 +194,9 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
 
         checkCount()
 
-        val isEmpty: Boolean = if (adapter == null) false else adapter!!.itemCount == 0
-
         if (offset != 0) {
             adapter!!.changeItems(messages)
-            if (isEmpty)
-                adapter!!.notifyItemRangeInserted(0, adapter!!.itemCount)
-            else
-                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, null)
+            adapter!!.notifyDataSetChanged()
             return
         }
 
@@ -209,10 +204,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
 
         if (adapter != null) {
             adapter!!.changeItems(messages)
-            if (isEmpty)
-                adapter!!.notifyItemRangeInserted(0, adapter!!.itemCount)
-            else
-                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, null)
+            adapter!!.notifyDataSetChanged()
             return
         }
 

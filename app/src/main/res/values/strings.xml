@@ -157,4 +157,7 @@
     <string name="fast_rqrs_prmsn_for_save_photo">Fast requires permission for save photo</string>
     <string name="clear_cache">Clear cache</string>
     <string name="so_empty">So empty&#8230;</string>
+
+    <string name="user_id" translatable="false">User ID</string>
+    <string name="token">Token</string>
 </resources>
