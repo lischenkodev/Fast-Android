@@ -183,6 +183,10 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
         return context.getDrawable(res);
     }
 
+    public boolean isEmpty() {
+        return getItemCount() == 0;
+    }
+
     public interface OnItemClickListener {
         void onItemClick(View v, int position);
     }

@@ -110,6 +110,7 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
             conversation.can_invite = current.can_invite
             conversation.can_promote_users = current.can_promote_users
             conversation.can_see_invite_link = current.can_see_invite_link
+            conversation.membersCount = current.membersCount
 
 
             if (conversation.last.out) {

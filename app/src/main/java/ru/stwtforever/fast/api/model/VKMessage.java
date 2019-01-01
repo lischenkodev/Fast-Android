@@ -30,8 +30,6 @@ public class VKMessage extends VKModel implements Serializable {
     public static final int MEDIA = 512;        //сообщение содержит медиаконтент
     public static final int BESEDA = 8192;    //беседа
 
-    public boolean isAdded;
-
     public static final String ACTION_CHAT_CREATE = "chat_create";
     public static final String ACTION_CHAT_INVITE_USER = "chat_invite_user";
     public static final String ACTION_CHAT_KICK_USER = "chat_kick_user";

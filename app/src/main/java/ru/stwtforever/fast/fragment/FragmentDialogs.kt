@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import org.greenrobot.eventbus.EventBus
 import ru.stwtforever.fast.CreateChatActivity
-import ru.stwtforever.fast.MessagesActivity
+import ru.stwtforever.fast.MessagesActivity2
 import ru.stwtforever.fast.R
 import ru.stwtforever.fast.adapter.DialogAdapter
 import ru.stwtforever.fast.adapter.RecyclerAdapter
@@ -297,7 +297,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         val user = CacheStorage.getUser(c.last.peerId)
         val g = CacheStorage.getGroup(VKGroup.toGroupId(c.last.peerId))
 
-        val intent = Intent(activity, MessagesActivity::class.java)
+        val intent = Intent(activity, MessagesActivity2::class.java)
         intent.putExtra("title", adapter!!.getTitle(c, user, g))
         intent.putExtra("photo", adapter!!.getPhoto(c, user, g))
         intent.putExtra("conversation", c)

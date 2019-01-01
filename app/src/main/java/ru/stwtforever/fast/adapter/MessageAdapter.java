@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import ru.stwtforever.fast.MessagesActivity;
+import ru.stwtforever.fast.MessagesActivity2;
 import ru.stwtforever.fast.PhotoViewActivity;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.api.VKApi;
@@ -117,7 +117,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     private void readNewMessage(final VKMessage message) {
-        ThreadExecutor.execute(new AsyncCallback(((MessagesActivity) context)) {
+        ThreadExecutor.execute(new AsyncCallback(((MessagesActivity2) context)) {
             @Override
             public void ready() throws Exception {
                 VKApi.messages().markAsRead().peerId(message.peerId).execute(Integer.class);
@@ -175,7 +175,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
         add(msg);
         notifyItemInserted(getItemCount() - 1);
-        ((MessagesActivity) context).handleNewMessage();
+        ((MessagesActivity2) context).handleNewMessage();
     }
 
     private boolean isContains(long randomId) {
