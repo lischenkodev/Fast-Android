@@ -24,8 +24,8 @@
         <item name="mainColor">#000000</item>
         <item name="colorSecondary">?colorAccent</item>
         <item name="secondaryColor">#a9a9a9</item>
-        <item name="appBarStyle">@style/AppTheme.AppBar.Light</item>
-        <item name="toolbarPopupTheme">@style/ThemeOverlay.MaterialComponents.Light</item>
+
+        <item name="toolbarStyle">@style/Toolbar.Light</item>
     </style>
 
     <style name="AppTheme.Dark" parent="Theme.MaterialComponents.NoActionBar">
@@ -38,20 +38,22 @@
         <item name="mainColor">#ffffff</item>
         <item name="colorSecondary">?colorAccent</item>
         <item name="secondaryColor">#d3d3d3</item>
-        <item name="appBarStyle">@style/AppTheme.AppBar.Dark</item>
-        <item name="toolbarPopupTheme">@style/ThemeOverlay.MaterialComponents.Dark</item>
+
+        <item name="toolbarStyle">@style/Toolbar.Dark</item>
     </style>
 
-    <style name="AppTheme.AppBar.Light" parent="ThemeOverlay.MaterialComponents.ActionBar">
+    <style name="Toolbar.Light" parent="Widget.MaterialComponents.Toolbar">
+        <item name="theme">@style/ThemeOverlay.AppCompat.ActionBar</item>
         <item name="android:fontFamily">@font/ps_regular</item>
         <item name="android:background">@color/colorPrimary</item>
-
+        <item name="popupTheme">@style/ThemeOverlay.MaterialComponents.Light</item>
     </style>
 
-    <style name="AppTheme.AppBar.Dark" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar">
+    <style name="Toolbar.Dark" parent="Widget.MaterialComponents.Toolbar">
+        <item name="theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+        <item name="popupTheme">@style/ThemeOverlay.MaterialComponents.Dark</item>
         <item name="android:fontFamily">@font/ps_regular</item>
         <item name="android:background">@color/colorDarkPrimary</item>
-
     </style>
 
     <style name="AppTheme.PhotoView" parent="Theme.MaterialComponents.NoActionBar">

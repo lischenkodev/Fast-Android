@@ -16,7 +16,7 @@
         android:layout_marginLeft="30dp"
         android:layout_marginTop="50dp"
         android:layout_marginRight="30dp"
-        android:layout_weight="0.4"
+        android:layout_weight="0.2"
         android:src="@drawable/logo_blue_text" />
 
     <FrameLayout
@@ -82,26 +82,6 @@
         </androidx.cardview.widget.CardView>
 
     </FrameLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_gravity="bottom"
-        android:layout_weight="0.5"
-        android:gravity="center"
-        android:orientation="vertical">
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_arrow_forward"
-            android:tint="?colorAccent"
-            app:backgroundTint="?mainLightColor"
-            app:borderWidth="0dp"
-            app:fabSize="normal" />
-
-    </LinearLayout>
 
 </LinearLayout>
 

@@ -39,13 +39,13 @@ class WebViewLoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web_login)
 
-
-
         bar = findViewById(R.id.progress)
         webView = findViewById(R.id.web)
 
         tb = findViewById(R.id.tb)
         setSupportActionBar(tb)
+
+        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
         webView!!.visibility = View.GONE
 
@@ -64,13 +64,11 @@ class WebViewLoginActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            android.R.id.home -> onBackPressed()
             R.id.token_login -> showTokenLoginDialog()
-            R.id.refresh -> {
-                webView!!.reload()
-            }
-            R.id.back -> {
-                if (webView!!.canGoBack()) webView!!.goBack()
-            }
+            R.id.refresh -> webView!!.reload()
+            R.id.back -> if (webView!!.canGoBack()) webView!!.goBack()
+
         }
         return super.onOptionsItemSelected(item)
     }

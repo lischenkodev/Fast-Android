@@ -10,7 +10,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.cardview.widget.CardView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import ru.stwtforever.fast.api.UserConfig
@@ -30,12 +29,17 @@ import java.util.*
 class LoginActivity : AppCompatActivity() {
 
     private var card: CardView? = null
-    private var fab: FloatingActionButton? = null
     private var name: TextView? = null
     private var avatar: CircleImageView? = null
     private var logo: ImageView? = null
 
-    private val logoutClick = View.OnClickListener { showExitDialog() }
+    private var loggedIn: Boolean = false
+
+    private val logoutClick = View.OnLongClickListener {
+        if (loggedIn)
+            showExitDialog()
+        return@OnLongClickListener true
+    }
 
     private val closeClick = View.OnClickListener { startMainActivity() }
 
@@ -49,13 +53,12 @@ class LoginActivity : AppCompatActivity() {
 
         logo = findViewById(R.id.logo)
         card = findViewById(R.id.card)
-        fab = findViewById(R.id.fab)
         name = findViewById(R.id.name)
         avatar = findViewById(R.id.avatar)
 
         name!!.typeface = FontHelper.getFont(FontHelper.PS_REGULAR)
 
-        fab!!.setOnClickListener(closeClick)
+        card!!.setOnLongClickListener(logoutClick)
 
         setUserData(null)
 
@@ -79,9 +82,11 @@ class LoginActivity : AppCompatActivity() {
         val adb = AlertDialog.Builder(this)
         adb.setTitle(R.string.warning)
         adb.setMessage(R.string.exit_message)
-        adb.setPositiveButton(R.string.yes) { dialogInterface, i ->
+        adb.setPositiveButton(R.string.yes) { _, _ ->
             UserConfig.clear()
             setUserData(null)
+            loggedIn = false
+            card!!.setOnClickListener(loginClick)
         }
         adb.setNegativeButton(R.string.no, null)
         val alert = adb.create()
@@ -131,7 +136,9 @@ class LoginActivity : AppCompatActivity() {
             }
 
             override fun done() {
+                loggedIn = true
                 setUserData(user)
+                card!!.setOnClickListener(closeClick)
             }
 
             override fun error(e: Exception) {
@@ -148,11 +155,8 @@ class LoginActivity : AppCompatActivity() {
             avatar!!.setImageResource(R.drawable.placeholder_user)
 
             card!!.setOnClickListener(loginClick)
-            fab!!.hide()
             return
         }
-
-        card!!.setOnClickListener(logoutClick)
 
         name!!.text = user.toString()
 
@@ -165,6 +169,5 @@ class LoginActivity : AppCompatActivity() {
                     }
                 })
 
-        fab!!.show()
     }
 }

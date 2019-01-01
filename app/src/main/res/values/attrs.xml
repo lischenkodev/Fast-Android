@@ -16,7 +16,5 @@
     <attr name="mainLightColor" format="color" />
     <attr name="mainColor" format="color" />
     <attr name="secondaryColor" format="color" />
-    <attr name="appBarStyle" />
-    <attr name="toolbarPopupTheme" />
 
 </resources>
