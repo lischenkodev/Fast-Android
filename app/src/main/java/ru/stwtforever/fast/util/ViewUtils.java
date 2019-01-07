@@ -1,12 +1,7 @@
 package ru.stwtforever.fast.util;
 
-import android.app.Activity;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.view.View;
-import android.view.Window;
-import android.widget.ImageView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.ColorRes;
@@ -34,50 +29,13 @@ public class ViewUtils {
         secondaryColor = ThemeManager.isDark() ? Color.LTGRAY : Color.DKGRAY;
     }
 
-    public static void fadeImage(ImageView imageView, long duration) {
-        imageView.setAlpha(0f);
-        imageView.animate().alpha(1f).setDuration(duration).start();
+    public static void fadeView(View v, long duration) {
+        v.setAlpha(0);
+        v.animate().alpha(1).setDuration(duration).start();
     }
 
-    public static void fadeImage(ImageView imageView) {
-        fadeImage(imageView, 200);
-    }
-
-    public static void applyWindowStyles(Activity a) {
-        if (a == null) return;
-
-        Window w = a.getWindow();
-
-        boolean isBiggerM = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
-
-        int light_sb = isBiggerM ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : 0;
-        int light_nb = isBiggerM ? View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR : 0;
-
-        w.setBackgroundDrawable(new ColorDrawable(primaryColor));
-
-        if (ThemeManager.isDark()) {
-            w.getDecorView().setSystemUiVisibility(0);
-            w.setStatusBarColor(statusBarColor);
-            w.setNavigationBarColor(statusBarColor);
-            return;
-        }
-
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            w.getDecorView().setSystemUiVisibility(0);
-            w.setStatusBarColor(statusBarColor);
-            w.setNavigationBarColor(statusBarColor);
-        } else {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                w.setStatusBarColor(Color.WHITE);
-                w.setNavigationBarColor(Color.WHITE);
-                w.getDecorView().setSystemUiVisibility(light_sb | light_nb);
-            } else {
-                w.setStatusBarColor(Color.WHITE);
-                w.setNavigationBarColor(statusBarColor);
-                w.getDecorView().setSystemUiVisibility(light_sb);
-            }
-        }
+    public static void fadeView(View v) {
+        fadeView(v, 200);
     }
 
     static @ColorInt

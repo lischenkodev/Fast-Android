@@ -34,7 +34,7 @@
                     android:paddingStart="6dp"
                     android:paddingEnd="0dp"
                     android:singleLine="true"
-                    android:textColor="?mainColor" />
+                    android:textColor="?android:textColorPrimary" />
 
                 <TextView
                     android:id="@+id/date"
@@ -45,7 +45,7 @@
                     android:paddingStart="6dp"
                     android:paddingEnd="0dp"
                     android:singleLine="true"
-                    android:textColor="?secondaryColor"
+                    android:textColor="?android:textColorSecondary"
                     android:textSize="12sp" />
 
             </LinearLayout>
@@ -59,7 +59,7 @@
                 android:autoLink="all"
                 android:linksClickable="false"
                 android:singleLine="true"
-                android:textColor="?mainColor" />
+                android:textColor="?android:textColorPrimary" />
 
         </LinearLayout>
 
@@ -73,7 +73,7 @@
             android:layout_weight="0"
             android:background="?selectableItemBackgroundBorderless"
             android:src="@drawable/md_clear"
-            android:tint="?mainColor" />
+            android:tint="?android:textColorPrimary" />
 
     </LinearLayout>
 </LinearLayout>

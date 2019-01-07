@@ -33,7 +33,6 @@ public class VKApi {
     public static UserConfig config;
     public static String lang = AppGlobal.locale.getLanguage();
 
-    @SuppressWarnings("umchecked")
     public static <T> ArrayList<T> execute(String url, Class<T> cls) throws Exception {
         if (BuildConfig.DEBUG) {
             Log.w(TAG, "url: " + url);

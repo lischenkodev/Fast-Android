@@ -66,7 +66,7 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
 
     @Override
     public int getItemCount() {
-        return values.size();
+        return values == null ? 0 : values.size();
     }
 
     public void insert(ArrayList<T> items) {

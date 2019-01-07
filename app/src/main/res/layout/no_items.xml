@@ -12,6 +12,6 @@
         android:layout_height="200dp"
         android:alpha="0.7"
         android:src="@drawable/fastman_no_items"
-        android:tint="?mainColor" />
+        android:tint="?android:textColorPrimary" />
 
 </LinearLayout>

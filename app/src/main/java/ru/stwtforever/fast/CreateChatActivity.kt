@@ -54,7 +54,6 @@ class CreateChatActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickListe
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ViewUtils.applyWindowStyles(this)
         setTheme(ThemeManager.getCurrentTheme())
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_chat)

@@ -80,6 +80,8 @@ public class VKMessage extends VKModel implements Serializable {
 
     private static final String TAG = "FVKMessage";
 
+    public boolean isAdded;
+
     public static boolean isDeleted(int flags) {
         return (flags & DELETED) != 0;
     }

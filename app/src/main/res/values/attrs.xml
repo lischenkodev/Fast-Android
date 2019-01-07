@@ -13,8 +13,4 @@
         <attr name="bounded_height" format="dimension" />
     </declare-styleable>
 
-    <attr name="mainLightColor" format="color" />
-    <attr name="mainColor" format="color" />
-    <attr name="secondaryColor" format="color" />
-
 </resources>

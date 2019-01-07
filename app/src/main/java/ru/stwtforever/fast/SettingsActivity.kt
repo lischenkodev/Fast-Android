@@ -7,14 +7,12 @@ import androidx.appcompat.widget.Toolbar
 import org.greenrobot.eventbus.EventBus
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.fragment.FragmentSettings
-import ru.stwtforever.fast.util.ViewUtils
 
 class SettingsActivity : AppCompatActivity() {
 
     private var tb: Toolbar? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ViewUtils.applyWindowStyles(this)
         setTheme(ThemeManager.getCurrentTheme())
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)

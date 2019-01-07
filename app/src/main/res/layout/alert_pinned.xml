@@ -1,72 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/pinned_msg_container"
-	android:orientation="horizontal"
-	android:layout_height="wrap_content"
-	android:layout_width="match_parent"
-	android:clickable="true"
-	android:focusable="true"
-	android:selectable="false"
-	android:gravity="center"
-	android:padding="6dp">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pinned_msg_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:padding="6dp"
+    android:selectable="false">
 
-	<LinearLayout
-		android:orientation="vertical"
-		android:layout_width="0dp"
-		android:layout_height="wrap_content"
-		android:layout_weight="1.0"
-		android:layout_marginStart="6dp">
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:layout_weight="1.0"
+        android:orientation="vertical">
 
-		<LinearLayout
-			android:orientation="horizontal"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:paddingStart="4dp"
-			android:paddingEnd="10dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="4dp"
+            android:paddingEnd="10dp">
 
-			<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:id="@+id/name"
-				android:textColor="?mainColor"
-				android:singleLine="true"
-				android:gravity="center_vertical"
-				android:paddingStart="6dp"/>
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:paddingStart="6dp"
+                android:paddingEnd="0dp"
+                android:singleLine="true"
+                android:textColor="?android:textColorPrimary" />
 
-			<TextView
-				android:layout_width="0dp"
-				android:layout_height="wrap_content"
-				android:layout_weight="0.7"
-				android:id="@+id/date"
-				android:singleLine="true"
-				android:textColor="?secondaryColor"
-				android:textSize="12sp"
-				android:gravity="center_vertical"
-				android:paddingStart="6dp"/>
+            <TextView
+                android:id="@+id/date"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.7"
+                android:gravity="center_vertical"
+                android:paddingStart="6dp"
+                android:paddingEnd="0dp"
+                android:singleLine="true"
+                android:textColor="?android:textColorSecondary"
+                android:textSize="12sp" />
 
-		</LinearLayout>
+        </LinearLayout>
 
-		<TextView
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_marginStart="10dp"
-			android:layout_marginEnd="10dp"
-			android:id="@+id/message"
-			android:autoLink="all"
-			android:linksClickable="true"
-			android:selectable="true"
-			android:textColor="?mainColor"
-			android:singleLine="false"/>
+        <TextView
+            android:id="@+id/message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            android:autoLink="all"
+            android:linksClickable="true"
+            android:selectable="true"
+            android:singleLine="false"
+            android:textColor="?android:textColorPrimary" />
 
-		<LinearLayout
-			android:orientation="vertical"
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:id="@+id/attachments"
-			android:visibility="gone"/>
+        <LinearLayout
+            android:id="@+id/attachments"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone" />
 
-	</LinearLayout>
+    </LinearLayout>
 
 </LinearLayout>
 

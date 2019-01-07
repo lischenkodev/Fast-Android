@@ -101,7 +101,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         PermissionHelper.init(this)
-        ViewUtils.applyWindowStyles(this)
         EventBus.getDefault().register(this)
         setTheme(ThemeManager.getCurrentTheme())
 
@@ -239,9 +238,9 @@ class MainActivity : AppCompatActivity() {
         val adb = AlertDialog.Builder(this)
         adb.setTitle(R.string.warning)
         adb.setMessage(R.string.exit_message)
-        adb.setPositiveButton(R.string.yes) { dialogInterface, i ->
-            UserConfig.clear()
+        adb.setPositiveButton(R.string.yes) { _, _ ->
             startLoginActivity()
+            UserConfig.clear()
         }
         adb.setNegativeButton(R.string.no, null)
         val alert = adb.create()

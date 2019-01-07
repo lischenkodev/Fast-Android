@@ -11,7 +11,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import ru.stwtforever.fast.MessagesActivity2
+import ru.stwtforever.fast.MessagesActivity
 import ru.stwtforever.fast.R
 import ru.stwtforever.fast.adapter.FriendAdapter
 import ru.stwtforever.fast.adapter.RecyclerAdapter
@@ -194,7 +194,7 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
     fun openChat(position: Int) {
         val user = adapter!!.values[position]
 
-        val intent = Intent(activity, MessagesActivity2::class.java)
+        val intent = Intent(activity, MessagesActivity::class.java)
         intent.putExtra("title", user.toString())
         intent.putExtra("photo", user.photo_200)
         intent.putExtra("peer_id", user.id)

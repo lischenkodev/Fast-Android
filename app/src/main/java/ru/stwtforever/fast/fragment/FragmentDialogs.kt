@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import org.greenrobot.eventbus.EventBus
 import ru.stwtforever.fast.CreateChatActivity
-import ru.stwtforever.fast.MessagesActivity2
+import ru.stwtforever.fast.MessagesActivity
 import ru.stwtforever.fast.R
 import ru.stwtforever.fast.adapter.DialogAdapter
 import ru.stwtforever.fast.adapter.RecyclerAdapter
@@ -34,7 +34,6 @@ import ru.stwtforever.fast.database.DatabaseHelper
 import ru.stwtforever.fast.database.MemoryCache
 import ru.stwtforever.fast.util.ArrayUtil
 import ru.stwtforever.fast.util.Utils
-import ru.stwtforever.fast.util.ViewUtils
 import java.util.*
 
 class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener {
@@ -97,11 +96,6 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                 }
             }
             true
-        }
-
-        for (i in 0 until tb!!.menu.size()) {
-            val item = tb!!.menu.getItem(i)
-            item.icon.setTint(ViewUtils.mainColor)
         }
 
         refreshLayout = view.findViewById(R.id.refresh)
@@ -281,9 +275,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                     loading = false
                 }
 
-                val count: Int = adapter!!.getItem(0)!!.conversations_count
-
-                tb!!.title = "$title" + if (adapter!!.itemCount == 0) "" else " ($count)"
+                tb!!.title = title;
             }
 
             override fun error(e: Exception) {
@@ -297,7 +289,7 @@ class FragmentDialogs : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
         val user = CacheStorage.getUser(c.last.peerId)
         val g = CacheStorage.getGroup(VKGroup.toGroupId(c.last.peerId))
 
-        val intent = Intent(activity, MessagesActivity2::class.java)
+        val intent = Intent(activity, MessagesActivity::class.java)
         intent.putExtra("title", adapter!!.getTitle(c, user, g))
         intent.putExtra("photo", adapter!!.getPhoto(c, user, g))
         intent.putExtra("conversation", c)

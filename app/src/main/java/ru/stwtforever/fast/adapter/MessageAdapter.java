@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import ru.stwtforever.fast.MessagesActivity2;
+import ru.stwtforever.fast.MessagesActivity;
 import ru.stwtforever.fast.PhotoViewActivity;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.api.VKApi;
@@ -76,6 +76,10 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     private DisplayMetrics metrics;
 
     private boolean isBusy = false;
+
+    private static final int TYPE_HEADER = 1;
+    private static final int TYPE_NORMAL = 2;
+    private static final int TYPE_FOOTER = 3;
 
     public MessageAdapter(Context context, ArrayList<VKMessage> msgs, int peerId) {
         super(context, msgs);
@@ -117,7 +121,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     private void readNewMessage(final VKMessage message) {
-        ThreadExecutor.execute(new AsyncCallback(((MessagesActivity2) context)) {
+        ThreadExecutor.execute(new AsyncCallback(((MessagesActivity) context)) {
             @Override
             public void ready() throws Exception {
                 VKApi.messages().markAsRead().peerId(message.peerId).execute(Integer.class);
@@ -175,7 +179,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
         add(msg);
         notifyItemInserted(getItemCount() - 1);
-        ((MessagesActivity2) context).handleNewMessage();
+        ((MessagesActivity) context).handleNewMessage();
     }
 
     private boolean isContains(long randomId) {
@@ -234,14 +238,32 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     @Override
     public MessageAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = inflater.inflate(R.layout.activity_messages_list, parent, false);
-        return new ViewHolder(v);
+        View v;
+        switch (viewType) {
+            case TYPE_HEADER:
+                return new AdditionalViewHolder(createView());
+            case TYPE_NORMAL:
+                v = inflater.inflate(R.layout.activity_messages_list, parent, false);
+                new ViewHolder(v);
+            case TYPE_FOOTER:
+                return new AdditionalViewHolder(createView());
+            default:
+                v = inflater.inflate(R.layout.activity_messages_list, parent, false);
+                new ViewHolder(v);
+        }
+        return null;
     }
 
     @Override
     public void onBindViewHolder(@NonNull MessageAdapter.ViewHolder holder, int position) {
+        if (holder.isFooter()) return;
         super.onBindViewHolder(holder, position);
         holder.bind(position);
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        return position == 0 ? TYPE_HEADER : position == getItemCount() - 1 ? TYPE_FOOTER : TYPE_NORMAL;
     }
 
     private VKUser searchUser(int id) {
@@ -341,7 +363,36 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     @Override
     public int getItemCount() {
-        return super.getItemCount();
+        return super.getItemCount() + 2;
+    }
+
+    public int getMessagesCount() {
+        return getValues().size();
+    }
+
+    private View createView() {
+        View v = new View(context);
+        v.setVisibility(View.VISIBLE);
+        v.setBackgroundColor(Color.TRANSPARENT);
+        v.setVisibility(View.INVISIBLE);
+        v.setEnabled(false);
+        v.setClickable(false);
+        v.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Utils.pxFromDp(60)));
+
+        return v;
+    }
+
+    class AdditionalViewHolder extends ViewHolder {
+
+        AdditionalViewHolder(View v) {
+            super(v);
+        }
+
+        public boolean isFooter() {
+            return true;
+        }
+
+
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -366,6 +417,10 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
         Drawable circle, sending, error, placeholder;
 
+        public boolean isFooter() {
+            return false;
+        }
+
         ViewHolder(View v) {
             super(v);
 
@@ -379,7 +434,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             read = v.findViewById(R.id.read_indicator);
             important = v.findViewById(R.id.important);
 
-            circle = new ColorDrawable(read.getImageTintList().getDefaultColor());
+            circle = new ColorDrawable(ThemeManager.getAccent());
             sending = getDrawable(R.drawable.ic_vector_access_time);
             error = getDrawable(R.drawable.ic_msg_error);
 

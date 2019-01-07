@@ -35,7 +35,6 @@ class ShowCreateChatActivity : AppCompatActivity() {
     private var users: ArrayList<VKUser>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ViewUtils.applyWindowStyles(this)
         setTheme(ThemeManager.getCurrentTheme())
 
         super.onCreate(savedInstanceState)

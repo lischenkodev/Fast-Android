@@ -13,7 +13,6 @@ import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -28,6 +27,7 @@ import java.util.TimerTask;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -60,10 +60,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private LinearLayoutManager layoutManager;
 
     private ImageButton smiles, send, unpin;
-    private EditText message;
+    private AppCompatEditText message;
     private ProgressBar bar;
     private LinearLayout chatPanel, pinnedContainer;
-    private View noItems, pLine;
+    private View noItems;
     private TextView pName, pDate, pText;
 
     private MessageAdapter adapter;
@@ -80,7 +80,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        ViewUtils.applyWindowStyles(this);
         setTheme(ThemeManager.getCurrentTheme());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messages);
@@ -108,7 +107,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         message.addTextChangedListener(this);
 
-
         smiles.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -127,19 +125,20 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         gd.setColor(ThemeManager.getAccent());
         gd.setCornerRadius(100f);
 
-        send.setBackground(gd);
+        //send.setBackground(gd);
         send.setImageResource(R.drawable.md_mic);
 
         getCachedMessages();
     }
 
     private void initViews() {
+        bar = findViewById(R.id.progress);
         chatPanel = findViewById(R.id.chat_panel);
         smiles = findViewById(R.id.smiles);
         toolbar = findViewById(R.id.tb);
         recycler = findViewById(R.id.list);
         send = findViewById(R.id.send);
-        message = findViewById(R.id.message);
+        message = findViewById(R.id.message_edit_text);
         noItems = findViewById(R.id.no_items_layout);
     }
 
@@ -158,8 +157,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             this.membersCount = conversation.membersCount;
             this.pinned = conversation.pinned;
         }
-
-        checkPinnedExists();
     }
 
     private void checkCanWrite() {
@@ -185,18 +182,12 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         pDate = pinnedContainer.findViewById(R.id.date);
         pText = pinnedContainer.findViewById(R.id.message);
         unpin = pinnedContainer.findViewById(R.id.unpin);
-        pLine = findViewById(R.id.line);
 
         if (pinned == null) {
-            pLine.setVisibility(View.GONE);
             pinnedContainer.setVisibility(View.GONE);
-            checkPinnedExists();
             return;
         }
 
-        checkPinnedExists();
-
-        pLine.setVisibility(View.VISIBLE);
         pinnedContainer.setVisibility(View.VISIBLE);
 
         pinnedContainer.setOnClickListener(new View.OnClickListener() {
@@ -205,8 +196,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 if (adapter == null) return;
                 if (adapter.contains(pinned.id)) {
                     recycler.scrollToPosition(adapter.findPosition(pinned.id));
-                } else {
-                    return;
                 }
             }
         });
@@ -292,11 +281,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         }
     }
 
-    private void checkPinnedExists() {
-        findViewById(R.id.space).setVisibility(pinned == null ? View.GONE : View.VISIBLE);
-    }
-
     private void checkCount() {
+        bar.setVisibility(loading ? View.VISIBLE : View.GONE);
         noItems.setVisibility(adapter == null ? View.VISIBLE : adapter.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
@@ -310,7 +296,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private void checkHovered() {
         int position = -1;
 
-        for (int i = 0; i < adapter.getItemCount(); i++) {
+        for (int i = 0; i < adapter.getMessagesCount(); i++) {
             VKMessage m = adapter.getItem(i);
             if (m.isSelected()) position = i;
         }
@@ -322,7 +308,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     }
 
     private void getCachedMessages() {
-        
+        getMessages();
     }
 
     private View.OnClickListener sendClick = new View.OnClickListener() {
@@ -347,6 +333,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         msg.text = messageText.trim();
         msg.fromId = UserConfig.userId;
         msg.peerId = peerId;
+        msg.isAdded = true;
         msg.date = Calendar.getInstance().getTimeInMillis();
         msg.out = true;
         msg.status = VKMessage.STATUS_SENDING;

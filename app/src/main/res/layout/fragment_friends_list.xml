@@ -91,7 +91,7 @@
                 android:background="?selectableItemBackgroundBorderless"
                 android:padding="10dp"
                 android:src="@drawable/md_arrow_up"
-                android:tint="?mainColor" />
+                android:tint="?android:textColorPrimary" />
 
         </LinearLayout>
 

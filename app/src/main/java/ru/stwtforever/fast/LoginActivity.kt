@@ -2,6 +2,7 @@ package ru.stwtforever.fast
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.PorterDuff
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -46,7 +47,6 @@ class LoginActivity : AppCompatActivity() {
     private val loginClick = View.OnClickListener { login() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ViewUtils.applyWindowStyles(this)
         setTheme(ThemeManager.getCurrentTheme())
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login2)
@@ -58,9 +58,10 @@ class LoginActivity : AppCompatActivity() {
 
         name!!.typeface = FontHelper.getFont(FontHelper.PS_REGULAR)
 
-        card!!.setOnLongClickListener(logoutClick)
 
         setUserData(null)
+
+        findViewById<ImageView>(R.id.logo).drawable.setColorFilter(ThemeManager.getAccent(), PorterDuff.Mode.MULTIPLY)
 
         logo!!.setOnClickListener {
             ThemeManager.update(!ThemeManager.isDark())
@@ -151,12 +152,19 @@ class LoginActivity : AppCompatActivity() {
 
     private fun setUserData(user: VKUser?) {
         if (user == null) {
+            loggedIn = false
             name!!.setText(R.string.add_account)
             avatar!!.setImageResource(R.drawable.placeholder_user)
 
             card!!.setOnClickListener(loginClick)
+            card!!.setOnLongClickListener(null)
             return
         }
+
+        loggedIn = true
+
+        card!!.setOnLongClickListener(logoutClick)
+        card!!.setOnClickListener(closeClick)
 
         name!!.text = user.toString()
 
@@ -165,9 +173,8 @@ class LoginActivity : AppCompatActivity() {
                 .priority(Picasso.Priority.HIGH)
                 .into(avatar!!, object : Callback.EmptyCallback() {
                     override fun onSuccess() {
-                        ViewUtils.fadeImage(avatar)
+                        ViewUtils.fadeView(avatar)
                     }
                 })
-
     }
 }
