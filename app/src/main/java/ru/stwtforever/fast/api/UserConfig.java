@@ -12,8 +12,8 @@ import ru.stwtforever.fast.database.*;
 
 public class UserConfig {
 	
-    public static final int FAST_ID = 6964679;
-    
+    public static final int FAST_ID = 6964679;     //coming soon
+
     public static final String ACCESS_TOKEN = "access_token";
     public static final String USER_ID = "user_id";
     public static final String EMAIL = "email";
