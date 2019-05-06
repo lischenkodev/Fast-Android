@@ -50,9 +50,11 @@ public class Scopes {
                 + ',' + PHOTOS + ',' + AUDIO
                 + ',' + VIDEO + ',' + PAGES
                 + ',' + STATUS + ',' + NOTES
-                + ',' + MESSAGES + ',' + WALL
+                + ',' + WALL
                 + ',' + ADS + ',' + OFFLINE
                 + ',' + DOCS + ',' + GROUPS
-                + ',' + NOTIFICATIONS + ',' + STATS;
+                + ',' + NOTIFICATIONS + ','
+                //',' + MESSAGES +
+                + STATS;
     }
 }

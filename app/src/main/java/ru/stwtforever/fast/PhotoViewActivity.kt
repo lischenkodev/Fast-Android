@@ -19,7 +19,7 @@ import ru.stwtforever.fast.api.model.VKPhoto
 import ru.stwtforever.fast.concurrent.AsyncCallback
 import ru.stwtforever.fast.concurrent.ThreadExecutor
 import ru.stwtforever.fast.fragment.FragmentPhotoView
-import ru.stwtforever.fast.helper.PermissionHelper
+import ru.stwtforever.fast.common.PermissionManager
 import ru.stwtforever.fast.util.ArrayUtil
 import ru.stwtforever.fast.util.Utils
 import java.util.*
@@ -91,7 +91,7 @@ class PhotoViewActivity : AppCompatActivity() {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        PermissionHelper.init(this)
+        PermissionManager.setActivity(this)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_photo_view)
 
@@ -142,10 +142,10 @@ class PhotoViewActivity : AppCompatActivity() {
     }
 
     private fun checkPermissions() {
-        if (PermissionHelper.isGrantedPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+        if (PermissionManager.isGrantedPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             savePhoto()
         } else {
-            PermissionHelper.requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, 23)
+            PermissionManager.requestPermissions(23, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
     }
 
@@ -153,7 +153,7 @@ class PhotoViewActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         if (requestCode == 23) {
-            if (PermissionHelper.isGrantedPermission(grantResults[0])) {
+            if (PermissionManager.isGranted(grantResults[0])) {
                 savePhoto()
             } else {
                 Toast.makeText(this, R.string.fast_rqrs_prmsn_for_save_photo, Toast.LENGTH_SHORT).show()

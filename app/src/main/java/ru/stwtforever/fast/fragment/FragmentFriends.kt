@@ -132,9 +132,9 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Re
                     loading = false
                 }
 
-                val count: Int = adapter!!.getItem(0)!!.friends_count
+                //val count: Int = adapter!!.getItem(0)!!.friends_count
 
-                tb!!.title = "$title" + if (adapter!!.itemCount == 0) "" else " ($count)"
+                //tb!!.title = "$title" + if (adapter!!.itemCount == 0) "" else " ($count)"
             }
 
             override fun error(e: Exception) {

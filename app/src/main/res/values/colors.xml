@@ -12,8 +12,8 @@
     <color name="colorPrimary">@color/primary</color>
     <color name="colorPrimaryDark">@color/primary_dark</color>
 
-    <color name="colorDarkPrimaryDark">@color/dark_primary_dark</color>
-    <color name="colorDarkPrimary">@color/dark_primary</color>
+    <color name="colorDarkPrimaryDark">#121212</color>
+    <color name="colorDarkPrimary">#333333</color>
 
     <color name="colorPrimaryTeal">#15C1AD</color>
     <color name="colorPrimaryRed">#F31414</color>

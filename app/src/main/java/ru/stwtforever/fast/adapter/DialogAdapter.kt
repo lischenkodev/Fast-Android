@@ -30,7 +30,6 @@ import ru.stwtforever.fast.api.model.VKUser
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.database.CacheStorage
 import ru.stwtforever.fast.database.MemoryCache
-import ru.stwtforever.fast.helper.FontHelper
 import ru.stwtforever.fast.util.ArrayUtil
 import ru.stwtforever.fast.util.Utils
 import java.util.*
@@ -295,7 +294,7 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
             val fromUser = searchUser(last.fromId)
             val peerUser = searchUser(last.peerId)
 
-            FontHelper.setFont(title, FontHelper.PS_REGULAR)
+            //FontHelper.setFont(title, FontHelper.PS_REGULAR)
 
             counter.text = if (item.unread > 0) item.unread.toString() else ""
             date.text = Utils.dateFormatter.format(last.date * 1000)

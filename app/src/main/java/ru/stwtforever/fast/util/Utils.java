@@ -212,10 +212,6 @@ public class Utils {
         return dp;
     }
 
-    public static SharedPreferences getPrefs() {
-        return PreferenceManager.getDefaultSharedPreferences(AppGlobal.context);
-    }
-
     public static int getThemeAttrColor(int attr) {
         TypedValue typedValue = new TypedValue();
         Resources.Theme theme = AppGlobal.context.getTheme();

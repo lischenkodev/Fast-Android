@@ -1,22 +1,20 @@
 package ru.stwtforever.fast.common;
 
-import android.util.*;
+import android.os.Build;
+import android.os.Environment;
+import android.util.Log;
 
-import ru.stwtforever.fast.io.*;
+import java.io.File;
+import java.io.IOException;
 
-import java.io.*;
+import ru.stwtforever.fast.io.FileStreams;
+import ru.stwtforever.fast.util.Utils;
 
-import ru.stwtforever.fast.util.*;
-import ru.stwtforever.fast.helper.*;
-
-import android.*;
-import android.os.*;
-
-public class CrashManager {
+class CrashManager {
 
     private static final String TAG = "CrashManager";
     private static final Thread.UncaughtExceptionHandler sOldHandler = Thread.getDefaultUncaughtExceptionHandler();
-    public static final Thread.UncaughtExceptionHandler EXCEPTION_HANDLER = new Thread.UncaughtExceptionHandler() {
+    private static final Thread.UncaughtExceptionHandler EXCEPTION_HANDLER = new Thread.UncaughtExceptionHandler() {
         @Override
         public void uncaughtException(Thread thread, Throwable ex) {
             report(ex);
@@ -46,18 +44,13 @@ public class CrashManager {
 
         String path = Environment.getExternalStorageDirectory() + "/Fast/crash_logs"; // AppGlobal.context.getFilesDir();
 
-        File ff = new File(path);
-        if (!ff.exists()) ff.mkdirs();
+        File file = new File(path);
+        if (!file.exists()) file.mkdirs();
 
         String name = "log_" + System.currentTimeMillis() + ".txt";
-        createFile(new File(path), name, trace);
+        createFile(file, name, trace);
 
-        File f = new File(Environment.getExternalStorageDirectory() + "/Fast/crash_logs");
-        if (!f.exists()) f.mkdirs();
-
-        createFile(f, name, trace);
-
-        Utils.getPrefs().edit().putBoolean("isCrashed", true).putString("crashLog", trace).apply();
+        AppGlobal.preferences.edit().putBoolean("isCrashed", true).putString("crashLog", trace).apply();
     }
 
     private static void createFile(File path, String name, String trace) {
@@ -69,7 +62,7 @@ public class CrashManager {
         }
     }
 
-    public static void init() {
+    static void init() {
         Thread.setDefaultUncaughtExceptionHandler(EXCEPTION_HANDLER);
     }
 }

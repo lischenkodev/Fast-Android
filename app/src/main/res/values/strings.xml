@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Fast</string>
     <string name="fragment_messages">Messages</string>
     <string name="fragment_groups">Groups</string>
@@ -55,7 +55,7 @@
     <string name="error_with_msg">Error: %s</string>
     <string name="clean_history">Clean history</string>
     <string name="about_toast">Version: %s\nBuild: %d</string>
-    <string name="copy">Copy</string>
+    <string name="copy" tools:ignore="PrivateResource">Copy</string>
     <string name="exceptions">Exceptions</string>
     <string name="delete">Delete</string>
     <string name="custom_error">Custom error</string>

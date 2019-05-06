@@ -18,6 +18,13 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatEditText;
+import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -25,12 +32,6 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatEditText;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import ru.stwtforever.fast.adapter.MessageAdapter;
 import ru.stwtforever.fast.adapter.RecyclerAdapter;
 import ru.stwtforever.fast.api.UserConfig;
@@ -40,6 +41,7 @@ import ru.stwtforever.fast.api.model.VKConversation;
 import ru.stwtforever.fast.api.model.VKGroup;
 import ru.stwtforever.fast.api.model.VKMessage;
 import ru.stwtforever.fast.api.model.VKUser;
+import ru.stwtforever.fast.common.AppGlobal;
 import ru.stwtforever.fast.common.ThemeManager;
 import ru.stwtforever.fast.concurrent.AsyncCallback;
 import ru.stwtforever.fast.concurrent.LowThread;
@@ -49,7 +51,6 @@ import ru.stwtforever.fast.database.DatabaseHelper;
 import ru.stwtforever.fast.fragment.FragmentSettings;
 import ru.stwtforever.fast.util.ArrayUtil;
 import ru.stwtforever.fast.util.Utils;
-import ru.stwtforever.fast.util.ViewUtils;
 
 public class MessagesActivity extends AppCompatActivity implements RecyclerAdapter.OnItemClickListener, TextWatcher {
 
@@ -110,7 +111,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         smiles.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                String template = Utils.getPrefs().getString(FragmentSettings.KEY_MESSAGE_TEMPLATE, FragmentSettings.DEFAULT_TEMPLATE_VALUE);
+                String template = AppGlobal.preferences.getString(FragmentSettings.KEY_MESSAGE_TEMPLATE, FragmentSettings.DEFAULT_TEMPLATE_VALUE);
                 if (message.getText().toString().trim().isEmpty()) {
                     message.setText(template);
                 } else {
@@ -230,7 +231,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
 
     private void setTyping() {
-        if (Utils.getPrefs().getBoolean(FragmentSettings.KEY_HIDE_TYPING, false)) return;
+        if (AppGlobal.preferences.getBoolean(FragmentSettings.KEY_HIDE_TYPING, false)) return;
 
         typing = true;
         new LowThread(new Runnable() {

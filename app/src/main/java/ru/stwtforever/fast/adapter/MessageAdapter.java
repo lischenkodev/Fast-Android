@@ -61,7 +61,6 @@ import ru.stwtforever.fast.concurrent.ThreadExecutor;
 import ru.stwtforever.fast.database.CacheStorage;
 import ru.stwtforever.fast.database.MemoryCache;
 import ru.stwtforever.fast.fragment.FragmentSettings;
-import ru.stwtforever.fast.helper.FontHelper;
 import ru.stwtforever.fast.util.ArrayUtil;
 import ru.stwtforever.fast.util.ColorUtil;
 import ru.stwtforever.fast.util.Utils;
@@ -110,7 +109,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
                 addMessage(conversation.last);
 
-                if (!conversation.last.out && conversation.last.peerId == peerId && !Utils.getPrefs().getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
+                if (!conversation.last.out && conversation.last.peerId == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
                     readNewMessage(conversation.last);
                 }
                 break;
@@ -689,7 +688,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         void service(VKMessage item, ViewGroup parent) {
             TextView text = new TextView(context);
             text.setTextColor(ThemeManager.getAccent());
-            text.setTypeface(FontHelper.getFont(FontHelper.PS_BOLD));
+
+            //text.setTypeface(FontHelper.getFont(FontHelper.PS_BOLD));
             text.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
             text.setGravity(Gravity.CENTER);

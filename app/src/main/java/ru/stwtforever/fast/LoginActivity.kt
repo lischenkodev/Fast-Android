@@ -21,7 +21,6 @@ import ru.stwtforever.fast.concurrent.AsyncCallback
 import ru.stwtforever.fast.concurrent.ThreadExecutor
 import ru.stwtforever.fast.database.CacheStorage
 import ru.stwtforever.fast.database.DatabaseHelper
-import ru.stwtforever.fast.helper.FontHelper
 import ru.stwtforever.fast.util.Requests
 import ru.stwtforever.fast.util.ViewUtils
 import ru.stwtforever.fast.view.CircleImageView
@@ -56,7 +55,7 @@ class LoginActivity : AppCompatActivity() {
         name = findViewById(R.id.name)
         avatar = findViewById(R.id.avatar)
 
-        name!!.typeface = FontHelper.getFont(FontHelper.PS_REGULAR)
+        //name!!.typeface = FontHelper.getFont(FontHelper.PS_REGULAR)
 
 
         setUserData(null)

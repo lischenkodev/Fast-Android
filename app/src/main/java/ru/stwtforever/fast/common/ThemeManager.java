@@ -1,10 +1,11 @@
 package ru.stwtforever.fast.common;
 
-import android.graphics.*;
-import androidx.annotation.*;
-import ru.stwtforever.fast.fragment.*;
-import ru.stwtforever.fast.util.*;
+import android.graphics.Color;
+
+import androidx.annotation.ColorInt;
+
 import ru.stwtforever.fast.R;
+import ru.stwtforever.fast.fragment.FragmentSettings;
 
 public class ThemeManager {
 	
@@ -25,7 +26,7 @@ public class ThemeManager {
 	}
 	
 	private static void getData() {
-		dark = Utils.getPrefs().getBoolean(FragmentSettings.KEY_DARK_STYLE, false);
+		dark = AppGlobal.preferences.getBoolean(FragmentSettings.KEY_DARK_STYLE, false);
 		getTheme();
 	}
 	

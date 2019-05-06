@@ -40,7 +40,7 @@ public class LongPollService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "onCreate");
-        launchLongpoll();
+        //launchLongpoll();
     }
 
     @Override

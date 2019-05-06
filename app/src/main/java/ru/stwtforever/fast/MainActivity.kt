@@ -18,17 +18,14 @@ import ru.stwtforever.fast.api.UserConfig
 import ru.stwtforever.fast.api.VKApi
 import ru.stwtforever.fast.api.model.VKUser
 import ru.stwtforever.fast.cls.BaseFragment
+import ru.stwtforever.fast.common.AppGlobal
+import ru.stwtforever.fast.common.PermissionManager
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.concurrent.AsyncCallback
 import ru.stwtforever.fast.concurrent.ThreadExecutor
 import ru.stwtforever.fast.database.DatabaseHelper
 import ru.stwtforever.fast.database.MemoryCache
-import ru.stwtforever.fast.fragment.FragmentDialogs
-import ru.stwtforever.fast.fragment.FragmentFriends
-import ru.stwtforever.fast.fragment.FragmentGroups
-import ru.stwtforever.fast.fragment.FragmentNavDrawer
-import ru.stwtforever.fast.helper.DialogHelper
-import ru.stwtforever.fast.helper.PermissionHelper
+import ru.stwtforever.fast.fragment.*
 import ru.stwtforever.fast.service.LongPollService
 import ru.stwtforever.fast.util.ArrayUtil
 import ru.stwtforever.fast.util.Utils
@@ -100,7 +97,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        PermissionHelper.init(this)
+        PermissionManager.setActivity(this)
         EventBus.getDefault().register(this)
         setTheme(ThemeManager.getCurrentTheme())
 
@@ -123,8 +120,8 @@ class MainActivity : AppCompatActivity() {
             trackVisitor()
         }
 
-        if (!PermissionHelper.isGrantedPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-            PermissionHelper.requestPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, 44)
+        if (!PermissionManager.isGrantedPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            PermissionManager.requestPermissions(44, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
     }
 
@@ -162,10 +159,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkCrash() {
-        if (Utils.getPrefs().getBoolean("isCrashed", false)) {
-            val trace = Utils.getPrefs().getString("crashLog", "")
-            Utils.getPrefs().edit().putBoolean("isCrashed", false).putString("crashLog", "").apply()
+        if (AppGlobal.preferences.getBoolean("isCrashed", false)) {
+            val trace = AppGlobal.preferences.getString("crashLog", "")
+            AppGlobal.preferences.edit().putBoolean("isCrashed", false).putString("crashLog", "").apply()
 
+
+            if (!AppGlobal.preferences.getBoolean(FragmentSettings.KEY_SHOW_ERROR, false)) return
 
             val adb = AlertDialog.Builder(this)
             adb.setTitle(R.string.warning)
@@ -178,7 +177,7 @@ class MainActivity : AppCompatActivity() {
                 adb.setMessage(trace)
                 adb.setPositiveButton(android.R.string.ok, null)
                 adb.setNeutralButton(R.string.copy) { _, _ -> Utils.copyText(trace) }
-                DialogHelper.create(adb).show()
+                adb.create().show()
             }
 
             adb.create().show()

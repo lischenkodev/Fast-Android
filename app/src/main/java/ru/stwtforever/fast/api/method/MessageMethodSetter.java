@@ -101,7 +101,7 @@ public class MessageMethodSetter extends MethodSetter {
     }
 
 
-    /** Setters for messages.getDialogs */
+    /** Setters for messages.getConversations */
 
     /**
      * true - to return only conversations which have unread messages
@@ -345,7 +345,7 @@ public class MessageMethodSetter extends MethodSetter {
     /**
      * Maximum ID of the message among existing ones in the local copy.
      * Both messages received with API methods
-     * (for example, messages.getDialogs, messages.getHistory),
+     * (for example, messages.getConversations, messages.getHistory),
      * and data received from a Long Poll server (events with code 4)
      * are taken into account
      */

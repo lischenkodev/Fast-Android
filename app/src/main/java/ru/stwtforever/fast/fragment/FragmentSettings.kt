@@ -11,7 +11,7 @@ import ru.stwtforever.fast.R
 import ru.stwtforever.fast.api.UserConfig
 import ru.stwtforever.fast.common.AppGlobal
 import ru.stwtforever.fast.common.ThemeManager
-import ru.stwtforever.fast.helper.PermissionHelper
+import ru.stwtforever.fast.common.PermissionManager
 import ru.stwtforever.fast.util.ViewUtils
 
 class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
@@ -23,7 +23,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        PermissionHelper.init(activity)
+        PermissionManager.setActivity(activity)
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
@@ -37,6 +37,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         about!!.onPreferenceClickListener = this
 
         darkTheme!!.onPreferenceChangeListener = this
+        //darkTheme!!.isEnabled = false
 
         val user = UserConfig.user ?: return
         val hideTypingSummary = String.format(getString(R.string.hide_typing_summary), user.name, user.surname.substring(0, 1) + ".")
@@ -74,7 +75,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         const val KEY_MESSAGE_TEMPLATE = "template"
         const val KEY_ABOUT = "about"
         const val KEY_HIDE_TYPING = "hide_typing"
-
+        const val KEY_SHOW_ERROR = "show_error"
         const val DEFAULT_TEMPLATE_VALUE = "¯\\_(ツ)_/¯"
     }
 }

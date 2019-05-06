@@ -7,6 +7,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 
 import com.microsoft.appcenter.AppCenter;
 import com.microsoft.appcenter.analytics.Analytics;
@@ -31,19 +32,13 @@ public class AppGlobal extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
         context = this;
-        onLaunch();
-        getVersionBuild();
-
         handler = new Handler(getMainLooper());
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        database = DatabaseHelper.getInstance().getWritableDatabase();
+        locale = Locale.getDefault();
 
-        AppCenter.start(this, "439a8c78-c0d0-4597-8a72-6a8be2c40d07",
-                Analytics.class, Crashes.class);
-
-        CrashManager.init();
-    }
-
-    private void getVersionBuild() {
         try {
             PackageInfo pInfo = context.getPackageManager().getPackageInfo(getPackageName(), 0);
             app_version_name = pInfo.versionName;
@@ -51,27 +46,11 @@ public class AppGlobal extends Application {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-    }
 
-    public static void onLaunch() {
+        AppCenter.start(this, "439a8c78-c0d0-4597-8a72-6a8be2c40d07",
+                Analytics.class, Crashes.class);
+
+        CrashManager.init();
         ThemeManager.init();
-        preferences = Utils.getPrefs();
-        database = DatabaseHelper.getInstance().getWritableDatabase();
-        locale = Locale.getDefault();
-    }
-
-    public static boolean isDebug() {
-        String[] triggers = new String[]{
-                "alpha", "beta", "charlie", "debug"
-        };
-
-        boolean isContains = false;
-
-        for (String s : triggers) {
-            if (app_version_name.toLowerCase().contains(s))
-                isContains = true;
-        }
-
-        return isContains;
     }
 }

@@ -180,7 +180,7 @@ public class CacheStorage {
         return users;
     }
 
-    public static ArrayList<VKConversation> getDialogs() {
+    public static ArrayList<VKConversation> getConversations() {
         Cursor cursor = selectCursor(DIALOGS_TABLE);
         if (cursor.getCount() <= 0) {
             return null;
@@ -239,8 +239,7 @@ public class CacheStorage {
 
 
     public static void insert(String table, ArrayList values) {
-        if (!database.isOpen()) database = DatabaseHelper.getInstance().getWritableDatabase();
-        if (database.isDbLockedByCurrentThread()) return;
+        if (ArrayUtil.isEmpty(values)) return;
         database.beginTransaction();
 
         ContentValues cv = new ContentValues();

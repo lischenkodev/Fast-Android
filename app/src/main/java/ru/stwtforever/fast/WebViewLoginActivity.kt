@@ -1,5 +1,6 @@
 package ru.stwtforever.fast
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
@@ -33,6 +34,7 @@ class WebViewLoginActivity : AppCompatActivity() {
 
     private var tb: Toolbar? = null
 
+    @SuppressLint("SetJavaScriptEnabled")
     public override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(ThemeManager.getCurrentTheme())
         super.onCreate(savedInstanceState)
@@ -50,7 +52,6 @@ class WebViewLoginActivity : AppCompatActivity() {
 
         webView!!.settings.javaScriptEnabled = true
         webView!!.settings.cacheMode = WebSettings.LOAD_NO_CACHE
-        webView!!.settings.setRenderPriority(WebSettings.RenderPriority.HIGH)
         webView!!.webViewClient = VKWebViewClient()
 
         webView!!.loadUrl(Auth.getUrl(UserConfig.FAST_ID, Scopes.all()))
