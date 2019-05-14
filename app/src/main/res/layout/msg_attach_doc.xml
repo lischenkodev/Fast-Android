@@ -18,7 +18,7 @@
 		android:layout_height="wrap_content"
 		android:layout_marginRight="8dp">
 
-		<ru.stwtforever.fast.view.CircleImageView
+		<ru.melodin.fast.view.CircleImageView
 			android:id="@+id/docCircleBackground"
 			android:layout_width="40dp"
 			android:layout_height="40dp"

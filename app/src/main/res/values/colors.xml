@@ -1,32 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#4284F4</color>
-    <color name="primary_dark">#397ED0</color>
+    <color name="primary">@android:color/white</color>
+    <color name="primary_dark">@android:color/white</color>
+    <color name="accent">#4284F4</color>
+    <color name="background">@android:color/white</color>
 
-    <color name="dark_primary">#1565c0</color>
-    <color name="dark_primary_dark">#1A56A0</color>
-
-    <color name="colorAccentDark">@color/dark_primary</color>
-    <color name="colorAccent">@color/primary</color>
-
-    <color name="colorPrimary">@color/primary</color>
-    <color name="colorPrimaryDark">@color/primary_dark</color>
-
-    <color name="colorDarkPrimaryDark">#121212</color>
-    <color name="colorDarkPrimary">#333333</color>
+    <color name="dark_primary">#202020</color>
+    <color name="dark_primary_dark">#121212</color>
+    <color name="dark_accent">#1565c0</color>
+    <color name="dark_background">#222222</color>
 
     <color name="colorPrimaryTeal">#15C1AD</color>
     <color name="colorPrimaryRed">#F31414</color>
     <color name="colorPrimaryPurple">#9414F3</color>
     <color name="colorPrimaryOrange">#F37014</color>
-    <color name="colorPrimaryLightblue">#149DF3</color>
+    <color name="colorPrimaryLightBlue">#149DF3</color>
     <color name="colorPrimaryGreen">#10A632</color>
+
     <color name="online">#7BB865</color>
-    <color name="bottom_view_bg">#ffffff</color>
 
-    <color name="light_bg">#ffffff</color>
-    <color name="dark_bg">#222222</color>
-
-    <color name="main_color_light">#808080</color>
-    <color name="main_color_dark">#444444</color>
+    <color name="bottom_view_bg">@android:color/white</color>
 </resources>

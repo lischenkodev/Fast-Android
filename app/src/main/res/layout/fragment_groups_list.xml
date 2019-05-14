@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="0">
 
-            <ru.stwtforever.fast.view.CircleImageView
+            <ru.melodin.fast.view.CircleImageView
                 android:id="@+id/avatar"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
