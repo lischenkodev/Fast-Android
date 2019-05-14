@@ -19,7 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.api.model.VKUser;
 import ru.stwtforever.fast.util.ArrayUtil;
-import ru.stwtforever.fast.util.Utils;
+import ru.stwtforever.fast.util.Util;
 import ru.stwtforever.fast.view.CircleImageView;
 
 public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter.ViewHolder> {
@@ -130,7 +130,7 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
 
             String seen_text = getString(user.sex == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w);
 
-            String seen = String.format(seen_text, Utils.dateFormatter.format(user.last_seen * 1000));
+            String seen = String.format(seen_text, Util.dateFormatter.format(user.last_seen * 1000));
 
             if (lastSeen.getVisibility() == View.VISIBLE) {
                 lastSeen.setText(seen);

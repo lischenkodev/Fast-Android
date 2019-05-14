@@ -16,7 +16,6 @@ import com.microsoft.appcenter.crashes.Crashes;
 import java.util.Locale;
 
 import ru.stwtforever.fast.database.DatabaseHelper;
-import ru.stwtforever.fast.util.Utils;
 
 public class AppGlobal extends Application {
 

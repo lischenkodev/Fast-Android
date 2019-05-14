@@ -8,7 +8,7 @@ import java.io.File;
 import java.io.IOException;
 
 import ru.stwtforever.fast.io.FileStreams;
-import ru.stwtforever.fast.util.Utils;
+import ru.stwtforever.fast.util.Util;
 
 class CrashManager {
 
@@ -40,7 +40,7 @@ class CrashManager {
 
         trace += "\nLog below: \n\n";
         trace += Log.getStackTraceString(ex);
-        Utils.copyText(trace);
+        Util.copyText(trace);
 
         String path = Environment.getExternalStorageDirectory() + "/Fast/crash_logs"; // AppGlobal.context.getFilesDir();
 

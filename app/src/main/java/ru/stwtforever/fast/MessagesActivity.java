@@ -50,7 +50,7 @@ import ru.stwtforever.fast.database.CacheStorage;
 import ru.stwtforever.fast.database.DatabaseHelper;
 import ru.stwtforever.fast.fragment.FragmentSettings;
 import ru.stwtforever.fast.util.ArrayUtil;
-import ru.stwtforever.fast.util.Utils;
+import ru.stwtforever.fast.util.Util;
 
 public class MessagesActivity extends AppCompatActivity implements RecyclerAdapter.OnItemClickListener, TextWatcher {
 
@@ -205,7 +205,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (user == null) user = VKUser.EMPTY;
 
         pName.setText(user.toString().trim());
-        pDate.setText(Utils.dateFormatter.format(pinned.date * 1000));
+        pDate.setText(Util.dateFormatter.format(pinned.date * 1000));
 
         pText.setText(pinned.text);
 
@@ -419,7 +419,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             createAdapter(messages);
         }
 
-        if (Utils.hasConnection()) {
+        if (Util.hasConnection()) {
             getHistory(0, MESSAGES_COUNT);
         }
     }
@@ -506,7 +506,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (user == null) return "";
         if (user.online) return getString(R.string.online);
 
-        return getString(user.sex == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w, Utils.dateFormatter.format(user.last_seen * 1000));
+        return getString(user.sex == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w, Util.dateFormatter.format(user.last_seen * 1000));
     }
 
     @Override

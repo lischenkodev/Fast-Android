@@ -1,4 +1,4 @@
-package ru.stwtforever.fast.cls;
+package ru.stwtforever.fast.current;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
@@ -6,11 +6,7 @@ import androidx.recyclerview.widget.RecyclerView;
 public abstract class BaseFragment extends Fragment {
 
     protected CharSequence title = "";
-    protected RecyclerView recyclerView;
-
-    public BaseFragment(String title) {
-        this.title = title;
-    }
+    private RecyclerView recyclerView;
 
     public BaseFragment() {
     }
@@ -19,7 +15,7 @@ public abstract class BaseFragment extends Fragment {
         return recyclerView;
     }
 
-    public void setRecyclerView(RecyclerView recyclerView) {
+    protected void setRecyclerView(RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
     }
 
@@ -32,10 +28,6 @@ public abstract class BaseFragment extends Fragment {
     }
 
     protected void setTitle(int title) {
-        getActivity().setTitle(title);
-    }
-
-    protected void setTitle() {
         getActivity().setTitle(title);
     }
 

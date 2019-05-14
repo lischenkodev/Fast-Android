@@ -21,7 +21,7 @@ import ru.stwtforever.fast.api.model.VKUser
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.concurrent.AsyncCallback
 import ru.stwtforever.fast.concurrent.ThreadExecutor
-import ru.stwtforever.fast.util.ViewUtils
+import ru.stwtforever.fast.util.ViewUtil
 import java.util.*
 
 class ShowCreateChatActivity : AppCompatActivity() {
@@ -143,7 +143,7 @@ class ShowCreateChatActivity : AppCompatActivity() {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        menu.findItem(R.id.create).icon.setTint(ViewUtils.mainColor)
+        menu.findItem(R.id.create).icon.setTint(ViewUtil.mainColor)
         return super.onPrepareOptionsMenu(menu)
     }
 

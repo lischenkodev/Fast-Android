@@ -12,7 +12,7 @@ import androidx.fragment.app.Fragment
 import com.squareup.picasso.Picasso
 import ru.stwtforever.fast.PhotoViewActivity
 import ru.stwtforever.fast.api.model.VKPhoto
-import ru.stwtforever.fast.util.Utils
+import ru.stwtforever.fast.util.Util
 
 class FragmentPhotoView : Fragment() {
 
@@ -40,7 +40,7 @@ class FragmentPhotoView : Fragment() {
 
         val maxSize = photo!!.maxSize
 
-        if (!TextUtils.isEmpty(maxSize) && Utils.hasConnection()) {
+        if (!TextUtils.isEmpty(maxSize) && Util.hasConnection()) {
             loadImage(maxSize)
         }
 

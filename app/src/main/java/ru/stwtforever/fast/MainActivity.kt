@@ -17,19 +17,22 @@ import org.greenrobot.eventbus.Subscribe
 import ru.stwtforever.fast.api.UserConfig
 import ru.stwtforever.fast.api.VKApi
 import ru.stwtforever.fast.api.model.VKUser
-import ru.stwtforever.fast.cls.BaseFragment
 import ru.stwtforever.fast.common.AppGlobal
 import ru.stwtforever.fast.common.PermissionManager
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.concurrent.AsyncCallback
 import ru.stwtforever.fast.concurrent.ThreadExecutor
+import ru.stwtforever.fast.current.BaseFragment
 import ru.stwtforever.fast.database.DatabaseHelper
 import ru.stwtforever.fast.database.MemoryCache
-import ru.stwtforever.fast.fragment.*
+import ru.stwtforever.fast.fragment.FragmentDialogs
+import ru.stwtforever.fast.fragment.FragmentFriends
+import ru.stwtforever.fast.fragment.FragmentNavDrawer
+import ru.stwtforever.fast.fragment.FragmentSettings
 import ru.stwtforever.fast.service.LongPollService
 import ru.stwtforever.fast.util.ArrayUtil
-import ru.stwtforever.fast.util.Utils
-import ru.stwtforever.fast.util.ViewUtils
+import ru.stwtforever.fast.util.Util
+import ru.stwtforever.fast.util.ViewUtil
 
 class MainActivity : AppCompatActivity() {
 
@@ -45,7 +48,6 @@ class MainActivity : AppCompatActivity() {
 
     private val f_dialogs = FragmentDialogs()
     private val f_friends = FragmentFriends()
-    private val f_groups = FragmentGroups()
 
     private var selected_id = -1
 
@@ -142,7 +144,7 @@ class MainActivity : AppCompatActivity() {
     private fun trackVisitor() {
         ThreadExecutor.execute(object : AsyncCallback(this) {
 
-            internal var i: Int = 0
+            var i: Int = 0
 
             @Throws(Exception::class)
             override fun ready() {
@@ -176,7 +178,7 @@ class MainActivity : AppCompatActivity() {
                 adb.setTitle(R.string.error_log)
                 adb.setMessage(trace)
                 adb.setPositiveButton(android.R.string.ok, null)
-                adb.setNeutralButton(R.string.copy) { _, _ -> Utils.copyText(trace) }
+                adb.setNeutralButton(R.string.copy) { _, _ -> Util.copyText(trace) }
                 adb.create().show()
             }
 
@@ -188,19 +190,13 @@ class MainActivity : AppCompatActivity() {
         filter = bottom_toolbar!!.findViewById(R.id.tb_filter)
         menu = bottom_toolbar!!.findViewById(R.id.tb_menu)
 
-        findViewById<View>(R.id.toolbar)!!.setBackgroundColor(ViewUtils.primaryColor)
+        findViewById<View>(R.id.toolbar)!!.setBackgroundColor(ViewUtil.primaryColor)
 
         filter!!.isEnabled = false
         filter!!.drawable.setTint(Color.GRAY)
 
         menu!!.setOnClickListener {
-            val drawer = FragmentNavDrawer()
-
-            val b = Bundle()
-            b.putInt("selected_id", selected_id)
-
-            drawer.arguments = b
-            drawer.show(supportFragmentManager, "")
+            FragmentNavDrawer.display(supportFragmentManager, selected_id)
         }
 
         bg = GradientDrawable()

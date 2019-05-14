@@ -25,7 +25,6 @@ import ru.stwtforever.fast.api.UserConfig
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.concurrent.AsyncCallback
 import ru.stwtforever.fast.concurrent.ThreadExecutor
-import ru.stwtforever.fast.util.ViewUtils
 
 class WebViewLoginActivity : AppCompatActivity() {
 

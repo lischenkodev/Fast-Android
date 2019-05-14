@@ -21,7 +21,7 @@ import ru.stwtforever.fast.concurrent.ThreadExecutor
 import ru.stwtforever.fast.fragment.FragmentPhotoView
 import ru.stwtforever.fast.common.PermissionManager
 import ru.stwtforever.fast.util.ArrayUtil
-import ru.stwtforever.fast.util.Utils
+import ru.stwtforever.fast.util.Util
 import java.util.*
 
 class PhotoViewActivity : AppCompatActivity() {
@@ -109,7 +109,7 @@ class PhotoViewActivity : AppCompatActivity() {
 
         supportActionBar!!.title = getString(R.string.photo_of_photo, "1", photos.size.toString())
 
-        if (!ArrayUtil.isEmpty(photos) && Utils.hasConnection()) {
+        if (!ArrayUtil.isEmpty(photos) && Util.hasConnection()) {
             createAdapter(photos)
         }
 
@@ -165,7 +165,7 @@ class PhotoViewActivity : AppCompatActivity() {
         ThreadExecutor.execute(object : AsyncCallback(this) {
             @Throws(Exception::class)
             override fun ready() {
-                Utils.saveFileByUrl(url)
+                Util.saveFileByUrl(url)
             }
 
             override fun done() {
@@ -180,7 +180,7 @@ class PhotoViewActivity : AppCompatActivity() {
 
     private fun copyUrl() {
         val url = url
-        Utils.copyText(url)
+        Util.copyText(url)
         Toast.makeText(this, R.string.url_copied_text, Toast.LENGTH_SHORT).show()
     }
 

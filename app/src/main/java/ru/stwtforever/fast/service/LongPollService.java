@@ -22,7 +22,7 @@ import ru.stwtforever.fast.concurrent.LowThread;
 import ru.stwtforever.fast.database.CacheStorage;
 import ru.stwtforever.fast.database.DatabaseHelper;
 import ru.stwtforever.fast.net.HttpRequest;
-import ru.stwtforever.fast.util.Utils;
+import ru.stwtforever.fast.util.Util;
 
 public class LongPollService extends Service {
 
@@ -77,7 +77,7 @@ public class LongPollService extends Service {
                 isRunning = true;
             }
             while (isRunning) {
-                if (!Utils.hasConnection()) {
+                if (!Util.hasConnection()) {
                     Log.e(TAG, "no connection");
                     sleep();
                     continue;

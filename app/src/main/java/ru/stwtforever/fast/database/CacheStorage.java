@@ -14,7 +14,7 @@ import ru.stwtforever.fast.api.model.VKMessage;
 import ru.stwtforever.fast.api.model.VKUser;
 import ru.stwtforever.fast.common.AppGlobal;
 import ru.stwtforever.fast.util.ArrayUtil;
-import ru.stwtforever.fast.util.Utils;
+import ru.stwtforever.fast.util.Util;
 
 import static ru.stwtforever.fast.common.AppGlobal.database;
 import static ru.stwtforever.fast.database.DatabaseHelper.ADMIN_LEVER;
@@ -318,10 +318,10 @@ public class CacheStorage {
         dialog.photo_100 = getString(cursor, PHOTO_100);
         dialog.photo_200 = getString(cursor, PHOTO_200);
 
-        dialog.last = (VKMessage) Utils.deserialize(getBlob(cursor, LAST_MESSAGE));
-        dialog.pinned = (VKMessage) Utils.deserialize(getBlob(cursor, PINNED_MESSAGE));
-        dialog.conversation_users = (ArrayList) Utils.deserialize(getBlob(cursor, USERS));
-        dialog.conversation_groups = (ArrayList) Utils.deserialize(getBlob(cursor, GROUPS));
+        dialog.last = (VKMessage) Util.deserialize(getBlob(cursor, LAST_MESSAGE));
+        dialog.pinned = (VKMessage) Util.deserialize(getBlob(cursor, PINNED_MESSAGE));
+        dialog.conversation_users = (ArrayList) Util.deserialize(getBlob(cursor, USERS));
+        dialog.conversation_groups = (ArrayList) Util.deserialize(getBlob(cursor, GROUPS));
         return dialog;
     }
 
@@ -338,10 +338,10 @@ public class CacheStorage {
         message.important = getInt(cursor, IMPORTANT) == 1;
         message.status = getInt(cursor, STATUS);
         message.update_time = getLong(cursor, UPDATE_TIME);
-        message.attachments = (ArrayList) Utils.deserialize(getBlob(cursor, ATTACHMENTS));
-        message.fwd_messages = (ArrayList) Utils.deserialize(getBlob(cursor, FWD_MESSAGES));
-        message.history_users = (ArrayList) Utils.deserialize(getBlob(cursor, USERS));
-        message.history_groups = (ArrayList) Utils.deserialize(getBlob(cursor, GROUPS));
+        message.attachments = (ArrayList) Util.deserialize(getBlob(cursor, ATTACHMENTS));
+        message.fwd_messages = (ArrayList) Util.deserialize(getBlob(cursor, FWD_MESSAGES));
+        message.history_users = (ArrayList) Util.deserialize(getBlob(cursor, USERS));
+        message.history_groups = (ArrayList) Util.deserialize(getBlob(cursor, GROUPS));
         return message;
     }
 
@@ -399,19 +399,19 @@ public class CacheStorage {
         values.put(NO_SOUND, dialog.no_sound);
 
         if (!ArrayUtil.isEmpty(dialog.conversation_groups)) {
-            values.put(GROUPS, Utils.serialize(dialog.conversation_groups));
+            values.put(GROUPS, Util.serialize(dialog.conversation_groups));
         }
 
         if (!ArrayUtil.isEmpty(dialog.conversation_users)) {
-            values.put(USERS, Utils.serialize(dialog.conversation_users));
+            values.put(USERS, Util.serialize(dialog.conversation_users));
         }
 
         if (dialog.last != null) {
-            values.put(LAST_MESSAGE, Utils.serialize(dialog.last));
+            values.put(LAST_MESSAGE, Util.serialize(dialog.last));
         }
 
         if (dialog.pinned != null) {
-            values.put(PINNED_MESSAGE, Utils.serialize(dialog.pinned));
+            values.put(PINNED_MESSAGE, Util.serialize(dialog.pinned));
         }
 
         if (TextUtils.isEmpty(dialog.title)) {
@@ -448,18 +448,18 @@ public class CacheStorage {
         values.put(IMPORTANT, message.important);
 
         if (!ArrayUtil.isEmpty(message.history_groups)) {
-            values.put(GROUPS, Utils.serialize(message.history_groups));
+            values.put(GROUPS, Util.serialize(message.history_groups));
         }
 
         if (!ArrayUtil.isEmpty(message.history_users)) {
-            values.put(USERS, Utils.serialize(message.history_users));
+            values.put(USERS, Util.serialize(message.history_users));
         }
 
         if (!ArrayUtil.isEmpty(message.attachments)) {
-            values.put(ATTACHMENTS, Utils.serialize(message.attachments));
+            values.put(ATTACHMENTS, Util.serialize(message.attachments));
         }
         if (!ArrayUtil.isEmpty(message.fwd_messages)) {
-            values.put(FWD_MESSAGES, Utils.serialize(message.fwd_messages));
+            values.put(FWD_MESSAGES, Util.serialize(message.fwd_messages));
         }
 
     }

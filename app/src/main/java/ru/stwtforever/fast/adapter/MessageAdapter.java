@@ -63,7 +63,7 @@ import ru.stwtforever.fast.database.MemoryCache;
 import ru.stwtforever.fast.fragment.FragmentSettings;
 import ru.stwtforever.fast.util.ArrayUtil;
 import ru.stwtforever.fast.util.ColorUtil;
-import ru.stwtforever.fast.util.Utils;
+import ru.stwtforever.fast.util.Util;
 import ru.stwtforever.fast.view.BoundedLinearLayout;
 import ru.stwtforever.fast.view.CircleImageView;
 
@@ -376,7 +376,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         v.setVisibility(View.INVISIBLE);
         v.setEnabled(false);
         v.setClickable(false);
-        v.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Utils.pxFromDp(60)));
+        v.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Util.px(60)));
 
         return v;
     }
@@ -472,7 +472,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             main_container.setBackgroundColor(editColor);
 
             String s = item.update_time > 0 ? getString(R.string.edited) + ", " : "";
-            String time_ = s + Utils.dateFormatter.format(item.isAdded ? item.date : item.date * 1000L);
+            String time_ = s + Util.dateFormatter.format(item.isAdded ? item.date : item.date * 1000L);
 
             time.setText(time_);
             time_container.setGravity(item.out ? Gravity.END : Gravity.START);
@@ -707,7 +707,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             TextView title = v.findViewById(R.id.videoTitle);
             TextView time = v.findViewById(R.id.videoTime);
 
-            String duration = Utils.dateFormatter.format(
+            String duration = Util.dateFormatter.format(
                     TimeUnit.SECONDS.toMillis(source.duration));
 
             title.setText(source.title);
@@ -826,7 +826,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             title.setText(source.title);
 
-            String size_ = Utils.parseSize(source.size) + " • " + source.ext.toUpperCase();
+            String size_ = Util.parseSize(source.size) + " • " + source.ext.toUpperCase();
             size.setText(size_);
 
             title.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));

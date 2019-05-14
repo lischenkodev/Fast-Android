@@ -25,20 +25,6 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
     private OnItemClickListener click;
     private OnItemLongClickListener long_click;
 
-    public boolean isEditing() {
-        return editing;
-    }
-
-    public void setEditing(boolean editing) {
-        this.editing = editing;
-        if (!editing) {
-            changeItems(cleanValues);
-            notifyItemRangeChanged(0, getItemCount());
-        }
-    }
-
-    protected boolean editing;
-
     RecyclerAdapter(Context context, ArrayList<T> values) {
         this.context = context;
         this.values = values;

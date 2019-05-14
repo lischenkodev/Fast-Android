@@ -24,8 +24,8 @@ import ru.stwtforever.fast.database.CacheStorage
 import ru.stwtforever.fast.database.DatabaseHelper
 import ru.stwtforever.fast.util.ArrayUtil
 import ru.stwtforever.fast.util.Requests
-import ru.stwtforever.fast.util.Utils
-import ru.stwtforever.fast.util.ViewUtils
+import ru.stwtforever.fast.util.Util
+import ru.stwtforever.fast.util.ViewUtil
 import java.util.*
 
 class CreateChatActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickListener, SwipeRefreshLayout.OnRefreshListener {
@@ -111,7 +111,7 @@ class CreateChatActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickListe
     }
 
     private fun loadFriends(offset: Int, count: Int) {
-        if (!Utils.hasConnection()) {
+        if (!Util.hasConnection()) {
             refreshLayout!!.isRefreshing = false
             return
         }
@@ -241,7 +241,7 @@ class CreateChatActivity : AppCompatActivity(), RecyclerAdapter.OnItemClickListe
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        menu.findItem(R.id.create).icon.setTint(ViewUtils.mainColor)
+        menu.findItem(R.id.create).icon.setTint(ViewUtil.mainColor)
         return super.onPrepareOptionsMenu(menu)
     }
 }

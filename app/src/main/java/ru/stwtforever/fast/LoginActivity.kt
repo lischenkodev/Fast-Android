@@ -22,7 +22,7 @@ import ru.stwtforever.fast.concurrent.ThreadExecutor
 import ru.stwtforever.fast.database.CacheStorage
 import ru.stwtforever.fast.database.DatabaseHelper
 import ru.stwtforever.fast.util.Requests
-import ru.stwtforever.fast.util.ViewUtils
+import ru.stwtforever.fast.util.ViewUtil
 import ru.stwtforever.fast.view.CircleImageView
 import java.util.*
 
@@ -55,26 +55,22 @@ class LoginActivity : AppCompatActivity() {
         name = findViewById(R.id.name)
         avatar = findViewById(R.id.avatar)
 
-        //name!!.typeface = FontHelper.getFont(FontHelper.PS_REGULAR)
-
-
         setUserData(null)
 
         findViewById<ImageView>(R.id.logo).drawable.setColorFilter(ThemeManager.getAccent(), PorterDuff.Mode.MULTIPLY)
 
         logo!!.setOnClickListener {
             ThemeManager.update(!ThemeManager.isDark())
-            ViewUtils.update()
+            ViewUtil.update()
             finish()
             startActivity(intent)
-            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+            overridePendingTransition(R.anim.abc_fade_in, R.anim.abc_fade_out)
         }
 
         UserConfig.restore()
         UserConfig.updateUser()
         if (UserConfig.isLoggedIn()) {
-            val user = UserConfig.getUser()
-            setUserData(user)
+            setUserData(UserConfig.getUser())
         }
     }
 
@@ -172,7 +168,7 @@ class LoginActivity : AppCompatActivity() {
                 .priority(Picasso.Priority.HIGH)
                 .into(avatar!!, object : Callback.EmptyCallback() {
                     override fun onSuccess() {
-                        ViewUtils.fadeView(avatar)
+                        ViewUtil.fadeView(avatar)
                     }
                 })
     }

@@ -24,7 +24,7 @@ public class VKSticker extends VKModel implements Serializable {
 	
     public VKSticker(JSONObject source) {
 		tag = VKAttachments.TYPE_STICKER;
-		Utils.logD(TAG, source.toString());
+		Util.logD(TAG, source.toString());
         this.id = source.optInt("id");
         this.product_id = source.optInt("product_id");
 		this.srcs = new ArrayList<>();

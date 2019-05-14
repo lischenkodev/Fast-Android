@@ -31,7 +31,7 @@ import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.database.CacheStorage
 import ru.stwtforever.fast.database.MemoryCache
 import ru.stwtforever.fast.util.ArrayUtil
-import ru.stwtforever.fast.util.Utils
+import ru.stwtforever.fast.util.Util
 import java.util.*
 
 class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversation>) : RecyclerAdapter<VKConversation, DialogAdapter.ViewHolder>(context, dialogs) {
@@ -297,7 +297,7 @@ class DialogAdapter(context: FragmentActivity?, dialogs: ArrayList<VKConversatio
             //FontHelper.setFont(title, FontHelper.PS_REGULAR)
 
             counter.text = if (item.unread > 0) item.unread.toString() else ""
-            date.text = Utils.dateFormatter.format(last.date * 1000)
+            date.text = Util.dateFormatter.format(last.date * 1000)
 
             counter.background.setTint(if (item.isNotificationsDisabled) c_pushes_disabled else c_pushes_enabled)
 

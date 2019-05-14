@@ -4,24 +4,23 @@ import java.util.ArrayList;
 
 public class Scopes {
 	
-    public static final String NOTIFY = "notify";
-    public static final String FRIENDS = "friends";
-    public static final String PHOTOS = "photos";
-    public static final String AUDIO = "audio";
-    public static final String VIDEO = "video";
-    public static final String DOCS = "docs";
-    public static final String NOTES = "notes";
-    public static final String PAGES = "pages";
-    public static final String STATUS = "status";
-    public static final String WALL = "wall";
-    public static final String GROUPS = "conversation_groups";
-    public static final String MESSAGES = "messages";
-    public static final String NOTIFICATIONS = "notifications";
-    public static final String STATS = "stats";
-    public static final String ADS = "ads";
-    public static final String OFFLINE = "offline";
-    public static final String EMAIL = "email";
-    public static final String DIRECT = "direct";
+    private static final String NOTIFY = "notify";
+    private static final String FRIENDS = "friends";
+    private static final String PHOTOS = "photos";
+    private static final String AUDIO = "audio";
+    private static final String VIDEO = "video";
+    private static final String DOCS = "docs";
+    private static final String NOTES = "notes";
+    private static final String PAGES = "pages";
+    private static final String STATUS = "status";
+    private static final String WALL = "wall";
+    private static final String GROUPS = "conversation_groups";
+    private static final String MESSAGES = "messages";
+    private static final String NOTIFICATIONS = "notifications";
+    private static final String STATS = "stats";
+    private static final String ADS = "ads";
+    private static final String OFFLINE = "offline";
+    private static final String EMAIL = "email";
 	
     public static ArrayList<String> parse(int permissions) {
         ArrayList<String> res = new ArrayList<>(16);

@@ -9,7 +9,7 @@ import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.common.AppGlobal;
 import ru.stwtforever.fast.common.ThemeManager;
 
-public class ViewUtils {
+public class ViewUtil {
 
     public static int statusBarColor = ThemeManager.isDark() ? 0xff212121 : 0xffcccccc;
     public static int popupTheme = ThemeManager.isDark() ? R.style.ThemeOverlay_AppCompat : R.style.ThemeOverlay_AppCompat_Light;
@@ -29,7 +29,7 @@ public class ViewUtils {
         secondaryColor = ThemeManager.isDark() ? Color.LTGRAY : Color.DKGRAY;
     }
 
-    public static void fadeView(View v, long duration) {
+    private static void fadeView(View v, long duration) {
         v.setAlpha(0);
         v.animate().alpha(1).setDuration(duration).start();
     }

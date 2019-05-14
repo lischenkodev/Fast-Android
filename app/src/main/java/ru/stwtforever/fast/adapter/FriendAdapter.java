@@ -18,7 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.api.model.VKUser;
 import ru.stwtforever.fast.fragment.FragmentFriends;
-import ru.stwtforever.fast.util.Utils;
+import ru.stwtforever.fast.util.Util;
 import ru.stwtforever.fast.view.CircleImageView;
 
 public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHolder> {
@@ -40,10 +40,6 @@ public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHol
     public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         super.onBindViewHolder(holder, position);
         holder.bind(position);
-    }
-
-    private void showDialog(final int position, View v) {
-        fragment.showDialog(position, v);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -88,9 +84,8 @@ public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHol
 
                 @Override
                 public void onClick(View v) {
-                    showDialog(position, v);
+                    fragment.showDialog(position, v);
                 }
-
             });
 
             VKUser user = getItem(position);
@@ -107,7 +102,7 @@ public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHol
 
             String seen_text = getString(user.sex == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w);
 
-            String seen = String.format(seen_text, Utils.dateFormatter.format(user.last_seen * 1000));
+            String seen = String.format(seen_text, Util.dateFormatter.format(user.last_seen * 1000));
 
             if (lastSeen.getVisibility() == View.VISIBLE) {
                 lastSeen.setText(seen);

@@ -12,7 +12,7 @@ import ru.stwtforever.fast.api.UserConfig
 import ru.stwtforever.fast.common.AppGlobal
 import ru.stwtforever.fast.common.ThemeManager
 import ru.stwtforever.fast.common.PermissionManager
-import ru.stwtforever.fast.util.ViewUtils
+import ru.stwtforever.fast.util.ViewUtil
 
 class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
 
@@ -60,7 +60,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
     private fun switchTheme(dark: Boolean) {
         ThemeManager.update(dark)
-        ViewUtils.update()
+        ViewUtil.update()
         activity!!.finishAffinity()
         TaskStackBuilder.create(activity!!)
                 .addNextIntent(Intent(activity, MainActivity::class.java))

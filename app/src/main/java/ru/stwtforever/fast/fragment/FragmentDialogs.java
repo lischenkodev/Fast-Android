@@ -9,17 +9,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import org.greenrobot.eventbus.EventBus;
+
+import java.util.ArrayList;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
-import org.greenrobot.eventbus.EventBus;
-
-import java.util.ArrayList;
-
 import ru.stwtforever.fast.MessagesActivity;
 import ru.stwtforever.fast.R;
 import ru.stwtforever.fast.adapter.DialogAdapter;
@@ -30,15 +29,15 @@ import ru.stwtforever.fast.api.model.VKConversation;
 import ru.stwtforever.fast.api.model.VKGroup;
 import ru.stwtforever.fast.api.model.VKMessage;
 import ru.stwtforever.fast.api.model.VKUser;
-import ru.stwtforever.fast.cls.BaseFragment;
 import ru.stwtforever.fast.common.AppGlobal;
 import ru.stwtforever.fast.common.ThemeManager;
 import ru.stwtforever.fast.concurrent.AsyncCallback;
 import ru.stwtforever.fast.concurrent.ThreadExecutor;
+import ru.stwtforever.fast.current.BaseFragment;
 import ru.stwtforever.fast.database.CacheStorage;
 import ru.stwtforever.fast.database.DatabaseHelper;
 import ru.stwtforever.fast.util.ArrayUtil;
-import ru.stwtforever.fast.util.Utils;
+import ru.stwtforever.fast.util.Util;
 
 public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener {
 
@@ -160,7 +159,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
     }
 
     private void getConversations(final int offset, final int count) {
-        if (!Utils.hasConnection()) {
+        if (!Util.hasConnection()) {
             if (refreshLayout.isRefreshing())
                 refreshLayout.setRefreshing(false);
             return;

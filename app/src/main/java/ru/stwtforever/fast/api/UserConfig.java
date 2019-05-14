@@ -11,7 +11,7 @@ import ru.stwtforever.fast.database.CacheStorage;
 
 public class UserConfig {
 
-    public static final int FAST_ID = 5462895;//6964679;     //coming soon
+    public static final int FAST_ID = 6964679;
 
     private static final String ACCESS_TOKEN = "access_token";
     private static final String USER_ID = "user_id";
