@@ -26,12 +26,16 @@ public class ColorUtil {
      * @param color the color to darken
      * @return a new color which is darken of specified color
      */
-    public static int darkenColor(int color) {
+    public static int darkenColor(int color, float darkFactor) {
         float[] hsv = new float[3];
         Color.colorToHSV(color, hsv);
-        hsv[2] *= 0.75f;
+        hsv[2] *= darkFactor;
         color = Color.HSVToColor(hsv);
         return color;
+    }
+
+    public static int darkenColor(int color) {
+        return darkenColor(color, 0.75f);
     }
 
     /**

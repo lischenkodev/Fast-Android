@@ -181,15 +181,11 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public boolean isUser() {
-        return !isGroup() && !isChat() && !isChannel();
+        return !isGroup() && !isChat() && !group_channel;
     }
 
     public boolean isFromUser() {
         return !isFromGroup();
-    }
-
-    public boolean isChannel() {
-        return group_channel;
     }
 
     public boolean isNotificationsDisabled() {
