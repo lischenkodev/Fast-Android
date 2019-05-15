@@ -14,24 +14,20 @@ import ru.melodin.fast.util.StringUtils;
 
 public class VKConversation extends VKModel implements Serializable {
 
-    public static int count;
-    public static ArrayList<VKUser> users = new ArrayList<>();
-    public static ArrayList<VKGroup> groups = new ArrayList<>();
-
-    public int conversations_count;
-
     public static final String TYPE_CHAT = "chat";
     public static final String TYPE_USER = "user";
     public static final String TYPE_GROUP = "group";
     public static final String TYPE_EMAIL = "email";
-
     public static final int REASON_KICKED = 1;
     public static final int REASON_LEFT = 2;
     public static final int REASON_USER_BLOCKED_DELETED = 18;
     public static final int REASON_CANT_SEND_MESSAGE_USER_WHICH_IN_BLACKLIST = 900;
     public static final int REASON_CANT_SEND_USER_PRIVACY = 902;
     public static final int REASON_GROUP_MESSAGES_OFF = 915;
-
+    public static int count;
+    public static ArrayList<VKUser> users = new ArrayList<>();
+    public static ArrayList<VKGroup> groups = new ArrayList<>();
+    public int conversations_count;
     public int read_in;
     public int read_out;
     public int last_mId;

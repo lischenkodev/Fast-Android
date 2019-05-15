@@ -1,10 +1,11 @@
 package ru.melodin.fast.api.model;
 
-import java.io.*;
-import org.json.*;
+import org.json.JSONObject;
+
+import java.io.Serializable;
 
 public class VKLink extends VKModel implements Serializable {
-    
+
     public String url;
     public String title;
     public String caption;
@@ -13,11 +14,12 @@ public class VKLink extends VKModel implements Serializable {
     public String preview_url;
 
     public VKPhoto photo;
-	
-	public VKLink() {}
+
+    public VKLink() {
+    }
 
     public VKLink(JSONObject source) {
-		tag = VKAttachments.TYPE_LINK;
+        tag = VKAttachments.TYPE_LINK;
         this.url = source.optString("url");
         this.title = source.optString("title");
         this.caption = source.optString("caption");

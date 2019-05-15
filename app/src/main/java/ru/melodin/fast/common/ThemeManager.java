@@ -11,15 +11,12 @@ import ru.melodin.fast.fragment.FragmentSettings;
 
 public class ThemeManager {
 
+    public static final String KEY_THEME_UPDATE = "theme_update";
     private static boolean dark;
-
     @IntegerRes
     private static int currentTheme, popupTheme;
-
     @ColorInt
     private static int primary, primaryDark, accent, main, secondary, background;
-
-    public static final String KEY_THEME_UPDATE = "theme_update";
 
     public static void switchTheme(boolean dark) {
         AppGlobal.preferences.edit().putBoolean(FragmentSettings.KEY_DARK_STYLE, dark).apply();

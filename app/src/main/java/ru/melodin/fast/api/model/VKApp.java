@@ -1,65 +1,103 @@
 package ru.melodin.fast.api.model;
 
+import org.json.JSONObject;
+
 import java.io.Serializable;
-import org.json.*;
+
 /**
  * Describes a application object from VK.
  */
 public class VKApp extends VKModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    /** Application ID. */
+    /**
+     * Application ID.
+     */
     public int id;
 
-    /** Application title. */
+    /**
+     * Application title.
+     */
     public String title;
 
-    /** Application screen name (idXXXXXXX if screen name not selected). */
+    /**
+     * Application screen name (idXXXXXXX if screen name not selected).
+     */
     public String screen_name;
 
-    /** Application description. */
+    /**
+     * Application description.
+     */
     public String description;
 
-    /** Application type, see {@link Type} */
+    /**
+     * Application type, see {@link Type}
+     */
     public int type;
 
-    /** Application author's page URL */
+    /**
+     * Application author's page URL
+     */
     public int author_id;
 
-    /** Official community's ID. */
+    /**
+     * Official community's ID.
+     */
     public int author_group;
 
-    /** Number of app members (installed count?). */
+    /**
+     * Number of app members (installed count?).
+     */
     public int members_count;
 
-    /** Published date (in unix time). */
+    /**
+     * Published date (in unix time).
+     */
     public int published_date;
 
-    /** Array of photo objects describing app screenshots (unused). */
+    /**
+     * Array of photo objects describing app screenshots (unused).
+     */
     public String screenshots;
 
-    /** Information whether the app is multi-language */
+    /**
+     * Information whether the app is multi-language
+     */
     public boolean international;
 
-    /** Application ID in store */
+    /**
+     * Application ID in store
+     */
     public int platform_id;
 
-    /** URL of the app icon with 16 px in width. */
+    /**
+     * URL of the app icon with 16 px in width.
+     */
     public String icon_16;
 
-    /** URL of the app icon with 50 px in width. */
+    /**
+     * URL of the app icon with 50 px in width.
+     */
     public String icon_50;
 
-    /** URL of the app icon with 75 px in width. */
+    /**
+     * URL of the app icon with 75 px in width.
+     */
     public String icon_75;
 
-    /** URL of the app icon with 100 px in width. */
+    /**
+     * URL of the app icon with 100 px in width.
+     */
     public String icon_100;
 
-    /** URL of the app icon with 200 px in width. */
+    /**
+     * URL of the app icon with 200 px in width.
+     */
     public String icon_200;
 
-    /** URL of the app icon with 256 px in width. */
+    /**
+     * URL of the app icon with 256 px in width.
+     */
     public String icon_256;
 
     public VKApp() {
@@ -72,8 +110,8 @@ public class VKApp extends VKModel implements Serializable {
      * @param source the json source to parse
      */
     public VKApp(JSONObject source) {
-		tag = VKAttachments.TYPE_APP;
-		
+        tag = VKAttachments.TYPE_APP;
+
         this.id = source.optInt("id");
         this.title = source.optString("title");
         this.description = source.optString("description");

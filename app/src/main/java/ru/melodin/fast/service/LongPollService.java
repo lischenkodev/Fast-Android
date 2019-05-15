@@ -26,10 +26,8 @@ import ru.melodin.fast.util.Util;
 
 public class LongPollService extends Service {
 
-    public boolean isRunning;
-
     public static final String TAG = "FastVK LongPoll";
-
+    public boolean isRunning;
     private LowThread updateThread;
     private boolean error;
 
@@ -67,6 +65,10 @@ public class LongPollService extends Service {
         }
         updateThread = new LowThread(new MessageUpdater());
         updateThread.start();
+    }
+
+    private VKMessage getMessage(int id) throws Exception {
+        return VKApi.messages().getById().messageIds(id).extended(true).execute(VKMessage.class).get(0);
     }
 
     private class MessageUpdater implements Runnable {
@@ -238,10 +240,6 @@ public class LongPollService extends Service {
             int userId = item.optInt(1);
             int peerId = 2_000_000_000 + item.optInt(2);
         }
-    }
-
-    private VKMessage getMessage(int id) throws Exception {
-        return VKApi.messages().getById().messageIds(id).extended(true).execute(VKMessage.class).get(0);
     }
 }
 

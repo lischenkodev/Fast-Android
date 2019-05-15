@@ -13,57 +13,87 @@ import java.util.ArrayList;
  */
 public class VKGroup extends VKModel implements Serializable {
 
-	public static final String FIELDS_DEFAULT = "city, country, place, description, wiki_page, market, members_count, counters, start_date, finish_date, can_post, can_see_all_posts, activity, status, contacts, links, fixed_post, verified, site, ban_info, cover";
-	
+    public static final String FIELDS_DEFAULT = "city, country, place, description, wiki_page, market, members_count, counters, start_date, finish_date, can_post, can_see_all_posts, activity, status, contacts, links, fixed_post, verified, site, ban_info, cover";
+
     public static final VKGroup EMPTY = new VKGroup() {
 
         public String getFullName() {
             return "DELETED";
         }
     };
-    /** Group ID, positive number */
+    /**
+     * Group ID, positive number
+     */
     public int id;
 
-    /** Community name */
+    /**
+     * Community name
+     */
     public String name;
 
-    /** Screen name of the community page (e.g. apiclub or club1). */
+    /**
+     * Screen name of the community page (e.g. apiclub or club1).
+     */
     public String screen_name;
 
-    /** Whether the community is closed */
+    /**
+     * Whether the community is closed
+     */
     public int is_closed;
 
-    /** Whether a user is the community manager */
+    /**
+     * Whether a user is the community manager
+     */
     public boolean is_admin;
 
-    /** Rights of the user, see {@link AdminLevel} */
+    /**
+     * Rights of the user, see {@link AdminLevel}
+     */
     public int admin_level;
 
-    /** Whether a user is a community member */
+    /**
+     * Whether a user is a community member
+     */
     public boolean is_member;
 
-    /** Community type, see {@link Type} */
+    /**
+     * Community type, see {@link Type}
+     */
     public int type;
 
-    /** True if group is verified */
+    /**
+     * True if group is verified
+     */
     public boolean verified;
 
-    /** URL of the 50px-wide community logo. */
+    /**
+     * URL of the 50px-wide community logo.
+     */
     public String photo_50;
 
-    /** URL of the 100px-wide community logo. */
+    /**
+     * URL of the 100px-wide community logo.
+     */
     public String photo_100;
 
-    /** URL of the 200px-wide community logo. */
+    /**
+     * URL of the 200px-wide community logo.
+     */
     public String photo_200;
 
-    /** Community description text */
+    /**
+     * Community description text
+     */
     public String description;
 
-    /** Number of community members */
+    /**
+     * Number of community members
+     */
     public long members_count;
 
-    /** Group status. Returns a string with status text that is on the group page below its name. */
+    /**
+     * Group status. Returns a string with status text that is on the group page below its name.
+     */
     public String status;
 
     public VKGroup() {
@@ -108,20 +138,15 @@ public class VKGroup extends VKModel implements Serializable {
         this.status = source.optString("status");
         this.members_count = source.optLong("members_count");
     }
-	
-	public static ArrayList<VKGroup> parse(JSONArray array) {
-		ArrayList<VKGroup> groups = new ArrayList<>(array.length());
-		for (int i = 0; i < array.length(); i++) {
-			VKGroup group = new VKGroup((JSONObject) array.opt(i));
-			groups.add(group);
-		}
-		
-		return groups;
-	}
 
-    @Override
-    public String toString() {
-        return name;
+    public static ArrayList<VKGroup> parse(JSONArray array) {
+        ArrayList<VKGroup> groups = new ArrayList<>(array.length());
+        for (int i = 0; i < array.length(); i++) {
+            VKGroup group = new VKGroup((JSONObject) array.opt(i));
+            groups.add(group);
+        }
+
+        return groups;
     }
 
     public static int toGroupId(int id) {
@@ -130,6 +155,11 @@ public class VKGroup extends VKModel implements Serializable {
 
     public static boolean isGroupId(int id) {
         return id < 0;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
     /**

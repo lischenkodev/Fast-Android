@@ -37,6 +37,12 @@ public class VKPhotoSizes extends VKModel implements Serializable {
     }
 
     public static class PhotoSize extends VKModel implements Serializable {
+        static PhotoSize EMPTY = new PhotoSize() {
+            public String src = "";
+            public int width = 0;
+            public int height = 0;
+            public String type = "none";
+        };
         public String src;
         public int width;
         public int height;
@@ -55,12 +61,5 @@ public class VKPhotoSizes extends VKModel implements Serializable {
             this.height = source.optInt("height");
             this.type = source.optString("type");
         }
-
-        static PhotoSize EMPTY = new PhotoSize() {
-            public String src = "";
-            public int width = 0;
-            public int height = 0;
-            public String type = "none";
-        };
     }
 }

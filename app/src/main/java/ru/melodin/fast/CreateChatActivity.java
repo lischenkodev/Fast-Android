@@ -35,7 +35,7 @@ import ru.melodin.fast.util.ViewUtil;
 
 public class CreateChatActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemClickListener {
 
-    private View noItems;
+    private View empty;
 
     private Toolbar tb;
     private RecyclerView list;
@@ -43,12 +43,12 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
 
     private CreateChatAdapter adapter;
 
-    private boolean loading, selecting;
+    private boolean selecting;
 
 
     @Override
     public void onRefresh() {
-        loadFriends(0);
+        loadFriends();
     }
 
     @Override
@@ -102,29 +102,38 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
         ArrayList<VKUser> users = CacheStorage.getFriends(UserConfig.userId, false);
 
         if (ArrayUtil.isEmpty(users)) {
-            loadFriends(0);
+            loadFriends();
             return;
         }
 
         createAdapter(users);
     }
 
+    private void checkCount() {
+        empty.setVisibility(adapter == null ? View.VISIBLE : adapter.isEmpty() ? View.VISIBLE : View.GONE);
+    }
+
     private void createAdapter(ArrayList<VKUser> users) {
-        if (ArrayUtil.isEmpty(users))
-            return;
+        if (ArrayUtil.isEmpty(users)) return;
+
+        checkCount();
 
         if (adapter == null) {
             adapter = new CreateChatAdapter(this, users);
-            list.setAdapter(adapter);
             adapter.setOnItemClickListener(this);
+            list.setAdapter(adapter);
+
+            checkCount();
             return;
         }
 
         adapter.changeItems(users);
         adapter.notifyDataSetChanged();
+
+        checkCount();
     }
 
-    private void loadFriends(final int count) {
+    private void loadFriends() {
         if (!Util.hasConnection()) {
             refreshLayout.setRefreshing(false);
             return;
@@ -174,7 +183,7 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
     }
 
     private void initViews() {
-        noItems = findViewById(R.id.no_items_layout);
+        empty = findViewById(R.id.no_items_layout);
         tb = findViewById(R.id.tb);
         refreshLayout = findViewById(R.id.refresh);
         list = findViewById(R.id.list);

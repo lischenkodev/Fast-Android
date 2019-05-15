@@ -252,6 +252,28 @@ public class VKApi {
         return new VKStats();
     }
 
+    /**
+     * Callback for Async execute
+     */
+    public interface OnResponseListener<E> {
+        /**
+         * Called when successfully receiving the response from web
+         *
+         * @param models parsed json objects
+         */
+        void onSuccess(ArrayList<E> models);
+
+        /**
+         * Called when an error occurs on the server side
+         * Visit website to get description of error codes: http://vk.com/dev/errors
+         * and {@link ErrorCodes}
+         * It is useful if the server requires you to enter a captcha
+         *
+         * @param ex the information of error
+         */
+        void onError(Exception ex);
+    }
+
     public static class VKStats {
         public VKStats() {
         }
@@ -576,28 +598,6 @@ public class VKApi {
         public MethodSetter setOnline() {
             return new MethodSetter("account.setOnline");
         }
-    }
-
-    /**
-     * Callback for Async execute
-     */
-    public interface OnResponseListener<E> {
-        /**
-         * Called when successfully receiving the response from web
-         *
-         * @param models parsed json objects
-         */
-        void onSuccess(ArrayList<E> models);
-
-        /**
-         * Called when an error occurs on the server side
-         * Visit website to get description of error codes: http://vk.com/dev/errors
-         * and {@link ErrorCodes}
-         * It is useful if the server requires you to enter a captcha
-         *
-         * @param ex the information of error
-         */
-        void onError(Exception ex);
     }
 
     private static class SuccessCallback<E> implements Runnable {

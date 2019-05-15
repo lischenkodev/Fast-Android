@@ -110,116 +110,6 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         return false;
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView avatar, avatar_small, online, out;
-        TextView title, body, date, counter;
-        LinearLayout container;
-        FrameLayout counterContainer;
-
-        Drawable holderUser = getDrawable(R.drawable.placeholder_user);
-        Drawable holderUsers = getDrawable(R.drawable.placeholder_users);
-
-        @ColorInt
-        int pushedEnabled, pushedDisabled;
-
-        ViewHolder(@NonNull View v) {
-            super(v);
-
-            UserConfig.updateUser();
-
-            pushedEnabled = ThemeManager.getAccent();
-            pushedDisabled = ThemeManager.isDark() ? ColorUtil.lightenColor(ThemeManager.getPrimary(), 2) : ColorUtil.darkenColor(ThemeManager.getPrimary(), 2);
-
-            avatar = v.findViewById(R.id.avatar);
-            avatar_small = v.findViewById(R.id.avatar_small);
-            online = v.findViewById(R.id.online);
-            out = v.findViewById(R.id.icon_out_message);
-
-            title = v.findViewById(R.id.title);
-            body = v.findViewById(R.id.body);
-            date = v.findViewById(R.id.date);
-            counter = v.findViewById(R.id.counter);
-
-            container = v.findViewById(R.id.container);
-            counterContainer = v.findViewById(R.id.counter_container);
-
-            GradientDrawable background = new GradientDrawable();
-            background.setColor(ThemeManager.getAccent());
-            background.setCornerRadius(200f);
-
-            counter.setBackground(background);
-        }
-
-        void bind(int position) {
-            VKConversation item = getItem(position);
-            VKMessage last = item.last;
-
-            VKGroup fromGroup = searchGroup(last.fromId);
-            VKGroup peerGroup = searchGroup(last.peerId);
-
-            VKUser fromUser = searchUser(last.fromId);
-            VKUser peerUser = searchUser(last.peerId);
-
-            counter.setText(item.unread > 0 ? String.valueOf(item.unread) : "");
-            date.setText(Util.dateFormatter.format(last.date * 1000));
-
-            counter.getBackground().setTint(item.isNotificationsDisabled() ? pushedDisabled : pushedEnabled);
-
-            body.setText(last.text);
-
-            title.setText(getTitle(item, peerUser, peerGroup));
-
-            avatar_small.setVisibility(!item.isChat() && !last.out ? View.GONE : View.VISIBLE);
-
-            String peerAvatar = getPhoto(item, peerUser, peerGroup);
-            String fromAvatar = getFromPhoto(item, fromUser, fromGroup);
-
-            if (TextUtils.isEmpty(fromAvatar)) {
-                avatar_small.setImageDrawable(holderUser);
-            } else {
-                Picasso.get()
-                        .load(fromAvatar)
-                        .priority(Picasso.Priority.HIGH)
-                        .placeholder(holderUser)
-                        .into(avatar_small);
-            }
-
-            if (TextUtils.isEmpty(peerAvatar)) {
-                avatar.setImageDrawable(item.isChat() ? holderUser : holderUser);
-            } else {
-                Picasso.get()
-                        .load(peerAvatar)
-                        .priority(Picasso.Priority.HIGH)
-                        .placeholder(item.isChat() ? holderUsers : holderUser)
-                        .into(avatar);
-            }
-
-            body.setTextColor(!ThemeManager.isDark() ? -0x70000000 : -0x6f000001);
-
-            if (TextUtils.isEmpty(last.actionType)) {
-                if ((last.attachments != null || !ArrayUtil.isEmpty(last.fwd_messages)) && TextUtils.isEmpty(last.text)) {
-                    String body_ = VKUtils.getAttachmentBody(item.last.attachments, item.last.fwd_messages);
-
-                    String r = "<b>" + body_ + "</b>";
-                    Spannable span = new SpannableString(Html.fromHtml(r));
-                    span.setSpan(new ForegroundColorSpan(ThemeManager.getAccent()), 0, body_.length(), 0);
-
-                    body.append(span);
-                }
-            } else {
-                String body_ = VKUtils.getActionBody(last, true);
-
-                body.setTextColor(ThemeManager.getAccent());
-                body.setText(Html.fromHtml(body_));
-            }
-
-            counter.setVisibility(TextUtils.isEmpty(counter.getText().toString()) ? View.GONE : View.VISIBLE);
-            out.setVisibility(last.out && !item.read ? View.VISIBLE : View.GONE);
-            online.setVisibility(peerUser.online ? View.VISIBLE : View.GONE);
-            counterContainer.setVisibility(item.read ? View.GONE : View.VISIBLE);
-        }
-    }
-
     public String getTitle(VKConversation item, VKUser user, VKGroup group) {
         return item == null ? "" : item.isGroup() ? group.name : item.isUser() ? user.toString() : item.title;
     }
@@ -332,5 +222,115 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         }
 
         return -1;
+    }
+
+    class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView avatar, avatar_small, online, out;
+        TextView title, body, date, counter;
+        LinearLayout container;
+        FrameLayout counterContainer;
+
+        Drawable holderUser = getDrawable(R.drawable.placeholder_user);
+        Drawable holderUsers = getDrawable(R.drawable.placeholder_users);
+
+        @ColorInt
+        int pushedEnabled, pushedDisabled;
+
+        ViewHolder(@NonNull View v) {
+            super(v);
+
+            UserConfig.updateUser();
+
+            pushedEnabled = ThemeManager.getAccent();
+            pushedDisabled = ThemeManager.isDark() ? ColorUtil.lightenColor(ThemeManager.getPrimary(), 2) : ColorUtil.darkenColor(ThemeManager.getPrimary(), 2);
+
+            avatar = v.findViewById(R.id.avatar);
+            avatar_small = v.findViewById(R.id.avatar_small);
+            online = v.findViewById(R.id.online);
+            out = v.findViewById(R.id.icon_out_message);
+
+            title = v.findViewById(R.id.title);
+            body = v.findViewById(R.id.body);
+            date = v.findViewById(R.id.date);
+            counter = v.findViewById(R.id.counter);
+
+            container = v.findViewById(R.id.container);
+            counterContainer = v.findViewById(R.id.counter_container);
+
+            GradientDrawable background = new GradientDrawable();
+            background.setColor(ThemeManager.getAccent());
+            background.setCornerRadius(200f);
+
+            counter.setBackground(background);
+        }
+
+        void bind(int position) {
+            VKConversation item = getItem(position);
+            VKMessage last = item.last;
+
+            VKGroup fromGroup = searchGroup(last.fromId);
+            VKGroup peerGroup = searchGroup(last.peerId);
+
+            VKUser fromUser = searchUser(last.fromId);
+            VKUser peerUser = searchUser(last.peerId);
+
+            counter.setText(item.unread > 0 ? String.valueOf(item.unread) : "");
+            date.setText(Util.dateFormatter.format(last.date * 1000));
+
+            counter.getBackground().setTint(item.isNotificationsDisabled() ? pushedDisabled : pushedEnabled);
+
+            body.setText(last.text);
+
+            title.setText(getTitle(item, peerUser, peerGroup));
+
+            avatar_small.setVisibility(!item.isChat() && !last.out ? View.GONE : View.VISIBLE);
+
+            String peerAvatar = getPhoto(item, peerUser, peerGroup);
+            String fromAvatar = getFromPhoto(item, fromUser, fromGroup);
+
+            if (TextUtils.isEmpty(fromAvatar)) {
+                avatar_small.setImageDrawable(holderUser);
+            } else {
+                Picasso.get()
+                        .load(fromAvatar)
+                        .priority(Picasso.Priority.HIGH)
+                        .placeholder(holderUser)
+                        .into(avatar_small);
+            }
+
+            if (TextUtils.isEmpty(peerAvatar)) {
+                avatar.setImageDrawable(item.isChat() ? holderUser : holderUser);
+            } else {
+                Picasso.get()
+                        .load(peerAvatar)
+                        .priority(Picasso.Priority.HIGH)
+                        .placeholder(item.isChat() ? holderUsers : holderUser)
+                        .into(avatar);
+            }
+
+            body.setTextColor(!ThemeManager.isDark() ? -0x70000000 : -0x6f000001);
+
+            if (TextUtils.isEmpty(last.actionType)) {
+                if ((last.attachments != null || !ArrayUtil.isEmpty(last.fwd_messages)) && TextUtils.isEmpty(last.text)) {
+                    String body_ = VKUtils.getAttachmentBody(item.last.attachments, item.last.fwd_messages);
+
+                    String r = "<b>" + body_ + "</b>";
+                    Spannable span = new SpannableString(Html.fromHtml(r));
+                    span.setSpan(new ForegroundColorSpan(ThemeManager.getAccent()), 0, body_.length(), 0);
+
+                    body.append(span);
+                }
+            } else {
+                String body_ = VKUtils.getActionBody(last, true);
+
+                body.setTextColor(ThemeManager.getAccent());
+                body.setText(Html.fromHtml(body_));
+            }
+
+            counter.setVisibility(TextUtils.isEmpty(counter.getText().toString()) ? View.GONE : View.VISIBLE);
+            out.setVisibility(last.out && !item.read ? View.VISIBLE : View.GONE);
+            online.setVisibility(peerUser.online ? View.VISIBLE : View.GONE);
+            counterContainer.setVisibility(item.read ? View.GONE : View.VISIBLE);
+        }
     }
 }

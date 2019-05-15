@@ -69,16 +69,13 @@ import ru.melodin.fast.view.CircleImageView;
 
 public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.ViewHolder> {
 
-    private int peerId;
-
-    private AttachmentInflater attacher;
-    private DisplayMetrics metrics;
-
-    private boolean isBusy = false;
-
     private static final int TYPE_HEADER = 1;
     private static final int TYPE_NORMAL = 2;
     private static final int TYPE_FOOTER = 3;
+    private int peerId;
+    private AttachmentInflater attacher;
+    private DisplayMetrics metrics;
+    private boolean isBusy = false;
 
     public MessageAdapter(Context context, ArrayList<VKMessage> msgs, int peerId) {
         super(context, msgs);
@@ -416,10 +413,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
         Drawable circle, sending, error, placeholder;
 
-        public boolean isFooter() {
-            return false;
-        }
-
         ViewHolder(View v) {
             super(v);
 
@@ -444,6 +437,10 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             attachments = v.findViewById(R.id.attachments);
             photos = v.findViewById(R.id.photos);
             time_container = v.findViewById(R.id.time_container);
+        }
+
+        public boolean isFooter() {
+            return false;
         }
 
         void bind(final int position) {

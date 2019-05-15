@@ -1,10 +1,11 @@
 package ru.melodin.fast.api.model;
 
+import org.json.JSONObject;
+
 import java.io.Serializable;
-import org.json.*;
 
 public class VKGift extends VKModel implements Serializable {
-	
+
     public int from_id;
     public long id;
     public String message;
@@ -12,16 +13,17 @@ public class VKGift extends VKModel implements Serializable {
     public String thumb_48;
     public String thumb_96;
     public String thumb_256;
-	
-	public VKGift() {}
-	
-	public VKGift(int peerId, int attId) {
-		this.from_id = peerId;
-		this.id = attId;
-	}
-	
+
+    public VKGift() {
+    }
+
+    public VKGift(int peerId, int attId) {
+        this.from_id = peerId;
+        this.id = attId;
+    }
+
     public VKGift(JSONObject source) {
-		tag = VKAttachments.TYPE_GIFT;
+        tag = VKAttachments.TYPE_GIFT;
         this.id = source.optLong("id");
         this.from_id = source.optInt("from_id");
         this.date = source.optLong("date");

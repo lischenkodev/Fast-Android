@@ -1,8 +1,20 @@
 package ru.melodin.fast.io;
-import android.os.*;
-import ru.melodin.fast.util.*;
-import java.io.*;
-import java.math.*;
+
+import android.os.Build;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.math.BigInteger;
+
+import ru.melodin.fast.util.ArrayUtil;
 
 public class FileStreams {
     public static final char lineSeparatorChar = lineSeparator().charAt(0);
@@ -87,8 +99,8 @@ public class FileStreams {
      */
     public static void append(CharSequence from, File to) throws IOException {
         EasyStreams.write(from instanceof String
-						  ? ((String) from)
-						  : from.toString(), new FileWriter(to, true));
+                ? ((String) from)
+                : from.toString(), new FileWriter(to, true));
     }
 
     /**

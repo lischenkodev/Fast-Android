@@ -28,9 +28,13 @@ import java.util.zip.GZIPOutputStream;
  * @since 1.0
  */
 public class EasyStreams {
-    /** The default buffer size, 8K bytes */
+    /**
+     * The default buffer size, 8K bytes
+     */
     public static final int BUFFER_SIZE = 8192;
-    /** The default char buffer size, 4K chars (8K bytes) */
+    /**
+     * The default char buffer size, 4K chars (8K bytes)
+     */
     public static final int CHAR_BUFFER_SIZE = 4096;
 
     // only static methods
@@ -212,7 +216,7 @@ public class EasyStreams {
      */
     public static BufferedInputStream buffer(InputStream input, int size) {
         return input instanceof BufferedInputStream ? (BufferedInputStream) input
-			: new BufferedInputStream(input, size);
+                : new BufferedInputStream(input, size);
     }
 
     /**
@@ -234,7 +238,7 @@ public class EasyStreams {
      */
     public static BufferedOutputStream buffer(OutputStream output, int size) {
         return output instanceof BufferedOutputStream ? (BufferedOutputStream) output
-			: new BufferedOutputStream(output, size);
+                : new BufferedOutputStream(output, size);
     }
 
     /**
@@ -256,7 +260,7 @@ public class EasyStreams {
      */
     public static BufferedReader buffer(Reader input, int size) {
         return input instanceof BufferedReader ? (BufferedReader) input
-			: new BufferedReader(input, size);
+                : new BufferedReader(input, size);
     }
 
     /**
@@ -278,7 +282,7 @@ public class EasyStreams {
      */
     public static BufferedWriter buffer(Writer output, int size) {
         return output instanceof BufferedWriter ? (BufferedWriter) output
-			: new BufferedWriter(output, size);
+                : new BufferedWriter(output, size);
     }
 
     /**
@@ -300,7 +304,7 @@ public class EasyStreams {
      */
     public static GZIPInputStream gzip(InputStream input, int size) throws IOException {
         return input instanceof GZIPInputStream ? (GZIPInputStream) input
-			: new GZIPInputStream(input, size);
+                : new GZIPInputStream(input, size);
     }
 
     /**
@@ -322,7 +326,7 @@ public class EasyStreams {
      */
     public static GZIPOutputStream gzip(OutputStream input, int size) throws IOException {
         return input instanceof GZIPOutputStream ? (GZIPOutputStream) input
-			: new GZIPOutputStream(input, size);
+                : new GZIPOutputStream(input, size);
     }
 
     /**

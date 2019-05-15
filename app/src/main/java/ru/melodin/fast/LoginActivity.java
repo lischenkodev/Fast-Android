@@ -37,6 +37,27 @@ public class LoginActivity extends AppCompatActivity {
     private ImageView logo;
 
     private boolean loggedIn;
+    private View.OnClickListener loginClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            login();
+        }
+    };
+    private View.OnClickListener closeClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            startMainActivity();
+        }
+    };
+    private View.OnLongClickListener logoutClick = new View.OnLongClickListener() {
+
+        @Override
+        public boolean onLongClick(View v) {
+            if (loggedIn)
+                showExitDialog();
+            return true;
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -167,29 +188,5 @@ public class LoginActivity extends AppCompatActivity {
                     }
                 });
     }
-
-    private View.OnLongClickListener logoutClick = new View.OnLongClickListener() {
-
-        @Override
-        public boolean onLongClick(View v) {
-            if (loggedIn)
-                showExitDialog();
-            return true;
-        }
-    };
-
-    private View.OnClickListener loginClick = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            login();
-        }
-    };
-
-    private View.OnClickListener closeClick = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            startMainActivity();
-        }
-    };
 
 }

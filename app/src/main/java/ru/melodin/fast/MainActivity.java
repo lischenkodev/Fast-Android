@@ -124,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
 
         String key = (String) data[0];
         if (key.equals(ThemeManager.KEY_THEME_UPDATE))
-           Util.restart(this, true);
+            Util.restart(this, true);
     }
 
     private void startLoginActivity() {

@@ -23,11 +23,11 @@ public abstract class BaseFragment extends Fragment {
         return title;
     }
 
-    protected void setTitle(CharSequence title) {
+    protected void setTitle(int title) {
         getActivity().setTitle(title);
     }
 
-    protected void setTitle(int title) {
+    protected void setTitle(CharSequence title) {
         getActivity().setTitle(title);
     }
 

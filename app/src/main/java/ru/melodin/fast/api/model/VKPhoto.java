@@ -8,6 +8,7 @@ import java.io.Serializable;
 
 public class VKPhoto extends VKModel implements Serializable {
 
+    public final static String TAG = "FVKPhoto";
     public int id;
     public int album_id;
     public int owner_id;
@@ -21,13 +22,13 @@ public class VKPhoto extends VKModel implements Serializable {
     public int comments;
     public int tags;
     public String access_key;
-
     public String photo_75;
     public String photo_130;
     public String photo_604;
     public String photo_807;
     public String photo_1280;
     public String photo_2560;
+    public VKPhotoSizes sizes;
 
     public VKPhoto() {
     }
@@ -36,10 +37,6 @@ public class VKPhoto extends VKModel implements Serializable {
         this.owner_id = peerId;
         this.id = attId;
     }
-
-    public final static String TAG = "FVKPhoto";
-
-    public VKPhotoSizes sizes;
 
     public VKPhoto(JSONObject source) {
         tag = VKAttachments.TYPE_PHOTO;

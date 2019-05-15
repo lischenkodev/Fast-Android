@@ -1,10 +1,11 @@
 package ru.melodin.fast.view;
 
-import android.content.*;
-import android.content.res.*;
-import android.util.*;
-import android.widget.*;
-import ru.melodin.fast.*;
+import android.content.Context;
+import android.content.res.TypedArray;
+import android.util.AttributeSet;
+import android.widget.LinearLayout;
+
+import ru.melodin.fast.R;
 
 /**
  * Created by Igor on 06.03.16.
@@ -31,6 +32,10 @@ public class BoundedLinearLayout extends LinearLayout {
         a.recycle();
     }
 
+    public int getMaxWidth() {
+        return mBoundedWidth;
+    }
+
     public void setMaxWidth(int width) {
         if (mBoundedWidth != width) {
             mBoundedWidth = width;
@@ -38,8 +43,8 @@ public class BoundedLinearLayout extends LinearLayout {
         }
     }
 
-    public int getMaxWidth() {
-        return mBoundedWidth;
+    public int getMaxHeight() {
+        return mBoundedHeight;
     }
 
     public void setMaxHeight(int height) {
@@ -48,10 +53,6 @@ public class BoundedLinearLayout extends LinearLayout {
             requestLayout();
             ;
         }
-    }
-
-    public int getMaxHeight() {
-        return mBoundedHeight;
     }
 
     @Override

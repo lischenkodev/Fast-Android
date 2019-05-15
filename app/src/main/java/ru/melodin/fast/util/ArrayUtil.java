@@ -1,9 +1,12 @@
 package ru.melodin.fast.util;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 public class ArrayUtil {
-    /** The index for linear and binary search, if the value is not found */
+    /**
+     * The index for linear and binary search, if the value is not found
+     */
     public static final int VALUE_NOT_FOUND = -1;
 
     // uses only static methods

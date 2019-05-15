@@ -1,8 +1,11 @@
 package ru.melodin.fast.api.model;
 
-import java.io.*;
-import java.util.*;
-import org.json.*;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * Created by Igor on 04.02.16.

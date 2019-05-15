@@ -19,6 +19,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import ru.melodin.fast.CreateChatActivity;
 import ru.melodin.fast.MessagesActivity;
 import ru.melodin.fast.R;
 import ru.melodin.fast.adapter.DialogAdapter;
@@ -81,11 +82,20 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
 
         tb.setTitle(title);
         tb.inflateMenu(R.menu.fragment_dialogs_menu);
+
+        for (int i = 0; i < tb.getMenu().size(); i++) {
+            MenuItem item = tb.getMenu().getItem(i);
+            item.getIcon().setTint(ThemeManager.getMain());
+        }
+
+        tb.getMenu().getItem(0).setVisible(false);
+
         tb.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.create_chat:
+                        startActivity(new Intent(getActivity(), CreateChatActivity.class));
                         break;
                     case R.id.clear_messages_cache:
                         DatabaseHelper.getInstance().dropMessagesTable(AppGlobal.database);
@@ -95,7 +105,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
                             adapter.notifyDataSetChanged();
                         }
                         checkCount();
-                        getConversations(0, CONVERSATIONS_COUNT);
+                        getConversations(CONVERSATIONS_COUNT);
                         break;
                 }
                 return true;
@@ -107,7 +117,6 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
         list.setLayoutManager(manager);
 
         getCachedConversations();
-        //getConversations(0, CONVERSATIONS_COUNT);
     }
 
     private void initViews(View v) {
@@ -121,7 +130,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
         empty.setVisibility(adapter == null ? View.VISIBLE : adapter.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
-    private void createAdapter(ArrayList<VKConversation> conversations, int offset) {
+    private void createAdapter(ArrayList<VKConversation> conversations) {
         if (ArrayUtil.isEmpty(conversations)) return;
 
         checkCount();
@@ -131,14 +140,6 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
             adapter.setOnItemClickListener(this);
             adapter.setOnItemLongClickListener(this);
             list.setAdapter(adapter);
-
-            checkCount();
-            return;
-        }
-
-        if (offset != 0) {
-            adapter.changeItems(conversations);
-            adapter.notifyDataSetChanged();
 
             checkCount();
             return;
@@ -155,10 +156,10 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
 
         if (ArrayUtil.isEmpty(conversations)) return;
 
-        createAdapter(conversations, 0);
+        createAdapter(conversations);
     }
 
-    private void getConversations(final int offset, final int count) {
+    private void getConversations(final int count) {
         if (!Util.hasConnection()) {
             if (refreshLayout.isRefreshing())
                 refreshLayout.setRefreshing(false);
@@ -176,16 +177,11 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
                         .filter("all")
                         .extended(true)
                         .fields(VKUser.FIELDS_DEFAULT)
-                        .offset(offset)
                         .count(count)
                         .execute(VKConversation.class);
 
-                //if (conversations.isEmpty()) loading = true;
-
-                if (offset == 0) {
-                    CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE);
-                    CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, conversations);
-                }
+                CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE);
+                CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, conversations);
 
                 ArrayList<VKUser> users = conversations.get(0).conversation_users;
                 ArrayList<VKGroup> groups = conversations.get(0).conversation_groups;
@@ -202,10 +198,8 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
             @Override
             public void done() {
                 EventBus.getDefault().post(CacheStorage.getUser(UserConfig.userId));
-                createAdapter(conversations, offset);
+                createAdapter(conversations);
                 refreshLayout.setRefreshing(false);
-
-                //if (!conversations.isEmpty()) loading = false;
 
                 tb.setTitle(title);
             }
@@ -259,7 +253,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
 
     @Override
     public void onRefresh() {
-        getConversations(0, CONVERSATIONS_COUNT);
+        getConversations(CONVERSATIONS_COUNT);
     }
 
     @Override

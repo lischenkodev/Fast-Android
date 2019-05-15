@@ -16,12 +16,10 @@ import ru.melodin.fast.util.ArrayUtil;
 
 public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
         extends RecyclerView.Adapter<VH> {
-    private ArrayList<T> values;
-    private ArrayList<T> cleanValues;
-
     protected Context context;
     LayoutInflater inflater;
-
+    private ArrayList<T> values;
+    private ArrayList<T> cleanValues;
     private OnItemClickListener click;
     private OnItemLongClickListener long_click;
 

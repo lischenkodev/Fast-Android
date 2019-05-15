@@ -2,11 +2,12 @@ package ru.melodin.fast.api.model;
 
 import android.text.TextUtils;
 
+import org.json.JSONObject;
+
 import java.io.Serializable;
-import org.json.*;
 
 public class VKVideo extends VKModel implements Serializable {
-	
+
     public int id;
     public int owner_id;
     public int album_id;
@@ -36,15 +37,16 @@ public class VKVideo extends VKModel implements Serializable {
     public String mp4_1080;
     public String external;
 
-    public VKVideo() {}
-	
-	public VKVideo(int peerId, int attId) {
-		this.owner_id = peerId;
-		this.id = attId;
-	}
-	
+    public VKVideo() {
+    }
+
+    public VKVideo(int peerId, int attId) {
+        this.owner_id = peerId;
+        this.id = attId;
+    }
+
     public VKVideo(JSONObject source) {
-		tag = VKAttachments.TYPE_VIDEO;
+        tag = VKAttachments.TYPE_VIDEO;
         this.id = source.optInt("id");
         this.owner_id = source.optInt("owner_id");
         this.title = source.optString("title");

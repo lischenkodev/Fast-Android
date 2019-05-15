@@ -3,7 +3,7 @@ package ru.melodin.fast.api;
 import java.util.ArrayList;
 
 public class Scopes {
-	
+
     private static final String NOTIFY = "notify";
     private static final String FRIENDS = "friends";
     private static final String PHOTOS = "photos";
@@ -21,7 +21,7 @@ public class Scopes {
     private static final String ADS = "ads";
     private static final String OFFLINE = "offline";
     private static final String EMAIL = "email";
-	
+
     public static ArrayList<String> parse(int permissions) {
         ArrayList<String> res = new ArrayList<>(16);
         if ((permissions & 1) > 0) res.add(NOTIFY);
@@ -43,7 +43,7 @@ public class Scopes {
         if ((permissions & 4194304) > 0) res.add(EMAIL);
         return res;
     }
-	
+
     public static String all() {
         return NOTIFY + ',' + FRIENDS
                 + ',' + PHOTOS + ',' + AUDIO

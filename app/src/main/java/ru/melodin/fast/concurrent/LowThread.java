@@ -24,11 +24,11 @@ public class LowThread extends Thread {
 
     @Override
     public void run() {
-		android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
         // using the background priority
         // for smooth user interface
-        
+
         super.run();
-		
+
     }
 }

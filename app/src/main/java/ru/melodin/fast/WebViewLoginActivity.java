@@ -2,7 +2,6 @@ package ru.melodin.fast;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -20,6 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import ru.melodin.fast.api.Auth;
@@ -39,7 +39,6 @@ public class WebViewLoginActivity extends AppCompatActivity {
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
         setTheme(ThemeManager.getCurrentTheme());
         ViewUtil.applyWindowStyles(getWindow());
         super.onCreate(savedInstanceState);
@@ -111,7 +110,7 @@ public class WebViewLoginActivity extends AppCompatActivity {
                         int id;
 
                         @Override
-                        public void ready() throws Exception {
+                        public void ready() {
                             id = Integer.parseInt(uId);
                         }
 
@@ -128,14 +127,12 @@ public class WebViewLoginActivity extends AppCompatActivity {
                         public void error(Exception e) {
                             Toast.makeText(WebViewLoginActivity.this, R.string.error, Toast.LENGTH_LONG).show();
                         }
-
-
                     });
                 }
-                adb.setNegativeButton(android.R.string.cancel, null);
-                adb.create().show();
             }
         });
+        adb.setNegativeButton(android.R.string.cancel, null);
+        adb.create().show();
     }
 
     @Override

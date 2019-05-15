@@ -17,10 +17,10 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
     public static final String KEY_NOT_READ_MESSAGES = "not_read";
     public static final String KEY_DARK_STYLE = "dark_style";
     public static final String KEY_MESSAGE_TEMPLATE = "template";
-    private static final String KEY_ABOUT = "about";
     public static final String KEY_HIDE_TYPING = "hide_typing";
     public static final String KEY_SHOW_ERROR = "show_error";
     public static final String DEFAULT_TEMPLATE_VALUE = "¯\\_(ツ)_/¯";
+    private static final String KEY_ABOUT = "about";
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {

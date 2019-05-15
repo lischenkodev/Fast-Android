@@ -78,6 +78,19 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private VKMessage pinned, last;
     private VKConversation conversation;
     private VKUser currentUser;
+    private View.OnClickListener sendClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            String s = message.getText().toString();
+            if (!s.trim().isEmpty()) {
+                messageText = s;
+
+                sendMessage();
+                message.setText("");
+            }
+        }
+    };
+    private View.OnClickListener recordClick = null;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -230,7 +243,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         }
     }
 
-
     private void setTyping() {
         if (AppGlobal.preferences.getBoolean(FragmentSettings.KEY_HIDE_TYPING, false)) return;
 
@@ -312,21 +324,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private void getCachedMessages() {
         getMessages();
     }
-
-    private View.OnClickListener sendClick = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            String s = message.getText().toString();
-            if (!s.trim().isEmpty()) {
-                messageText = s;
-
-                sendMessage();
-                message.setText("");
-            }
-        }
-    };
-
-    private View.OnClickListener recordClick = null;
 
     private void sendMessage() {
         if (messageText.trim().isEmpty()) return;

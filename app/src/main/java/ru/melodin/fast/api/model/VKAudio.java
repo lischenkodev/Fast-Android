@@ -1,13 +1,14 @@
 package ru.melodin.fast.api.model;
 
-import android.text.*;
+import android.text.TextUtils;
 
-import java.io.*;
-import org.json.*;
+import org.json.JSONObject;
+
+import java.io.Serializable;
 
 
 public class VKAudio extends VKModel implements Serializable {
-    
+
     public long id;
     public long owner_id;
     public String artist;
@@ -18,16 +19,17 @@ public class VKAudio extends VKModel implements Serializable {
     public long album_id;
     public long genre_id;
     public String access_key;
-	
-	public VKAudio() {}
-	
-	public VKAudio(int peerId, int attId) {
-		this.owner_id = peerId;
-		this.id = attId;
-	}
+
+    public VKAudio() {
+    }
+
+    public VKAudio(int peerId, int attId) {
+        this.owner_id = peerId;
+        this.id = attId;
+    }
 
     public VKAudio(JSONObject source) {
-		tag = VKAttachments.TYPE_AUDIO;
+        tag = VKAttachments.TYPE_AUDIO;
 
         this.id = source.optLong("id");
         this.owner_id = source.optLong("owner_id");
@@ -54,7 +56,7 @@ public class VKAudio extends VKModel implements Serializable {
     public String toString() {
         return artist + " - " + title;
     }
-	
+
     public final static class Genre {
         public final static int ROCK = 1;
         public final static int POP = 2;

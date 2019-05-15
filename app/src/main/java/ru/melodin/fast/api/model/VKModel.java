@@ -1,38 +1,41 @@
 package ru.melodin.fast.api.model;
-import ru.melodin.fast.common.*;
-import java.io.*;
-import org.json.*;
+
+import org.json.JSONObject;
+
+import java.io.Serializable;
+
+import ru.melodin.fast.common.AppGlobal;
 
 public abstract class VKModel implements Serializable {
     private static final long serialVersionUID = 1L;
 
     protected Object tag;
-	protected boolean selected;
-	
+    protected boolean selected;
+
     protected VKModel() {
     }
-	
+
     protected VKModel(JSONObject source) {
     }
-	
-	public void setSelected(boolean selected) {
-		this.selected = selected;
-	}
-	
-	public boolean isSelected() {
-		return selected;
-	}
 
-    public void setTag(Object tag) {
-        this.tag = tag;
+    protected static String getString(int res) {
+        return AppGlobal.context.getString(res);
+    }
+
+    public boolean isSelected() {
+        return selected;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 
     public Object getTag() {
         return tag;
     }
-	
-	protected static String getString(int res) {
-		return AppGlobal.context.getString(res);
-	}
+
+    public void setTag(Object tag) {
+        this.tag = tag;
+    }
 }
 

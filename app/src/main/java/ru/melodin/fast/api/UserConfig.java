@@ -4,7 +4,6 @@ package ru.melodin.fast.api;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
-
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.database.CacheStorage;
@@ -21,8 +20,8 @@ public class UserConfig {
     public static VKUser user;
 
     public static String accessToken;
-    private static String email;
     public static int userId;
+    private static String email;
     private static int apiId;
 
     public UserConfig(String accessToken, @Nullable String email, int userId, int apiId) {
@@ -30,6 +29,9 @@ public class UserConfig {
         UserConfig.email = email;
         UserConfig.userId = userId;
         UserConfig.apiId = apiId;
+    }
+
+    public UserConfig() {
     }
 
     public static boolean isLoggedIn() {
@@ -42,20 +44,6 @@ public class UserConfig {
 
     public static void updateUser() {
         user = getUser();
-    }
-
-    public UserConfig() {
-    }
-
-    public boolean save() {
-        AppGlobal.preferences.edit()
-                .putInt(USER_ID, userId)
-                .putInt(API_ID, apiId)
-                .putString(ACCESS_TOKEN, accessToken)
-                .putString(EMAIL, email)
-                .apply();
-
-        return true;
     }
 
     public static UserConfig restore() {
@@ -74,5 +62,16 @@ public class UserConfig {
                 .remove(USER_ID)
                 .remove(EMAIL)
                 .apply();
+    }
+
+    public boolean save() {
+        AppGlobal.preferences.edit()
+                .putInt(USER_ID, userId)
+                .putInt(API_ID, apiId)
+                .putString(ACCESS_TOKEN, accessToken)
+                .putString(EMAIL, email)
+                .apply();
+
+        return true;
     }
 }

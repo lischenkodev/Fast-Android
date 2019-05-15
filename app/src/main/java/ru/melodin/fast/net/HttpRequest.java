@@ -1,9 +1,13 @@
 package ru.melodin.fast.net;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URLEncoder;
+
 import androidx.collection.ArrayMap;
-import ru.melodin.fast.io.*;
-import java.io.*;
-import java.net.*;
+import ru.melodin.fast.io.EasyStreams;
 
 public class HttpRequest {
     public static final String GET = "GET";
@@ -131,8 +135,7 @@ public class HttpRequest {
     public String toString() {
         try {
             return asString();
-        }
-		catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return null;

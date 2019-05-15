@@ -10,40 +10,34 @@ import java.util.ArrayList;
 
 public class VKUser extends VKModel implements Serializable {
 
-    public static int count;
-
-    public int friends_count;
-
     public static final String FIELDS_DEFAULT = "photo_50,photo_100,photo_200,status,screen_name,online,online_mobile,last_seen,verified,sex";
+    public static final VKUser EMPTY = new VKUser() {
 
+        public String photo_100 = "", photo_50 = "", photo_200 = "";
+        public String first_name = "", last_name = "";
+
+        @Override
+        public String toString() {
+            return "...";
+        }
+    };
+    public static int count;
+    public int friends_count;
     public int id;
     public String name;
     public String surname;
-
     public String screen_name;
     public boolean online;
     public boolean online_mobile;
     public int online_app;
-
     public String photo_50;
     public String photo_100;
     public String photo_200;
-
     public String status;
     public long last_seen;
     public boolean verified;
-
     public String deactivated;
     public int sex;
-
-    public static ArrayList<VKUser> parse(JSONArray array) {
-        ArrayList<VKUser> users = new ArrayList<>(array.length());
-        for (int i = 0; i < array.length(); i++) {
-            users.add(new VKUser((JSONObject) array.opt(i)));
-        }
-
-        return users;
-    }
 
     public VKUser() {
         this.name = "...";
@@ -77,6 +71,15 @@ public class VKUser extends VKModel implements Serializable {
         }
     }
 
+    public static ArrayList<VKUser> parse(JSONArray array) {
+        ArrayList<VKUser> users = new ArrayList<>(array.length());
+        for (int i = 0; i < array.length(); i++) {
+            users.add(new VKUser((JSONObject) array.opt(i)));
+        }
+
+        return users;
+    }
+
     @Override
     public String toString() {
         return name + " " + surname;
@@ -85,24 +88,6 @@ public class VKUser extends VKModel implements Serializable {
     public boolean isDeactivated() {
         return !TextUtils.isEmpty(deactivated);
     }
-
-    public static class Sex {
-        public static final int NONE = 0;
-        public static final int FEMALE = 1;
-        public static final int MALE = 2;
-    }
-
-    public static final VKUser EMPTY = new VKUser() {
-
-        public String photo_100 = "", photo_50 = "", photo_200 = "";
-        public String first_name = "", last_name = "";
-
-        @Override
-        public String toString() {
-            return "...";
-        }
-    };
-
 
     public int getId() {
         return id;
@@ -222,6 +207,12 @@ public class VKUser extends VKModel implements Serializable {
 
     public void setSex(int sex) {
         this.sex = sex;
+    }
+
+    public static class Sex {
+        public static final int NONE = 0;
+        public static final int FEMALE = 1;
+        public static final int MALE = 2;
     }
 
 }

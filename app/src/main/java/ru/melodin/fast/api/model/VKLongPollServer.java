@@ -1,9 +1,11 @@
 package ru.melodin.fast.api.model;
-import java.io.*;
-import org.json.*;
+
+import org.json.JSONObject;
+
+import java.io.Serializable;
 
 public class VKLongPollServer extends VKModel implements Serializable {
-    
+
     public String key;
     public String server;
     public long ts;

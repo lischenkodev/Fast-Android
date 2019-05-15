@@ -40,16 +40,54 @@ public class PhotoViewActivity extends AppCompatActivity {
     private PhotoViewAdapter adapter;
 
     private ImageButton like, comment, repost;
+    private Animator.AnimatorListener hideListener = new Animator.AnimatorListener() {
+        @Override
+        public void onAnimationStart(Animator animation) {
+        }
 
-    private class LikeState {
-        static final int LIKED = 1;
-        static final int UNLIKED = 2;
-    }
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            if (tb.getVisibility() != View.INVISIBLE) {
+                tb.setVisibility(View.INVISIBLE);
+            }
 
-    private class AnimState {
-        static final int SHOWED = 1;
-        static final int HIDED = 2;
-    }
+            if (items.getVisibility() != View.INVISIBLE) {
+                items.setVisibility(View.INVISIBLE);
+            }
+        }
+
+        @Override
+        public void onAnimationCancel(Animator animation) {
+        }
+
+        @Override
+        public void onAnimationRepeat(Animator animation) {
+        }
+    };
+    private Animator.AnimatorListener showListener = new Animator.AnimatorListener() {
+        @Override
+        public void onAnimationStart(Animator animation) {
+            if (tb.getVisibility() != View.VISIBLE) {
+                tb.setVisibility(View.VISIBLE);
+            }
+
+            if (items.getVisibility() != View.VISIBLE) {
+                items.setVisibility(View.VISIBLE);
+            }
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+        }
+
+        @Override
+        public void onAnimationCancel(Animator animation) {
+        }
+
+        @Override
+        public void onAnimationRepeat(Animator animation) {
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -191,56 +229,6 @@ public class PhotoViewActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    private Animator.AnimatorListener hideListener = new Animator.AnimatorListener() {
-        @Override
-        public void onAnimationStart(Animator animation) {
-        }
-
-        @Override
-        public void onAnimationEnd(Animator animation) {
-            if (tb.getVisibility() != View.INVISIBLE) {
-                tb.setVisibility(View.INVISIBLE);
-            }
-
-            if (items.getVisibility() != View.INVISIBLE) {
-                items.setVisibility(View.INVISIBLE);
-            }
-        }
-
-        @Override
-        public void onAnimationCancel(Animator animation) {
-        }
-
-        @Override
-        public void onAnimationRepeat(Animator animation) {
-        }
-    };
-
-    private Animator.AnimatorListener showListener = new Animator.AnimatorListener() {
-        @Override
-        public void onAnimationStart(Animator animation) {
-            if (tb.getVisibility() != View.VISIBLE) {
-                tb.setVisibility(View.VISIBLE);
-            }
-
-            if (items.getVisibility() != View.VISIBLE) {
-                items.setVisibility(View.VISIBLE);
-            }
-        }
-
-        @Override
-        public void onAnimationEnd(Animator animation) {
-        }
-
-        @Override
-        public void onAnimationCancel(Animator animation) {
-        }
-
-        @Override
-        public void onAnimationRepeat(Animator animation) {
-        }
-    };
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -255,5 +243,15 @@ public class PhotoViewActivity extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private class LikeState {
+        static final int LIKED = 1;
+        static final int UNLIKED = 2;
+    }
+
+    private class AnimState {
+        static final int SHOWED = 1;
+        static final int HIDED = 2;
     }
 }

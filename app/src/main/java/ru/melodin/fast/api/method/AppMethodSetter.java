@@ -3,7 +3,8 @@ package ru.melodin.fast.api.method;
 /**
  * Method setter for apps
  */
-import ru.melodin.fast.util.*;
+
+import ru.melodin.fast.util.ArrayUtil;
 
 public class AppMethodSetter extends MethodSetter {
 
