@@ -237,7 +237,6 @@ public class CacheStorage {
         delete(DIALOGS_TABLE, where);
     }
 
-
     public static void insert(String table, ArrayList values) {
         if (ArrayUtil.isEmpty(values)) return;
         database.beginTransaction();
@@ -268,6 +267,12 @@ public class CacheStorage {
 
         database.setTransactionSuccessful();
         database.endTransaction();
+    }
+
+    public static void insert(String table, Object item) {
+        ArrayList<Object> list = new ArrayList<>(1);
+        list.add(item);
+        insert(table, list);
     }
 
     public static void delete(String table, String where) {

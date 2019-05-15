@@ -116,14 +116,9 @@ public class MethodSetter {
         return put("user_id", value);
     }
 
-    public MethodSetter userIds(int... ids) {
-        return put("user_ids", ArrayUtil.toString(ids));
-    }
-
     public MethodSetter userIds(Integer... ids) {
         return put("user_ids", ArrayUtil.toString(ids));
     }
-
 
     public MethodSetter userIds(Collection<Integer> ids) {
         return put("user_ids", ArrayUtil.toString(ids.toArray()));
