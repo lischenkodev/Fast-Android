@@ -482,7 +482,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (peerId < -1) type = 1;
 
         if (conversation != null) {
-            if (conversation.isChannel()) {
+            if (conversation.group_channel) {
                 type = 3;
             }
         }

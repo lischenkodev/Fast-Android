@@ -1,12 +1,11 @@
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 28
     buildToolsVersion "28.0.3"
 
     defaultConfig {
-        applicationId "ru.stwtforever.fast"
+        applicationId "ru.melodin.fast"
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 2
@@ -21,26 +20,16 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
-    implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.legacy:legacy-preference-v14:1.0.0'
-    implementation 'com.google.android.material:material:1.1.0-alpha02'
+    implementation 'com.google.android.material:material:1.1.0-alpha06'
     implementation 'androidx.appcompat:appcompat:1.0.2'
-    implementation 'androidx.preference:preference:1.1.0-alpha02'
-    implementation 'androidx.exifinterface:exifinterface:1.0.0'
-    implementation 'androidx.vectordrawable:vectordrawable-animated:1.0.0'
+    implementation 'androidx.preference:preference:1.1.0-alpha05'
 
     implementation 'com.squareup.picasso:picasso:2.71828'
 
     implementation 'org.greenrobot:eventbus:3.1.1'
-
-    def appCenterSdkVersion = '1.11.0'
-    implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
-    implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
-
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
+
 repositories {
     mavenCentral()
 }
