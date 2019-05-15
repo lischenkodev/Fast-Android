@@ -1,7 +1,7 @@
 package ru.melodin.fast.database;
 
-import android.database.*;
-import android.database.sqlite.*;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 
 public class QueryBuilder {
     /**
@@ -29,8 +29,8 @@ public class QueryBuilder {
      */
     public QueryBuilder select(String column) {
         this.buffer.append("SELECT ")
-			.append(column)
-			.append(" ");
+                .append(column)
+                .append(" ");
         return this;
     }
 
@@ -41,8 +41,8 @@ public class QueryBuilder {
      */
     public QueryBuilder from(String table) {
         this.buffer.append("FROM ")
-			.append(table)
-			.append(" ");
+                .append(table)
+                .append(" ");
         return this;
     }
 
@@ -54,22 +54,22 @@ public class QueryBuilder {
      */
     public QueryBuilder where(String clause) {
         this.buffer.append("WHERE ")
-			.append(clause)
-			.append(" ");
+                .append(clause)
+                .append(" ");
         return this;
     }
 
     public QueryBuilder leftJoin(String table) {
         this.buffer.append("LEFT JOIN ")
-			.append(table)
-			.append(" ");
+                .append(table)
+                .append(" ");
         return this;
     }
 
     public QueryBuilder on(String where) {
         this.buffer.append("ON ")
-			.append(where)
-			.append(" ");
+                .append(where)
+                .append(" ");
         return this;
     }
 
@@ -93,7 +93,7 @@ public class QueryBuilder {
      * Creates new cursor by this query
      */
     public Cursor asCursor(SQLiteDatabase db) {
-		if (!db.isOpen()) db = DatabaseHelper.getInstance().getWritableDatabase();
+        if (!db.isOpen()) db = DatabaseHelper.getInstance().getWritableDatabase();
         return db.rawQuery(toString(), null);
     }
 

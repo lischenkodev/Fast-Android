@@ -56,7 +56,6 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
             VKUser u = getValues().get(i);
             if (u.isSelected()) {
                 u.setSelected(false);
-                notifyItemChanged(i);
             }
         }
     }

@@ -7,10 +7,6 @@ import ru.melodin.fast.common.AppGlobal;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    //last_db_change date = 30.12.18
-    private static final int DATABASE_VERSION = 16;
-    private static final String DATABASE_NAME = "cache.db";
-
     /**
      * Tables
      */
@@ -19,13 +15,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String DIALOGS_TABLE = "dialogs";
     public static final String MESSAGES_TABLE = "messages";
     public static final String GROUPS_TABLE = "groups";
-
-    /**
-     * Columns
-     */
-    static final String _ID = "_id";
-    static final String CONVERSATION_TYPE = "type";
-    static final String USER_ID = "user_id";
     public static final String GROUP_ID = "group_id";
     public static final String FRIEND_ID = "friend_id";
     public static final String FROM_ID = "from_id";
@@ -72,7 +61,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String NO_SOUND = "no_sound";
     public static final String USERS = "users";
     public static final String GROUPS = "groups";
-
+    /**
+     * Columns
+     */
+    static final String _ID = "_id";
+    static final String CONVERSATION_TYPE = "type";
+    static final String USER_ID = "user_id";
+    //last_db_change date = 30.12.18
+    private static final int DATABASE_VERSION = 16;
+    private static final String DATABASE_NAME = "cache.db";
     private static final String SQL_CREATE_TABLE_USERS = "CREATE TABLE " + USERS_TABLE +
             " (" + USER_ID + " INTEGER PRIMARY KEY ON CONFLICT REPLACE, " +
             " [" + FIRST_NAME + "] VARCHAR(255), " +
@@ -168,16 +165,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static DatabaseHelper instance;
 
+    private DatabaseHelper() {
+        super(AppGlobal.context, DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
     public synchronized static DatabaseHelper getInstance() {
         if (instance == null) {
             instance = new DatabaseHelper();
         }
 
         return instance;
-    }
-
-    private DatabaseHelper() {
-        super(AppGlobal.context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override

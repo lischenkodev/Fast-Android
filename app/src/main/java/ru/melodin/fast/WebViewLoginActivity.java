@@ -61,7 +61,7 @@ public class WebViewLoginActivity extends AppCompatActivity {
 
         webView.loadUrl(Auth.getUrl(UserConfig.FAST_ID, Scopes.all()));
     }
-    
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_login, menu);

@@ -1,8 +1,11 @@
 package ru.melodin.fast.database;
 
-import android.util.*;
-import ru.melodin.fast.api.model.*;
-import java.util.*;
+import android.util.SparseArray;
+
+import java.util.ArrayList;
+
+import ru.melodin.fast.api.model.VKGroup;
+import ru.melodin.fast.api.model.VKUser;
 
 public class MemoryCache {
     private static SparseArray<VKUser> users = new SparseArray<>(20);
