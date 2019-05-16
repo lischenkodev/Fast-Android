@@ -9,16 +9,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import org.greenrobot.eventbus.EventBus;
-
-import java.util.ArrayList;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import org.greenrobot.eventbus.EventBus;
+
+import java.util.ArrayList;
+
 import ru.melodin.fast.CreateChatActivity;
 import ru.melodin.fast.MessagesActivity;
 import ru.melodin.fast.R;
@@ -117,6 +118,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
         list.setLayoutManager(manager);
 
         getCachedConversations();
+        getConversations(CONVERSATIONS_COUNT);
     }
 
     private void initViews(View v) {

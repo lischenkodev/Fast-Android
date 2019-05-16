@@ -1,6 +1,7 @@
 package ru.melodin.fast.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.text.Html;
@@ -15,6 +16,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
@@ -23,10 +29,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 
-import androidx.annotation.ColorInt;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 import ru.melodin.fast.R;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKUtils;
@@ -36,7 +38,9 @@ import ru.melodin.fast.api.model.VKMessage;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.database.CacheStorage;
+import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.database.MemoryCache;
+import ru.melodin.fast.service.LongPollService;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
@@ -46,27 +50,45 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
     public DialogAdapter(Context context, ArrayList<VKConversation> values) {
         super(context, values);
         EventBus.getDefault().register(this);
+        UserConfig.getUser();
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void onReceive(Object[] data) {
         if (ArrayUtil.isEmpty(data)) return;
 
-        int type = (int) data[0];
+        String key = (String) data[0];
 
-        switch (type) {
-            case 3:
+        switch (key) {
+            case LongPollService.KEY_USER_OFFLINE:
+                setUserOnline(false, (int) data[1], (int) data[2]);
+                break;
+            case LongPollService.KEY_USER_ONLINE:
+                setUserOnline(true, (int) data[1], (int) data[2]);
+                break;
+            case LongPollService.KEY_MESSAGE_CLEAR_FLAGS:
                 int mId = (int) data[1];
                 readMessage(mId);
                 break;
-            case 4:
+            case LongPollService.KEY_MESSAGE_NEW:
                 VKConversation conversation = (VKConversation) data[1];
                 addMessage(conversation);
                 break;
-            case 5:
+            case LongPollService.KEY_MESSAGE_EDIT:
                 VKMessage message = (VKMessage) data[1];
                 editMessage(message);
                 break;
+        }
+    }
+
+    private void setUserOnline(boolean online, int userId, int time) {
+        for (VKConversation conversation : getValues()) {
+            if (conversation.isUser()) {
+                VKUser user = MemoryCache.getUser(userId);
+                user.online = online;
+                user.last_seen = time;
+                notifyDataSetChanged();
+            }
         }
     }
 
@@ -111,25 +133,25 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
     }
 
     public String getTitle(VKConversation item, VKUser user, VKGroup group) {
-        return item == null ? "" : item.isGroup() ? group.name : item.isUser() ? user.toString() : item.title;
+        return item == null ? "" : item.isGroup() ? group != null ? group.name : "" : item.isUser() ? user != null ? user.toString() : "" : item.title;
     }
 
     public String getPhoto(VKConversation item, VKUser user, VKGroup group) {
-        return item == null ? "" : item.isGroup() ? group.photo_100 : item.isUser() ? user.photo_200 : item.photo_200;
+        return item == null ? "" : item.isGroup() ? group != null ? group.photo_100 : "" : item.isUser() ? user != null ? user.photo_200 : "" : item.photo_200;
     }
 
-    String getFromPhoto(VKConversation item, VKUser user, VKGroup group) {
-        return item == null ? "" : item.isFromGroup() ? group.photo_100 : item.isFromUser() ? (item.last.out && !item.isChat()) ? UserConfig.user.photo_100 : user.photo_100 : "";
+    private String getFromPhoto(VKConversation item, VKUser user, VKGroup group) {
+        return item == null ? "" : item.isFromGroup() ? group != null ? group.photo_100 : "" : item.isFromUser() ? (item.last.out && !item.isChat()) ? UserConfig.user.photo_100 : user != null ? user.photo_100 : "" : "";
     }
 
-    VKUser searchUser(int userId) {
+    private VKUser searchUser(int userId) {
         VKUser user = MemoryCache.getUser(userId);
         if (user == null)
             user = VKUser.EMPTY;
         return user;
     }
 
-    VKGroup searchGroup(int groupId) {
+    private VKGroup searchGroup(int groupId) {
         VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(groupId));
         if (group == null)
             group = VKGroup.EMPTY;
@@ -185,6 +207,8 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
             add(0, conversation);
             notifyDataSetChanged();
         }
+
+        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last);
     }
 
     private void readMessage(int id) {
@@ -240,7 +264,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
             super(v);
 
             pushedEnabled = ThemeManager.getAccent();
-            pushedDisabled = ThemeManager.isDark() ? ColorUtil.lightenColor(ThemeManager.getPrimary(), 2) : ColorUtil.darkenColor(ThemeManager.getPrimary(), 2);
+            pushedDisabled = ThemeManager.isDark() ? ColorUtil.lightenColor(ThemeManager.getPrimary(), 2) : Color.GRAY;
 
             avatar = v.findViewById(R.id.avatar);
             avatar_small = v.findViewById(R.id.avatar_small);

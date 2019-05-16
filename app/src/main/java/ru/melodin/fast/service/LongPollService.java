@@ -5,13 +5,14 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import androidx.collection.ArrayMap;
+
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import androidx.collection.ArrayMap;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.model.VKAttachments;
@@ -28,8 +29,12 @@ public class LongPollService extends Service {
 
     public static final String TAG = "FastVK LongPoll";
     public boolean isRunning;
-    private LowThread updateThread;
-    private boolean error;
+
+    public static final String KEY_MESSAGE_NEW = "message_new";
+    public static final String KEY_MESSAGE_EDIT = "message_edit";
+    public static final String KEY_MESSAGE_CLEAR_FLAGS = "message_clear_flags";
+    public static final String KEY_USER_ONLINE = "user_online";
+    public static final String KEY_USER_OFFLINE = "user_offline";
 
     public LongPollService() {
     }
@@ -38,7 +43,7 @@ public class LongPollService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "onCreate");
-        //launchLongpoll();
+        launchLongPoll();
     }
 
     @Override
@@ -59,11 +64,11 @@ public class LongPollService extends Service {
         return null;
     }
 
-    private void launchLongpoll() {
+    private void launchLongPoll() {
         if (!isRunning) {
             isRunning = true;
         }
-        updateThread = new LowThread(new MessageUpdater());
+        LowThread updateThread = new LowThread(new MessageUpdater());
         updateThread.start();
     }
 
@@ -116,7 +121,6 @@ public class LongPollService extends Service {
                     Log.e(TAG, "Error: " + e.toString() + "    Log below...");
                     e.printStackTrace();
                     server = null;
-                    error = true;
                     run();
                 }
 
@@ -149,12 +153,12 @@ public class LongPollService extends Service {
 
         private void messageEvent(JSONArray item) {
             VKConversation conversation = VKConversation.parseFromLongPoll(item);
-            EventBus.getDefault().postSticky(new Object[]{4, conversation});
+            EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_NEW, conversation});
         }
 
         private void messageClearFlags(int id, int mask) {
             if ((mask & VKMessage.UNREAD) != 0) {
-                EventBus.getDefault().postSticky(new Object[]{3, id});
+                EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_CLEAR_FLAGS, id});
             }
         }
 
@@ -173,7 +177,7 @@ public class LongPollService extends Service {
 
             CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, m);
 
-            EventBus.getDefault().post(new Object[]{5, msg});
+            EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_EDIT, msg});
         }
 
         private void process(JSONArray updates) {
@@ -194,7 +198,7 @@ public class LongPollService extends Service {
                     case 4: //new message
                         messageEvent(item);
                         break;
-                    case 5:
+                    case 5: //edit message
                         editMessageEvent(item);
                         break;
                     case 8: //user online
@@ -218,13 +222,13 @@ public class LongPollService extends Service {
             int userId = item.optInt(1) * (-1);
             boolean timeout = item.optInt(2) == 1;
             int time = item.optInt(3);
-            EventBus.getDefault().postSticky(new Object[]{9, userId, time, timeout});
+            EventBus.getDefault().postSticky(new Object[]{KEY_USER_OFFLINE, userId, time, timeout});
         }
 
         private void userOnline(JSONArray item) {
             int userId = item.optInt(1) * (-1);
             int time = item.optInt(3);
-            EventBus.getDefault().postSticky(new Object[]{8, userId, time});
+            EventBus.getDefault().postSticky(new Object[]{KEY_USER_ONLINE, userId, time});
         }
 
         private void userType(JSONArray item) {

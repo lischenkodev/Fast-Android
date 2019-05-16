@@ -4,6 +4,7 @@ package ru.melodin.fast.api;
 import android.text.TextUtils;
 
 import androidx.annotation.Nullable;
+
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.database.CacheStorage;
@@ -11,6 +12,7 @@ import ru.melodin.fast.database.CacheStorage;
 public class UserConfig {
 
     public static final int FAST_ID = 6964679;
+    public static final int VK_DESKTOP_ID = 6717234;
 
     private static final String ACCESS_TOKEN = "access_token";
     private static final String USER_ID = "user_id";

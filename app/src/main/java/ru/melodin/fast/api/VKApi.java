@@ -35,11 +35,11 @@ public class VKApi {
     public static String lang = AppGlobal.locale.getLanguage();
 
     public static <T> ArrayList<T> execute(String url, Class<T> cls) throws Exception {
-
-        if (url.contains("messages")) {
+/*
+        if (url.contains("messages") && url.contains("5462895")) {
             throw new VKException("", "Access denied", -1);
         }
-
+*/
         if (BuildConfig.DEBUG) {
             Log.w(TAG, "url: " + url);
         }

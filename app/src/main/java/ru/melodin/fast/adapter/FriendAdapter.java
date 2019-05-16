@@ -9,15 +9,22 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.squareup.picasso.Picasso;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import ru.melodin.fast.R;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.fragment.FragmentFriends;
+import ru.melodin.fast.service.LongPollService;
+import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.view.CircleImageView;
 
@@ -28,6 +35,11 @@ public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHol
     public FriendAdapter(FragmentFriends context, ArrayList<VKUser> friends) {
         super(context.getContext(), friends);
         this.fragment = context;
+        EventBus.getDefault().register(this);
+    }
+
+    public void destroy() {
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -40,6 +52,32 @@ public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHol
     public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         super.onBindViewHolder(holder, position);
         holder.bind(position);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onReceive(Object[] data) {
+        if (ArrayUtil.isEmpty(data)) return;
+
+        String key = (String) data[0];
+
+        switch (key) {
+            case LongPollService.KEY_USER_OFFLINE:
+                setUserOnline(false, (int) data[1], (int) data[2]);
+                break;
+            case LongPollService.KEY_USER_ONLINE:
+                setUserOnline(true, (int) data[1], (int) data[2]);
+                break;
+        }
+    }
+
+    private void setUserOnline(boolean online, int userId, int time) {
+        for (VKUser user : getValues()) {
+            if (user.id == userId) {
+                user.online = online;
+                user.last_seen = time;
+                notifyDataSetChanged();
+            }
+        }
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

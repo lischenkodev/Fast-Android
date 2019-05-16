@@ -6,7 +6,11 @@
 
     <include layout="@layout/toolbar" />
 
-    <include layout="@layout/recycler_list" />
+    <include
+        layout="@layout/recycler_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?actionBarSize" />
 
     <ProgressBar
         android:id="@+id/progress"
@@ -17,7 +21,7 @@
     <LinearLayout
         android:id="@+id/pinned_msg_container"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="?actionBarSize"
         android:layout_marginTop="?actionBarSize">
 
         <include layout="@layout/pinned_message" />
@@ -31,8 +35,7 @@
         android:layout_marginBottom="-2dp"
         android:background="@drawable/chat_panel_bg"
         android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="10dp">
+        android:orientation="horizontal">
 
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/message_edit_text"

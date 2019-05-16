@@ -53,7 +53,11 @@ public class Scopes {
                 + ',' + ADS + ',' + OFFLINE
                 + ',' + DOCS + ',' + GROUPS
                 + ',' + NOTIFICATIONS + ','
-                //',' + MESSAGES +
+                + ',' + MESSAGES
                 + STATS;
+    }
+
+    public static String allInt() {
+        return String.valueOf(136297695);
     }
 }

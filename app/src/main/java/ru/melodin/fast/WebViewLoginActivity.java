@@ -22,6 +22,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+
 import ru.melodin.fast.api.Auth;
 import ru.melodin.fast.api.Scopes;
 import ru.melodin.fast.api.UserConfig;
@@ -55,10 +56,10 @@ public class WebViewLoginActivity extends AppCompatActivity {
         webView.setVisibility(View.GONE);
 
         webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
         webView.setWebViewClient(new VKWebViewClient());
 
-        webView.loadUrl(Auth.getUrl(UserConfig.FAST_ID, Scopes.all()));
+        webView.loadUrl(Auth.getUrl(UserConfig.VK_DESKTOP_ID, Scopes.allInt()));
     }
 
     @Override

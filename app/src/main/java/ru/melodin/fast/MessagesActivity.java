@@ -19,13 +19,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatEditText;
@@ -33,6 +26,14 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import ru.melodin.fast.adapter.MessageAdapter;
 import ru.melodin.fast.adapter.RecyclerAdapter;
 import ru.melodin.fast.api.UserConfig;
@@ -112,12 +113,15 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messages);
 
-        cantWriteReason = 2;
-        canWrite = false;
+        findViewById(R.id.refresh).setEnabled(false);
 
         initViews();
         getIntentData();
         showPinned(pinned);
+
+        cantWriteReason = 18;
+        canWrite = false;
+
         checkCanWrite();
 
         if (ThemeManager.isDark())
@@ -199,12 +203,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private void checkCanWrite() {
         message.setHint(R.string.tap_to_type);
-        chatPanel.setEnabled(true);
         send.setEnabled(true);
         smiles.setEnabled(true);
         message.setEnabled(true);
         message.setText("");
-
         if (cantWriteReason <= 0) return;
         if (!canWrite) {
             message.setHint(VKUtils.getErrorReason(cantWriteReason));
@@ -407,10 +409,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         if (adapter == null) {
             adapter = new MessageAdapter(this, messages, peerId);
+            adapter.setOnItemClickListener(this);
             recycler.setAdapter(adapter);
             recycler.scrollToPosition(adapter.getItemCount());
-            adapter.setOnItemClickListener(this);
-
             checkCount();
             return;
         }
@@ -434,6 +435,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     }
 
     private void getHistory(final int offset, final int count) {
+        if (!Util.hasConnection()) return;
         loading = true;
         getSupportActionBar().setSubtitle(getString(R.string.loading));
 

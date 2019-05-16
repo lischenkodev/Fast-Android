@@ -161,7 +161,7 @@ public class VKUtils {
     }
 
     public static String getErrorReason(int reason) {
-        String s = "";
+        String s;
 
         switch (reason) {
             case VKConversation.REASON_CANT_SEND_MESSAGE_USER_WHICH_IN_BLACKLIST:

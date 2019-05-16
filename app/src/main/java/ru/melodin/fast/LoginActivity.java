@@ -1,7 +1,6 @@
 package ru.melodin.fast;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PorterDuff;
@@ -11,12 +10,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
+
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.model.VKUser;
@@ -61,8 +62,8 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        setTheme(ThemeManager.getCurrentTheme());
         ViewUtil.applyWindowStyles(getWindow());
+        setTheme(ThemeManager.getCurrentTheme());
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_login2);
@@ -123,7 +124,7 @@ public class LoginActivity extends AppCompatActivity {
             String token = data.getStringExtra("token");
             int id = data.getIntExtra("id", -1);
 
-            UserConfig config = new UserConfig(token, null, id, UserConfig.FAST_ID);
+            UserConfig config = new UserConfig(token, null, id, UserConfig.VK_DESKTOP_ID);
             config.save();
             VKApi.config = config;
 

@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 
 import ru.melodin.fast.io.FileStreams;
-import ru.melodin.fast.util.Util;
 
 class CrashManager {
 
@@ -28,29 +27,33 @@ class CrashManager {
     }
 
     private static void report(Throwable ex) {
-        String trace = "Fast \nVersion: " + AppGlobal.app_version_name + "\nBuild: " + AppGlobal.app_version_code + "\n\n";
-
-        trace +=
-                "Android SDK: " + Build.VERSION.SDK + "\n" +
-                        "Device: " + Build.DEVICE + "\n" +
-                        "Model: " + Build.MODEL + "\n" +
-                        "Brand: " + Build.BRAND + "\n" +
-                        "Manufacturer: " + Build.MANUFACTURER + "\n" +
-                        "Display: " + Build.DISPLAY + "\n";
-
-        trace += "\nLog below: \n\n";
-        trace += Log.getStackTraceString(ex);
-        Util.copyText(trace);
+        String s = "Fast \nVersion: " + AppGlobal.app_version_name + "\nBuild: " + AppGlobal.app_version_code + "\n\n";
 
         String path = Environment.getExternalStorageDirectory() + "/Fast/crash_logs"; // AppGlobal.context.getFilesDir();
 
         File file = new File(path);
         if (!file.exists()) file.mkdirs();
 
-        String name = "log_" + System.currentTimeMillis() + ".txt";
-        createFile(file, name, trace);
+        String text = s +
+                "Android SDK: " + Build.VERSION.SDK_INT +
+                "\n" +
+                "Device: " + Build.DEVICE +
+                "\n" +
+                "Model: " + Build.MODEL +
+                "\n" +
+                "Brand: " + Build.BRAND +
+                "\n" +
+                "Manufacturer: " + Build.MANUFACTURER +
+                "\n" +
+                "Display: " + Build.DISPLAY +
+                "\n" +
+                "\n" + "Log below:" + "\n" + "\n" +
+                Log.getStackTraceString(ex);
 
-        AppGlobal.preferences.edit().putBoolean("isCrashed", true).putString("crashLog", trace).apply();
+        String name = "log_" + System.currentTimeMillis() + ".txt";
+        createFile(file, name, text);
+
+        AppGlobal.preferences.edit().putBoolean("isCrashed", true).putString("crashLog", text).apply();
     }
 
     private static void createFile(File path, String name, String trace) {

@@ -51,6 +51,12 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
     }
 
     @Override
+    public void onDestroy() {
+        if (adapter != null) adapter.destroy();
+        super.onDestroy();
+    }
+
+    @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.title = getString(R.string.fragment_friends);

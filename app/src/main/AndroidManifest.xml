@@ -38,19 +38,18 @@
             android:name=".WebViewLoginActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/login" />
+
         <activity
-            android:name=".LoginActivity"
-            android:label="@string/login" />
+            android:name=".PhotoViewActivity"
+            android:configChanges="screenSize|orientation|density"
+            android:theme="@style/AppTheme.PhotoView" />
+
+        <activity android:name=".LoginActivity" />
 
         <service
             android:name=".service.LongPollService"
             android:enabled="true"
             android:exported="true"
             tools:ignore="ExportedService" />
-
-        <activity
-            android:name=".PhotoViewActivity"
-            android:configChanges="screenSize|orientation|density"
-            android:theme="@style/AppTheme.PhotoView" />
     </application>
 </manifest>
