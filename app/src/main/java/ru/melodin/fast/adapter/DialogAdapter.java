@@ -113,6 +113,8 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
     }
 
     private void updateGroup(int groupId) {
+        if (groupId > 0)
+            groupId *= -1;
         for (int i = 0; i < getItemCount(); i++) {
             VKConversation conversation = getItem(i);
             if (conversation.isGroup()) {
