@@ -124,8 +124,6 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
     }
 
     public T getItem(int position) {
-        if (position == getItemCount())
-            position--;
         return values.get(position);
     }
 

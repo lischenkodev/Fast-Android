@@ -222,20 +222,17 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     @Override
     public MessageAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v;
         switch (viewType) {
             case TYPE_HEADER:
-                return new FooterViewHolder(createView());
+                return new FooterViewHolder(createView(56));
             case TYPE_NORMAL:
-                v = inflater.inflate(R.layout.activity_messages_list, parent, false);
-                new ViewHolder(v);
+                View v = inflater.inflate(R.layout.activity_messages_list, parent, false);
+                return new ViewHolder(v);
             case TYPE_FOOTER:
-                return new FooterViewHolder(createView());
+                return new FooterViewHolder(createView(66));
             default:
-                v = inflater.inflate(R.layout.activity_messages_list, parent, false);
-                new ViewHolder(v);
+                return null;
         }
-        return null;
     }
 
     @Override
@@ -350,17 +347,29 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         return super.getItemCount() + 2;
     }
 
+    @Override
+    public VKMessage getItem(int position) {
+        switch (getItemViewType(position)) {
+            case TYPE_HEADER:
+                return super.getItem(position + 1);
+            case TYPE_NORMAL:
+            case TYPE_FOOTER:
+                return super.getItem(position - 1);
+        }
+        return super.getItem(position);
+    }
+
     public int getMessagesCount() {
         return getValues().size();
     }
 
-    private View createView() {
+    private View createView(int height) {
         View v = new View(context);
         v.setBackgroundColor(Color.TRANSPARENT);
         v.setVisibility(View.INVISIBLE);
         v.setEnabled(false);
         v.setClickable(false);
-        v.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Util.px(66)));
+        v.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Util.px(height)));
 
         return v;
     }
