@@ -1,12 +1,13 @@
 package ru.melodin.fast.api.method;
 
+import androidx.annotation.Nullable;
+import androidx.collection.ArrayMap;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import androidx.annotation.Nullable;
-import androidx.collection.ArrayMap;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.model.VKModel;
@@ -139,10 +140,6 @@ public class MethodSetter {
     }
 
     public MethodSetter groupIds(int... ids) {
-        return put("group_ids", ArrayUtil.toString(ids));
-    }
-
-    public MethodSetter groupIds(Integer... ids) {
         return put("group_ids", ArrayUtil.toString(ids));
     }
 

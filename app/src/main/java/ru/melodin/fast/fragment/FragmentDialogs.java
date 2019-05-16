@@ -135,20 +135,19 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
     private void createAdapter(ArrayList<VKConversation> conversations) {
         if (ArrayUtil.isEmpty(conversations)) return;
 
-        checkCount();
-
         if (adapter == null) {
-            adapter = new DialogAdapter(getActivity(), conversations);
+            adapter = new DialogAdapter(this, conversations);
             adapter.setOnItemClickListener(this);
             adapter.setOnItemLongClickListener(this);
             list.setAdapter(adapter);
+            list.scrollToPosition(0);
 
             checkCount();
             return;
         }
 
         adapter.changeItems(conversations);
-        adapter.notifyDataSetChanged();
+        adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
 
         checkCount();
     }

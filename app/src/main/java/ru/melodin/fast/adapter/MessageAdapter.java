@@ -24,6 +24,10 @@ import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -34,8 +38,6 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import ru.melodin.fast.MessagesActivity;
 import ru.melodin.fast.PhotoViewActivity;
 import ru.melodin.fast.R;
@@ -61,6 +63,7 @@ import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.fragment.FragmentSettings;
+import ru.melodin.fast.service.LongPollService;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
@@ -75,7 +78,9 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     private int peerId;
     private AttachmentInflater attacher;
     private DisplayMetrics metrics;
-    private boolean isBusy = false;
+
+    private RecyclerView list;
+    private LinearLayoutManager manager;
 
     public MessageAdapter(Context context, ArrayList<VKMessage> msgs, int peerId) {
         super(context, msgs);
@@ -84,6 +89,9 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         this.attacher = new AttachmentInflater();
         this.metrics = context.getResources().getDisplayMetrics();
 
+        list = ((MessagesActivity) context).getRecyclerView();
+        manager = (LinearLayoutManager) list.getLayoutManager();
+
         EventBus.getDefault().register(this);
     }
 
@@ -91,17 +99,13 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     public void onReceive(Object[] data) {
         if (ArrayUtil.isEmpty(data)) return;
 
-        int type = (int) data[0];
+        String key = (String) data[0];
 
-        switch (type) {
-            case -1:
-                isBusy = false;
+        switch (key) {
+            case LongPollService.KEY_MESSAGE_CLEAR_FLAGS:
+                readMessage((int) data[1]);
                 break;
-            case 3:
-                if (!isBusy)
-                    readMessage((int) data[1]);
-                break;
-            case 4:
+            case LongPollService.KEY_MESSAGE_NEW:
                 VKConversation conversation = (VKConversation) data[1];
 
                 addMessage(conversation.last);
@@ -110,7 +114,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                     readNewMessage(conversation.last);
                 }
                 break;
-            case 5:
+            case LongPollService.KEY_MESSAGE_EDIT:
                 editMessage((VKMessage) data[1]);
                 break;
         }
@@ -145,37 +149,41 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     public int findPosition(int id) {
         for (int i = 0; i < getItemCount(); i++) {
-            VKMessage m = getItem(i);
-
-            if (m.id == id) return i;
+            if (getItem(i).id == id) return i;
         }
 
         return -1;
     }
 
     private void editMessage(VKMessage edited) {
-        int position = searchPosition(edited);
-        if (position == -1) return;
+        for (int i = 0; i < getItemCount(); i++) {
+            VKMessage message = getItem(i);
+            if (message.id == edited.id) {
+                message.mask = edited.mask;
+                message.text = edited.text;
+                message.update_time = edited.update_time;
+                message.attachments = edited.attachments;
 
-        VKMessage msg = getValues().get(position);
-        if (msg == null) return;
-
-        msg.mask = edited.mask;
-        msg.text = edited.text;
-        msg.update_time = edited.update_time;
-        msg.attachments = edited.attachments;
-
-        notifyItemChanged(position, null);
+                notifyItemChanged(i, -1);
+                break;
+            }
+        }
     }
 
     private void addMessage(VKMessage msg) {
         if (msg.peerId != peerId) return;
-
         if (isContains(msg.randomId)) return;
 
         add(msg);
         notifyItemInserted(getItemCount() - 1);
-        ((MessagesActivity) context).handleNewMessage();
+        ((MessagesActivity) context).checkCount();
+
+        int lastVisibleItem = manager.findLastCompletelyVisibleItemPosition();
+        int totalVisibleItems = manager.findLastCompletelyVisibleItemPosition() - manager.findFirstCompletelyVisibleItemPosition() + 1;
+
+        if (lastVisibleItem <= totalVisibleItems) {
+            manager.scrollToPosition(getItemCount() - 1);
+        }
     }
 
     private boolean isContains(long randomId) {
@@ -188,35 +196,15 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         return contains;
     }
 
-    private void readMessage(int id) {
-        VKMessage m = searchMessage(id);
-        if (m == null) return;
-
-        int position = searchPosition(m);
-
-        m.read = true;
-
-        notifyItemChanged(position, m);
-    }
-
-    public void showHover(int position, boolean b) {
-        if (!isHover(position)) {
-            getValues().get(position).setSelected(b);
-            notifyItemChanged(position);
+    private void readMessage(int mId) {
+        for (int i = 0; i < getItemCount(); i++) {
+            VKMessage message = getItem(i);
+            if (message.id == mId) {
+                message.read = true;
+                notifyItemChanged(i, -1);
+                break;
+            }
         }
-    }
-
-    public boolean isHover(int position) {
-        return getValues().get(position).isSelected();
-    }
-
-    private VKMessage searchMessage(Integer id) {
-        for (VKMessage m : getValues()) {
-            if (m.id == id)
-                return m;
-        }
-
-        return null;
     }
 
     private int searchPosition(VKMessage m) {
@@ -237,12 +225,12 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         View v;
         switch (viewType) {
             case TYPE_HEADER:
-                return new AdditionalViewHolder(createView());
+                return new FooterViewHolder(createView());
             case TYPE_NORMAL:
                 v = inflater.inflate(R.layout.activity_messages_list, parent, false);
                 new ViewHolder(v);
             case TYPE_FOOTER:
-                return new AdditionalViewHolder(createView());
+                return new FooterViewHolder(createView());
             default:
                 v = inflater.inflate(R.layout.activity_messages_list, parent, false);
                 new ViewHolder(v);
@@ -368,26 +356,24 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     private View createView() {
         View v = new View(context);
-        v.setVisibility(View.VISIBLE);
         v.setBackgroundColor(Color.TRANSPARENT);
         v.setVisibility(View.INVISIBLE);
         v.setEnabled(false);
         v.setClickable(false);
-        v.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Util.px(60)));
+        v.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Util.px(66)));
 
         return v;
     }
 
-    class AdditionalViewHolder extends ViewHolder {
+    class FooterViewHolder extends ViewHolder {
 
-        AdditionalViewHolder(View v) {
+        FooterViewHolder(View v) {
             super(v);
         }
 
         public boolean isFooter() {
             return true;
         }
-
 
     }
 
@@ -735,7 +721,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
                     intent.putExtra("photo", urls);
                     context.startActivity(intent);
-                    isBusy = true;
                 }
             });
 

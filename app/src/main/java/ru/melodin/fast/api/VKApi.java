@@ -572,11 +572,11 @@ public class VKApi {
 
     public static class VKGroups {
         public MethodSetter getById() {
-            return new MethodSetter("conversation_groups.getById");
+            return new MethodSetter("groups.getById");
         }
 
         public MethodSetter join() {
-            return new MethodSetter("conversation_groups.join");
+            return new MethodSetter("groups.join");
         }
     }
 
@@ -610,7 +610,7 @@ public class VKApi {
         private ArrayList<E> models;
         private OnResponseListener<E> listener;
 
-        public SuccessCallback(OnResponseListener<E> listener, ArrayList<E> models) {
+        SuccessCallback(OnResponseListener<E> listener, ArrayList<E> models) {
             this.models = models;
             this.listener = listener;
         }

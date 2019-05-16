@@ -6,12 +6,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
-
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+
 import ru.melodin.fast.util.ArrayUtil;
 
 public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
@@ -50,7 +51,7 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
 
     @Override
     public int getItemCount() {
-        return values == null ? 0 : values.size();
+        return getValues() == null ? 0 : getValues().size();
     }
 
     public void insert(ArrayList<T> items) {
@@ -71,6 +72,8 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
     }
 
     public void changeItems(ArrayList<T> items) {
+        this.values.clear();
+        notifyDataSetChanged();
         this.values = new ArrayList<>(items);
     }
 

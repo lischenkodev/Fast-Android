@@ -4,13 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <include layout="@layout/toolbar" />
-
     <include
-        layout="@layout/recycler_list"
+        layout="@layout/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="?actionBarSize" />
+        android:layout_height="wrap_content" />
 
     <ProgressBar
         android:id="@+id/progress"
@@ -24,13 +21,33 @@
         android:layout_height="?actionBarSize"
         android:layout_marginTop="?actionBarSize">
 
-        <include layout="@layout/pinned_message" />
+        <include
+            layout="@layout/pinned_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="?actionBarSize" />
+
+    <LinearLayout
+        android:id="@+id/no_items_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_marginBottom="40dp">
+
+        <include layout="@layout/no_items" />
+
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/chat_panel"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="66dp"
         android:layout_gravity="bottom"
         android:layout_marginBottom="-2dp"
         android:background="@drawable/chat_panel_bg"
@@ -41,6 +58,7 @@
             android:id="@+id/message_edit_text"
             android:layout_width="0dp"
             android:layout_height="match_parent"
+            android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:background="#00000000"
             android:gravity="center_vertical"
@@ -50,29 +68,30 @@
             android:padding="10dp"
             android:textColorHint="#C4C4C4" />
 
-        <ru.melodin.fast.view.RtlMaterialButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/smiles"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
             android:layout_gravity="bottom"
             android:layout_marginStart="4dp"
-            android:text="@null"
+            android:layout_marginBottom="10dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:src="@drawable/md_online_status"
             app:backgroundTint="@android:color/transparent"
-            app:cornerRadius="200dp"
-            app:icon="@drawable/md_online_status"
-            app:iconTint="#cccccc" />
+            app:tint="#cccccc" />
 
-        <ru.melodin.fast.view.RtlMaterialButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/send"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
             android:layout_gravity="bottom"
             android:layout_marginStart="4dp"
-            android:text="@null"
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="10dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:src="@drawable/md_mic"
             app:backgroundTint="?colorAccent"
-            app:cornerRadius="200dp"
-            app:icon="@drawable/md_mic"
-            app:iconTint="#ffffff" />
+            app:tint="#ffffff" />
 
     </LinearLayout>
 
