@@ -63,7 +63,7 @@
 
         </LinearLayout>
 
-        <ImageButton
+        <ru.melodin.fast.view.RtlMaterialButton
             android:id="@+id/unpin"
             android:layout_width="45dp"
             android:layout_height="45dp"

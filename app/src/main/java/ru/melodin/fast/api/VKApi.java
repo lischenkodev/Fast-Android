@@ -26,7 +26,8 @@ import ru.melodin.fast.net.HttpRequest;
 import ru.melodin.fast.util.ArrayUtil;
 
 public class VKApi {
-    public static final String TAG = "Fast.VKApi";
+    private static final String TAG = "Fast.VKApi";
+
     public static final String BASE_URL = "https://api.vk.com/method/";
     public static final String API_VERSION = "5.92";
 
@@ -34,6 +35,11 @@ public class VKApi {
     public static String lang = AppGlobal.locale.getLanguage();
 
     public static <T> ArrayList<T> execute(String url, Class<T> cls) throws Exception {
+
+        if (url.contains("messages")) {
+            throw new VKException("", "Access denied", -1);
+        }
+
         if (BuildConfig.DEBUG) {
             Log.w(TAG, "url: " + url);
         }

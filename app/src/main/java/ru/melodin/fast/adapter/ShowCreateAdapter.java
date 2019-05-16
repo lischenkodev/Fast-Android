@@ -57,6 +57,7 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
 
             name = v.findViewById(R.id.name);
             invited_by = v.findViewById(R.id.last_seen);
+            UserConfig.getUser();
         }
 
         void bind(final int position) {

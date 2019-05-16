@@ -35,15 +35,12 @@ public class UserConfig {
     }
 
     public static boolean isLoggedIn() {
-        return (userId > 0 && !TextUtils.isEmpty(accessToken));
+        return (userId > 0 && !TextUtils.isEmpty(accessToken.trim()));
     }
 
     public static VKUser getUser() {
-        return CacheStorage.getUser(userId);
-    }
-
-    public static void updateUser() {
-        user = getUser();
+        user = CacheStorage.getUser(userId);
+        return user;
     }
 
     public static UserConfig restore() {
@@ -64,7 +61,7 @@ public class UserConfig {
                 .apply();
     }
 
-    public boolean save() {
+    public void save() {
         AppGlobal.preferences.edit()
                 .putInt(USER_ID, userId)
                 .putInt(API_ID, apiId)
@@ -72,6 +69,5 @@ public class UserConfig {
                 .putString(EMAIL, email)
                 .apply();
 
-        return true;
     }
 }

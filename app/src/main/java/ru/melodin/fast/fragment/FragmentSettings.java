@@ -24,7 +24,6 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-        UserConfig.updateUser();
         setPreferencesFromResource(R.xml.prefs, rootKey);
 
         Preference hideTyping = findPreference(KEY_HIDE_TYPING);

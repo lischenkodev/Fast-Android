@@ -1,49 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
     <include layout="@layout/toolbar" />
 
-    <LinearLayout
-        android:id="@+id/action_toolbar_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-        <include layout="@layout/action_toolbar" />
-
-    </LinearLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="?actionBarSize"
-        android:fadeScrollbars="true"
-        android:scrollbars="vertical"
-        tools:itemCount="28" />
+    <include layout="@layout/recycler_list" />
 
     <ProgressBar
         android:id="@+id/progress"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center" />
-
-    <LinearLayout
-        android:id="@+id/no_items_layout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:layout_marginBottom="40dp"
-        android:visibility="visible">
-
-        <include layout="@layout/no_items" />
-
-    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/pinned_msg_container"
@@ -63,14 +32,13 @@
         android:background="@drawable/chat_panel_bg"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="10dp"
-        android:weightSum="1">
+        android:padding="10dp">
 
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/message_edit_text"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1.0"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
             android:background="#00000000"
             android:gravity="center_vertical"
             android:hint="@string/tap_to_type"
@@ -79,26 +47,29 @@
             android:padding="10dp"
             android:textColorHint="#C4C4C4" />
 
-        <androidx.appcompat.widget.AppCompatImageButton
+        <ru.melodin.fast.view.RtlMaterialButton
             android:id="@+id/smiles"
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:layout_gravity="bottom"
             android:layout_marginStart="4dp"
-            android:background="?selectableItemBackgroundBorderless"
-            android:src="@drawable/md_online_status"
-            android:tint="#cccccc" />
+            android:text="@null"
+            app:backgroundTint="@android:color/transparent"
+            app:cornerRadius="200dp"
+            app:icon="@drawable/md_online_status"
+            app:iconTint="#cccccc" />
 
-        <androidx.appcompat.widget.AppCompatImageButton
+        <ru.melodin.fast.view.RtlMaterialButton
             android:id="@+id/send"
-            style="@style/Widget.MaterialComponents.Button.Icon"
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:layout_gravity="bottom"
             android:layout_marginStart="4dp"
-            android:background="?colorAccent"
-            android:src="@drawable/md_mic"
-            android:tint="#ffffff" />
+            android:text="@null"
+            app:backgroundTint="?colorAccent"
+            app:cornerRadius="200dp"
+            app:icon="@drawable/md_mic"
+            app:iconTint="#ffffff" />
 
     </LinearLayout>
 

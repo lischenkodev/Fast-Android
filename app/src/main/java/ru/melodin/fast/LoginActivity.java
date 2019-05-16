@@ -85,7 +85,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         UserConfig.restore();
-        UserConfig.updateUser();
+        UserConfig.getUser();
         if (UserConfig.isLoggedIn()) {
             setUserData(UserConfig.getUser());
         }
@@ -141,7 +141,7 @@ public class LoginActivity extends AppCompatActivity {
             public void ready() throws Exception {
                 user = VKApi.users().get().userIds(id).fields(VKUser.FIELDS_DEFAULT).execute(VKUser.class).get(0);
                 CacheStorage.insert(DatabaseHelper.USERS_TABLE, user);
-                UserConfig.updateUser();
+                UserConfig.getUser();
             }
 
             @Override

@@ -53,6 +53,6 @@ public class VKException extends IOException {
 
     @Override
     public String toString() {
-        return "code: " + code + ", message: " + message;
+        return message;
     }
 }

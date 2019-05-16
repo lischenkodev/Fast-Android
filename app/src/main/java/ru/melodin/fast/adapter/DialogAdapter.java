@@ -239,8 +239,6 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         ViewHolder(@NonNull View v) {
             super(v);
 
-            UserConfig.updateUser();
-
             pushedEnabled = ThemeManager.getAccent();
             pushedDisabled = ThemeManager.isDark() ? ColorUtil.lightenColor(ThemeManager.getPrimary(), 2) : ColorUtil.darkenColor(ThemeManager.getPrimary(), 2);
 

@@ -2,6 +2,7 @@ package ru.melodin.fast;
 
 import android.content.Intent;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.Editable;
@@ -13,10 +14,10 @@ import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -29,6 +30,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import ru.melodin.fast.adapter.MessageAdapter;
@@ -51,16 +53,20 @@ import ru.melodin.fast.fragment.FragmentSettings;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.util.ViewUtil;
+import ru.melodin.fast.view.RtlMaterialButton;
 
 public class MessagesActivity extends AppCompatActivity implements RecyclerAdapter.OnItemClickListener, TextWatcher {
 
     private static final int MESSAGES_COUNT = 60;
 
+    private Drawable iconSend;
+    private Drawable iconMic;
+    private Drawable iconDone;
+
     private Toolbar toolbar;
     private RecyclerView recycler;
-    private LinearLayoutManager layoutManager;
 
-    private ImageButton smiles, send, unpin;
+    private RtlMaterialButton smiles, send, unpin;
     private AppCompatEditText message;
     private ProgressBar bar;
     private LinearLayout chatPanel, pinnedContainer;
@@ -71,18 +77,21 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private boolean loading, canWrite, editing, typing;
     private int cantWriteReason = -1, peerId, membersCount;
-    private String messageText, reasonText, title, photo;
+    private String messageText;
+    private String title;
 
     private Timer timer;
 
     private VKMessage pinned, last;
     private VKConversation conversation;
     private VKUser currentUser;
+
     private View.OnClickListener sendClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            if (message == null) return;
             String s = message.getText().toString();
-            if (!s.trim().isEmpty()) {
+            if (!s.trim().isEmpty() && adapter != null) {
                 messageText = s;
 
                 sendMessage();
@@ -94,10 +103,17 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        iconSend = ContextCompat.getDrawable(this, R.drawable.md_send);
+        iconMic = ContextCompat.getDrawable(this, R.drawable.md_mic);
+        iconDone = ContextCompat.getDrawable(this, R.drawable.md_done);
+
         setTheme(ThemeManager.getCurrentTheme());
         ViewUtil.applyWindowStyles(getWindow());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messages);
+
+        cantWriteReason = 2;
+        canWrite = false;
 
         initViews();
         getIntentData();
@@ -109,7 +125,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 chatPanel.getBackground().setColorFilter(ThemeManager.getBackground(), PorterDuff.Mode.MULTIPLY);
             }
 
-        layoutManager = new LinearLayoutManager(this);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setStackFromEnd(true);
         layoutManager.setOrientation(RecyclerView.VERTICAL);
 
@@ -140,10 +156,13 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         gd.setColor(ThemeManager.getAccent());
         gd.setCornerRadius(100f);
 
-        //send.setBackground(gd);
-        send.setImageResource(R.drawable.md_mic);
+        send.setBackground(gd);
+        send.setIcon(iconMic);
 
-        getCachedMessages();
+        getCachedHistory();
+        if (Util.hasConnection()) {
+            getHistory(0, MESSAGES_COUNT);
+        }
     }
 
     private void initViews() {
@@ -155,49 +174,49 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         send = findViewById(R.id.send);
         message = findViewById(R.id.message_edit_text);
         noItems = findViewById(R.id.no_items_layout);
-    }
 
-    private void getIntentData() {
-        Intent intent = getIntent();
-        this.conversation = (VKConversation) intent.getSerializableExtra("conversation");
-        this.title = intent.getStringExtra("title");
-        this.photo = intent.getStringExtra("photo");
-        this.peerId = intent.getIntExtra("peer_id", -1);
-        this.cantWriteReason = intent.getIntExtra("reason", -1);
-        this.canWrite = intent.getBooleanExtra("can_write", false);
-        this.reasonText = canWrite ? "" : VKUtils.getErrorReason(cantWriteReason);
-
-        if (conversation != null) {
-            this.last = conversation.last;
-            this.membersCount = conversation.membersCount;
-            this.pinned = conversation.pinned;
-        }
-    }
-
-    private void checkCanWrite() {
-        send.setEnabled(true);
-        smiles.setEnabled(true);
-        message.setEnabled(true);
-        message.setHint(R.string.tap_to_type);
-        message.setText("");
-
-        if (cantWriteReason <= 0) return;
-        if (!canWrite) {
-            send.setEnabled(false);
-            smiles.setEnabled(false);
-            message.setEnabled(false);
-            message.setHint(VKUtils.getErrorReason(cantWriteReason));
-            message.setText("");
-        }
-    }
-
-    private void showPinned(final VKMessage pinned) {
         pinnedContainer = findViewById(R.id.pinned_msg_container);
         pName = pinnedContainer.findViewById(R.id.name);
         pDate = pinnedContainer.findViewById(R.id.date);
         pText = pinnedContainer.findViewById(R.id.message);
         unpin = pinnedContainer.findViewById(R.id.unpin);
+    }
 
+    private void getIntentData() {
+        Intent intent = getIntent();
+        conversation = (VKConversation) intent.getSerializableExtra("conversation");
+        title = intent.getStringExtra("title");
+        peerId = intent.getIntExtra("peer_id", -1);
+        cantWriteReason = intent.getIntExtra("reason", -1);
+        canWrite = intent.getBooleanExtra("can_write", false);
+
+        if (conversation != null) {
+            last = conversation.last;
+            membersCount = conversation.membersCount;
+            pinned = conversation.pinned;
+        }
+    }
+
+    private void checkCanWrite() {
+        message.setHint(R.string.tap_to_type);
+        chatPanel.setEnabled(true);
+        send.setEnabled(true);
+        smiles.setEnabled(true);
+        message.setEnabled(true);
+        message.setText("");
+
+        if (cantWriteReason <= 0) return;
+        if (!canWrite) {
+            message.setHint(VKUtils.getErrorReason(cantWriteReason));
+            chatPanel.setEnabled(false);
+            send.setEnabled(false);
+            smiles.setEnabled(false);
+            message.setEnabled(false);
+            message.setText("");
+        }
+    }
+
+    private void showPinned(final VKMessage pinned) {
         if (pinned == null) {
             pinnedContainer.setVisibility(View.GONE);
             return;
@@ -227,7 +246,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         unpin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                return;
             }
         });
 
@@ -275,7 +293,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private void applyStyles(boolean isEdit) {
         if (isEdit) {
-            send.setImageResource(R.drawable.md_done);
+            send.setIcon(iconDone);
         } else {
             String s = message.getText().toString();
 
@@ -285,19 +303,21 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private void applyBtnStyle(boolean isTextEmpty) {
         if (isTextEmpty) {
-            send.setImageResource(R.drawable.md_mic);
+            send.setIcon(iconMic);
             if (!editing)
                 send.setOnClickListener(recordClick);
         } else {
-            send.setImageResource(R.drawable.md_send);
+            send.setIcon(iconSend);
             if (!editing)
-                send.setOnClickListener(recordClick);
+                send.setOnClickListener(sendClick);
         }
     }
 
     private void checkCount() {
         bar.setVisibility(loading ? View.VISIBLE : View.GONE);
-        noItems.setVisibility(adapter == null ? View.VISIBLE : adapter.isEmpty() ? View.VISIBLE : View.GONE);
+
+        if (bar.getVisibility() != View.VISIBLE)
+            noItems.setVisibility(adapter == null ? View.VISIBLE : adapter.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     private void setNotEditing() {
@@ -319,10 +339,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         adapter.getItem(position).setSelected(false);
         adapter.notifyItemChanged(position, null);
-    }
-
-    private void getCachedMessages() {
-        getMessages();
     }
 
     private void sendMessage() {
@@ -386,7 +402,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private void createAdapter(ArrayList<VKMessage> messages) {
         if (ArrayUtil.isEmpty(messages)) {
-            checkCount();
             return;
         }
 
@@ -411,14 +426,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         recycler.smoothScrollToPosition(adapter.getItemCount() - 1);
     }
 
-    private void getMessages() {
+    private void getCachedHistory() {
         ArrayList<VKMessage> messages = CacheStorage.getMessages(peerId);
         if (!ArrayUtil.isEmpty(messages)) {
             createAdapter(messages);
-        }
-
-        if (Util.hasConnection()) {
-            getHistory(0, MESSAGES_COUNT);
         }
     }
 
@@ -468,7 +479,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
             @Override
             public void error(Exception e) {
+                loading = false;
+                checkCount();
                 getSupportActionBar().setSubtitle(getSubtitle());
+                Toast.makeText(MessagesActivity.this, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -524,6 +538,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 if (adapter == null) return false;
                 if (!loading && !editing) {
                     adapter.clear();
+                    adapter.notifyDataSetChanged();
+                    checkCount();
                     getHistory(0, MESSAGES_COUNT);
                 }
                 break;

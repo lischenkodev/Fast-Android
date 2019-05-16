@@ -207,7 +207,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
             @Override
             public void error(Exception e) {
                 refreshLayout.setRefreshing(false);
-                Toast.makeText(getActivity(), R.string.error, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show();
                 Log.e("Load conversations", Log.getStackTraceString(e));
             }
         });

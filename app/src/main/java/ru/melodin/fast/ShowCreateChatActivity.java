@@ -18,13 +18,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import ru.melodin.fast.adapter.ShowCreateAdapter;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
 import ru.melodin.fast.concurrent.ThreadExecutor;
+import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.ViewUtil;
 
 public class ShowCreateChatActivity extends AppCompatActivity {
@@ -37,6 +37,8 @@ public class ShowCreateChatActivity extends AppCompatActivity {
 
     private ArrayList<VKUser> users;
 
+    private View empty;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(ThemeManager.getCurrentTheme());
@@ -47,10 +49,17 @@ public class ShowCreateChatActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_show_create);
         initViews();
-    }
 
-    private void initViews() {
-        title = findViewById(R.id.title);
+        setSupportActionBar(tb);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.md_clear);
+
+        getSupportActionBar().setTitle(R.string.create_chat);
+
+        tb.getNavigationIcon().setTint(ThemeManager.getMain());
+
+        findViewById(R.id.refresh).setEnabled(false);
+
         title.addTextChangedListener(new TextWatcher() {
 
             @Override
@@ -70,18 +79,6 @@ public class ShowCreateChatActivity extends AppCompatActivity {
 
         });
 
-        tb = findViewById(R.id.tb);
-        setSupportActionBar(tb);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.md_clear);
-
-        getSupportActionBar().setTitle(R.string.create_chat);
-
-        SwipeRefreshLayout refresh = findViewById(R.id.refresh);
-        refresh.setEnabled(false);
-
-        list = findViewById(R.id.list);
-
         LinearLayoutManager manager = new LinearLayoutManager(this);
         manager.setOrientation(RecyclerView.VERTICAL);
 
@@ -89,6 +86,13 @@ public class ShowCreateChatActivity extends AppCompatActivity {
         list.setLayoutManager(manager);
 
         createAdapter();
+    }
+
+    private void initViews() {
+        title = findViewById(R.id.title);
+        tb = findViewById(R.id.tb);
+        list = findViewById(R.id.list);
+        empty = findViewById(R.id.no_items_layout);
     }
 
     private void createAdapter() {
@@ -101,6 +105,8 @@ public class ShowCreateChatActivity extends AppCompatActivity {
                 list.scrollToPosition(0);
             }
         });
+
+        checkCount();
     }
 
     @Override
@@ -115,6 +121,10 @@ public class ShowCreateChatActivity extends AppCompatActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void checkCount() {
+        empty.setVisibility(adapter == null ? View.VISIBLE : adapter.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     private void createChat() {
@@ -153,7 +163,7 @@ public class ShowCreateChatActivity extends AppCompatActivity {
             @Override
             public void error(Exception e) {
                 Log.e("Error create chat", Log.getStackTraceString(e));
-                Toast.makeText(ShowCreateChatActivity.this, R.string.error, Toast.LENGTH_LONG).show();
+                Toast.makeText(ShowCreateChatActivity.this, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -166,7 +176,7 @@ public class ShowCreateChatActivity extends AppCompatActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.create).getIcon().setTint(ThemeManager.getMain());
+        menu.findItem(R.id.create).getIcon().setTint(ColorUtil.alphaColor(ThemeManager.getMain()));
         return super.onPrepareOptionsMenu(menu);
     }
 
