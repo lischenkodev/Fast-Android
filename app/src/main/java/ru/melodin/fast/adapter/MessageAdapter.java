@@ -72,25 +72,23 @@ import ru.melodin.fast.view.CircleImageView;
 
 public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.ViewHolder> {
 
-    private static final int TYPE_HEADER = 1;
-    private static final int TYPE_NORMAL = 2;
-    private static final int TYPE_FOOTER = 3;
+    private static final int TYPE_NORMAL = 1;
+    private static final int TYPE_FOOTER = 2;
+
     private int peerId;
     private AttachmentInflater attacher;
     private DisplayMetrics metrics;
 
-    private RecyclerView list;
     private LinearLayoutManager manager;
 
-    public MessageAdapter(Context context, ArrayList<VKMessage> msgs, int peerId) {
-        super(context, msgs);
+    public MessageAdapter(Context context, ArrayList<VKMessage> messages, int peerId) {
+        super(context, messages);
 
         this.peerId = peerId;
         this.attacher = new AttachmentInflater();
         this.metrics = context.getResources().getDisplayMetrics();
 
-        list = ((MessagesActivity) context).getRecyclerView();
-        manager = (LinearLayoutManager) list.getLayoutManager();
+        manager = (LinearLayoutManager) ((MessagesActivity) context).getRecyclerView().getLayoutManager();
 
         EventBus.getDefault().register(this);
     }
@@ -207,29 +205,14 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         }
     }
 
-    private int searchPosition(VKMessage m) {
-        int index = -1;
-
-        for (int i = 0; i < getValues().size(); i++) {
-            VKMessage msg = getValues().get(i);
-            if (msg.id == m.id) {
-                index = i;
-            }
-        }
-
-        return index;
-    }
-
     @Override
     public MessageAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         switch (viewType) {
-            case TYPE_HEADER:
-                return new FooterViewHolder(createView(56));
             case TYPE_NORMAL:
                 View v = inflater.inflate(R.layout.activity_messages_list, parent, false);
                 return new ViewHolder(v);
             case TYPE_FOOTER:
-                return new FooterViewHolder(createView(66));
+                return new FooterViewHolder(createView());
             default:
                 return null;
         }
@@ -244,7 +227,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     @Override
     public int getItemViewType(int position) {
-        return position == 0 ? TYPE_HEADER : position == getItemCount() - 1 ? TYPE_FOOTER : TYPE_NORMAL;
+        return position == getItemCount() - 1 ? TYPE_FOOTER : TYPE_NORMAL;
     }
 
     private VKUser searchUser(int id) {
@@ -302,20 +285,20 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             if (attach instanceof VKAudio) {
                 attacher.audio(item, parent, (VKAudio) attach);
             } else if (attach instanceof VKPhoto) {
-                attacher.photo(item, images, (VKPhoto) attach, -1, bubble == null);
+                attacher.photo(item, images, (VKPhoto) attach);
             } else if (attach instanceof VKSticker) {
                 if (bubble != null) {
                     bubble.setBackgroundColor(Color.TRANSPARENT);
                 }
-                attacher.sticker(item, parent, (VKSticker) attach, -1);
+                attacher.sticker(parent, (VKSticker) attach);
             } else if (attach instanceof VKDoc) {
                 attacher.doc(item, parent, (VKDoc) attach);
             } else if (attach instanceof VKLink) {
                 attacher.link(item, parent, (VKLink) attach);
             } else if (attach instanceof VKVideo) {
-                attacher.video(item, parent, (VKVideo) attach, maxWidth);
+                attacher.video(parent, (VKVideo) attach, maxWidth);
             } else {
-                attacher.empty(item, parent, getString(R.string.unknown));
+                attacher.empty(parent, getString(R.string.unknown));
             }
         }
     }
@@ -327,16 +310,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         Toast.makeText(context, user.toString(), Toast.LENGTH_SHORT).show();
     }
 
-
-    public void change(VKMessage message) {
-        for (int i = 0; i < getValues().size(); i++) {
-            if (getValues().get(i).date == message.date) {
-                notifyItemChanged(i);
-                return;
-            }
-        }
-    }
-
     public void destroy() {
         getValues().clear();
         EventBus.getDefault().unregister(this);
@@ -344,17 +317,13 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     @Override
     public int getItemCount() {
-        return super.getItemCount() + 2;
+        return super.getItemCount() + 1;
     }
 
     @Override
     public VKMessage getItem(int position) {
-        switch (getItemViewType(position)) {
-            case TYPE_HEADER:
-                return super.getItem(position + 1);
-            case TYPE_NORMAL:
-            case TYPE_FOOTER:
-                return super.getItem(position - 1);
+        if (getItemViewType(position) == TYPE_FOOTER) {
+            return super.getItem(position - 1);
         }
         return super.getItem(position);
     }
@@ -363,13 +332,13 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         return getValues().size();
     }
 
-    private View createView(int height) {
+    private View createView() {
         View v = new View(context);
         v.setBackgroundColor(Color.TRANSPARENT);
         v.setVisibility(View.INVISIBLE);
         v.setEnabled(false);
         v.setClickable(false);
-        v.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Util.px(height)));
+        v.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) Util.px(66)));
 
         return v;
     }
@@ -622,25 +591,19 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             }
         }
 
-        private int getHeight(float width, float height, int layoutMaxWidth) {
-            float scale = Math.max(width, layoutMaxWidth) /
-                    Math.min(width, layoutMaxWidth);
-            return Math.round(width < layoutMaxWidth ? height * scale : height / scale);
+        private int getHeight(int layoutMaxWidth) {
+            float scale = Math.max((float) 320.0, layoutMaxWidth) /
+                    Math.min((float) 320.0, layoutMaxWidth);
+            return Math.round((float) 320.0 < layoutMaxWidth ? (float) 240.0 * scale : (float) 240.0 / scale);
         }
 
-        private LinearLayout.LayoutParams getParams(float sw, float sh, int layoutWidth) {
-            if (layoutWidth == -1) {
-                return new LinearLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT);
-            }
+        private LinearLayout.LayoutParams getParams(float sw, float sh) {
             return new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    getHeight(sw, sh, layoutWidth)
-            );
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
         }
 
-        private FrameLayout.LayoutParams getFrameParams(float sw, float sh, int layoutWidth) {
+        private FrameLayout.LayoutParams getFrameParams(int layoutWidth) {
             if (layoutWidth == -1) {
                 return new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
@@ -648,11 +611,11 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             }
             return new FrameLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
-                    getHeight(sw, sh, layoutWidth)
+                    getHeight(layoutWidth)
             );
         }
 
-        public void empty(VKMessage item, ViewGroup parent, String s) {
+        public void empty(ViewGroup parent, String s) {
             final TextView body = new TextView(context);
 
             String string = "[" + s + "]";
@@ -664,11 +627,11 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             parent.addView(body);
         }
 
-        public void sticker(VKMessage item, ViewGroup parent, VKSticker source, int width) {
+        void sticker(ViewGroup parent, VKSticker source) {
             final ImageView image = (ImageView)
                     inflater.inflate(R.layout.msg_attach_photo, parent, false);
 
-            image.setLayoutParams(getParams(256f, 256f, width));
+            image.setLayoutParams(getParams(256f, 256f));
             loadImage(image, source.src_256, "");
 
             image.setClickable(false);
@@ -681,7 +644,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             TextView text = new TextView(context);
             text.setTextColor(ThemeManager.getAccent());
 
-            //text.setTypeface(FontHelper.getFont(FontHelper.PS_BOLD));
             text.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
             text.setGravity(Gravity.CENTER);
@@ -692,7 +654,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             parent.addView(text);
         }
 
-        public void video(VKMessage item, ViewGroup parent, final VKVideo source, int width) {
+        void video(ViewGroup parent, final VKVideo source, int width) {
             View v = inflater.inflate(R.layout.msg_attach_video, parent, false);
 
             ImageView image = v.findViewById(R.id.videoImage);
@@ -704,16 +666,16 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             title.setText(source.title);
             time.setText(duration);
-            image.setLayoutParams(getFrameParams(320f, 240f, width));
+            image.setLayoutParams(getFrameParams(width));
 
             loadImage(image, source.photo_130, source.photo_320);
             parent.addView(v);
         }
 
-        public void photo(final VKMessage item, ViewGroup parent, final VKPhoto source, int width, boolean fromForward) {
+        public void photo(final VKMessage item, ViewGroup parent, final VKPhoto source) {
             ImageView image = (ImageView) inflater.inflate(R.layout.msg_attach_photo, parent, false);
 
-            image.setLayoutParams(getParams(source.width, source.height, -1));
+            image.setLayoutParams(getParams(source.width, source.height));
             image.setOnClickListener(new View.OnClickListener() {
 
                 @Override
@@ -795,7 +757,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             parent.addView(v);
         }
 
-        public void doc(VKMessage item, ViewGroup parent, final VKDoc source) {
+        void doc(VKMessage item, ViewGroup parent, final VKDoc source) {
             if (source.isVoice) {
                 Toast.makeText(context, "is voice!", Toast.LENGTH_SHORT).show();
                 voice(item, parent, source.voice);
@@ -804,7 +766,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             if (source.isGrafftiti) {
                 Toast.makeText(context, "is graffiti!", Toast.LENGTH_SHORT).show();
-                graffiti(item, parent, source.graffiti, -1);
+                graffiti(parent, source.graffiti);
                 return;
             }
 
@@ -878,11 +840,11 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         }
 
 
-        public void graffiti(VKMessage item, ViewGroup parent, VKGraffiti source, int width) {
+        void graffiti(ViewGroup parent, VKGraffiti source) {
             final ImageView image = (ImageView)
                     inflater.inflate(R.layout.msg_attach_photo, parent, false);
 
-            image.setLayoutParams(getParams(128f, 128f, width));
+            image.setLayoutParams(getParams(128f, 128f));
             loadImage(image, source.src, source.src);
 
             image.setClickable(false);

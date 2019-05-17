@@ -131,7 +131,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
     private void addMessage(VKConversation conversation) {
         int firstVisiblePosition = manager.findFirstVisibleItemPosition();
-        int totalVisibleItems = manager.findLastCompletelyVisibleItemPosition() + 1;
+        //int totalVisibleItems = manager.findLastCompletelyVisibleItemPosition() + 1;
 
         int index = searchMessagePosition(conversation.last.peerId);
         if (index >= 0) {
@@ -169,7 +169,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                 notifyItemInserted(0);
                 notifyItemRangeChanged(0, getItemCount(), -1);
 
-                if (firstVisiblePosition <= totalVisibleItems)
+                if (firstVisiblePosition <= 1)
                     manager.scrollToPosition(0);
             } else {
                 remove(0);
@@ -183,7 +183,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
             notifyItemInserted(0);
             notifyItemRangeChanged(0, getItemCount(), -1);
 
-            if (firstVisiblePosition <= totalVisibleItems)
+            if (firstVisiblePosition <= 1)
                 manager.scrollToPosition(0);
 
             CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, conversation);
@@ -377,13 +377,13 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         Drawable holderUsers = getDrawable(R.drawable.placeholder_users);
 
         @ColorInt
-        int pushedEnabled, pushedDisabled;
+        int pushesEnabled, pushesDisabled;
 
         ViewHolder(@NonNull View v) {
             super(v);
 
-            pushedEnabled = ThemeManager.getAccent();
-            pushedDisabled = ThemeManager.isDark() ? ColorUtil.lightenColor(ThemeManager.getPrimary(), 2) : Color.GRAY;
+            pushesEnabled = ThemeManager.getAccent();
+            pushesDisabled = ThemeManager.isDark() ? ColorUtil.lightenColor(ThemeManager.getPrimary(), 2) : Color.GRAY;
 
             avatar = v.findViewById(R.id.avatar);
             avatarSmall = v.findViewById(R.id.avatar_small);
@@ -418,7 +418,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
             counter.setText(item.unread > 0 ? String.valueOf(item.unread) : "");
             date.setText(Util.dateFormatter.format(last.date * 1000));
 
-            counter.getBackground().setTint(item.isNotificationsDisabled() ? pushedDisabled : pushedEnabled);
+            counter.getBackground().setTint(item.isNotificationsDisabled() ? pushesDisabled : pushesEnabled);
 
             body.setText(last.text);
 

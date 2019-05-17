@@ -47,13 +47,13 @@ public class MethodSetter {
         return this;
     }
 
-    public String getSignedUrl() {
+    private String getSignedUrl() {
         return getSignedUrl(false);
     }
 
-    public String getSignedUrl(boolean isPost) {
+    private String getSignedUrl(boolean isPost) {
         if (!params.containsKey("access_token")) {
-            params.put("access_token", VKApi.config.accessToken);
+            params.put("access_token", UserConfig.accessToken);
         }
         if (!params.containsKey("v")) {
             params.put("v", VKApi.API_VERSION);
@@ -213,6 +213,6 @@ public class MethodSetter {
      * Uses a separate config for this request (Access Token)
      */
     public MethodSetter withConfig(UserConfig config) {
-        return put("access_token", config.accessToken);
+        return put("access_token", UserConfig.accessToken);
     }
 }

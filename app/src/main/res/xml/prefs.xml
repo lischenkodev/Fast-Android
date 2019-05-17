@@ -3,51 +3,51 @@
 
     <PreferenceCategory
         android:key="interface_"
-        android:title="@string/interface_">
+        android:title="@string/interface_title">
 
         <SwitchPreference
             android:defaultValue="false"
-            android:key="dark_style"
-            android:title="@string/dark_theme" />
+            android:key="dark_theme"
+            android:title="@string/dark_theme_title" />
 
     </PreferenceCategory>
 
     <PreferenceCategory
         android:key="functional"
-        android:title="@string/functions" />
+        android:title="@string/functions_title" />
 
     <EditTextPreference
         android:id="@android:id/edit"
         android:defaultValue="¯\\_(ツ)_/¯"
         android:key="template"
-        android:summary="@string/message_template"
-        android:title="@string/template" />
+        android:summary="@string/template_summary"
+        android:title="@string/template_title" />
 
     <PreferenceCategory
         android:key="invisible"
-        android:title="@string/invisible">
+        android:title="@string/invisible_title">
 
         <SwitchPreference
             android:defaultValue="false"
             android:key="hide_typing"
-            android:title="@string/hide_typing_status" />
+            android:title="@string/hide_typing_title" />
 
         <SwitchPreference
             android:defaultValue="false"
             android:key="not_read"
-            android:summary="@string/let_messages_unread"
-            android:title="@string/not_read_messages" />
+            android:summary="@string/not_read_summary"
+            android:title="@string/not_read_title" />
 
     </PreferenceCategory>
     <PreferenceCategory
         android:key="application"
-        android:title="@string/application">
+        android:title="@string/application_title">
 
         <SwitchPreference
             android:defaultValue="false"
             android:key="show_error"
-            android:summary="Shows alert dialog with error after app crash"
-            android:title="Show error" />
+            android:summary="@string/show_error_summary"
+            android:title="@string/show_error_title" />
 
         <PreferenceScreen
             android:key="about"

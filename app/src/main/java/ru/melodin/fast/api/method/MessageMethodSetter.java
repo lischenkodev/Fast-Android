@@ -174,6 +174,17 @@ public class MessageMethodSetter extends MethodSetter {
         return this;
     }
 
+    public MessageMethodSetter peerIds(int... value) {
+        put("peer_ids", ArrayUtil.toString(value));
+        return this;
+    }
+
+
+    public MessageMethodSetter peerIds(int value) {
+        put("peer_ids", value);
+        return this;
+    }
+
     /**
      * Sort order:
      * true —  return messages in chronological order (reverse).

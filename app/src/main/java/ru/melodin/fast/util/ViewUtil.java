@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.Window;
 
 import androidx.annotation.ColorInt;
+
 import ru.melodin.fast.common.ThemeManager;
 
 public class ViewUtil {
@@ -46,4 +47,5 @@ public class ViewUtil {
         window.setStatusBarColor(light ? ColorUtil.darkenColor(color) : color);
         window.setNavigationBarColor(window.getStatusBarColor());
     }
+
 }

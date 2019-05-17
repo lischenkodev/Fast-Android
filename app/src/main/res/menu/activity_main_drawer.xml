@@ -4,9 +4,10 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/groups"
-            android:icon="@drawable/md_groups"
             android:enabled="false"
-            android:title="@string/groups" />
+            android:icon="@drawable/md_groups"
+            android:title="@string/groups"
+            android:visible="false" />
 
     </group>
     <group android:id="@+id/some_group">

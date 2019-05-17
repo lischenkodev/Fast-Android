@@ -15,7 +15,7 @@ import ru.melodin.fast.util.Util;
 public class FragmentSettings extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
 
     public static final String KEY_NOT_READ_MESSAGES = "not_read";
-    public static final String KEY_DARK_STYLE = "dark_style";
+    public static final String KEY_DARK_STYLE = "dark_theme";
     public static final String KEY_MESSAGE_TEMPLATE = "template";
     public static final String KEY_HIDE_TYPING = "hide_typing";
     public static final String KEY_SHOW_ERROR = "show_error";

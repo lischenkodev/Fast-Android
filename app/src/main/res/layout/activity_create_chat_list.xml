@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root"
     android:layout_width="match_parent"
-    android:layout_height="80dp"
-    android:foreground="?selectableItemBackground"
+    android:layout_height="wrap_content"
+    android:background="?selectableItemBackground"
     android:gravity="center_vertical"
     android:orientation="horizontal">
 
@@ -56,9 +56,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
+                android:fontFamily="@font/ps_regular"
                 android:maxLines="1"
                 android:singleLine="true"
-                android:fontFamily="@font/ps_regular"
                 android:textSize="18sp"
                 tools:text="Имя Фамилия" />
 

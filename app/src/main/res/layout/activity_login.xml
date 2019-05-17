@@ -1,84 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
-	android:layout_width="match_parent"
-	android:background="@android:color/white"
-	android:layout_height="match_parent"
-	android:orientation="vertical"
-	android:gravity="center">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingStart="30dp"
+    android:paddingEnd="30dp">
 
-	<androidx.cardview.widget.CardView
-		app:cardBackgroundColor="#ffffff"
-		app:cardCornerRadius="26dp"
-		app:cardElevation="0dp"
-		android:layout_height="wrap_content"
-		android:layout_width="match_parent"
-		android:layout_marginStart="30dp"
-		android:layout_marginEnd="30dp">
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp">
 
-		<LinearLayout
-			android:orientation="vertical"
-			android:layout_height="match_parent"
-			android:layout_width="match_parent">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-			<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="Fast Messenger"
-				android:textSize="34sp"
-				android:textColor="#5D5D5D"
-				android:layout_gravity="center_horizontal"/>
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="140dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginStart="60dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginEnd="60dp"
+                android:layout_marginBottom="10dp"
+                android:src="@mipmap/fast_dev" />
 
-			<ImageView
-				android:src="@mipmap/fast_dev"
-				android:layout_width="match_parent"
-				android:layout_height="200dp"
-				android:layout_gravity="center_horizontal"
-				android:layout_marginStart="60dp"
-				android:layout_marginEnd="60dp"
-				android:layout_marginTop="20dp"
-				android:layout_marginBottom="20dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="30dp"
+                android:fontFamily="@font/ps_regular"
+                android:text="@string/app_name"
+                android:textColor="#5D5D5D"
+                android:textSize="34sp" />
 
-			<LinearLayout
-				android:orientation="vertical"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:id="@+id/textfields">
+            <LinearLayout
+                android:id="@+id/textfields"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-				<EditText
-					android:layout_width="match_parent"
-					android:inputType="textEmailAddress"
-					android:layout_height="wrap_content"
-					android:id="@+id/login"
-					android:hint="E-mail или номер телефона"
-					android:background="#9C9C9C"
-					android:padding="10dp"/>
+                <EditText
+                    android:id="@+id/login"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#9C9C9C"
+                    android:hint="E-mail или номер телефона"
+                    android:inputType="textEmailAddress"
+                    android:padding="10dp" />
 
-				<EditText
-					android:layout_width="match_parent"
-					android:inputType="textPassword"
-					android:layout_height="wrap_content"
-					android:layout_marginTop="6dp"
-					android:id="@+id/password"
-					android:hint="Пароль"
-					android:background="#9C9C9C"
-					android:padding="10dp"/>
+                <EditText
+                    android:id="@+id/password"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:background="#9C9C9C"
+                    android:hint="Пароль"
+                    android:inputType="textPassword"
+                    android:padding="10dp" />
 
-				<Button
-					android:id="@+id/btn_login"
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:text="Войти"
-					android:textColor="#ffffff"
-					android:backgroundTint="@color/primary"
-					android:layout_gravity="center_horizontal"/>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_login"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="30dp"
+                    android:layout_marginBottom="10dp"
+                    android:backgroundTint="@color/accent"
+                    android:paddingStart="20dp"
+                    android:paddingTop="10dp"
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="10dp"
+                    android:text="@string/login"
+                    android:textColor="#ffffff"
+                    app:cornerRadius="22dp"
+                    app:icon="@drawable/md_done"
+                    app:iconGravity="start"
+                    app:iconTint="@android:color/white" />
 
-			</LinearLayout>
+            </LinearLayout>
 
-		</LinearLayout>
+        </LinearLayout>
 
-	</androidx.cardview.widget.CardView>
+    </androidx.cardview.widget.CardView>
 
 </LinearLayout>
 

@@ -67,14 +67,15 @@ public class VKConversation extends VKModel implements Serializable {
         conversation_groups = groups;
         conversation_users = users;
 
-        last = new VKMessage(msg);
+        if (msg != null)
+            last = new VKMessage(msg);
 
         read_in = o.optInt("in_read");
         read_out = o.optInt("out_read");
         last_mId = o.optInt("last_message_id");
         unread = o.optInt("unread_count");
 
-        read = last.out && read_out == last_mId || !last.out && read_in == last_mId;
+        read = last == null || (last.out && read_out == last_mId || !last.out && read_in == last_mId);
 
         JSONObject j_can_write = o.optJSONObject("can_write");
         can_write = j_can_write.optBoolean("allowed");

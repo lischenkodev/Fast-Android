@@ -12,8 +12,8 @@
         android:layout_height="wrap_content"
         android:hint="@string/token"
         android:lines="1"
-        android:singleLine="true"
-        android:maxLines="1" />
+        android:maxLines="1"
+        android:singleLine="true" />
 
     <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/user_id"

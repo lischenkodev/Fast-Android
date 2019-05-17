@@ -32,7 +32,7 @@ import ru.melodin.fast.common.PermissionManager;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
 import ru.melodin.fast.concurrent.ThreadExecutor;
-import ru.melodin.fast.current.BaseFragment;
+import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.fragment.FragmentDialogs;
 import ru.melodin.fast.fragment.FragmentFriends;
 import ru.melodin.fast.fragment.FragmentNavDrawer;
@@ -45,8 +45,8 @@ import ru.melodin.fast.util.ViewUtil;
 public class MainActivity extends AppCompatActivity {
 
     private View bottom_toolbar;
-    private LinearLayout tb_btn_switch;
-    private ImageButton filter, menu, conversations, friends;
+    private ImageButton conversations;
+    private ImageButton friends;
 
     private GradientDrawable background;
 
@@ -62,7 +62,11 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.tb_messages:
-                    if (selectedFragment == fd) return;
+                    if (selectedFragment == fd) {
+                        if (fd.getRecyclerView() != null)
+                            fd.getRecyclerView().scrollToPosition(0);
+                        return;
+                    }
                     selectedFragment = fd;
                     conversations.setBackground(background);
                     conversations.getDrawable().setTint(Color.WHITE);
@@ -70,7 +74,11 @@ public class MainActivity extends AppCompatActivity {
                     friends.setBackgroundColor(Color.TRANSPARENT);
                     break;
                 case R.id.tb_friends:
-                    if (selectedFragment == ff) return;
+                    if (selectedFragment == ff) {
+                        if (ff.getRecyclerView() != null)
+                            ff.getRecyclerView().scrollToPosition(0);
+                        return;
+                    }
                     selectedFragment = ff;
                     friends.setBackground(background);
                     friends.getDrawable().setTint(Color.WHITE);
@@ -79,14 +87,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
             }
 
-            Fragment visibleFragment = getVisibleFragment();
-
-            if (visibleFragment != selectedFragment)
-                replaceFragment(selectedFragment);
-            else {
-                if (visibleFragment instanceof BaseFragment)
-                    ((BaseFragment) visibleFragment).getRecyclerView().scrollToPosition(0);
-            }
+            replaceFragment(selectedFragment);
         }
     };
 
@@ -104,10 +105,7 @@ public class MainActivity extends AppCompatActivity {
         bottom_toolbar = findViewById(R.id.toolbar);
 
         initToolbar();
-
         checkLogin();
-
-        startService(new Intent(this, LongPollService.class));
         checkCrash();
 
         if (UserConfig.isLoggedIn()) {
@@ -138,6 +136,8 @@ public class MainActivity extends AppCompatActivity {
         if (!UserConfig.isLoggedIn()) {
             startLoginActivity();
         } else {
+            startService(new Intent(this, LongPollService.class));
+            selectedFragment = fd;
             replaceFragment(fd);
         }
     }
@@ -201,8 +201,8 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void initToolbar() {
-        filter = bottom_toolbar.findViewById(R.id.tb_filter);
-        menu = bottom_toolbar.findViewById(R.id.tb_menu);
+        ImageButton filter = bottom_toolbar.findViewById(R.id.tb_filter);
+        ImageButton menu = bottom_toolbar.findViewById(R.id.tb_menu);
 
         findViewById(R.id.toolbar).setBackgroundColor(ThemeManager.getPrimary());
 
@@ -229,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
         friends.setOnClickListener(click);
         conversations.setOnClickListener(click);
 
-        tb_btn_switch = bottom_toolbar.findViewById(R.id.tb_icons_switcher);
+        LinearLayout tb_btn_switch = bottom_toolbar.findViewById(R.id.tb_icons_switcher);
         tb_btn_switch.setBackgroundResource(ThemeManager.isDark() ? R.drawable.tb_switcher_bg_dark : R.drawable.tb_switcher_bg);
     }
 
@@ -245,17 +245,6 @@ public class MainActivity extends AppCompatActivity {
                 showExitDialog();
                 break;
         }
-    }
-
-    private Fragment getVisibleFragment() {
-        List<Fragment> fragments = getSupportFragmentManager().getFragments();
-
-        if (ArrayUtil.isEmpty(fragments)) return null;
-
-        for (Fragment fragment : fragments)
-            if (fragment.isVisible()) return fragment;
-
-        return null;
     }
 
     private void replaceFragment(Fragment fragment) {
@@ -297,8 +286,10 @@ public class MainActivity extends AppCompatActivity {
         adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                UserConfig.clear();
                 startLoginActivity();
+                DatabaseHelper.getInstance().dropTables(AppGlobal.database);
+                DatabaseHelper.getInstance().onCreate(AppGlobal.database);
+                UserConfig.clear();
             }
         });
         adb.setNegativeButton(R.string.no, null);

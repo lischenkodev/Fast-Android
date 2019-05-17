@@ -10,8 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -20,6 +18,9 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import java.util.ArrayList;
+
 import ru.melodin.fast.MessagesActivity;
 import ru.melodin.fast.R;
 import ru.melodin.fast.adapter.FriendAdapter;
@@ -73,6 +74,7 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
         initViews(view);
 
         tb.setTitle(title);
+        setRecyclerView(list);
 
         refreshLayout.setOnRefreshListener(this);
         refreshLayout.setColorSchemeColors(ThemeManager.getAccent());

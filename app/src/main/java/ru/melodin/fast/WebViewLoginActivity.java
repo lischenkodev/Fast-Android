@@ -60,6 +60,16 @@ public class WebViewLoginActivity extends AppCompatActivity {
         webView.setWebViewClient(new VKWebViewClient());
 
         webView.loadUrl(Auth.getUrl(UserConfig.VK_DESKTOP_ID, Scopes.allInt()));
+        showWarningDialog();
+    }
+
+    private void showWarningDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.warning)
+                .setMessage(R.string.auth_vkdesktop_text)
+                .setPositiveButton(android.R.string.ok, null)
+                .setCancelable(false)
+                .show();
     }
 
     @Override

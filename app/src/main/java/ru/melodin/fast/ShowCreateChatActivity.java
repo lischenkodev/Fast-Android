@@ -1,6 +1,7 @@
 package ru.melodin.fast;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -12,14 +13,16 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+
 import ru.melodin.fast.adapter.ShowCreateAdapter;
 import ru.melodin.fast.api.VKApi;
+import ru.melodin.fast.api.model.VKConversation;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
@@ -130,16 +133,18 @@ public class ShowCreateChatActivity extends AppCompatActivity {
     private void createChat() {
         ThreadExecutor.execute(new AsyncCallback(this) {
 
-            int res;
+            int peerId;
+            StringBuilder title_;
+            VKConversation conversation;
 
             @Override
-            public void ready() throws Exception {
+            public void ready() {
                 ArrayList<Integer> ids = new ArrayList<>();
                 for (VKUser user : adapter.getValues()) {
                     ids.add(user.id);
                 }
 
-                StringBuilder title_ = new StringBuilder(title.getText().toString().trim());
+                title_ = new StringBuilder(title.getText().toString().trim());
 
                 if (TextUtils.isEmpty(title_.toString())) {
                     if (users.size() == 1) {
@@ -151,13 +156,28 @@ public class ShowCreateChatActivity extends AppCompatActivity {
                         }
                 }
 
-                res = VKApi.messages().createChat().title(title_.toString()).userIds(ids).execute(Integer.class).get(0);
+                VKApi.messages().createChat().title(title_.toString()).userIds(ids).execute(Integer.class, new VKApi.OnResponseListener<Integer>() {
+                    @Override
+                    public void onSuccess(ArrayList<Integer> models) {
+                        peerId = 2000000000 + models.get(0);
+
+                        Intent intent = new Intent();
+                        intent.putExtra("title", title_.toString());
+                        intent.putExtra("peer_id", peerId);
+                        setResult(Activity.RESULT_OK, intent);
+                        finish();
+                    }
+
+                    @Override
+                    public void onError(Exception exception) {
+                        Log.e("Error create chat", Log.getStackTraceString(exception));
+                    }
+                });
             }
 
             @Override
             public void done() {
-                setResult(Activity.RESULT_OK);
-                finish();
+
             }
 
             @Override
@@ -179,5 +199,4 @@ public class ShowCreateChatActivity extends AppCompatActivity {
         menu.findItem(R.id.create).getIcon().setTint(ColorUtil.alphaColor(ThemeManager.getMain()));
         return super.onPrepareOptionsMenu(menu);
     }
-
 }

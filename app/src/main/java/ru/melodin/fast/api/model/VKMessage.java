@@ -1,7 +1,5 @@
 package ru.melodin.fast.api.model;
 
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -70,8 +68,6 @@ public class VKMessage extends VKModel implements Serializable {
     }
 
     public VKMessage(JSONObject o) throws JSONException {
-        Log.d(TAG, o.toString());
-
         status = VKMessage.STATUS_SENT;
 
         history_groups = groups;

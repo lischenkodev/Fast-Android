@@ -26,16 +26,16 @@
     <string name="login">Login</string>
     <string name="refresh">Refresh</string>
     <string name="settings">Settings</string>
-    <string name="application">Application</string>
+    <string name="application_title">Application</string>
     <string name="about_app">About</string>
     <string name="check_updates">Check updates</string>
-    <string name="interface_">Interface</string>
-    <string name="message_template">Mesage template</string>
-    <string name="template">Template</string>
+    <string name="interface_title">Interface</string>
+    <string name="template_summary">Message template</string>
+    <string name="template_title">Template</string>
     <string name="debug">Debug</string>
     <string name="domains">Domains</string>
-    <string name="dark_theme">Dark theme</string>
-    <string name="functions">Functions</string>
+    <string name="dark_theme_title">Dark theme</string>
+    <string name="functions_title">Functions</string>
     <string name="vk_api_domain">VK API domain</string>
     <string name="vk_oauth_domain">VK OAuth domain</string>
     <string name="error_download_apk">Error download APK</string>
@@ -82,12 +82,11 @@
     <string name="token_login">Login with token</string>
     <string name="delete_friend">Delete friend</string>
     <string name="splash_screen">Splash screen</string>
-    <string name="invisible">Invisible</string>
-    <string name="hide_typing_status">Hide typing status</string>
+    <string name="invisible_title">Invisible</string>
+    <string name="hide_typing_title">Hide typing status</string>
     <string name="database">Database</string>
     <string name="clean_messages_cache">Clean messages cache</string>
     <string name="clean_cache">Clean cache</string>
-    <string name="show_exceptions">Show exceptions</string>
     <string name="updates">Updates</string>
     <string name="ota" translatable="false">OTA</string>
     <string name="app_crashed">App has been crashed</string>
@@ -145,19 +144,23 @@
     <string name="groups">Groups</string>
     <string name="are_you_sure">Are you sure?</string>
     <string name="confirm_delete_friend">Are you really want to delete this friend?</string>
-    <string name="let_messages_unread">Let messages unread</string>
-    <string name="not_read_messages">Not read messages</string>
+    <string name="not_read_summary">Let messages unread</string>
+    <string name="not_read_title">Not read messages</string>
 
     <string name="chat_creator">Creator of the chat</string>
     <string name="save">Save</string>
     <string name="copy_link">Copy link</string>
     <string name="photo_of_photo">%1$s of %2$s</string>
     <string name="url_copied_text">Url copied to clipboard</string>
-    <string name="photo_saved_in_downloads_directory">Photo saved in downloads directory</string>
-    <string name="fast_rqrs_prmsn_for_save_photo">Fast requires permission for save photo</string>
+    <string name="photo_saved_text">Photo saved in downloads directory</string>
+    <string name="photo_permission_title">Fast requires permission for save photo</string>
     <string name="clear_cache">Clear cache</string>
-    <string name="so_empty">So empty&#8230;</string>
 
     <string name="user_id" translatable="false">User ID</string>
     <string name="token">Token</string>
+    <string name="show_error_summary">Shows alert dialog with error after app crash</string>
+    <string name="show_error_title">Show error</string>
+
+    <string name="auth_vkdesktop_text">В связи с возникшими ограничениями со стороны ВК, авторизация временно будет производиться через другое приложение - VK Desktop. Спасибо за понимание.</string>
+
 </resources>

@@ -3,22 +3,22 @@ package ru.melodin.fast.adapter;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.squareup.picasso.Picasso;
+
+import java.util.ArrayList;
+
 import ru.melodin.fast.R;
 import ru.melodin.fast.api.model.VKUser;
-import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.view.CircleImageView;
 
@@ -29,35 +29,45 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
     }
 
     public boolean isSelected(int position) {
-        if (ArrayUtil.isEmpty(getValues())) return false;
         return getValues().get(position).isSelected();
     }
 
-    public void setSelected(int i, boolean b) {
-        if (ArrayUtil.isEmpty(getValues())) return;
-        getValues().get(i).setSelected(b);
+    public void setSelected(int position) {
+        getValues().get(position).setSelected(true);
     }
 
-    public HashMap<Integer, VKUser> getSelectedPositions() {
-        HashMap<Integer, VKUser> sels = new HashMap<>();
+    public void toggleSelected(int position) {
+        VKUser user = getItem(position);
+        user.setSelected(!user.isSelected());
+    }
+
+    public SparseArray<VKUser> getSelectedPositions() {
+        SparseArray<VKUser> selected = new SparseArray<>();
 
         for (int i = 0; i < getValues().size(); i++) {
             VKUser user = getValues().get(i);
             if (user.isSelected()) {
-                sels.put(i, user);
+                selected.put(i, user);
             }
         }
 
-        return sels;
+        return selected;
     }
 
     public void clearSelect() {
-        for (int i = 0; i < getValues().size(); i++) {
-            VKUser u = getValues().get(i);
-            if (u.isSelected()) {
-                u.setSelected(false);
+        clearSelect(-1);
+    }
+
+    public void clearSelect(int position) {
+        if (position != -1) {
+            getValues().get(position).setSelected(false);
+        } else
+            for (int i = 0; i < getValues().size(); i++) {
+                VKUser u = getValues().get(i);
+                if (u.isSelected()) {
+                    u.setSelected(false);
+                }
             }
-        }
     }
 
     public int getSelectedCount() {

@@ -35,11 +35,6 @@ public class VKApi {
     public static String lang = AppGlobal.locale.getLanguage();
 
     public static <T> ArrayList<T> execute(String url, Class<T> cls) throws Exception {
-/*
-        if (url.contains("messages") && url.contains("5462895")) {
-            throw new VKException("", "Access denied", -1);
-        }
-*/
         if (BuildConfig.DEBUG) {
             Log.w(TAG, "url: " + url);
         }
@@ -147,11 +142,15 @@ public class VKApi {
 
             for (int i = 0; i < array.length(); i++) {
                 JSONObject source = array.optJSONObject(i);
-                JSONObject json_conversation = source.optJSONObject("conversation");
-                JSONObject json_last_message = source.optJSONObject("last_message");
+                VKConversation conversation;
+                if (source.has("conversation")) {
+                    JSONObject json_conversation = source.optJSONObject("conversation");
+                    JSONObject json_last_message = source.optJSONObject("last_message");
 
-                VKConversation conversation = new VKConversation(json_conversation, json_last_message);
-
+                    conversation = new VKConversation(json_conversation, json_last_message);
+                } else {
+                    conversation = new VKConversation(source, null);
+                }
                 models.add((T) conversation);
             }
         }
@@ -275,13 +274,13 @@ public class VKApi {
          * and {@link ErrorCodes}
          * It is useful if the server requires you to enter a captcha
          *
-         * @param ex the information of error
+         * @param e the information of error
          */
-        void onError(Exception ex);
+        void onError(Exception e);
     }
 
     public static class VKStats {
-        public VKStats() {
+        VKStats() {
         }
 
         public MethodSetter trackVisitor() {
@@ -323,6 +322,10 @@ public class VKApi {
          */
         public MessageMethodSetter getConversations() {
             return new MessageMethodSetter("getConversations");
+        }
+
+        public MessageMethodSetter getConversationsById() {
+            return new MessageMethodSetter("getConversationsById");
         }
 
         /**

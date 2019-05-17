@@ -5,10 +5,8 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.os.Environment;
-import android.util.DisplayMetrics;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -99,16 +97,12 @@ public class Util {
         return null;
     }
 
-    public static int px(int dp) {
-        Resources resources = AppGlobal.context.getResources();
-        DisplayMetrics metrics = resources.getDisplayMetrics();
-        return dp * (metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+    public static float dp(float px) {
+        return px / AppGlobal.context.getResources().getDisplayMetrics().density;
     }
 
-    public static int dp(int px) {
-        Resources resources = AppGlobal.context.getResources();
-        DisplayMetrics metrics = resources.getDisplayMetrics();
-        return px * (metrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT);
+    public static float px(float dp) {
+        return dp * AppGlobal.context.getResources().getDisplayMetrics().density;
     }
 
     public static boolean hasConnection() {

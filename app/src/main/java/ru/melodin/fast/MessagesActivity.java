@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageButton;
@@ -91,9 +92,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private View.OnClickListener sendClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (message == null) return;
             String s = message.getText().toString();
-            if (!s.trim().isEmpty() && adapter != null) {
+            if (!s.trim().isEmpty()) {
                 messageText = s;
 
                 sendMessage();
@@ -419,6 +419,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         adapter.changeItems(messages);
         adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
 
+        if (adapter.getItemCount() > 0)
+            list.scrollToPosition(adapter.getItemCount() - 1);
+
         checkCount();
     }
 
@@ -535,7 +538,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 if (adapter == null) return false;
                 if (!loading && !editing) {
                     adapter.clear();
-                    adapter.notifyItemRangeRemoved(0, adapter.getItemCount());
+                    adapter.notifyDataSetChanged();
                     checkCount();
                     getHistory(0, MESSAGES_COUNT);
                 }
@@ -570,6 +573,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     }
 
     private void showAlertDialog(int position) {
+        VKMessage item = adapter.getItem(position);
+        ArrayList<String> items = new ArrayList<>();
+
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
 
     }
 

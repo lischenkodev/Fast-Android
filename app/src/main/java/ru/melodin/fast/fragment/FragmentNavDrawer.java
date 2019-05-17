@@ -7,12 +7,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.navigation.NavigationView;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
+
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.navigation.NavigationView;
+
 import ru.melodin.fast.MainActivity;
 import ru.melodin.fast.R;
 

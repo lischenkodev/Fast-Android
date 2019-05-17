@@ -9,12 +9,13 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import ru.melodin.fast.R;
 import ru.melodin.fast.ShowCreateChatActivity;
 import ru.melodin.fast.api.UserConfig;
@@ -25,6 +26,7 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
 
     public ShowCreateAdapter(Context context, ArrayList<VKUser> users) {
         super(context, users);
+        UserConfig.getUser();
     }
 
     @Override
@@ -57,7 +59,6 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
 
             name = v.findViewById(R.id.name);
             invited_by = v.findViewById(R.id.last_seen);
-            UserConfig.getUser();
         }
 
         void bind(final int position) {

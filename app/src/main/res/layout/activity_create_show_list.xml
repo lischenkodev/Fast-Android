@@ -5,24 +5,22 @@
     android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:foreground="?selectableItemBackground"
+    android:background="?selectableItemBackground"
     android:gravity="center_vertical"
     android:orientation="horizontal">
 
     <LinearLayout
         android:id="@+id/container"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginLeft="6dp"
         android:layout_marginRight="6dp"
-        android:layout_weight="1.0"
-        android:padding="6dp"
-        android:weightSum="1.0">
+        android:layout_weight="1"
+        android:padding="6dp">
 
         <FrameLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="0">
+            android:layout_height="wrap_content">
 
             <ru.melodin.fast.view.CircleImageView
                 android:id="@+id/avatar"
@@ -44,10 +42,9 @@
         </FrameLayout>
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginStart="10dp"
-            android:layout_weight="1.0"
             android:gravity="center_vertical"
             android:orientation="vertical"
             android:padding="4dp">
@@ -71,21 +68,14 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <ImageButton
-            android:id="@+id/remove"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginRight="6dp"
-            android:background="?selectableItemBackgroundBorderless"
-            android:src="@drawable/md_clear"
-            android:tint="#cccccc" />
-
-    </LinearLayout>
+    <ImageButton
+        android:id="@+id/remove"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="6dp"
+        android:background="?selectableItemBackgroundBorderless"
+        android:src="@drawable/md_clear"
+        android:tint="#cccccc" />
 
 </LinearLayout>
 

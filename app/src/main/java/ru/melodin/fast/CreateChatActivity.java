@@ -3,14 +3,12 @@ package ru.melodin.fast;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,10 +16,14 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import java.util.ArrayList;
+
 import ru.melodin.fast.adapter.CreateChatAdapter;
 import ru.melodin.fast.adapter.RecyclerAdapter;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
+import ru.melodin.fast.api.model.VKConversation;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
@@ -53,8 +55,8 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
 
     @Override
     public void onItemClick(View v, int position) {
-        adapter.setSelected(position, !adapter.isSelected(position));
-        adapter.notifyDataSetChanged();
+        adapter.toggleSelected(position);
+        adapter.notifyItemChanged(position, -1);
         setTitle();
 
         selecting = adapter.getSelectedCount() > 0;
@@ -90,12 +92,12 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
     public void onBackPressed() {
         if (selecting) {
             adapter.clearSelect();
-            adapter.notifyDataSetChanged();
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
             selecting = false;
+
+            setTitle();
         } else
             super.onBackPressed();
-
-        setTitle();
     }
 
     private void getCachedFriends() {
@@ -115,8 +117,6 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
 
     private void createAdapter(ArrayList<VKUser> users) {
         if (ArrayUtil.isEmpty(users)) return;
-
-        checkCount();
 
         if (adapter == null) {
             adapter = new CreateChatAdapter(this, users);
@@ -203,11 +203,14 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
     }
 
     private void getUsers() {
-        HashMap<Integer, VKUser> items = adapter.getSelectedPositions();
+        SparseArray<VKUser> items = adapter.getSelectedPositions();
 
-        Collection<VKUser> values = items.values();
+        ArrayList<VKUser> users = new ArrayList<>(items.size());
+        for (int i = 0; i < items.size(); i++) {
+            users.add(items.valueAt(i));
+        }
 
-        createChat(new ArrayList<>(values));
+        createChat(users);
     }
 
     private void createChat(ArrayList<VKUser> users) {
@@ -218,13 +221,54 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
         intent.putExtra("users", users);
 
         startActivityForResult(intent, Requests.CREATE_CHAT);
+
+        adapter.clearSelect();
+        adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
+        setTitle();
+    }
+
+    private void loadChat(final String title, final int peerId) {
+        ThreadExecutor.execute(new AsyncCallback(this) {
+            VKConversation conversation;
+
+            @Override
+            public void ready() throws Exception {
+                conversation = VKApi.messages().getConversationsById().peerIds(peerId).extended(true).fields(VKUser.FIELDS_DEFAULT).execute(VKConversation.class).get(0);
+            }
+
+            @Override
+            public void done() {
+                openChat(title, peerId, conversation);
+            }
+
+            @Override
+            public void error(Exception e) {
+                Log.e("Error load chat", Log.getStackTraceString(e));
+                Toast.makeText(CreateChatActivity.this, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void openChat(String title, int peerId, VKConversation conversation) {
+        Intent intent = new Intent(this, MessagesActivity.class);
+
+        intent.putExtra("title", title);
+        intent.putExtra("conversation", conversation);
+        intent.putExtra("peer_id", peerId);
+        intent.putExtra("can_write", true);
+
+        finish();
+        startActivity(intent);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == Requests.CREATE_CHAT) {
             if (resultCode == Activity.RESULT_OK) {
-                finish();
+                String title = data.getStringExtra("title");
+                int peerId = data.getIntExtra("peer_id", -1);
+
+                loadChat(title, peerId);
             }
         }
         super.onActivityResult(requestCode, resultCode, data);

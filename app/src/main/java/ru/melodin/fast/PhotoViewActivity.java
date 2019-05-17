@@ -160,7 +160,7 @@ public class PhotoViewActivity extends AppCompatActivity {
             if (PermissionManager.isGranted(grantResults[0])) {
                 savePhoto();
             } else {
-                Toast.makeText(this, R.string.fast_rqrs_prmsn_for_save_photo, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, R.string.photo_permission_title, Toast.LENGTH_SHORT).show();
             }
         }
     }
