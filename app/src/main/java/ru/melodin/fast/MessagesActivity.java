@@ -29,6 +29,10 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
@@ -52,7 +56,9 @@ import ru.melodin.fast.concurrent.LowThread;
 import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
+import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.fragment.FragmentSettings;
+import ru.melodin.fast.service.LongPollService;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
@@ -158,9 +164,60 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         send.setBackground(gd);
 
+        EventBus.getDefault().register(this);
+
         getCachedHistory();
         if (Util.hasConnection()) {
             getHistory(0, MESSAGES_COUNT);
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.ASYNC, sticky = true)
+    public void onReceive(Object[] data) {
+        String key = (String) data[0];
+
+        switch (key) {
+            case LongPollService.KEY_USER_OFFLINE:
+                setUserOnline(false, (int) data[1], (int) data[2]);
+                break;
+            case LongPollService.KEY_USER_ONLINE:
+                setUserOnline(true, (int) data[1], (int) data[2]);
+                break;
+            case "update_user":
+                updateUser((int) data[1]);
+                break;
+            case "update_group":
+                updateGroup((int) data[1]);
+                break;
+        }
+    }
+
+    private void setUserOnline(boolean online, int userId, int time) {
+        if (peerId == userId)
+            getSupportActionBar().setSubtitle(getSubtitle());
+    }
+
+    private void updateUser(int userId) {
+        for (int i = 0; i < adapter.getItemCount(); i++) {
+            VKMessage message = adapter.getItem(i);
+            if (conversation.isFromUser()) {
+                if (message.fromId == userId) {
+                    adapter.notifyItemChanged(i, -1);
+                }
+            }
+        }
+    }
+
+    private void updateGroup(int groupId) {
+        if (groupId > 0)
+            groupId *= -1;
+        for (int i = 0; i < adapter.getItemCount(); i++) {
+            VKMessage message = adapter.getItem(i);
+            if (conversation.isFromGroup()) {
+                if (message.fromId == groupId) {
+                    adapter.notifyItemChanged(i, -1);
+                }
+            }
         }
     }
 
@@ -505,7 +562,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             case 1:
                 return getString(R.string.group);
             case 2:
-                currentUser = CacheStorage.getUser(peerId);
+                currentUser = MemoryCache.getUser(peerId);
                 return getUserSubtitle(currentUser);
             case 3:
                 return getString(R.string.channel) + " • " + getString(R.string.members_count, membersCount);
@@ -513,6 +570,13 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         }
 
         return "";
+    }
+
+    private String getUserSubtitle(boolean online, int time) {
+        if (currentUser == null) return null;
+        if (online) return getString(R.string.online);
+
+        return getString(currentUser.sex == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w, Util.dateFormatter.format(time * 1000));
     }
 
     private String getUserSubtitle(VKUser user) {
@@ -550,6 +614,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        EventBus.getDefault().unregister(this);
         if (adapter != null) {
             adapter.destroy();
         }

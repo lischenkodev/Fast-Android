@@ -11,17 +11,16 @@ import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
-import ru.melodin.fast.api.model.VKAttachments;
 import ru.melodin.fast.api.model.VKConversation;
 import ru.melodin.fast.api.model.VKLongPollServer;
 import ru.melodin.fast.api.model.VKMessage;
+import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.concurrent.LowThread;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
+import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.net.HttpRequest;
 import ru.melodin.fast.util.Util;
 
@@ -163,21 +162,24 @@ public class LongPollService extends Service {
         }
 
         private void editMessageEvent(JSONArray item) {
-            VKMessage msg = new VKMessage();
+            int id = item.optInt(1);
+            int mask = item.optInt(2);
+            //int peerId = item.optInt(3);
+            long updateTime = item.optInt(4);
+            String text = item.optString(5);
+            //JSONObject attachments = item.optJSONObject(6);
 
-            msg.id = item.optInt(1);
-            msg.mask = item.optInt(2);
-            msg.peerId = item.optInt(3);
-            msg.update_time = item.optInt(4);
-            msg.text = item.optString(5);
-            msg.attachments = VKAttachments.parseFromLongPoll(item.optJSONObject(6));
+            VKMessage message = CacheStorage.getMessage(id);
+            if (message == null) return;
 
-            ArrayList<VKMessage> m = new ArrayList<>();
-            m.add(msg);
+            message.mask = mask;
+            message.update_time = updateTime;
+            message.text = text;
 
-            CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, m);
 
-            EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_EDIT, msg});
+            CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID + " = ?", String.valueOf(id));
+
+            EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_EDIT, message});
         }
 
         private void process(JSONArray updates) {
@@ -222,12 +224,28 @@ public class LongPollService extends Service {
             int userId = item.optInt(1) * (-1);
             boolean timeout = item.optInt(2) == 1;
             int time = item.optInt(3);
+
+            VKUser user = MemoryCache.getUser(userId);
+            if (user != null) {
+                user.last_seen = time;
+                user.online = false;
+                user.online_mobile = false;
+            }
+
             EventBus.getDefault().postSticky(new Object[]{KEY_USER_OFFLINE, userId, time, timeout});
         }
 
         private void userOnline(JSONArray item) {
             int userId = item.optInt(1) * (-1);
             int time = item.optInt(3);
+
+            VKUser user = MemoryCache.getUser(userId);
+            if (user != null) {
+                user.last_seen = time;
+                user.online = true;
+                user.online_mobile = true;
+            }
+
             EventBus.getDefault().postSticky(new Object[]{KEY_USER_ONLINE, userId, time});
         }
 

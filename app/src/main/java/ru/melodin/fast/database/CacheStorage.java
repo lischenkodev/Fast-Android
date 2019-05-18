@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.text.TextUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Locale;
 
 import ru.melodin.fast.api.UserConfig;
@@ -211,7 +212,7 @@ public class CacheStorage {
     }
 
     public static ArrayList<VKMessage> getMessages(int peerId) {
-        Cursor cursor = selectCursor(MESSAGES_TABLE, String.format(AppGlobal.locale, "%s = %d", PEER_ID, peerId));
+        Cursor cursor = selectCursor(MESSAGES_TABLE, dialogWhere(peerId));
 
         ArrayList<VKMessage> messages = new ArrayList<>(cursor.getCount());
         while (cursor.moveToNext()) {
@@ -221,20 +222,54 @@ public class CacheStorage {
         return messages;
     }
 
+    public static VKMessage getMessage(int mId) {
+        Cursor cursor = selectCursor(MESSAGES_TABLE, String.format(AppGlobal.locale, "%s = %d", MESSAGE_ID, mId));
+
+        if (cursor.moveToFirst())
+            return parseMessage(cursor);
+
+        return null;
+    }
+
     private static String dialogWhere(int peerId) {
-        String where = String.format(Locale.US, "%s = %d", PEER_ID, peerId);
-
-        return where;
+        return String.format(Locale.US, "%s = %d", PEER_ID, peerId);
     }
 
-    public static void deleteMessages(int peerId) {
-        String where = dialogWhere(peerId);
-        delete(MESSAGES_TABLE, where);
+    public static void update(String table, Object item, String where, String... args) {
+        update(table, new ArrayList(Collections.singleton(item)), where, args);
     }
 
-    public static void deleteDialog(int peerId) {
-        String where = dialogWhere(peerId);
-        delete(DIALOGS_TABLE, where);
+    public static void update(String table, ArrayList values, String where, String... args) {
+        if (ArrayUtil.isEmpty(values)) return;
+        database.beginTransaction();
+
+        ContentValues cv = new ContentValues();
+        for (int i = 0; i < values.size(); i++) {
+            Object item = values.get(i);
+            switch (table) {
+                case USERS_TABLE:
+                    putValues(cv, (VKUser) item, false);
+                    break;
+                case FRIENDS_TABLE:
+                    putValues(cv, (VKUser) item, true);
+                    break;
+                case DIALOGS_TABLE:
+                    putValues(cv, (VKConversation) item);
+                    break;
+                case MESSAGES_TABLE:
+                    putValues(cv, (VKMessage) item);
+                    break;
+                case GROUPS_TABLE:
+                    putValues(cv, (VKGroup) item);
+                    break;
+            }
+
+            database.update(table, cv, where, args);
+            cv.clear();
+        }
+
+        database.setTransactionSuccessful();
+        database.endTransaction();
     }
 
     public static void insert(String table, ArrayList values) {
@@ -243,21 +278,22 @@ public class CacheStorage {
 
         ContentValues cv = new ContentValues();
         for (int i = 0; i < values.size(); i++) {
+            Object item = values.get(i);
             switch (table) {
                 case USERS_TABLE:
-                    putValues(cv, (VKUser) values.get(i), false);
+                    putValues(cv, (VKUser) item, false);
                     break;
                 case FRIENDS_TABLE:
-                    putValues(cv, (VKUser) values.get(i), true);
+                    putValues(cv, (VKUser) item, true);
                     break;
                 case DIALOGS_TABLE:
-                    putValues(cv, (VKConversation) values.get(i));
+                    putValues(cv, (VKConversation) item);
                     break;
                 case MESSAGES_TABLE:
-                    putValues(cv, (VKMessage) values.get(i));
+                    putValues(cv, (VKMessage) item);
                     break;
                 case GROUPS_TABLE:
-                    putValues(cv, (VKGroup) values.get(i));
+                    putValues(cv, (VKGroup) item);
                     break;
             }
 
@@ -270,9 +306,7 @@ public class CacheStorage {
     }
 
     public static void insert(String table, Object item) {
-        ArrayList<Object> list = new ArrayList<>(1);
-        list.add(item);
-        insert(table, list);
+        insert(table, new ArrayList(Collections.singleton(item)));
     }
 
     public static void delete(String table, String where) {

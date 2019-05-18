@@ -56,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
     private int selectedId = -1;
     private Fragment selectedFragment;
 
+    private Intent longPollIntent;
+
     private View.OnClickListener click = new View.OnClickListener() {
 
         @Override
@@ -136,7 +138,8 @@ public class MainActivity extends AppCompatActivity {
         if (!UserConfig.isLoggedIn()) {
             startLoginActivity();
         } else {
-            startService(new Intent(this, LongPollService.class));
+            longPollIntent = new Intent(this, LongPollService.class);
+            startService(longPollIntent);
             selectedFragment = fd;
             replaceFragment(fd);
         }
@@ -289,6 +292,7 @@ public class MainActivity extends AppCompatActivity {
                 startLoginActivity();
                 DatabaseHelper.getInstance().dropTables(AppGlobal.database);
                 DatabaseHelper.getInstance().onCreate(AppGlobal.database);
+                stopService(longPollIntent);
                 UserConfig.clear();
             }
         });

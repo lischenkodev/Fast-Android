@@ -1,6 +1,5 @@
 package ru.melodin.fast.adapter;
 
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
@@ -22,9 +21,11 @@ import java.util.ArrayList;
 
 import ru.melodin.fast.R;
 import ru.melodin.fast.api.model.VKUser;
+import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.fragment.FragmentFriends;
 import ru.melodin.fast.service.LongPollService;
 import ru.melodin.fast.util.ArrayUtil;
+import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.view.CircleImageView;
 
@@ -71,11 +72,12 @@ public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHol
     }
 
     private void setUserOnline(boolean online, int userId, int time) {
-        for (VKUser user : getValues()) {
+        for (int i = 0; i < getItemCount(); i++) {
+            VKUser user = getItem(i);
             if (user.id == userId) {
                 user.online = online;
                 user.last_seen = time;
-                notifyDataSetChanged();
+                notifyItemChanged(i, -1);
             }
         }
     }
@@ -138,9 +140,7 @@ public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHol
                 online.setVisibility(View.GONE);
             }
 
-            String seen_text = getString(user.sex == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w);
-
-            String seen = String.format(seen_text, Util.dateFormatter.format(user.last_seen * 1000));
+            String seen = getString(user.sex == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w, Util.dateFormatter.format(user.last_seen * 1000));
 
             if (lastSeen.getVisibility() == View.VISIBLE) {
                 lastSeen.setText(seen);
@@ -149,7 +149,7 @@ public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHol
             }
 
             if (TextUtils.isEmpty(user.photo_100)) {
-                avatar.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
+                avatar.setImageDrawable(new ColorDrawable(ColorUtil.alphaColor(ThemeManager.getPrimary(), 0.5f)));
             } else {
                 Picasso.get()
                         .load(user.photo_100)

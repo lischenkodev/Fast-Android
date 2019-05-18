@@ -161,6 +161,6 @@
     <string name="show_error_summary">Shows alert dialog with error after app crash</string>
     <string name="show_error_title">Show error</string>
 
-    <string name="auth_vkdesktop_text">В связи с возникшими ограничениями со стороны ВК, авторизация временно будет производиться через другое приложение - VK Desktop. Спасибо за понимание.</string>
+    <string name="auth_vkdesktop_text" translatable="false">В связи с возникшими ограничениями со стороны ВК, авторизация временно будет производиться через другое приложение - VK Desktop. Спасибо за понимание.</string>
 
 </resources>
