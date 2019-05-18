@@ -13,33 +13,24 @@ public class VKMessage extends VKModel implements Serializable {
 
     public static final int UNREAD = 1;        //сообщение не прочитано
     public static final int OUTBOX = 2;        //исходящее сообщение
-    public static final int REPLIED = 4;        //на сообщение был создан ответ
-    public static final int IMPORTANT = 8;    //помеченное сообщение
-    public static final int CHAT = 16;        //сообщение отправлено через диалог
-    public static final int FRIENDS = 32;        //сообщение отправлено другом
-    public static final int SPAM = 64;        //сообщение помечено как "Спам"
-    public static final int DELETED = 128;    //сообщение удалено (в корзине)
+    public static final int REPLIED = 4;       //на сообщение был создан ответ
+    public static final int IMPORTANT = 8;      //помеченное сообщение
+    public static final int CHAT = 16;          //сообщение отправлено через диалог
+    public static final int FRIENDS = 32;       //сообщение отправлено другом
+    public static final int SPAM = 64;          //сообщение помечено как "Спам"
+    public static final int DELETED = 128;      //сообщение удалено (в корзине)
     public static final int FIXED = 256;        //сообщение проверено пользователем на спам
     public static final int MEDIA = 512;        //сообщение содержит медиаконтент
-    public static final int BESEDA = 8192;    //беседа
-    public static final String ACTION_CHAT_CREATE = "chat_create";
-    public static final String ACTION_CHAT_INVITE_USER = "chat_invite_user";
-    public static final String ACTION_CHAT_KICK_USER = "chat_kick_user";
-    public static final String ACTION_CHAT_TITLE_UPDATE = "chat_title_update";
-    public static final String ACTION_CHAT_PHOTO_UPDATE = "chat_photo_update";
-    public static final String ACTION_CHAT_PHOTO_REMOVE = "chat_photo_remove";
-    public static final String ACTION_CHAT_PIN_MESSAGE = "chat_pin_message";
-    public static final String ACTION_CHAT_UNPIN_MESSAGE = "chat_unpin_message";
-    public static final String ACTION_CHAT_INVITE_USER_BY_LINK = "chat_invite_user_by_link";
+    public static final int BESEDA = 8192;      //беседа
+
     public static final int STATUS_SENDING = 0;
     public static final int STATUS_SENT = 1;
     public static final int STATUS_ERROR = 2;
-    private static final String TAG = "FVKMessage";
     public static int count;
     public static int lastHistoryCount;
     public static ArrayList<VKUser> users;
     public static ArrayList<VKGroup> groups;
-    public String actionType = null;
+    public Action action;
     public int actionUserId = 0;
     public int id;
     public int peerId;
@@ -63,6 +54,61 @@ public class VKMessage extends VKModel implements Serializable {
     public long update_time;
     public boolean isAdded;
 
+    public enum Action {
+        CHAT_CREATE, CHAT_INVITE_USER, CHAT_KICK_USER, CHAT_TITLE_UPDATE, CHAT_PHOTO_UPDATE, CHAT_PHOTO_REMOVE, CHAT_PIN_MESSAGE, CHAT_UNPIN_MESSAGE, CHAT_INVITE_USER_BY_LINK
+    }
+
+    public static Action getAction(String action) {
+        switch (action) {
+            case "chat_create":
+                return Action.CHAT_CREATE;
+            case "chat_invite_user":
+                return Action.CHAT_INVITE_USER;
+            case "chat_kick_user":
+                return Action.CHAT_KICK_USER;
+            case "chat_title_update":
+                return Action.CHAT_TITLE_UPDATE;
+            case "chat_photo_update":
+                return Action.CHAT_PHOTO_UPDATE;
+            case "chat_photo_remove":
+                return Action.CHAT_PHOTO_REMOVE;
+            case "chat_pin_message":
+                return Action.CHAT_PIN_MESSAGE;
+            case "chat_unpin_message":
+                return Action.CHAT_UNPIN_MESSAGE;
+            case "chat_invite_user_by_link":
+                return Action.CHAT_INVITE_USER_BY_LINK;
+            default:
+                return null;
+        }
+    }
+
+    public static String getAction(Action action) {
+        if (action == null) return "";
+        switch (action) {
+            case CHAT_CREATE:
+                return "chat_create";
+            case CHAT_INVITE_USER:
+                return "chat_invite_user";
+            case CHAT_KICK_USER:
+                return "chat_kick_user";
+            case CHAT_TITLE_UPDATE:
+                return "chat_title_update";
+            case CHAT_PHOTO_UPDATE:
+                return "chat_photo_update";
+            case CHAT_PHOTO_REMOVE:
+                return "chat_photo_remove";
+            case CHAT_PIN_MESSAGE:
+                return "chat_pin_message";
+            case CHAT_UNPIN_MESSAGE:
+                return "chat_unpin_message";
+            case CHAT_INVITE_USER_BY_LINK:
+                return "chat_invite_user_by_link";
+            default:
+                return "";
+        }
+    }
+
     public VKMessage() {
     }
 
@@ -77,7 +123,6 @@ public class VKMessage extends VKModel implements Serializable {
         peerId = o.optInt("peer_id");
         id = o.optInt("id");
         out = fromId == UserConfig.userId;
-        read = false;
         text = o.optString("text");
         chatMessageId = o.optInt("conversation_message_id");
         important = o.optBoolean("important");
@@ -87,7 +132,7 @@ public class VKMessage extends VKModel implements Serializable {
         if (o.has("action")) {
             JSONObject a = o.optJSONObject("action");
             actionUserId = a.optInt("member_id");
-            actionType = a.optString("type");
+            action = getAction(a.optString("type"));
             actionText = a.optString("text");
         }
 
@@ -97,10 +142,10 @@ public class VKMessage extends VKModel implements Serializable {
             fwd_messages = parseAttMessages(fws);
         }
 
-        JSONArray atts = o.optJSONArray("attachments");
+        JSONArray attachments = o.optJSONArray("attachments");
 
-        if (atts != null && atts.length() > 0) {
-            attachments = VKAttachments.parse(atts);
+        if (attachments != null && attachments.length() > 0) {
+            this.attachments = VKAttachments.parse(attachments);
         }
     }
 

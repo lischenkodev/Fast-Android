@@ -24,7 +24,7 @@
         android:layout_gravity="center"
         android:layout_marginBottom="40dp">
 
-        <include layout="@layout/no_items" />
+        <include layout="@layout/list_empty " />
 
     </LinearLayout>
 

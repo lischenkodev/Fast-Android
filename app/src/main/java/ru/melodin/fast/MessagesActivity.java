@@ -14,6 +14,7 @@ import android.text.style.ForegroundColorSpan;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -28,6 +29,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.material.appbar.AppBarLayout;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -72,14 +75,16 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private Drawable iconMic;
     private Drawable iconDone;
 
-    private Toolbar toolbar;
+    private Toolbar tb;
+    private AppBarLayout appBar;
     private RecyclerView list;
 
     private AppCompatImageButton smiles, send, unpin;
     private AppCompatEditText message;
     private ProgressBar bar;
-    private LinearLayout chatPanel, pinnedContainer;
-    private View noItems;
+    private LinearLayout chatPanel;
+    private FrameLayout pinnedContainer;
+    private View empty, pinnedShadow;
     private TextView pName, pDate, pText;
 
     private MessageAdapter adapter;
@@ -138,7 +143,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         list.setLayoutManager(layoutManager);
 
-        setSupportActionBar(toolbar);
+        setSupportActionBar(tb);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle(title);
@@ -237,13 +242,15 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         bar = findViewById(R.id.progress);
         chatPanel = findViewById(R.id.chat_panel);
         smiles = findViewById(R.id.smiles);
-        toolbar = findViewById(R.id.tb);
+        tb = findViewById(R.id.tb);
+        appBar = (AppBarLayout) tb.getParent();
         list = findViewById(R.id.list);
         send = findViewById(R.id.send);
         message = findViewById(R.id.message_edit_text);
-        noItems = findViewById(R.id.no_items_layout);
+        empty = findViewById(R.id.no_items_layout);
 
         pinnedContainer = findViewById(R.id.pinned_msg_container);
+        pinnedShadow = findViewById(R.id.pinned_shadow);
         pName = pinnedContainer.findViewById(R.id.name);
         pDate = pinnedContainer.findViewById(R.id.date);
         pText = pinnedContainer.findViewById(R.id.message);
@@ -284,10 +291,14 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private void showPinned(final VKMessage pinned) {
         if (pinned == null) {
             pinnedContainer.setVisibility(View.GONE);
+            pinnedShadow.setVisibility(View.GONE);
+            appBar.setElevation(0);
             return;
         }
 
+        appBar.setElevation(8);
         pinnedContainer.setVisibility(View.VISIBLE);
+        pinnedShadow.setVisibility(View.VISIBLE);
 
         pinnedContainer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -382,7 +393,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         bar.setVisibility(loading ? View.VISIBLE : View.GONE);
 
         if (bar.getVisibility() != View.VISIBLE)
-            noItems.setVisibility(adapter == null ? View.VISIBLE : adapter.isEmpty() ? View.VISIBLE : View.GONE);
+            empty.setVisibility(adapter == null ? View.VISIBLE : adapter.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     private void setNotEditing() {
@@ -635,7 +646,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     public void onItemClick(View v, int position) {
         VKMessage item = adapter.getItem(position);
 
-        if (!TextUtils.isEmpty(item.actionType)) return;
+        if (item.action != null) return;
 
         showAlertDialog(position);
     }

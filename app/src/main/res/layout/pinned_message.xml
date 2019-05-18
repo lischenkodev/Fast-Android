@@ -76,11 +76,5 @@
             android:tint="?android:textColorPrimary" />
 
     </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="3dp"
-        android:background="@drawable/message_drop_shadow_dark"
-        android:rotation="180" />
 </LinearLayout>
 

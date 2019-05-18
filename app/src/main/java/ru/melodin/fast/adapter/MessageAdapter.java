@@ -223,7 +223,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     private void applyActionStyle(VKMessage item, ViewGroup parent) {
-        attacher.service(item, parent);
+
     }
 
     private void showForwardedMessages(VKMessage item, ViewGroup parent) {
@@ -475,35 +475,21 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             Drawable bg = context.getResources().getDrawable(R.drawable.msg_in_bg);
 
 
-            if (!TextUtils.isEmpty(item.actionType)) {
-                if (avatar.getVisibility() != View.GONE)
-                    avatar.setVisibility(View.GONE);
+            if (item.action != null) {
+                avatar.setVisibility(View.GONE);
+                messageContainer.setVisibility(View.GONE);
+                time.setVisibility(View.GONE);
+                service_container.setVisibility(View.VISIBLE);
 
-                if (messageContainer.getVisibility() != View.GONE)
-                    messageContainer.setVisibility(View.GONE);
-
-                if (time.getVisibility() != View.GONE)
-                    time.setVisibility(View.GONE);
-
-                if (service_container.getVisibility() != View.VISIBLE)
-                    service_container.setVisibility(View.VISIBLE);
                 service_container.removeAllViews();
-
-                applyActionStyle(item, service_container);
+                attacher.service(item, service_container);
 
                 bg.setTint(Color.TRANSPARENT);
             } else {
-                if (avatar.getVisibility() != View.VISIBLE)
-                    avatar.setVisibility(View.VISIBLE);
-
-                if (time.getVisibility() != View.VISIBLE)
-                    time.setVisibility(View.VISIBLE);
-
-                if (messageContainer.getVisibility() != View.VISIBLE)
-                    messageContainer.setVisibility(View.VISIBLE);
-
-                if (service_container.getVisibility() != View.GONE)
-                    service_container.setVisibility(View.GONE);
+                avatar.setVisibility(View.VISIBLE);
+                time.setVisibility(View.VISIBLE);
+                messageContainer.setVisibility(View.VISIBLE);
+                service_container.setVisibility(View.GONE);
                 bg.setColorFilter(bgColor, PorterDuff.Mode.MULTIPLY);
             }
 
@@ -564,7 +550,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             return Math.round((float) 320.0 < layoutMaxWidth ? (float) 240.0 * scale : (float) 240.0 / scale);
         }
 
-        private LinearLayout.LayoutParams getParams(float sw, float sh) {
+        private LinearLayout.LayoutParams getParams() {
             return new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -598,7 +584,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             final ImageView image = (ImageView)
                     inflater.inflate(R.layout.msg_attach_photo, parent, false);
 
-            image.setLayoutParams(getParams(256f, 256f));
+            image.setLayoutParams(getParams());
             loadImage(image, source.src_256, "");
 
             image.setClickable(false);
@@ -642,7 +628,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         public void photo(final VKMessage item, ViewGroup parent, final VKPhoto source) {
             ImageView image = (ImageView) inflater.inflate(R.layout.msg_attach_photo, parent, false);
 
-            image.setLayoutParams(getParams(source.width, source.height));
+            image.setLayoutParams(getParams());
             image.setOnClickListener(new View.OnClickListener() {
 
                 @Override
@@ -662,7 +648,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 }
             });
 
-            loadImage(image, source.sizes.forType("m").src, source.getMaxSize());
+            if (source.sizes != null)
+                loadImage(image, source.sizes.forType("m").src, source.getMaxSize());
             parent.addView(image);
         }
 
@@ -811,7 +798,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             final ImageView image = (ImageView)
                     inflater.inflate(R.layout.msg_attach_photo, parent, false);
 
-            image.setLayoutParams(getParams(128f, 128f));
+            image.setLayoutParams(getParams());
             loadImage(image, source.src, source.src);
 
             image.setClickable(false);

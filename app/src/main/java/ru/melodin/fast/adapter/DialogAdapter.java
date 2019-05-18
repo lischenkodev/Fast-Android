@@ -453,7 +453,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
             body.setTextColor(!ThemeManager.isDark() ? -0x70000000 : -0x6f000001);
 
-            if (TextUtils.isEmpty(last.actionType)) {
+            if (last.action == null) {
                 if ((last.attachments != null || !ArrayUtil.isEmpty(last.fwd_messages)) && TextUtils.isEmpty(last.text)) {
                     String body_ = VKUtils.getAttachmentBody(item.last.attachments, item.last.fwd_messages);
 

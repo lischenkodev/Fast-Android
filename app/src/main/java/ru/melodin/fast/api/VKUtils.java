@@ -97,11 +97,11 @@ public class VKUtils {
         if (fromDialogs)
             action = "";
 
-        switch (msg.actionType) {
-            case VKMessage.ACTION_CHAT_CREATE:
+        switch (msg.action) {
+            case CHAT_CREATE:
                 action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.created_chat_w : R.string.created_chat_m : R.string.created_chat_m), action, " «<b>" + msg.actionText + "</b>»");
                 break;
-            case VKMessage.ACTION_CHAT_INVITE_USER:
+            case CHAT_INVITE_USER:
                 if (msg.actionUserId == msg.fromId) {
                     action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.returned_to_chat_w : R.string.returned_to_chat_m : R.string.returned_to_chat_m), action);
                 } else {
@@ -109,29 +109,29 @@ public class VKUtils {
                 }
 
                 break;
-            case VKMessage.ACTION_CHAT_KICK_USER:
+            case CHAT_KICK_USER:
                 if (msg.actionUserId == msg.fromId) {
                     action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.left_the_chat_w : R.string.left_the_chat_m : R.string.left_the_chat_m), action);
                 } else {
                     action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.kicked_from_chat_w : R.string.kicked_from_chat_m : R.string.kicked_from_chat_m), action, "<b>" + u_name + "</b>");
                 }
                 break;
-            case VKMessage.ACTION_CHAT_PHOTO_REMOVE:
+            case CHAT_PHOTO_REMOVE:
                 action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.remove_chat_photo_w : R.string.remove_chat_photo_m : R.string.remove_chat_photo_m), action);
                 break;
-            case VKMessage.ACTION_CHAT_PHOTO_UPDATE:
+            case CHAT_PHOTO_UPDATE:
                 action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.updated_chat_photo_w : R.string.updated_chat_photo_m : R.string.updated_chat_photo_m), action);
                 break;
-            case VKMessage.ACTION_CHAT_TITLE_UPDATE:
+            case CHAT_TITLE_UPDATE:
                 action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.updated_title_w : R.string.updated_title_m : R.string.updated_title_m), action, "«<b>" + msg.actionText + "</b>»");
                 break;
-            case VKMessage.ACTION_CHAT_INVITE_USER_BY_LINK:
+            case CHAT_INVITE_USER_BY_LINK:
                 action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.invited_by_link_w : R.string.invited_by_link_m : R.string.invited_by_link_m), action);
                 break;
-            case VKMessage.ACTION_CHAT_PIN_MESSAGE:
+            case CHAT_PIN_MESSAGE:
                 action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.pinned_message_w : R.string.pinned_message_m : R.string.pinned_message_m), action);
                 break;
-            case VKMessage.ACTION_CHAT_UNPIN_MESSAGE:
+            case CHAT_UNPIN_MESSAGE:
                 action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.unpinned_message_w : R.string.unpinned_message_m : R.string.unpinned_message_m), action);
                 break;
         }

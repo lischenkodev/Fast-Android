@@ -18,6 +18,9 @@ import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
 
 import static ru.melodin.fast.common.AppGlobal.database;
+import static ru.melodin.fast.database.DatabaseHelper.ACTION_TEXT;
+import static ru.melodin.fast.database.DatabaseHelper.ACTION_TYPE;
+import static ru.melodin.fast.database.DatabaseHelper.ACTION_USER_ID;
 import static ru.melodin.fast.database.DatabaseHelper.ADMIN_LEVER;
 import static ru.melodin.fast.database.DatabaseHelper.ATTACHMENTS;
 import static ru.melodin.fast.database.DatabaseHelper.CONVERSATION_TYPE;
@@ -377,6 +380,9 @@ public class CacheStorage {
         message.important = getInt(cursor, IMPORTANT) == 1;
         message.status = getInt(cursor, STATUS);
         message.update_time = getLong(cursor, UPDATE_TIME);
+        message.action = VKMessage.getAction(getString(cursor, ACTION_TYPE));
+        message.actionText = getString(cursor, ACTION_TEXT);
+        message.actionUserId = getInt(cursor, ACTION_USER_ID);
         message.attachments = (ArrayList) Util.deserialize(getBlob(cursor, ATTACHMENTS));
         message.fwd_messages = (ArrayList) Util.deserialize(getBlob(cursor, FWD_MESSAGES));
         message.history_users = (ArrayList) Util.deserialize(getBlob(cursor, USERS));
@@ -475,6 +481,9 @@ public class CacheStorage {
         values.put(STATUS, message.status);
         values.put(READ_STATE, message.read);
         values.put(UPDATE_TIME, message.update_time);
+        values.put(ACTION_TEXT, message.actionText);
+        values.put(ACTION_TYPE, VKMessage.getAction(message.action));
+        values.put(ACTION_USER_ID, message.actionUserId);
 
         values.put(IMPORTANT, message.important);
 
