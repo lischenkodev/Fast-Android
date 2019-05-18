@@ -20,6 +20,7 @@ import ru.melodin.fast.api.model.VKModel;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.database.CacheStorage;
+import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.util.ArrayUtil;
 
 public class VKUtils {
@@ -74,9 +75,14 @@ public class VKUtils {
     public static String getActionBody(VKMessage msg, boolean fromDialogs) {
         String action = "<b>";
 
-        VKUser u = CacheStorage.getUser(msg.fromId);
+        VKUser u = MemoryCache.getUser(msg.fromId);
         if (u != null) {
             action += u.toString();
+        } else {
+            VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(msg.actionUserId));
+            if (group != null) {
+                action = group.name;
+            }
         }
 
         action += ("</b>");
@@ -88,7 +94,7 @@ public class VKUtils {
         if (action_user != null) {
             u_name = action_user.toString();
         } else {
-            VKGroup group = CacheStorage.getGroup(VKGroup.toGroupId(msg.actionUserId));
+            VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(msg.actionUserId));
             if (group != null) {
                 u_name = group.name;
             }
