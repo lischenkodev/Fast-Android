@@ -1,15 +1,21 @@
 package ru.melodin.fast.fragment;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+
+import org.greenrobot.eventbus.EventBus;
+
 import ru.melodin.fast.R;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.common.ThemeManager;
+import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.util.Util;
 
 public class FragmentSettings extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
@@ -21,6 +27,7 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
     public static final String KEY_SHOW_ERROR = "show_error";
     public static final String DEFAULT_TEMPLATE_VALUE = "¯\\_(ツ)_/¯";
     private static final String KEY_ABOUT = "about";
+    public static final String KEY_CLEAR_CACHE = "clear_cache";
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -30,6 +37,7 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
         Preference darkTheme = findPreference(KEY_DARK_STYLE);
 
         findPreference(KEY_ABOUT).setOnPreferenceClickListener(this);
+        findPreference(KEY_CLEAR_CACHE).setOnPreferenceClickListener(this);
 
         darkTheme.setOnPreferenceChangeListener(this);
 
@@ -61,7 +69,25 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
             case KEY_ABOUT:
                 Toast.makeText(getContext(), String.format(getString(R.string.about_toast), AppGlobal.app_version_name, AppGlobal.app_version_code), Toast.LENGTH_LONG).show();
                 break;
+            case KEY_CLEAR_CACHE:
+                showConfirmClearCacheDialog();
+                break;
         }
         return true;
+    }
+
+    private void showConfirmClearCacheDialog() {
+        new AlertDialog.Builder(getActivity())
+                .setTitle(R.string.confirmation)
+                .setMessage(R.string.clear_cache_confirm)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DatabaseHelper.getInstance().dropMessagesTable(AppGlobal.database);
+                        EventBus.getDefault().postSticky(new Object[]{KEY_CLEAR_CACHE});
+                    }
+                })
+                .setNegativeButton(android.R.string.no, null)
+                .show();
     }
 }

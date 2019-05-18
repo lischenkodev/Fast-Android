@@ -290,10 +290,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 startLoginActivity();
-                DatabaseHelper.getInstance().dropTables(AppGlobal.database);
-                DatabaseHelper.getInstance().onCreate(AppGlobal.database);
                 stopService(longPollIntent);
                 UserConfig.clear();
+                DatabaseHelper.getInstance().dropTables(AppGlobal.database);
+                DatabaseHelper.getInstance().onCreate(AppGlobal.database);
             }
         });
         adb.setNegativeButton(R.string.no, null);

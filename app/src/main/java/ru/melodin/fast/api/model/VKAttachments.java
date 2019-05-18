@@ -173,7 +173,7 @@ public class VKAttachments extends VKModel implements Serializable {
     public static ArrayList<VKModel> parseFromLongPoll(JSONObject o) {
         ArrayList<VKModel> attachments = new ArrayList<>();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < o.length() / 2; i++) {
             String a_type = "attach" + i + "_type";
             String attach = "attach" + i;
 
@@ -214,6 +214,6 @@ public class VKAttachments extends VKModel implements Serializable {
             }
         }
 
-        return new ArrayList<>();
+        return attachments;
     }
 }

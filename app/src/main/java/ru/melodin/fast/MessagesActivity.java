@@ -86,6 +86,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private boolean loading, canWrite, editing, typing;
     private int cantWriteReason = -1, peerId, membersCount;
+    private VKConversation.Reason reason;
     private String messageText;
     private String title;
 
@@ -164,24 +165,20 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         send.setBackground(gd);
 
-        EventBus.getDefault().register(this);
-
         getCachedHistory();
         if (Util.hasConnection()) {
             getHistory(0, MESSAGES_COUNT);
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.ASYNC, sticky = true)
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void onReceive(Object[] data) {
         String key = (String) data[0];
 
         switch (key) {
             case LongPollService.KEY_USER_OFFLINE:
-                setUserOnline(false, (int) data[1], (int) data[2]);
-                break;
             case LongPollService.KEY_USER_ONLINE:
-                setUserOnline(true, (int) data[1], (int) data[2]);
+                setUserOnline((int) data[1]);
                 break;
             case "update_user":
                 updateUser((int) data[1]);
@@ -189,10 +186,25 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             case "update_group":
                 updateGroup((int) data[1]);
                 break;
+            case LongPollService.KEY_MESSAGE_CLEAR_FLAGS:
+                adapter.readMessage((int) data[1]);
+                break;
+            case LongPollService.KEY_MESSAGE_NEW:
+                VKConversation conversation = (VKConversation) data[1];
+
+                adapter.addMessage(conversation.last);
+
+                if (!conversation.last.out && conversation.last.peerId == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
+                    adapter.readNewMessage(conversation.last);
+                }
+                break;
+            case LongPollService.KEY_MESSAGE_EDIT:
+                adapter.editMessage((VKMessage) data[1]);
+                break;
         }
     }
 
-    private void setUserOnline(boolean online, int userId, int time) {
+    private void setUserOnline(int userId) {
         if (peerId == userId)
             getSupportActionBar().setSubtitle(getSubtitle());
     }
@@ -245,6 +257,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         peerId = intent.getIntExtra("peer_id", -1);
         cantWriteReason = intent.getIntExtra("reason", -1);
         canWrite = intent.getBooleanExtra("can_write", false);
+        reason = VKConversation.getReason(cantWriteReason);
 
         if (conversation != null) {
             last = conversation.last;
@@ -264,7 +277,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             send.setEnabled(false);
             smiles.setEnabled(false);
             message.setEnabled(false);
-            message.setText("");
+            message.setText(VKUtils.getErrorReason(reason));
         }
     }
 
@@ -406,9 +419,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         msg.status = VKMessage.STATUS_SENDING;
         msg.randomId = new Random().nextInt();
 
-        adapter.add(msg);
-        adapter.notifyItemInserted(adapter.getItemCount() - 1);
-        list.smoothScrollToPosition(adapter.getItemCount() - 1);
+        adapter.addMessage(msg);
 
         final int size = adapter.getItemCount();
 
@@ -487,6 +498,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (!ArrayUtil.isEmpty(messages)) {
             createAdapter(messages);
         }
+
+        EventBus.getDefault().register(this);
     }
 
     private void getHistory(final int offset, final int count) {
@@ -572,13 +585,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         return "";
     }
 
-    private String getUserSubtitle(boolean online, int time) {
-        if (currentUser == null) return null;
-        if (online) return getString(R.string.online);
-
-        return getString(currentUser.sex == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w, Util.dateFormatter.format(time * 1000));
-    }
-
     private String getUserSubtitle(VKUser user) {
         if (user == null) return "";
         if (user.online) return getString(R.string.online);
@@ -615,9 +621,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     protected void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
-        if (adapter != null) {
-            adapter.destroy();
-        }
     }
 
     @Override

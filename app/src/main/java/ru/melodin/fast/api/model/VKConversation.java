@@ -1,29 +1,13 @@
 package ru.melodin.fast.api.model;
 
-import android.util.Log;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import ru.melodin.fast.api.UserConfig;
-import ru.melodin.fast.util.StringUtils;
-
 public class VKConversation extends VKModel implements Serializable {
 
-    public static final String TYPE_CHAT = "chat";
-    public static final String TYPE_USER = "user";
-    public static final String TYPE_GROUP = "group";
-    public static final String TYPE_EMAIL = "email";
-    public static final int REASON_KICKED = 1;
-    public static final int REASON_LEFT = 2;
-    public static final int REASON_USER_BLOCKED_DELETED = 18;
-    public static final int REASON_CANT_SEND_MESSAGE_USER_WHICH_IN_BLACKLIST = 900;
-    public static final int REASON_CANT_SEND_USER_PRIVACY = 902;
-    public static final int REASON_GROUP_MESSAGES_OFF = 915;
     public static int count;
     public static ArrayList<VKUser> users = new ArrayList<>();
     public static ArrayList<VKGroup> groups = new ArrayList<>();
@@ -42,7 +26,7 @@ public class VKConversation extends VKModel implements Serializable {
     public VKMessage pinned, last;
 
     public String title;
-    public String type;
+    public Type type;
     public String state;
     public String photo_50, photo_100, photo_200;
 
@@ -58,8 +42,70 @@ public class VKConversation extends VKModel implements Serializable {
     public boolean disabled_forever;
     public boolean no_sound;
 
+    public enum Type {
+        CHAT, GROUP, USER, EMAIL
+    }
+
+    public enum Reason {
+        KICKED, LEFT, USER_DELETED, USER_BLACKLIST, USER_PRIVACY, MESSAGES_OFF, MESSAGES_BLOCKED, NO_ACCESS_CHAT, NO_ACCESS_EMAIL, NO_ACCESS_GROUP
+    }
+
     public VKConversation() {
 
+    }
+
+    public static int getReason(Reason reason) {
+        switch (reason) {
+            case USER_BLACKLIST:
+                return 900;
+            case USER_PRIVACY:
+                return 902;
+            case USER_DELETED:
+                return 18;
+            case LEFT:
+                return 2;
+            case KICKED:
+                return 1;
+            case MESSAGES_OFF:
+                return 915;
+            case MESSAGES_BLOCKED:
+                return 916;
+            case NO_ACCESS_CHAT:
+                return 917;
+            case NO_ACCESS_EMAIL:
+                return 918;
+            case NO_ACCESS_GROUP:
+                return 203;
+            default:
+                return -1;
+        }
+    }
+
+    public static Reason getReason(int reason) {
+        switch (reason) {
+            case 900:
+                return Reason.USER_BLACKLIST;
+            case 902:
+                return Reason.USER_PRIVACY;
+            case 18:
+                return Reason.USER_DELETED;
+            case 2:
+                return Reason.LEFT;
+            case 1:
+                return Reason.KICKED;
+            case 915:
+                return Reason.MESSAGES_OFF;
+            case 916:
+                return Reason.MESSAGES_BLOCKED;
+            case 917:
+                return Reason.NO_ACCESS_CHAT;
+            case 918:
+                return Reason.NO_ACCESS_EMAIL;
+            case 203:
+                return Reason.NO_ACCESS_GROUP;
+            default:
+                return null;
+        }
     }
 
     public VKConversation(JSONObject o, JSONObject msg) throws JSONException {
@@ -91,7 +137,7 @@ public class VKConversation extends VKModel implements Serializable {
         }
 
         JSONObject peer = o.optJSONObject("peer");
-        type = peer.optString("type");
+        type = msg != null ? getType(last.peerId) : getType(peer.optString("type"));
 
         JSONObject ch = o.optJSONObject("chat_settings");
         if (ch != null) {
@@ -124,49 +170,48 @@ public class VKConversation extends VKModel implements Serializable {
         }
     }
 
-    public static VKConversation parseFromLongPoll(JSONArray a) {
-        VKConversation conversation = new VKConversation();
-        VKMessage last = new VKMessage();
-        last.id = a.optInt(1);
-        last.flag = a.optInt(2);
-        last.peerId = a.optInt(3);
-        last.date = a.optLong(4);
-        last.text = StringUtils.unescape(a.optString(5));
-        conversation.read = ((last.flag & VKMessage.UNREAD) == 0);
-        last.read = conversation.read;
-        last.out = (last.flag & VKMessage.OUTBOX) != 0;
-        last.fromId = last.out ? UserConfig.userId : last.peerId;
-
-        if ((last.flag & VKMessage.BESEDA) != 0) {
-            JSONObject o = a.optJSONObject(6);
-            last.fromId = o.optInt("from");
-        }
-
-        last.randomId = a.optInt(8);
-
-        conversation.type = getType(last.peerId);
-
-        JSONObject attachments = a.optJSONObject(7);
-
-        if (attachments != null && attachments.length() > 0) {
-            last.attachments = VKAttachments.parseFromLongPoll(attachments);
-        }
-
-        conversation.last = last;
-
-        Log.d("FVKConversation", a.toString());
-
-        return conversation;
+    public static Type getType(int peerId) {
+        if (VKConversation.isChatId(peerId)) return Type.CHAT;
+        if (VKGroup.isGroupId(peerId)) return Type.GROUP;
+        return Type.USER;
     }
 
-    private static String getType(int peerId) {
-        if (peerId > 2_000_000_00) return TYPE_CHAT;
-        if (VKGroup.isGroupId(peerId)) return TYPE_GROUP;
-        return TYPE_USER;
+    public static Type getType(String type) {
+        switch (type) {
+            case "user":
+                return Type.USER;
+            case "group":
+                return Type.GROUP;
+            case "chat":
+                return Type.CHAT;
+            case "email":
+                return Type.EMAIL;
+            default:
+                return null;
+        }
+    }
+
+    public static String getType(Type type) {
+        switch (type) {
+            case USER:
+                return "user";
+            case GROUP:
+                return "group";
+            case CHAT:
+                return "chat";
+            case EMAIL:
+                return "email";
+            default:
+                return null;
+        }
+    }
+
+    public static boolean isChatId(int peerId) {
+        return peerId > 2_000_000_00;
     }
 
     public boolean isChat() {
-        return last.peerId > 2_000_000_000;
+        return isChatId(last.peerId);
     }
 
     public boolean isFromGroup() {

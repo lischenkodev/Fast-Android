@@ -13,8 +13,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-import ru.melodin.fast.util.ArrayUtil;
-
 public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
         extends RecyclerView.Adapter<VH> {
     protected Context context;
@@ -90,8 +88,7 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
     }
 
     public void clear() {
-        if (!ArrayUtil.isEmpty(getValues()))
-            getValues().clear();
+        getValues().clear();
     }
 
     public void setOnItemClickListener(OnItemClickListener l) {

@@ -162,5 +162,6 @@
     <string name="show_error_title">Show error</string>
 
     <string name="auth_vkdesktop_text" translatable="false">В связи с возникшими ограничениями со стороны ВК, авторизация временно будет производиться через другое приложение - VK Desktop. Спасибо за понимание.</string>
+    <string name="clear_cache_confirm">Are you really want to clear cache?</string>
 
 </resources>

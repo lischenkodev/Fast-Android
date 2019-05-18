@@ -351,7 +351,7 @@ public class CacheStorage {
         dialog.disabled_forever = getInt(cursor, DISABLED_FOREVER) == 1;
         dialog.disabled_until = getInt(cursor, DISABLED_UNTIL);
 
-        dialog.type = getString(cursor, CONVERSATION_TYPE);
+        dialog.type = VKConversation.getType(getString(cursor, CONVERSATION_TYPE));
 
         dialog.photo_50 = getString(cursor, PHOTO_50);
         dialog.photo_100 = getString(cursor, PHOTO_100);
@@ -431,7 +431,7 @@ public class CacheStorage {
         values.put(PHOTO_50, dialog.photo_50);
         values.put(PHOTO_100, dialog.photo_100);
         values.put(PHOTO_200, dialog.photo_200);
-        values.put(CONVERSATION_TYPE, dialog.type);
+        values.put(CONVERSATION_TYPE, VKConversation.getType(dialog.type));
         values.put(DISABLED_FOREVER, dialog.disabled_forever);
         values.put(DISABLED_UNTIL, dialog.disabled_until);
 
@@ -454,20 +454,12 @@ public class CacheStorage {
         }
 
         if (TextUtils.isEmpty(dialog.title)) {
-            if (dialog.last.fromId < 0) {
-                VKGroup g = getGroup(dialog.last.peerId);
-                if (g != null) {
-                    values.put(TITLE, g.name);
-                } else {
-                    values.put(TITLE, "");
-                }
+            if (dialog.isGroup()) {
+                VKGroup group = getGroup(dialog.last.peerId);
+                values.put(TITLE, group == null ? "" : group.name);
             } else {
-                VKUser u = getUser(dialog.last.peerId);
-                if (u != null) {
-                    values.put(TITLE, u.toString());
-                } else {
-                    values.put(TITLE, "");
-                }
+                VKUser user = getUser(dialog.last.peerId);
+                values.put(TITLE, user == null ? "" : user.toString());
             }
         } else {
             values.put(TITLE, dialog.title);

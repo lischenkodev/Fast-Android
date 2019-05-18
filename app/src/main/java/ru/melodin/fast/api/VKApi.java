@@ -143,7 +143,7 @@ public class VKApi {
             for (int i = 0; i < array.length(); i++) {
                 JSONObject source = array.optJSONObject(i);
                 VKConversation conversation;
-                if (source.has("conversation")) {
+                if (url.contains("getConversations?")) {
                     JSONObject json_conversation = source.optJSONObject("conversation");
                     JSONObject json_last_message = source.optJSONObject("last_message");
 

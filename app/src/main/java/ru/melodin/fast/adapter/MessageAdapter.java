@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,10 +32,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -44,7 +41,6 @@ import ru.melodin.fast.R;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.VKUtils;
 import ru.melodin.fast.api.model.VKAudio;
-import ru.melodin.fast.api.model.VKConversation;
 import ru.melodin.fast.api.model.VKDoc;
 import ru.melodin.fast.api.model.VKGraffiti;
 import ru.melodin.fast.api.model.VKGroup;
@@ -62,8 +58,6 @@ import ru.melodin.fast.concurrent.AsyncCallback;
 import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.MemoryCache;
-import ru.melodin.fast.fragment.FragmentSettings;
-import ru.melodin.fast.service.LongPollService;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
@@ -89,36 +83,10 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         this.metrics = context.getResources().getDisplayMetrics();
 
         manager = (LinearLayoutManager) ((MessagesActivity) context).getRecyclerView().getLayoutManager();
-
-        EventBus.getDefault().register(this);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onReceive(Object[] data) {
-        if (ArrayUtil.isEmpty(data)) return;
 
-        String key = (String) data[0];
-
-        switch (key) {
-            case LongPollService.KEY_MESSAGE_CLEAR_FLAGS:
-                readMessage((int) data[1]);
-                break;
-            case LongPollService.KEY_MESSAGE_NEW:
-                VKConversation conversation = (VKConversation) data[1];
-
-                addMessage(conversation.last);
-
-                if (!conversation.last.out && conversation.last.peerId == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
-                    readNewMessage(conversation.last);
-                }
-                break;
-            case LongPollService.KEY_MESSAGE_EDIT:
-                editMessage((VKMessage) data[1]);
-                break;
-        }
-    }
-
-    private void readNewMessage(final VKMessage message) {
+    public void readNewMessage(final VKMessage message) {
         ThreadExecutor.execute(new AsyncCallback(((MessagesActivity) context)) {
             @Override
             public void ready() throws Exception {
@@ -153,11 +121,11 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         return -1;
     }
 
-    private void editMessage(VKMessage edited) {
+    public void editMessage(VKMessage edited) {
         for (int i = 0; i < getItemCount(); i++) {
             VKMessage message = getItem(i);
             if (message.id == edited.id) {
-                message.mask = edited.mask;
+                message.flags = edited.flags;
                 message.text = edited.text;
                 message.update_time = edited.update_time;
                 message.attachments = edited.attachments;
@@ -168,23 +136,27 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         }
     }
 
-    private void addMessage(VKMessage msg) {
+    public void addMessage(VKMessage msg) {
+        Log.d("Message info", "Current peerId: " + peerId + "; message peerId: " + msg.peerId + "; containsRandom(randomId = " + msg.randomId + "): " + containsRandom(msg.randomId));
         if (msg.peerId != peerId) return;
-        if (isContains(msg.randomId)) return;
+        if (containsRandom(msg.randomId)) return;
 
         add(msg);
+
         notifyItemInserted(getItemCount() - 1);
         ((MessagesActivity) context).checkCount();
 
-        int lastVisibleItem = manager.findLastCompletelyVisibleItemPosition();
-        int totalVisibleItems = manager.findLastCompletelyVisibleItemPosition() - manager.findFirstCompletelyVisibleItemPosition() + 1;
+        manager.scrollToPosition(getItemCount() - 1);
 
-        if (lastVisibleItem <= totalVisibleItems) {
-            manager.scrollToPosition(getItemCount() - 1);
-        }
+        //int lastVisibleItem = manager.findLastCompletelyVisibleItemPosition();
+        //int totalVisibleItems = manager.findLastCompletelyVisibleItemPosition() - manager.findFirstCompletelyVisibleItemPosition() + 1;
+
+        //if (lastVisibleItem <= totalVisibleItems) {
+
+        //}
     }
 
-    private boolean isContains(long randomId) {
+    private boolean containsRandom(long randomId) {
         boolean contains = false;
 
         for (VKMessage m : getValues()) {
@@ -194,7 +166,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         return contains;
     }
 
-    private void readMessage(int mId) {
+    public void readMessage(int mId) {
         for (int i = 0; i < getItemCount(); i++) {
             VKMessage message = getItem(i);
             if (message.id == mId) {
@@ -308,11 +280,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         if (user == null) return;
 
         Toast.makeText(context, user.toString(), Toast.LENGTH_SHORT).show();
-    }
-
-    public void destroy() {
-        getValues().clear();
-        EventBus.getDefault().unregister(this);
     }
 
     @Override

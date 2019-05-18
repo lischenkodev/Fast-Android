@@ -128,7 +128,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
         refreshLayout = v.findViewById(R.id.refresh);
     }
 
-    private void checkCount() {
+    public void checkCount() {
         empty.setVisibility(adapter == null ? View.VISIBLE : adapter.isEmpty() ? View.VISIBLE : View.GONE);
     }
 

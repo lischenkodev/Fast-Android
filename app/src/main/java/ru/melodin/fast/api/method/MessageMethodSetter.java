@@ -49,7 +49,7 @@ public class MessageMethodSetter extends MethodSetter {
      * 4 — messages from friends
      * 8 - important messages
      * <p/>
-     * If the 4 flag is set, the 1 and 2 flags are not considered
+     * If the 4 flags is set, the 1 and 2 flags are not considered
      */
     public MessageMethodSetter filters(int value) {
         put("filters", value);
@@ -308,7 +308,7 @@ public class MessageMethodSetter extends MethodSetter {
     /** Setters for messages.markAsImportant */
 
     /**
-     * Sets flag to important message:
+     * Sets flags to important message:
      * false — to remove the star
      * true — to add a star (mark as important)
      */

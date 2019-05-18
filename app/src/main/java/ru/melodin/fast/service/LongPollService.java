@@ -13,6 +13,7 @@ import org.json.JSONObject;
 
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
+import ru.melodin.fast.api.model.VKAttachments;
 import ru.melodin.fast.api.model.VKConversation;
 import ru.melodin.fast.api.model.VKLongPollServer;
 import ru.melodin.fast.api.model.VKMessage;
@@ -22,6 +23,7 @@ import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.net.HttpRequest;
+import ru.melodin.fast.util.StringUtils;
 import ru.melodin.fast.util.Util;
 
 public class LongPollService extends Service {
@@ -69,10 +71,6 @@ public class LongPollService extends Service {
         }
         LowThread updateThread = new LowThread(new MessageUpdater());
         updateThread.start();
-    }
-
-    private VKMessage getMessage(int id) throws Exception {
-        return VKApi.messages().getById().messageIds(id).extended(true).execute(VKMessage.class).get(0);
     }
 
     private class MessageUpdater implements Runnable {
@@ -140,9 +138,9 @@ public class LongPollService extends Service {
             params.put("act", "a_check");
             params.put("key", server.key);
             params.put("ts", String.valueOf(server.ts));
-            params.put("wait", "30");
-            params.put("mode", "238");
-            params.put("version", "3");
+            params.put("wait", "10");
+            params.put("mode", "490");
+            params.put("version", "6");
 
             String url = "https://" + server.server;
 
@@ -151,31 +149,88 @@ public class LongPollService extends Service {
         }
 
         private void messageEvent(JSONArray item) {
-            VKConversation conversation = VKConversation.parseFromLongPoll(item);
+            int mId = item.optInt(1);
+            int flags = item.optInt(2);
+            int peerId = item.optInt(3);
+            int time = item.optInt(4);
+            String text = StringUtils.unescape(item.optString(5));
+
+            JSONObject fromActions = item.optJSONObject(6);
+            JSONObject attachments = item.optJSONObject(7);
+
+            int randomId = item.optInt(8);
+            int conversationMessageId = item.optInt(9);
+            int updateTime = item.optInt(10);
+
+            VKConversation conversation = new VKConversation();
+
+            VKMessage last = new VKMessage();
+            last.id = mId;
+            last.flags = flags;
+            last.peerId = peerId;
+            last.date = time;
+            last.text = text;
+            last.chatMessageId = conversationMessageId;
+            last.update_time = updateTime;
+
+            conversation.read = last.read = ((last.flags & VKMessage.UNREAD) == 0);
+
+            last.out = (last.flags & VKMessage.OUTBOX) != 0;
+            last.fromId = fromActions != null && fromActions.has("from") ? fromActions.optInt("from") : last.out ? UserConfig.userId : peerId;
+            last.attachments = VKAttachments.parseFromLongPoll(attachments);
+            last.randomId = randomId;
+
+            conversation.type = VKConversation.getType(last.peerId);
+
+            conversation.last = last;
+
             EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_NEW, conversation});
+            Log.d("FVK New Message", item.toString());
         }
 
-        private void messageClearFlags(int id, int mask) {
-            if ((mask & VKMessage.UNREAD) != 0) {
-                EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_CLEAR_FLAGS, id});
+        private void messageClearFlags(JSONArray item) {
+            int mId = item.optInt(1);
+            int flags = item.optInt(2);
+            int peerId = item.optInt(3);
+
+            VKMessage message = CacheStorage.getMessage(mId);
+
+            if (message != null) {
+                message.flags = flags;
+                message.peerId = peerId;
+                CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID + " = ?", String.valueOf(mId));
             }
+
+            if ((flags & VKMessage.UNREAD) != 0) {
+                EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_CLEAR_FLAGS, mId});
+            }
+
+            Log.d("FVK Message Edit", item.toString());
         }
 
         private void editMessageEvent(JSONArray item) {
             int id = item.optInt(1);
-            int mask = item.optInt(2);
-            //int peerId = item.optInt(3);
-            long updateTime = item.optInt(4);
+            int flags = item.optInt(2);
+            int peerId = item.optInt(3);
+            long time = item.optInt(4);
             String text = item.optString(5);
-            //JSONObject attachments = item.optJSONObject(6);
+            JSONObject fromActions = item.optJSONObject(6);
+            //JSONObject attachments = item.optJSONObject(7);
+            int randomId = item.optInt(8);
+            int conversationMessageId = item.optInt(9);
+            int updateTime = item.optInt(10);
 
             VKMessage message = CacheStorage.getMessage(id);
             if (message == null) return;
 
-            message.mask = mask;
-            message.update_time = updateTime;
+            message.flags = flags;
+            message.peerId = peerId;
+            message.date = time;
             message.text = text;
-
+            message.fromId = fromActions != null && fromActions.has("from") ? fromActions.optInt("from") : message.out ? UserConfig.userId : peerId;
+            message.randomId = randomId;
+            message.chatMessageId = conversationMessageId;
+            message.update_time = updateTime;
 
             CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID + " = ?", String.valueOf(id));
 
@@ -193,9 +248,7 @@ public class LongPollService extends Service {
 
                 switch (type) {
                     case 3: //clear flags
-                        int id = item.optInt(1);
-                        int mask = item.optInt(2);
-                        messageClearFlags(id, mask);
+                        messageClearFlags(item);
                         break;
                     case 4: //new message
                         messageEvent(item);

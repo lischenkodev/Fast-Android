@@ -186,7 +186,7 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
         intent.putExtra("can_write", canWrite);
 
         if (!canWrite) {
-            intent.putExtra("reason", VKConversation.REASON_USER_BLOCKED_DELETED);
+            intent.putExtra("reason", VKConversation.getReason(VKConversation.Reason.USER_DELETED));
         }
 
         startActivity(intent);

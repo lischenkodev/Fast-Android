@@ -160,31 +160,21 @@ public class VKUtils {
         return s;
     }
 
-    public static String getErrorReason(int reason) {
-        String s;
-
+    public static String getErrorReason(VKConversation.Reason reason) {
         switch (reason) {
-            case VKConversation.REASON_CANT_SEND_MESSAGE_USER_WHICH_IN_BLACKLIST:
-                s = getString(R.string.user_in_blacklist);
-                break;
-            case VKConversation.REASON_CANT_SEND_USER_PRIVACY:
-                s = getString(R.string.user_strict_messaging);
-                break;
-            case VKConversation.REASON_USER_BLOCKED_DELETED:
-                s = getString(R.string.user_blocked_or_deleted);
-                break;
-            case VKConversation.REASON_LEFT:
-                s = getString(R.string.you_left_this_chat);
-                break;
-            case VKConversation.REASON_KICKED:
-                s = getString(R.string.kicked_out_text);
-                break;
+            case USER_BLACKLIST:
+                return getString(R.string.user_in_blacklist);
+            case USER_PRIVACY:
+                return getString(R.string.user_strict_messaging);
+            case USER_DELETED:
+                return getString(R.string.user_blocked_or_deleted);
+            case LEFT:
+                return getString(R.string.you_left_this_chat);
+            case KICKED:
+                return getString(R.string.kicked_out_text);
             default:
-                s = getString(R.string.messaging_restricted);
-                break;
+                return getString(R.string.messaging_restricted);
         }
-
-        return s;
     }
 
     private static String getString(int res) {
