@@ -78,8 +78,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                 setUserOnline(true, (int) data[1], (int) data[2]);
                 break;
             case LongPollService.KEY_MESSAGE_CLEAR_FLAGS:
-                int mId = (int) data[1];
-                readMessage(mId);
+                handleClearFlags(data);
                 break;
             case LongPollService.KEY_MESSAGE_NEW:
                 VKConversation conversation = (VKConversation) data[1];
@@ -102,6 +101,14 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                 fragment.onRefresh();
                 break;
         }
+    }
+
+    private void handleClearFlags(Object[] data) {
+        int mId = (int) data[1];
+        int flags = (int) data[2];
+
+        if (VKMessage.isUnread(flags))
+            readMessage(mId);
     }
 
     private void updateUser(int userId) {

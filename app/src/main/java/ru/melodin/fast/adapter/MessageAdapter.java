@@ -85,7 +85,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         manager = (LinearLayoutManager) ((MessagesActivity) context).getRecyclerView().getLayoutManager();
     }
 
-
     public void readNewMessage(final VKMessage message) {
         ThreadExecutor.execute(new AsyncCallback(((MessagesActivity) context)) {
             @Override
@@ -105,6 +104,34 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         });
     }
 
+    public void handleClearFlags(Object[] data) {
+        int mId = (int) data[1];
+        int flags = (int) data[2];
+        int peerId = (int) data[3];
+
+        if (peerId != this.peerId) return;
+
+        if (VKMessage.isImportant(flags))
+            importantMessage(false, mId);
+
+        if (VKMessage.isUnread(flags))
+            readMessage(mId);
+    }
+
+    public void handleSetFlags(Object[] data) {
+        int mId = (int) data[1];
+        int flags = (int) data[2];
+        int peerId = (int) data[3];
+
+        if (peerId != this.peerId) return;
+
+        if (VKMessage.isImportant(flags))
+            importantMessage(true, mId);
+
+        if (VKMessage.isUnread(flags))
+            readMessage(mId);
+    }
+
     public boolean contains(int id) {
         for (VKMessage m : getValues()) {
             if (m.id == id) return true;
@@ -121,15 +148,21 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         return -1;
     }
 
+    public void importantMessage(boolean important, int mId) {
+        for (int i = 0; i < getItemCount(); i++) {
+            VKMessage message = getItem(i);
+            if (message.id == mId) {
+                message.important = important;
+                notifyItemChanged(i, -1);
+                break;
+            }
+        }
+    }
+
     public void editMessage(VKMessage edited) {
         for (int i = 0; i < getItemCount(); i++) {
             VKMessage message = getItem(i);
             if (message.id == edited.id) {
-                message.flags = edited.flags;
-                message.text = edited.text;
-                message.update_time = edited.update_time;
-                message.attachments = edited.attachments;
-
                 notifyItemChanged(i, -1);
                 break;
             }
@@ -170,7 +203,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         for (int i = 0; i < getItemCount(); i++) {
             VKMessage message = getItem(i);
             if (message.id == mId) {
-                message.read = true;
                 notifyItemChanged(i, -1);
                 break;
             }
@@ -406,6 +438,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             time_container.setGravity(item.out ? Gravity.END : Gravity.START);
 
             important.setVisibility(item.important ? View.VISIBLE : View.GONE);
+            important.fa
 
             bubble.setVisibility(View.VISIBLE);
 

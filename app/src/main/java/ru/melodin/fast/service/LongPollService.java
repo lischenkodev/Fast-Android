@@ -34,6 +34,7 @@ public class LongPollService extends Service {
     public static final String KEY_MESSAGE_NEW = "message_new";
     public static final String KEY_MESSAGE_EDIT = "message_edit";
     public static final String KEY_MESSAGE_CLEAR_FLAGS = "message_clear_flags";
+    public static final String KEY_MESSAGE_SET_FLAGS = "message_set_flags";
     public static final String KEY_USER_ONLINE = "user_online";
     public static final String KEY_USER_OFFLINE = "user_offline";
 
@@ -188,6 +189,30 @@ public class LongPollService extends Service {
             Log.d("FVK New Message", item.toString());
         }
 
+        private void messageSetFlags(JSONArray item) {
+            int mId = item.optInt(1);
+            int flags = item.optInt(2);
+            int peerId = item.optInt(3);
+
+            VKMessage message = CacheStorage.getMessage(mId);
+
+            if (message != null) {
+                message.flags = flags;
+                message.peerId = peerId;
+
+                if (VKMessage.isImportant(flags))
+                    message.important = true;
+
+                if (VKMessage.isUnread(flags))
+                    message.read = false;
+
+                CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID + " = ?", String.valueOf(mId));
+            }
+
+            EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_SET_FLAGS, mId, flags, peerId});
+            Log.d("FVK Message Edit", item.toString());
+        }
+
         private void messageClearFlags(JSONArray item) {
             int mId = item.optInt(1);
             int flags = item.optInt(2);
@@ -198,12 +223,17 @@ public class LongPollService extends Service {
             if (message != null) {
                 message.flags = flags;
                 message.peerId = peerId;
+
+                if (VKMessage.isImportant(flags))
+                    message.important = false;
+
+                if (VKMessage.isUnread(flags))
+                    message.read = true;
+
                 CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID + " = ?", String.valueOf(mId));
             }
 
-            if ((flags & VKMessage.UNREAD) != 0) {
-                EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_CLEAR_FLAGS, mId});
-            }
+            EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_CLEAR_FLAGS, mId, flags, peerId});
 
             Log.d("FVK Message Edit", item.toString());
         }
@@ -247,6 +277,9 @@ public class LongPollService extends Service {
                 int type = item.optInt(0);
 
                 switch (type) {
+                    case 2: //set flags
+                        messageSetFlags(item);
+                        break;
                     case 3: //clear flags
                         messageClearFlags(item);
                         break;

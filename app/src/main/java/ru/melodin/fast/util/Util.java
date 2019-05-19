@@ -107,7 +107,7 @@ public class Util {
 
     public static boolean hasConnection() {
         ConnectivityManager cm = (ConnectivityManager) AppGlobal.context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        return (cm.getActiveNetworkInfo() != null &&
+        return (cm.getActiveNetworkInfo() != null && cm.getActiveNetwork() != null &&
                 cm.getActiveNetworkInfo().isAvailable() &&
                 cm.getActiveNetworkInfo().isConnected());
     }

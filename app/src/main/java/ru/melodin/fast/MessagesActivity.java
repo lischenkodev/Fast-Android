@@ -192,7 +192,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 updateGroup((int) data[1]);
                 break;
             case LongPollService.KEY_MESSAGE_CLEAR_FLAGS:
-                adapter.readMessage((int) data[1]);
+                adapter.handleClearFlags(data);
+                break;
+            case LongPollService.KEY_MESSAGE_SET_FLAGS:
+                adapter.handleSetFlags(data);
                 break;
             case LongPollService.KEY_MESSAGE_NEW:
                 VKConversation conversation = (VKConversation) data[1];
