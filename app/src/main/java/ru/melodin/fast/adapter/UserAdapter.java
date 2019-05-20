@@ -1,5 +1,6 @@
 package ru.melodin.fast.adapter;
 
+import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
@@ -20,23 +21,27 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 
 import ru.melodin.fast.R;
+import ru.melodin.fast.api.LongPollEvents;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.fragment.FragmentFriends;
-import ru.melodin.fast.service.LongPollService;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.view.CircleImageView;
 
-public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHolder> {
+public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
 
     private FragmentFriends fragment;
 
-    public FriendAdapter(FragmentFriends context, ArrayList<VKUser> friends) {
+    public UserAdapter(FragmentFriends context, ArrayList<VKUser> friends) {
         super(context.getContext(), friends);
         this.fragment = context;
         EventBus.getDefault().register(this);
+    }
+
+    public UserAdapter(Context context, ArrayList<VKUser> users) {
+        super(context, users);
     }
 
     public void destroy() {
@@ -62,10 +67,10 @@ public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHol
         String key = (String) data[0];
 
         switch (key) {
-            case LongPollService.KEY_USER_OFFLINE:
+            case LongPollEvents.KEY_USER_OFFLINE:
                 setUserOnline(false, (int) data[1], (int) data[2]);
                 break;
-            case LongPollService.KEY_USER_ONLINE:
+            case LongPollEvents.KEY_USER_ONLINE:
                 setUserOnline(true, (int) data[1], (int) data[2]);
                 break;
         }
@@ -112,21 +117,26 @@ public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHol
         }
 
         void bind(final int position) {
-            message.setOnClickListener(new View.OnClickListener() {
+            if (fragment != null) {
+                message.setOnClickListener(new View.OnClickListener() {
 
-                @Override
-                public void onClick(View v) {
-                    fragment.openChat(position);
-                }
-            });
+                    @Override
+                    public void onClick(View v) {
+                        fragment.openChat(position);
+                    }
+                });
 
-            functions.setOnClickListener(new View.OnClickListener() {
+                functions.setOnClickListener(new View.OnClickListener() {
 
-                @Override
-                public void onClick(View v) {
-                    fragment.showDialog(position, v);
-                }
-            });
+                    @Override
+                    public void onClick(View v) {
+                        fragment.showDialog(position, v);
+                    }
+                });
+            } else {
+                message.setVisibility(View.GONE);
+                functions.setVisibility(View.GONE);
+            }
 
             VKUser user = getItem(position);
 
@@ -148,11 +158,11 @@ public class FriendAdapter extends RecyclerAdapter<VKUser, FriendAdapter.ViewHol
                 lastSeen.setText("");
             }
 
-            if (TextUtils.isEmpty(user.photo_100)) {
+            if (TextUtils.isEmpty(user.photo_200)) {
                 avatar.setImageDrawable(new ColorDrawable(ColorUtil.alphaColor(ThemeManager.getPrimary(), 0.5f)));
             } else {
                 Picasso.get()
-                        .load(user.photo_100)
+                        .load(user.photo_200)
                         .priority(Picasso.Priority.HIGH)
                         .placeholder(placeholder)
                         .into(avatar);

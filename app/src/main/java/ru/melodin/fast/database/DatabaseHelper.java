@@ -207,6 +207,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(SQL_CREATE_TABLE_MESSAGES);
     }
 
+    public void dropUsersTable(SQLiteDatabase db) {
+        db.execSQL(SQL_DELETE_USERS);
+        db.execSQL(SQL_CREATE_TABLE_USERS);
+    }
+
     public void dropTables(SQLiteDatabase db) {
         db.execSQL(SQL_DELETE_USERS);
         db.execSQL(SQL_DELETE_GROUPS);

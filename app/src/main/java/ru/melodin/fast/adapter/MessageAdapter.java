@@ -237,7 +237,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         VKUser user = MemoryCache.getUser(id);
 
         if (user == null) {
-            user = VKUser.EMPTY;
+            loadUser(id);
+            return VKUser.EMPTY;
         }
 
         return user;
@@ -247,8 +248,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         VKGroup group = MemoryCache.getGroup(id);
 
         if (group == null) {
-            group = VKGroup.EMPTY;
-
+            loadGroup(id);
+            return VKGroup.EMPTY;
         }
 
         return group;
@@ -510,7 +511,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             bubble.setVisibility(View.VISIBLE);
 
-            String avatar_link = item.isFromUser() ? user.photo_100 : item.isFromGroup() ? group.photo_100 : "";
+            String avatar_link = item.isFromGroup() ? group.photo_100 : user.photo_100;
 
             if (item.isFromUser()) {
                 avatar_link = user.photo_100;

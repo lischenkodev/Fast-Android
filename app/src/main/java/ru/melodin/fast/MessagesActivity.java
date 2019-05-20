@@ -45,6 +45,7 @@ import java.util.TimerTask;
 
 import ru.melodin.fast.adapter.MessageAdapter;
 import ru.melodin.fast.adapter.RecyclerAdapter;
+import ru.melodin.fast.api.LongPollEvents;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.VKUtils;
@@ -61,7 +62,6 @@ import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.fragment.FragmentSettings;
-import ru.melodin.fast.service.LongPollService;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
@@ -182,23 +182,17 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         String key = (String) data[0];
 
         switch (key) {
-            case LongPollService.KEY_USER_OFFLINE:
-            case LongPollService.KEY_USER_ONLINE:
+            case LongPollEvents.KEY_USER_OFFLINE:
+            case LongPollEvents.KEY_USER_ONLINE:
                 setUserOnline((int) data[1]);
                 break;
-            case "update_user":
-                updateUser((int) data[1]);
-                break;
-            case "update_group":
-                updateGroup((int) data[1]);
-                break;
-            case LongPollService.KEY_MESSAGE_CLEAR_FLAGS:
+            case LongPollEvents.KEY_MESSAGE_CLEAR_FLAGS:
                 adapter.handleClearFlags(data);
                 break;
-            case LongPollService.KEY_MESSAGE_SET_FLAGS:
+            case LongPollEvents.KEY_MESSAGE_SET_FLAGS:
                 adapter.handleSetFlags(data);
                 break;
-            case LongPollService.KEY_MESSAGE_NEW:
+            case LongPollEvents.KEY_MESSAGE_NEW:
                 VKConversation conversation = (VKConversation) data[1];
 
                 adapter.addMessage(conversation.last);
@@ -207,7 +201,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                     adapter.readNewMessage(conversation.last);
                 }
                 break;
-            case LongPollService.KEY_MESSAGE_EDIT:
+            case LongPollEvents.KEY_MESSAGE_EDIT:
                 adapter.editMessage((VKMessage) data[1]);
                 break;
         }
@@ -216,30 +210,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private void setUserOnline(int userId) {
         if (peerId == userId)
             getSupportActionBar().setSubtitle(getSubtitle());
-    }
-
-    private void updateUser(int userId) {
-        for (int i = 0; i < adapter.getItemCount(); i++) {
-            VKMessage message = adapter.getItem(i);
-            if (conversation.isFromUser()) {
-                if (message.fromId == userId) {
-                    adapter.notifyItemChanged(i, -1);
-                }
-            }
-        }
-    }
-
-    private void updateGroup(int groupId) {
-        if (groupId > 0)
-            groupId *= -1;
-        for (int i = 0; i < adapter.getItemCount(); i++) {
-            VKMessage message = adapter.getItem(i);
-            if (conversation.isFromGroup()) {
-                if (message.fromId == groupId) {
-                    adapter.notifyItemChanged(i, -1);
-                }
-            }
-        }
     }
 
     private void initViews() {
@@ -495,6 +465,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             adapter = new MessageAdapter(this, messages, peerId);
             adapter.setOnItemClickListener(this);
             list.setAdapter(adapter);
+            EventBus.getDefault().register(this);
             if (adapter.getItemCount() > 0)
                 list.scrollToPosition(adapter.getItemCount() - 1);
             checkCount();
@@ -515,8 +486,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (!ArrayUtil.isEmpty(messages)) {
             createAdapter(messages);
         }
-
-        EventBus.getDefault().register(this);
     }
 
     private void getHistory(final int offset, final int count) {

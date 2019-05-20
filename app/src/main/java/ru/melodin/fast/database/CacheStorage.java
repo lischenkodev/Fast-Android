@@ -148,6 +148,17 @@ public class CacheStorage {
         return null;
     }
 
+    public static ArrayList<VKUser> getUsers() {
+        Cursor cursor = selectCursor(USERS_TABLE);
+        ArrayList<VKUser> users = new ArrayList<>(cursor.getCount());
+        while (cursor.moveToNext()) {
+            users.add(parseUser(cursor));
+        }
+
+        cursor.close();
+        return users;
+    }
+
     public static ArrayList<VKUser> getUsers(int ids) {
         Cursor cursor = selectCursor(USERS_TABLE, USER_ID, ids);
         ArrayList<VKUser> users = new ArrayList<>(cursor.getCount());

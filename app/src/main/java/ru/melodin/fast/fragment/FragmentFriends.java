@@ -23,7 +23,7 @@ import java.util.ArrayList;
 
 import ru.melodin.fast.MessagesActivity;
 import ru.melodin.fast.R;
-import ru.melodin.fast.adapter.FriendAdapter;
+import ru.melodin.fast.adapter.UserAdapter;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.model.VKConversation;
@@ -44,7 +44,7 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
     private RecyclerView list;
     private SwipeRefreshLayout refreshLayout;
 
-    private FriendAdapter adapter;
+    private UserAdapter adapter;
 
     @Override
     public void onRefresh() {
@@ -105,7 +105,7 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
         checkCount();
 
         if (adapter == null) {
-            adapter = new FriendAdapter(this, friends);
+            adapter = new UserAdapter(this, friends);
             list.setAdapter(adapter);
 
             checkCount();

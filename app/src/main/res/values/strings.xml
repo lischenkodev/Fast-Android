@@ -85,7 +85,7 @@
     <string name="invisible_title">Invisible</string>
     <string name="hide_typing_title">Hide typing status</string>
     <string name="database">Database</string>
-    <string name="clean_messages_cache">Clean messages cache</string>
+    <string name="clear_messages_cache">Clear messages cache</string>
     <string name="clean_cache">Clean cache</string>
     <string name="updates">Updates</string>
     <string name="ota" translatable="false">OTA</string>
@@ -154,7 +154,7 @@
     <string name="url_copied_text">Url copied to clipboard</string>
     <string name="photo_saved_text">Photo saved in downloads directory</string>
     <string name="photo_permission_title">Fast requires permission for save photo</string>
-    <string name="clear_cache">Clear cache</string>
+    <string name="clear_cache_title">Clear cache</string>
 
     <string name="user_id" translatable="false">User ID</string>
     <string name="token">Token</string>
@@ -163,5 +163,10 @@
 
     <string name="auth_vkdesktop_text" translatable="false">В связи с возникшими ограничениями со стороны ВК, авторизация временно будет производиться через другое приложение - VK Desktop. Спасибо за понимание.</string>
     <string name="clear_cache_confirm">Are you really want to clear cache?</string>
+    <string name="cache">Cache</string>
+    <string name="show_caches_users_title">Show cached users</string>
+    <string name="no_data">No data</string>
+    <string name="cached_users">Cached users</string>
+    <string name="clear">Clear</string>
 
 </resources>

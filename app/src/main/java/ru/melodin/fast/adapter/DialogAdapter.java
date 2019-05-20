@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -31,6 +32,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 
 import ru.melodin.fast.R;
+import ru.melodin.fast.api.LongPollEvents;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.VKUtils;
@@ -46,7 +48,6 @@ import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.fragment.FragmentDialogs;
 import ru.melodin.fast.fragment.FragmentSettings;
-import ru.melodin.fast.service.LongPollService;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
@@ -73,24 +74,28 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         String key = (String) data[0];
 
         switch (key) {
-            case LongPollService.KEY_USER_OFFLINE:
+            case LongPollEvents.KEY_USER_OFFLINE:
                 setUserOnline(false, (int) data[1], (int) data[2]);
                 break;
-            case LongPollService.KEY_USER_ONLINE:
+            case LongPollEvents.KEY_USER_ONLINE:
                 setUserOnline(true, (int) data[1], (int) data[2]);
                 break;
-            case LongPollService.KEY_MESSAGE_CLEAR_FLAGS:
+            case LongPollEvents.KEY_MESSAGE_CLEAR_FLAGS:
                 handleClearFlags(data);
                 break;
-            case LongPollService.KEY_MESSAGE_NEW:
+            case LongPollEvents.KEY_MESSAGE_NEW:
                 VKConversation conversation = (VKConversation) data[1];
                 addMessage(conversation);
                 break;
-            case LongPollService.KEY_MESSAGE_EDIT:
+            case LongPollEvents.KEY_MESSAGE_EDIT:
                 VKMessage message = (VKMessage) data[1];
                 editMessage(message);
                 break;
-            case FragmentSettings.KEY_CLEAR_CACHE:
+            case LongPollEvents.KEY_MESSAGE_UPDATE:
+                updateMessage((int) data[1]);
+                Toast.makeText(context, "Update message", Toast.LENGTH_SHORT).show();
+                break;
+            case FragmentSettings.KEY_MESSAGES_CLEAR_CACHE:
                 clear();
                 notifyDataSetChanged();
                 fragment.checkCount();
@@ -105,6 +110,17 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
         if (VKMessage.isUnread(flags))
             readMessage(mId);
+    }
+
+    private void updateMessage(int mId) {
+        for (int i = 0; i < getItemCount(); i++) {
+            VKConversation conversation = getItem(i);
+            if (conversation.last.id == mId) {
+                conversation.last = CacheStorage.getMessage(mId);
+                notifyItemChanged(i, -1);
+                break;
+            }
+        }
     }
 
     private void updateUser(int userId) {
@@ -489,8 +505,11 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
             counter.getBackground().setTint(item.isNotificationsDisabled() ? pushesDisabled : pushesEnabled);
 
-
-            avatarSmall.setVisibility((!item.isChat() && !last.out) || item.group_channel ? View.GONE : View.VISIBLE);
+            if ((!last.out && !item.isChat()) || item.group_channel) {
+                avatarSmall.setVisibility(View.GONE);
+            } else {
+                avatarSmall.setVisibility(View.VISIBLE);
+            }
 
             Drawable placeholder = item.isChat() || item.isGroup() || item.group_channel ? holderUsers : holderUser;
 
@@ -504,15 +523,16 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                 avatar.setImageDrawable(placeholder);
             }
 
-            if (!TextUtils.isEmpty(fromAvatar)) {
-                Picasso.get()
-                        .load(fromAvatar)
-                        .priority(Picasso.Priority.HIGH)
-                        .placeholder(placeholder)
-                        .into(avatarSmall);
-            } else {
-                avatarSmall.setImageDrawable(placeholder);
-            }
+            if (avatarSmall.getVisibility() == View.VISIBLE)
+                if (!TextUtils.isEmpty(fromAvatar)) {
+                    Picasso.get()
+                            .load(fromAvatar)
+                            .priority(Picasso.Priority.HIGH)
+                            .placeholder(placeholder)
+                            .into(avatarSmall);
+                } else {
+                    avatarSmall.setImageDrawable(placeholder);
+                }
 
             body.setTextColor(!ThemeManager.isDark() ? -0x70000000 : -0x6f000001);
 

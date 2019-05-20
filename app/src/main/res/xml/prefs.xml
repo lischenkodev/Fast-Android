@@ -40,6 +40,18 @@
 
     </PreferenceCategory>
     <PreferenceCategory
+        android:key="cache"
+        android:title="@string/cache">
+
+        <PreferenceScreen
+            android:key="show_cached_users"
+            android:title="@string/show_caches_users_title" />
+
+        <PreferenceScreen
+            android:key="clear_messages_cache"
+            android:title="@string/clear_messages_cache" />
+    </PreferenceCategory>
+    <PreferenceCategory
         android:key="application"
         android:title="@string/application_title">
 
@@ -49,9 +61,6 @@
             android:summary="@string/show_error_summary"
             android:title="@string/show_error_title" />
 
-        <PreferenceScreen
-            android:key="clear_cache"
-            android:title="@string/clear_cache" />
 
         <PreferenceScreen
             android:key="about"

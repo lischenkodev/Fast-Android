@@ -85,7 +85,7 @@
     <string name="invisible_title">Невидимка</string>
     <string name="hide_typing_title">Скрыть статус тайпинга</string>
     <string name="database">База данных</string>
-    <string name="clean_messages_cache">Очистить кэш сообщений</string>
+    <string name="clear_messages_cache">Очистить кэш сообщений</string>
     <string name="clean_cache">Очистить кэш</string>
     <string name="updates">Обновления</string>
     <string name="app_crashed">В приложении произошла ошибка</string>
@@ -152,8 +152,14 @@
     <string name="url_copied_text">Ссылка скопирована</string>
     <string name="photo_saved_text">Фото сохранено в директорию загрузок</string>
     <string name="photo_permission_title">Fast требует разрешение для сохранения фотографий</string>
-    <string name="clear_cache">Очистить кэш</string>
+    <string name="clear_cache_title">Очистить кэш</string>
     <string name="token">Токен</string>
     <string name="show_error_summary">Показывает диалоговое окно с ошибкой после краша приложения</string>
     <string name="show_error_title">Показывать ошибку</string>
+    <string name="cache">Кэш</string>
+    <string name="clear_cache_confirm">Вы действительно хотите очистить кэш?</string>
+    <string name="show_caches_users_title">Показать кэшированных пользователей</string>
+    <string name="no_data">Нет данных</string>
+    <string name="cached_users">Кэшированные пользователи</string>
+    <string name="clear">Очистить</string>
 </resources>

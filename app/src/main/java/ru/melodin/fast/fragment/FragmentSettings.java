@@ -2,20 +2,28 @@ package ru.melodin.fast.fragment;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.ArrayList;
+
 import ru.melodin.fast.R;
+import ru.melodin.fast.adapter.UserAdapter;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.common.ThemeManager;
+import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
+import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
 
 public class FragmentSettings extends PreferenceFragmentCompat implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
@@ -27,7 +35,8 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
     public static final String KEY_SHOW_ERROR = "show_error";
     public static final String DEFAULT_TEMPLATE_VALUE = "¯\\_(ツ)_/¯";
     private static final String KEY_ABOUT = "about";
-    public static final String KEY_CLEAR_CACHE = "clear_cache";
+    public static final String KEY_MESSAGES_CLEAR_CACHE = "clear_messages_cache";
+    private static final String KEY_SHOW_CACHED_USERS = "show_cached_users";
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -37,7 +46,8 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
         Preference darkTheme = findPreference(KEY_DARK_STYLE);
 
         findPreference(KEY_ABOUT).setOnPreferenceClickListener(this);
-        findPreference(KEY_CLEAR_CACHE).setOnPreferenceClickListener(this);
+        findPreference(KEY_MESSAGES_CLEAR_CACHE).setOnPreferenceClickListener(this);
+        findPreference(KEY_SHOW_CACHED_USERS).setOnPreferenceClickListener(this);
 
         darkTheme.setOnPreferenceChangeListener(this);
 
@@ -69,25 +79,67 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
             case KEY_ABOUT:
                 Toast.makeText(getContext(), String.format(getString(R.string.about_toast), AppGlobal.app_version_name, AppGlobal.app_version_code), Toast.LENGTH_LONG).show();
                 break;
-            case KEY_CLEAR_CACHE:
-                showConfirmClearCacheDialog();
+            case KEY_MESSAGES_CLEAR_CACHE:
+                showConfirmClearCacheDialog(false);
+                break;
+            case KEY_SHOW_CACHED_USERS:
+                showCachedUsers();
                 break;
         }
         return true;
     }
 
-    private void showConfirmClearCacheDialog() {
+    private void showCachedUsers() {
+        View v = getLayoutInflater().inflate(R.layout.recycler_list, null, false);
+
+        v.findViewById(R.id.refresh).setEnabled(false);
+        v.findViewById(R.id.no_items_layout).setVisibility(View.GONE);
+        RecyclerView list = v.findViewById(R.id.list);
+
+        LinearLayoutManager manager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
+        list.setHasFixedSize(true);
+        list.setLayoutManager(manager);
+
+        ArrayList<VKUser> users = CacheStorage.getUsers();
+        if (ArrayUtil.isEmpty(users)) {
+            Toast.makeText(getActivity(), R.string.no_data, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        UserAdapter adapter = new UserAdapter(getContext(), users);
+        list.setAdapter(adapter);
+
+        AlertDialog.Builder adb = new AlertDialog.Builder(getContext());
+        adb.setTitle(R.string.cached_users);
+
+        adb.setView(v);
+        adb.setPositiveButton(android.R.string.ok, null);
+        adb.setNeutralButton(R.string.clear, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface d, int which) {
+                showConfirmClearCacheDialog(true);
+            }
+        });
+        adb.show();
+    }
+
+    private void showConfirmClearCacheDialog(final boolean users) {
         new AlertDialog.Builder(getActivity())
                 .setTitle(R.string.confirmation)
                 .setMessage(R.string.clear_cache_confirm)
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        DatabaseHelper.getInstance().dropMessagesTable(AppGlobal.database);
-                        EventBus.getDefault().postSticky(new Object[]{KEY_CLEAR_CACHE});
+                        if (users) {
+                            DatabaseHelper.getInstance().dropUsersTable(AppGlobal.database);
+                        } else {
+                            DatabaseHelper.getInstance().dropMessagesTable(AppGlobal.database);
+                            EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGES_CLEAR_CACHE});
+                        }
+
                     }
                 })
-                .setNegativeButton(android.R.string.no, null)
+                .setNegativeButton(R.string.no, null)
                 .show();
     }
 }
