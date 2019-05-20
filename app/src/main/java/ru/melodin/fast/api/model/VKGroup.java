@@ -1,7 +1,5 @@
 package ru.melodin.fast.api.model;
 
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -18,7 +16,7 @@ public class VKGroup extends VKModel implements Serializable {
     public static final VKGroup EMPTY = new VKGroup() {
 
         public String getFullName() {
-            return "DELETED";
+            return "Group";
         }
     };
     /**
@@ -106,14 +104,13 @@ public class VKGroup extends VKModel implements Serializable {
      * @param source the json source to parse
      */
     public VKGroup(JSONObject source) {
-        Log.d("FVKGroup", source.toString());
-
         this.id = source.optInt("id");
+
         this.name = source.optString("name");
         this.screen_name = source.optString("screen_name");
         this.is_closed = source.optInt("is_closed");
-        this.is_admin = source.optLong("is_admin") == 1;
-        this.is_member = source.optLong("is_member") == 1;
+        this.is_admin = source.optInt("is_admin") == 1;
+        this.is_member = source.optInt("is_member") == 1;
         this.verified = source.optInt("verified") == 1;
         this.admin_level = source.optInt("admin_level");
 
@@ -130,9 +127,9 @@ public class VKGroup extends VKModel implements Serializable {
                 break;
         }
 
-        this.photo_50 = source.optString("photo_50", "");
-        this.photo_100 = source.optString("photo_100", "");
-        this.photo_200 = source.optString("photo_200", "");
+        this.photo_50 = source.optString("photo_50");
+        this.photo_100 = source.optString("photo_100");
+        this.photo_200 = source.optString("photo_200");
 
         this.description = source.optString("description");
         this.status = source.optString("status");
@@ -142,15 +139,14 @@ public class VKGroup extends VKModel implements Serializable {
     public static ArrayList<VKGroup> parse(JSONArray array) {
         ArrayList<VKGroup> groups = new ArrayList<>(array.length());
         for (int i = 0; i < array.length(); i++) {
-            VKGroup group = new VKGroup((JSONObject) array.opt(i));
-            groups.add(group);
+            groups.add(new VKGroup((JSONObject) array.opt(i)));
         }
 
         return groups;
     }
 
     public static int toGroupId(int id) {
-        return (id < 0) ? Math.abs(id) : (1_000_000_000 - id);
+        return id < 0 ? Math.abs(id) : 1_000_000_000 - id;
     }
 
     public static boolean isGroupId(int id) {

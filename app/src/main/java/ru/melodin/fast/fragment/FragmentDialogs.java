@@ -38,6 +38,7 @@ import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.current.BaseFragment;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
+import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
 
@@ -216,8 +217,8 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
 
     private void openChat(int position) {
         VKConversation conversation = adapter.getItem(position);
-        VKUser user = CacheStorage.getUser(conversation.last.peerId);
-        VKGroup group = CacheStorage.getGroup(VKGroup.toGroupId(conversation.last.peerId));
+        VKUser user = MemoryCache.getUser(conversation.last.peerId);
+        VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(conversation.last.peerId));
 
         Intent intent = new Intent(getActivity(), MessagesActivity.class);
         intent.putExtra("title", adapter.getTitle(conversation, user, group));

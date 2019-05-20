@@ -117,14 +117,15 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        setTheme(ThemeManager.getCurrentTheme());
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_messages);
+
+        ViewUtil.applyWindowStyles(getWindow());
+
         iconSend = ContextCompat.getDrawable(this, R.drawable.md_send);
         iconMic = ContextCompat.getDrawable(this, R.drawable.md_mic);
         iconDone = ContextCompat.getDrawable(this, R.drawable.md_done);
-
-        setTheme(ThemeManager.getCurrentTheme());
-        ViewUtil.applyWindowStyles(getWindow());
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_messages);
 
         initViews();
         getIntentData();
@@ -435,6 +436,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         adapter.addMessage(msg);
 
+        final int position = adapter.getItemCount() - 1;
+
         final int size = adapter.getItemCount();
 
         ThreadExecutor.execute(new AsyncCallback(this) {
@@ -456,12 +459,12 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
                 checkCount();
 
-                adapter.getItem(adapter.getPosition(msg)).id = id;
+                adapter.getItem(position).id = id;
 
                 msg.status = VKMessage.STATUS_SENT;
 
                 if (adapter.getItemCount() > size) {
-                    int i = adapter.getPosition(msg);
+                    int i = adapter.searchPosition(id);
                     adapter.remove(i);
                     adapter.notifyItemRemoved(i);
                     adapter.add(msg);
@@ -473,7 +476,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             @Override
             public void error(Exception e) {
                 msg.status = VKMessage.STATUS_ERROR;
-                adapter.notifyItemChanged(adapter.getPosition(msg), -1);
+                adapter.notifyItemChanged(position, -1);
             }
         });
 

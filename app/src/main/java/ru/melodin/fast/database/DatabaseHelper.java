@@ -68,7 +68,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     static final String ACTION_USER_ID = "action_user_id";
     static final String ACTION_TEXT = "action_text";
 
-    private static final int DATABASE_VERSION = 19;
+    private static final int DATABASE_VERSION = 23;
     private static final String DATABASE_NAME = "cache.db";
 
     /**
@@ -76,7 +76,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      */
 
     private static final String SQL_CREATE_TABLE_USERS = "CREATE TABLE " + USERS_TABLE +
-            " (" + USER_ID + " INTEGER UNIQUE PRIMARY KEY ON CONFLICT REPLACE, " +
+            " (" + USER_ID + " INTEGER PRIMARY KEY ON CONFLICT REPLACE, " +
             " [" + FIRST_NAME + "] VARCHAR(255), " +
             " [" + LAST_NAME + "] VARCHAR(255), " +
             " [" + SCREEN_NAME + "] VARCHAR(255), " +
@@ -129,7 +129,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             ");";
 
     private final static String SQL_CREATE_TABLE_MESSAGES = "CREATE TABLE " + MESSAGES_TABLE +
-            " (" + _ID + "  INTEGER UNIQUE PRIMARY KEY ON CONFLICT REPLACE, " +
+            " (" + _ID + "  INTEGER PRIMARY KEY ON CONFLICT REPLACE, " +
             " [" + MESSAGE_ID + "] INTEGER, " +
             " [" + PEER_ID + "] INTEGER, " +
             " [" + FROM_ID + "] INTEGER, " +
@@ -150,7 +150,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             ");";
 
     private final static String SQL_CREATE_TABLE_GROUPS = "CREATE TABLE " + GROUPS_TABLE +
-            " (" + GROUP_ID + " INTEGER UNIQUE PRIMARY KEY ON CONFLICT REPLACE, " +
+            " (" + GROUP_ID + " INTEGER PRIMARY KEY ON CONFLICT REPLACE, " +
             " [" + NAME + "] VARCHAR(255), " +
             " [" + SCREEN_NAME + "] VARCHAR(255), " +
             " [" + DESCRIPTION + "] VARCHAR(255), " +

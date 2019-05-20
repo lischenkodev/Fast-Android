@@ -18,7 +18,7 @@ public class VKUser extends VKModel implements Serializable {
 
         @Override
         public String toString() {
-            return "...";
+            return "User";
         }
     };
     public static int count;
@@ -26,6 +26,7 @@ public class VKUser extends VKModel implements Serializable {
     public int id;
     public String name;
     public String surname;
+    public String fullNname;
     public String screen_name;
     public boolean online;
     public boolean online_mobile;
@@ -46,14 +47,18 @@ public class VKUser extends VKModel implements Serializable {
 
     public VKUser(JSONObject source) {
         friends_count = count;
+
         this.id = source.optInt("id");
         this.name = source.optString("first_name", "...");
         this.surname = source.optString("last_name", "");
+
+        fullNname = name + " " + surname;
+
         this.deactivated = source.optString("deactivated");
 
-        this.photo_50 = source.optString("photo_50", "");
-        this.photo_100 = source.optString("photo_100", "");
-        this.photo_200 = source.optString("photo_200", "");
+        this.photo_50 = source.optString("photo_50");
+        this.photo_100 = source.optString("photo_100");
+        this.photo_200 = source.optString("photo_200");
 
         this.screen_name = source.optString("screen_name");
         this.online = source.optInt("online") == 1;
@@ -82,7 +87,7 @@ public class VKUser extends VKModel implements Serializable {
 
     @Override
     public String toString() {
-        return name + " " + surname;
+        return name.concat(" ").concat(surname);
     }
 
     public boolean isDeactivated() {

@@ -434,9 +434,6 @@ public class CacheStorage {
         values.put(UNREAD_COUNT, dialog.unread);
         values.put(READ_STATE, dialog.read);
         values.put(USERS_COUNT, dialog.membersCount);
-        values.put(PHOTO_50, dialog.photo_50);
-        values.put(PHOTO_100, dialog.photo_100);
-        values.put(PHOTO_200, dialog.photo_200);
         values.put(CONVERSATION_TYPE, VKConversation.getType(dialog.type));
         values.put(DISABLED_FOREVER, dialog.disabled_forever);
         values.put(DISABLED_UNTIL, dialog.disabled_until);
@@ -465,10 +462,28 @@ public class CacheStorage {
                 values.put(TITLE, group == null ? "" : group.name);
             } else {
                 VKUser user = getUser(dialog.last.peerId);
-                values.put(TITLE, user == null ? "" : user.toString());
+                values.put(TITLE, user == null ? "" : user.name + " " + user.surname);
             }
         } else {
             values.put(TITLE, dialog.title);
+        }
+
+        if (TextUtils.isEmpty(dialog.photo_50) && TextUtils.isEmpty(dialog.photo_100) && TextUtils.isEmpty(dialog.photo_200)) {
+            if (dialog.isGroup()) {
+                VKGroup group = getGroup(dialog.last.peerId);
+                values.put(PHOTO_50, group == null ? "" : group.photo_50);
+                values.put(PHOTO_100, group == null ? "" : group.photo_100);
+                values.put(PHOTO_200, group == null ? "" : group.photo_200);
+            } else {
+                VKUser user = getUser(dialog.last.peerId);
+                values.put(PHOTO_50, user == null ? "" : user.photo_50);
+                values.put(PHOTO_100, user == null ? "" : user.photo_100);
+                values.put(PHOTO_200, user == null ? "" : user.photo_200);
+            }
+        } else {
+            values.put(PHOTO_50, dialog.photo_50);
+            values.put(PHOTO_100, dialog.photo_100);
+            values.put(PHOTO_200, dialog.photo_200);
         }
     }
 

@@ -32,6 +32,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
@@ -57,10 +59,12 @@ import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
 import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.database.CacheStorage;
+import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
+import ru.melodin.fast.util.ViewUtil;
 import ru.melodin.fast.view.BoundedLinearLayout;
 import ru.melodin.fast.view.CircleImageView;
 
@@ -74,6 +78,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     private DisplayMetrics metrics;
 
     private LinearLayoutManager manager;
+
+    private ArrayList<Integer> loadingIds = new ArrayList<>();
 
     public MessageAdapter(Context context, ArrayList<VKMessage> messages, int peerId) {
         super(context, messages);
@@ -170,7 +176,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     public void addMessage(VKMessage msg) {
-        Log.d("Message info", "Current peerId: " + peerId + "; message peerId: " + msg.peerId + "; containsRandom(randomId = " + msg.randomId + "): " + containsRandom(msg.randomId));
         if (msg.peerId != peerId) return;
         if (containsRandom(msg.randomId)) return;
 
@@ -180,26 +185,13 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         ((MessagesActivity) context).checkCount();
 
         manager.scrollToPosition(getItemCount() - 1);
-
-        //int lastVisibleItem = manager.findLastCompletelyVisibleItemPosition();
-        //int totalVisibleItems = manager.findLastCompletelyVisibleItemPosition() - manager.findFirstCompletelyVisibleItemPosition() + 1;
-
-        //if (lastVisibleItem <= totalVisibleItems) {
-
-        //}
     }
 
     private boolean containsRandom(long randomId) {
-        boolean contains = false;
-
-        for (VKMessage m : getValues()) {
-            if (m.randomId == randomId) contains = true;
-        }
-
-        return contains;
+        return !(randomId > 0);
     }
 
-    public void readMessage(int mId) {
+    private void readMessage(int mId) {
         for (int i = 0; i < getItemCount(); i++) {
             VKMessage message = getItem(i);
             if (message.id == mId) {
@@ -234,8 +226,15 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         return position == getItemCount() - 1 ? TYPE_FOOTER : TYPE_NORMAL;
     }
 
+    public int searchPosition(int mId) {
+        for (int i = 0; i < getItemCount(); i++)
+            if (getItem(i).id == mId) return i;
+
+        return -1;
+    }
+
     private VKUser searchUser(int id) {
-        VKUser user = CacheStorage.getUser(id);
+        VKUser user = MemoryCache.getUser(id);
 
         if (user == null) {
             user = VKUser.EMPTY;
@@ -245,17 +244,86 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     private VKGroup searchGroup(int id) {
-        VKGroup group = CacheStorage.getGroup(id);
+        VKGroup group = MemoryCache.getGroup(id);
 
         if (group == null) {
             group = VKGroup.EMPTY;
+
         }
 
         return group;
     }
 
-    private void applyActionStyle(VKMessage item, ViewGroup parent) {
+    private void loadUser(final int userId) {
+        if (loadingIds.contains(userId)) return;
+        loadingIds.add(userId);
+        ThreadExecutor.execute(new AsyncCallback(((MessagesActivity) context)) {
+            VKUser user;
 
+            @Override
+            public void ready() throws Exception {
+                user = VKApi.users().get().userId(userId).fields(VKUser.FIELDS_DEFAULT).execute(VKUser.class).get(0);
+            }
+
+            @Override
+            public void done() {
+                CacheStorage.insert(DatabaseHelper.USERS_TABLE, user);
+                updateUser(userId);
+                EventBus.getDefault().postSticky(new Object[]{"update_user", userId});
+            }
+
+            @Override
+            public void error(Exception e) {
+                loadingIds.remove((Object) userId);
+                Log.e("Error load user", Log.getStackTraceString(e));
+            }
+        });
+    }
+
+    private void loadGroup(final int groupId) {
+        if (loadingIds.contains(groupId)) return;
+        loadingIds.add(groupId);
+        ThreadExecutor.execute(new AsyncCallback(((MessagesActivity) context)) {
+            VKGroup group;
+
+            @Override
+            public void ready() throws Exception {
+                group = VKApi.groups().getById().groupId(groupId).execute(VKGroup.class).get(0);
+            }
+
+            @Override
+            public void done() {
+                CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, group);
+                updateGroup(groupId);
+                EventBus.getDefault().postSticky(new Object[]{"update_group", groupId});
+            }
+
+            @Override
+            public void error(Exception e) {
+                loadingIds.remove((Object) groupId);
+                Log.e("Error load group", Log.getStackTraceString(e));
+            }
+        });
+    }
+
+    private void updateUser(int userId) {
+        for (int i = 0; i < getItemCount(); i++) {
+            VKMessage message = getItem(i);
+            if (message.fromId == userId) {
+                notifyItemChanged(i, -1);
+                break;
+            }
+        }
+    }
+
+    private void updateGroup(int groupId) {
+        for (int i = 0; i < getItemCount(); i++) {
+            VKMessage message = getItem(i);
+            if (message.fromId == groupId) {
+                notifyItemChanged(i, -1);
+                break;
+            }
+        }
     }
 
     private void showForwardedMessages(VKMessage item, ViewGroup parent) {
@@ -438,11 +506,11 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             time_container.setGravity(item.out ? Gravity.END : Gravity.START);
 
             important.setVisibility(item.important ? View.VISIBLE : View.GONE);
-            important.fa
+            ViewUtil.fadeView(important);
 
             bubble.setVisibility(View.VISIBLE);
 
-            String avatar_link = null;
+            String avatar_link = item.isFromUser() ? user.photo_100 : item.isFromGroup() ? group.photo_100 : "";
 
             if (item.isFromUser()) {
                 avatar_link = user.photo_100;

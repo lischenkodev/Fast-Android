@@ -11,8 +11,9 @@ import ru.melodin.fast.common.ThemeManager;
 public class ViewUtil {
 
     private static void fadeView(View v, long duration) {
-        v.setAlpha(0);
-        v.animate().alpha(1).setDuration(duration).start();
+        boolean visible = v.getVisibility() == View.VISIBLE;
+        v.setAlpha(visible ? 0 : 1);
+        v.animate().alpha(visible ? 0 : 1).setDuration(duration).start();
     }
 
     public static void fadeView(View v) {

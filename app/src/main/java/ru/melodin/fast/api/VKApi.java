@@ -126,14 +126,15 @@ public class VKApi {
             return (ArrayList<T>) VKAttachments.parse(array);
         } else if (cls == VKConversation.class) {
             if (url.contains("messages.getConversations")) {
-                VKConversation.count = json.optJSONObject("response").optInt("count");
+                JSONObject response = json.optJSONObject("response");
+                VKConversation.count = response.optInt("count");
 
-                JSONArray groups = json.optJSONObject("response").optJSONArray("groups");
+                JSONArray groups = response.optJSONArray("groups");
                 if (groups != null && groups.length() > 0) {
                     VKConversation.groups = VKGroup.parse(groups);
                 }
 
-                JSONArray profiles = json.optJSONObject("response").optJSONArray("profiles");
+                JSONArray profiles = response.optJSONArray("profiles");
                 if (profiles != null && profiles.length() > 0) {
                     VKConversation.users = VKUser.parse(profiles);
                 }

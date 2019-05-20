@@ -6,6 +6,7 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Environment;
 
 import java.io.ByteArrayInputStream;
@@ -107,9 +108,9 @@ public class Util {
 
     public static boolean hasConnection() {
         ConnectivityManager cm = (ConnectivityManager) AppGlobal.context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        return (cm.getActiveNetworkInfo() != null && cm.getActiveNetwork() != null &&
-                cm.getActiveNetworkInfo().isAvailable() &&
-                cm.getActiveNetworkInfo().isConnected());
+        NetworkInfo info = cm.getActiveNetworkInfo();
+        if (info == null) return false;
+        return info.isConnected();
     }
 
     public static void saveFileByUrl(String link) throws Exception {
@@ -119,7 +120,7 @@ public class Util {
         urlConnection.setDoOutput(false);
         urlConnection.connect();
 
-        File directory = new File(Environment.getExternalStorageDirectory() + "/Download");
+        File directory = new File(Environment.getExternalStorageDirectory() + "/VK");
 
         if (!directory.exists()) directory.mkdir();
 

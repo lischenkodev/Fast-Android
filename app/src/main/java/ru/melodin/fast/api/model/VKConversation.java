@@ -1,5 +1,7 @@
 package ru.melodin.fast.api.model;
 
+import androidx.annotation.NonNull;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -43,11 +45,17 @@ public class VKConversation extends VKModel implements Serializable {
     public boolean no_sound;
 
     public enum Type {
-        CHAT, GROUP, USER, EMAIL
+        CHAT, GROUP, USER
     }
 
     public enum Reason {
         KICKED, LEFT, USER_DELETED, USER_BLACKLIST, USER_PRIVACY, MESSAGES_OFF, MESSAGES_BLOCKED, NO_ACCESS_CHAT, NO_ACCESS_EMAIL, NO_ACCESS_GROUP
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return title;
     }
 
     public VKConversation() {
@@ -109,12 +117,19 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public VKConversation(JSONObject o, JSONObject msg) throws JSONException {
+
         conversations_count = count;
         conversation_groups = groups;
         conversation_users = users;
 
+        groups = null;
+        users = null;
+
         if (msg != null)
             last = new VKMessage(msg);
+
+        JSONObject peer = o.optJSONObject("peer");
+        type = msg != null ? getType(last.peerId) : getType(peer.optString("type"));
 
         read_in = o.optInt("in_read");
         read_out = o.optInt("out_read");
@@ -135,9 +150,6 @@ public class VKConversation extends VKModel implements Serializable {
             disabled_forever = push_settings.optBoolean("disabled_forever", false);
             no_sound = push_settings.optBoolean("no_sound");
         }
-
-        JSONObject peer = o.optJSONObject("peer");
-        type = msg != null ? getType(last.peerId) : getType(peer.optString("type"));
 
         JSONObject ch = o.optJSONObject("chat_settings");
         if (ch != null) {
@@ -184,8 +196,6 @@ public class VKConversation extends VKModel implements Serializable {
                 return Type.GROUP;
             case "chat":
                 return Type.CHAT;
-            case "email":
-                return Type.EMAIL;
             default:
                 return null;
         }
@@ -199,14 +209,12 @@ public class VKConversation extends VKModel implements Serializable {
                 return "group";
             case CHAT:
                 return "chat";
-            case EMAIL:
-                return "email";
             default:
                 return null;
         }
     }
 
-    public static boolean isChatId(int peerId) {
+    private static boolean isChatId(int peerId) {
         return peerId > 2_000_000_00;
     }
 
