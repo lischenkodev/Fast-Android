@@ -9,6 +9,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 
+import com.microsoft.appcenter.AppCenter;
+import com.microsoft.appcenter.analytics.Analytics;
+import com.microsoft.appcenter.crashes.Crashes;
+
 import java.util.Locale;
 
 import ru.melodin.fast.database.DatabaseHelper;
@@ -44,5 +48,7 @@ public class AppGlobal extends Application {
 
         CrashManager.init();
         ThemeManager.init();
+
+        AppCenter.start(this, "bd53321b-546a-4579-82fb-c68edb4feb20", Analytics.class, Crashes.class);
     }
 }

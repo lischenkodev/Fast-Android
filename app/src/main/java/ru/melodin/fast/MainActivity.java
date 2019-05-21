@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
@@ -27,11 +28,13 @@ import java.util.List;
 
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
+import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.common.PermissionManager;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
 import ru.melodin.fast.concurrent.ThreadExecutor;
+import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.fragment.FragmentDialogs;
 import ru.melodin.fast.fragment.FragmentFriends;
@@ -117,6 +120,30 @@ public class MainActivity extends AppCompatActivity {
         if (!PermissionManager.isGrantedPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
             PermissionManager.requestPermissions(44, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
+
+        loadUser();
+    }
+
+    private void loadUser() {
+        ThreadExecutor.execute(new AsyncCallback(this) {
+            VKUser user;
+
+            @Override
+            public void ready() throws Exception {
+                user = VKApi.users().get().userId(UserConfig.userId).fields(VKUser.FIELDS_DEFAULT).execute(VKUser.class).get(0);
+            }
+
+            @Override
+            public void done() {
+                CacheStorage.insert(DatabaseHelper.USERS_TABLE, user);
+                EventBus.getDefault().postSticky(new Object[]{"update_user", UserConfig.userId});
+            }
+
+            @Override
+            public void error(Exception e) {
+                Log.e("Error get user", Log.getStackTraceString(e));
+            }
+        });
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)

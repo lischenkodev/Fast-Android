@@ -15,7 +15,6 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
@@ -92,14 +91,21 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                 editMessage(message);
                 break;
             case LongPollEvents.KEY_MESSAGE_UPDATE:
-                updateMessage((int) data[1]);
-                Toast.makeText(context, "Update message", Toast.LENGTH_SHORT).show();
+                //TODO доделать
+                //updateMessage((int) data[1]);
+                //Toast.makeText(context, "Update message", Toast.LENGTH_SHORT).show();
                 break;
             case FragmentSettings.KEY_MESSAGES_CLEAR_CACHE:
                 clear();
                 notifyDataSetChanged();
                 fragment.checkCount();
                 fragment.onRefresh();
+                break;
+            case "update_user":
+                updateUser((int) data[1]);
+                break;
+            case "update_group":
+                updateGroup((int) data[1]);
                 break;
         }
     }
@@ -344,7 +350,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         return user;
     }
 
-    private void loadUser(final int userId) {
+    private void loadUser(final Integer userId) {
         if (loadingIds.contains(userId)) return;
         loadingIds.add(userId);
         ThreadExecutor.execute(new AsyncCallback(fragment.getActivity()) {
@@ -364,7 +370,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
             @Override
             public void error(Exception e) {
-                loadingIds.remove((Object) userId);
+                loadingIds.remove(userId);
                 Log.e("Error load user", Log.getStackTraceString(e));
             }
         });
@@ -379,7 +385,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         return group;
     }
 
-    private void loadGroup(final int groupId) {
+    private void loadGroup(final Integer groupId) {
         if (loadingIds.contains(groupId)) return;
         loadingIds.add(groupId);
         ThreadExecutor.execute(new AsyncCallback(fragment.getActivity()) {
@@ -399,7 +405,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
             @Override
             public void error(Exception e) {
-                loadingIds.remove((Object) groupId);
+                loadingIds.remove(groupId);
                 Log.e("Error load group", Log.getStackTraceString(e));
             }
         });
