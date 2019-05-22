@@ -11,7 +11,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebSettings;
+import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
@@ -35,7 +35,8 @@ public class WebViewLoginActivity extends AppCompatActivity {
 
     private WebView webView;
     private ProgressBar bar;
-    private Toolbar tb;
+
+    private AlertDialog dialog;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -48,26 +49,26 @@ public class WebViewLoginActivity extends AppCompatActivity {
         bar = findViewById(R.id.progress);
         webView = findViewById(R.id.web);
 
-        tb = findViewById(R.id.tb);
-        setSupportActionBar(tb);
+        setSupportActionBar((Toolbar) findViewById(R.id.tb));
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         webView.setVisibility(View.GONE);
 
         webView.getSettings().setJavaScriptEnabled(true);
-        webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
         webView.setWebViewClient(new VKWebViewClient());
+
+        CookieManager.getInstance().removeAllCookies(null);
+        CookieManager.getInstance().flush();
 
         webView.loadUrl(Auth.getUrl(UserConfig.VK_DESKTOP_ID, Scopes.allInt()));
         showWarningDialog();
     }
 
     private void showWarningDialog() {
-        new AlertDialog.Builder(this)
+        dialog = new AlertDialog.Builder(this)
                 .setTitle(R.string.warning)
                 .setMessage(R.string.auth_vkdesktop_text)
-                .setPositiveButton(android.R.string.ok, null)
                 .setCancelable(false)
                 .show();
     }
@@ -190,6 +191,10 @@ public class WebViewLoginActivity extends AppCompatActivity {
 
         @Override
         public void onPageFinished(WebView view, String url) {
+            if (dialog != null) {
+                dialog.dismiss();
+                dialog = null;
+            }
             bar.setVisibility(View.GONE);
             webView.setVisibility(View.VISIBLE);
         }

@@ -124,7 +124,6 @@
     <string name="video">Video</string>
     <string name="photo">Photo</string>
     <string name="doc">Document</string>
-    <string name="link">Link</string>
     <string name="sticker">Sticker</string>
     <string name="gift">Gift</string>
     <string name="graffiti">Graffiti</string>
@@ -168,5 +167,10 @@
     <string name="no_data">No data</string>
     <string name="cached_users">Cached users</string>
     <string name="clear">Clear</string>
+
+    <string name="password">Password</string>
+    <string name="e_mail_or_phone_number">E-mail or phone number</string>
+    <string name="link">Link</string>
+    <string name="wall_post">Wall post</string>
 
 </resources>

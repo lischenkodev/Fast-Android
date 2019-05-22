@@ -12,83 +12,33 @@ import ru.melodin.fast.util.ArrayUtil;
 public class VKAttachments extends VKModel implements Serializable {
 
     public static final String TYPE_PHOTO = "photo";
-
-    /**
-     * Attachment is a video.
-     */
     public static final String TYPE_VIDEO = "video";
-
-    /**
-     * Attachment is an audio.
-     */
     public static final String TYPE_AUDIO = "audio";
-
-    /**
-     * Attachment is a document.
-     */
     public static final String TYPE_DOC = "doc";
-
-    /**
-     * Attachment is a wall post.
-     */
-    public static final String TYPE_POST = "wall";
-
-    /**
-     * Attachment is a posted photo.
-     */
+    public static final String TYPE_WALL = "wall";
     public static final String TYPE_POSTED_PHOTO = "posted_photo";
-
-    /**
-     * Attachment is a link
-     */
     public static final String TYPE_LINK = "link";
-
-    /**
-     * Attachment is a note.
-     */
     public static final String TYPE_NOTE = "note";
-
-    /**
-     * Attachment is an application content.
-     */
     public static final String TYPE_APP = "app";
-
-    /**
-     * Attachment is a poll.
-     */
     public static final String TYPE_POLL = "poll";
-
-    /**
-     * Attachment is a WikiPage.
-     */
     public static final String TYPE_WIKI_PAGE = "page";
-
-    /**
-     * Attachment is a PhotoAlbum.
-     */
     public static final String TYPE_ALBUM = "album";
-
-    /**
-     * Attachment is a Sticker.
-     */
     public static final String TYPE_STICKER = "sticker";
-
-    /**
-     * Attachment is a Gift.
-     */
     public static final String TYPE_GIFT = "gift";
+    public static final String TYPE_AUDIO_MESSAGE = "audio_message";
+    public static final String TYPE_GRAFFITI = "graffiti";
 
     public static ArrayList<VKModel> parse(JSONArray array) {
         ArrayList<VKModel> attachments = new ArrayList<>(array.length());
 
         for (int i = 0; i < array.length(); i++) {
-            JSONObject attach = array.optJSONObject(i);
-            if (attach.has("attachment")) {
-                attach = attach.optJSONObject("attachment");
+            JSONObject attachment = array.optJSONObject(i);
+            if (attachment.has("attachment")) {
+                attachment = attachment.optJSONObject("attachment");
             }
 
-            String type = attach.optString("type");
-            JSONObject object = attach.optJSONObject(type);
+            String type = attachment.optString("type");
+            JSONObject object = attachment.optJSONObject(type);
 
             switch (type) {
                 case TYPE_PHOTO:
@@ -112,6 +62,15 @@ public class VKAttachments extends VKModel implements Serializable {
                 case TYPE_GIFT:
                     attachments.add(new VKGift(object));
                     break;
+                case TYPE_AUDIO_MESSAGE:
+                    attachments.add(new VKVoice(object));
+                    break;
+                case TYPE_GRAFFITI:
+                    attachments.add(new VKGraffiti(object));
+                    break;
+                case TYPE_WALL:
+                    attachments.add(new VKWall(object));
+                    break;
             }
         }
 
@@ -123,11 +82,7 @@ public class VKAttachments extends VKModel implements Serializable {
         StringBuilder b = new StringBuilder();
 
         if (attachments.size() > 1) {
-            if (isOneType(attachments.get(0).getClass(), attachments)) {
-                return String.valueOf(attachments.size()) + " " + getAttachmentString(attachments).toLowerCase();
-            } else {
-                return String.valueOf(attachments.size()) + " " + getString(R.string.attachments_lot).toLowerCase();
-            }
+            return attachments.size() + " " + getString(R.string.attachments_lot).toLowerCase();
         }
 
         for (VKModel attach : attachments) {
@@ -149,6 +104,8 @@ public class VKAttachments extends VKModel implements Serializable {
                 b.append(getString(R.string.graffiti));
             } else if (attach instanceof VKGift) {
                 b.append(getString(R.string.gift));
+            } else if (attach instanceof VKWall) {
+                b.append(getString(R.string.wall_post));
             } else {
                 b.append(getString(R.string.attachment));
             }
@@ -157,12 +114,11 @@ public class VKAttachments extends VKModel implements Serializable {
         return b.toString();
     }
 
-    public static boolean isOneType(Class type, ArrayList<VKModel> attachments) {
-        if (true) return false;
+    private static boolean isOneType(Class type, ArrayList<VKModel> attachments) {
         if (ArrayUtil.isEmpty(attachments) || type == null) return false;
 
         for (VKModel a : attachments) {
-            if (a.getClass() != type) {
+            if (!a.getClass().equals(type)) {
                 return false;
             }
         }

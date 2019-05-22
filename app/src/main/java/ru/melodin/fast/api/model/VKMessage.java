@@ -52,7 +52,7 @@ public class VKMessage extends VKModel implements Serializable {
     public ArrayList<VKUser> history_users;
     public ArrayList<VKGroup> history_groups;
     public long update_time;
-    public boolean isAdded;
+    public boolean added;
 
     public enum Action {
         CHAT_CREATE, CHAT_INVITE_USER, CHAT_KICK_USER, CHAT_TITLE_UPDATE, CHAT_PHOTO_UPDATE, CHAT_PHOTO_REMOVE, CHAT_PIN_MESSAGE, CHAT_UNPIN_MESSAGE, CHAT_INVITE_USER_BY_LINK
@@ -139,7 +139,7 @@ public class VKMessage extends VKModel implements Serializable {
         JSONArray fws = o.optJSONArray("fwd_messages");
 
         if (fws != null && fws.length() > 0) {
-            fwd_messages = parseAttMessages(fws);
+            fwd_messages = parseForwarded(fws);
         }
 
         JSONArray attachments = o.optJSONArray("attachments");
@@ -161,31 +161,13 @@ public class VKMessage extends VKModel implements Serializable {
         return (flags & UNREAD) != 0;
     }
 
-    static VKMessage parseFromAttach(JSONObject o) {
-        VKMessage m = new VKMessage();
-
-        m.date = o.optLong("date");
-        m.fromId = o.optInt("from_id");
-        m.out = m.fromId == UserConfig.userId;
-        m.text = o.optString("text");
-
-        JSONArray attachments = o.optJSONArray("attachments");
-        if (attachments != null) {
-            if (attachments.length() > 0)
-                m.attachments = VKAttachments.parse(attachments);
-        }
-
-        m.update_time = o.optLong("update_time");
-
-        return m;
-    }
-
-    private static ArrayList<VKMessage> parseAttMessages(JSONArray a) throws JSONException {
+    private static ArrayList<VKMessage> parseForwarded(JSONArray a) throws JSONException {
         ArrayList<VKMessage> ms = new ArrayList<>();
 
         for (int i = 0; i < a.length(); i++) {
-            VKMessage m = parseFromAttach(a.optJSONObject(i));
-            ms.add(m);
+            VKMessage m = new VKMessage(a.optJSONObject(i));
+
+                ms.add(m);
         }
 
         return ms;

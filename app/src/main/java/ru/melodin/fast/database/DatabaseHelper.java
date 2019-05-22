@@ -174,7 +174,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static DatabaseHelper instance;
 
     private DatabaseHelper() {
-        super(AppGlobal.context, DATABASE_NAME, null, DATABASE_VERSION);
+        super(AppGlobal.context(), DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     public synchronized static DatabaseHelper getInstance() {

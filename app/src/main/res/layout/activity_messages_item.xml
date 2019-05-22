@@ -7,7 +7,7 @@
     android:orientation="vertical">
 
     <LinearLayout
-        android:id="@+id/messageContainer"
+        android:id="@+id/message_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -39,7 +39,7 @@
             android:visibility="gone" />
 
         <LinearLayout
-            android:id="@+id/bubbleContainer"
+            android:id="@+id/bubble_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -125,7 +125,8 @@
             android:layout_marginStart="4dp"
             android:layout_marginTop="2dp"
             android:src="@drawable/ic_stars_black_24dp"
-            android:tint="?colorAccent" />
+            android:tint="?colorAccent"
+            android:visibility="gone" />
 
     </LinearLayout>
 

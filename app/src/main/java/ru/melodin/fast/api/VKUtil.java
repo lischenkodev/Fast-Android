@@ -23,7 +23,7 @@ import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.util.ArrayUtil;
 
-public class VKUtils {
+public class VKUtil {
 
     private static String pattern_string_profile_id = "^(id)?(\\d{1,10})$";
     private static Pattern pattern_profile_id = Pattern.compile(pattern_string_profile_id);
@@ -73,7 +73,7 @@ public class VKUtils {
     }
 
     public static String getActionBody(VKMessage msg, boolean fromDialogs) {
-        String action = "<b>";
+        String action = "";
 
         VKUser u = MemoryCache.getUser(msg.fromId);
         if (u != null) {
@@ -84,8 +84,6 @@ public class VKUtils {
                 action = group.name;
             }
         }
-
-        action += ("</b>");
 
         VKUser action_user = CacheStorage.getUser(msg.actionUserId);
 
@@ -105,13 +103,13 @@ public class VKUtils {
 
         switch (msg.action) {
             case CHAT_CREATE:
-                action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.created_chat_w : R.string.created_chat_m : R.string.created_chat_m), action, " «<b>" + msg.actionText + "</b>»");
+                action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.created_chat_w : R.string.created_chat_m : R.string.created_chat_m), action, "«" + msg.actionText + "»");
                 break;
             case CHAT_INVITE_USER:
                 if (msg.actionUserId == msg.fromId) {
                     action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.returned_to_chat_w : R.string.returned_to_chat_m : R.string.returned_to_chat_m), action);
                 } else {
-                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.invited_to_chat_w : R.string.invited_to_chat_m : R.string.invited_to_chat_m), action, "<b>" + u_name + "</b>");
+                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.invited_to_chat_w : R.string.invited_to_chat_m : R.string.invited_to_chat_m), action, u_name);
                 }
 
                 break;
@@ -119,7 +117,7 @@ public class VKUtils {
                 if (msg.actionUserId == msg.fromId) {
                     action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.left_the_chat_w : R.string.left_the_chat_m : R.string.left_the_chat_m), action);
                 } else {
-                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.kicked_from_chat_w : R.string.kicked_from_chat_m : R.string.kicked_from_chat_m), action, "<b>" + u_name + "</b>");
+                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.kicked_from_chat_w : R.string.kicked_from_chat_m : R.string.kicked_from_chat_m), action, u_name);
                 }
                 break;
             case CHAT_PHOTO_REMOVE:
@@ -129,7 +127,7 @@ public class VKUtils {
                 action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.updated_chat_photo_w : R.string.updated_chat_photo_m : R.string.updated_chat_photo_m), action);
                 break;
             case CHAT_TITLE_UPDATE:
-                action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.updated_title_w : R.string.updated_title_m : R.string.updated_title_m), action, "«<b>" + msg.actionText + "</b>»");
+                action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.updated_title_w : R.string.updated_title_m : R.string.updated_title_m), action, "«" + msg.actionText + "»");
                 break;
             case CHAT_INVITE_USER_BY_LINK:
                 action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.invited_by_link_w : R.string.invited_by_link_m : R.string.invited_by_link_m), action);
@@ -184,6 +182,6 @@ public class VKUtils {
     }
 
     private static String getString(int res) {
-        return AppGlobal.context.getString(res);
+        return AppGlobal.context().getString(res);
     }
 }

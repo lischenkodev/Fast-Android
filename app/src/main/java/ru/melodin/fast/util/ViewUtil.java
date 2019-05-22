@@ -1,7 +1,9 @@
 package ru.melodin.fast.util;
 
+import android.animation.Animator;
 import android.os.Build;
 import android.view.View;
+import android.view.ViewPropertyAnimator;
 import android.view.Window;
 
 import androidx.annotation.ColorInt;
@@ -10,14 +12,23 @@ import ru.melodin.fast.common.ThemeManager;
 
 public class ViewUtil {
 
-    private static void fadeView(View v, long duration) {
-        boolean visible = v.getVisibility() == View.VISIBLE;
-        v.setAlpha(visible ? 0 : 1);
-        v.animate().alpha(visible ? 0 : 1).setDuration(duration).start();
+    public static void fadeView(View v, long duration, boolean show, Animator.AnimatorListener listener) {
+        v.setAlpha(show ? 0 : 1);
+
+        ViewPropertyAnimator animator = v.animate();
+        animator.alpha(show ? 1 : 0);
+        animator.setDuration(duration);
+        if (listener != null)
+            animator.setListener(listener);
+        animator.start();
     }
 
-    public static void fadeView(View v) {
-        fadeView(v, 200);
+    public static void fadeView(View v, boolean show) {
+        fadeView(v, 200, show, null);
+    }
+
+    public static void fadeView(View v, boolean show, Animator.AnimatorListener listener) {
+        fadeView(v, 200, show, listener);
     }
 
     public static void applyWindowStyles(Window window) {

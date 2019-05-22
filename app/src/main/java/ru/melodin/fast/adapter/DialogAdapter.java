@@ -34,7 +34,7 @@ import ru.melodin.fast.R;
 import ru.melodin.fast.api.LongPollEvents;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
-import ru.melodin.fast.api.VKUtils;
+import ru.melodin.fast.api.VKUtil;
 import ru.melodin.fast.api.model.VKConversation;
 import ru.melodin.fast.api.model.VKGroup;
 import ru.melodin.fast.api.model.VKMessage;
@@ -274,7 +274,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
     @Nullable
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = inflater.inflate(R.layout.fragment_dialogs_list, parent, false);
+        View v = inflater.inflate(R.layout.fragment_dialogs_item, parent, false);
         return new ViewHolder(v);
     }
 
@@ -474,6 +474,8 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
             VKConversation item = getItem(position);
             VKMessage last = item.last;
 
+            if (last == null) return;
+
             boolean isGroup = last.peerId < 0;
             boolean isFromGroup = last.fromId < 0;
 
@@ -503,8 +505,6 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
             body.setText(last.text);
             title.setText(title_);
-
-            Log.d("Dialog data", "peer_id: " + last.peerId + "; text: " + last.text + "; title: " + title_ + "; peerAvatar.length() " + (TextUtils.isEmpty(peerAvatar) ? "< 0" : "> 0") + "; fromAvatar.length() " + (TextUtils.isEmpty(fromAvatar) ? "< 0" : "> 0"));
 
             counter.setText(item.unread > 0 ? String.valueOf(item.unread) : "");
             time.setText(Util.dateFormatter.format(last.date * 1000));
@@ -544,22 +544,22 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
             if (last.action == null) {
                 if ((last.attachments != null || !ArrayUtil.isEmpty(last.fwd_messages)) && TextUtils.isEmpty(last.text)) {
-                    String body_ = VKUtils.getAttachmentBody(item.last.attachments, item.last.fwd_messages);
+                    String body_ = VKUtil.getAttachmentBody(item.last.attachments, item.last.fwd_messages);
 
-                    String r = "<b>" + body_ + "</b>";
-                    Spannable span = new SpannableString(Html.fromHtml(r));
+                    Spannable span = new SpannableString(body_);
                     span.setSpan(new ForegroundColorSpan(ThemeManager.getAccent()), 0, body_.length(), 0);
 
                     body.append(span);
                 }
             } else {
-                String body_ = VKUtils.getActionBody(last, true);
+                String body_ = VKUtil.getActionBody(last, true);
 
                 body.setTextColor(ThemeManager.getAccent());
                 body.setText(Html.fromHtml(body_));
             }
 
             counter.setVisibility(TextUtils.isEmpty(counter.getText().toString()) ? View.GONE : View.VISIBLE);
+
             out.setVisibility(last.out && !item.read ? View.VISIBLE : View.GONE);
             online.setVisibility(peerUser == null ? View.GONE : peerUser.online ? View.VISIBLE : View.GONE);
             counterContainer.setVisibility(item.read ? View.GONE : View.VISIBLE);

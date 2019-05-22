@@ -2,11 +2,11 @@ package ru.melodin.fast.api.model;
 
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import org.json.JSONObject;
 
 import java.io.Serializable;
-
-import androidx.annotation.NonNull;
 
 public class VKDoc extends VKModel implements Serializable {
 
@@ -33,8 +33,6 @@ public class VKDoc extends VKModel implements Serializable {
     public VKVoice voice;
     public VKGraffiti graffiti;
 
-    public boolean isGrafftiti = false, isVoice = false, isPhoto = false;
-
     public VKDoc() {
     }
 
@@ -60,14 +58,7 @@ public class VKDoc extends VKModel implements Serializable {
 
         if (preview != null) {
             if (preview.has("photo")) {
-                isPhoto = true;
                 photo_sizes = new VKPhotoSizes(preview.optJSONObject("photo").optJSONArray("sizes"));
-            } else if (preview.has("audio_message")) {
-                isVoice = true;
-                voice = new VKVoice(preview.optJSONObject("audio_message"));
-            } else if (preview.has("graffiti")) {
-                isGrafftiti = true;
-                graffiti = new VKGraffiti(preview.optJSONObject("graffiti"));
             }
         }
     }

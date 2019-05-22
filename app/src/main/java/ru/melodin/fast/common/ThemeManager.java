@@ -2,10 +2,11 @@ package ru.melodin.fast.common;
 
 import android.graphics.Color;
 
-import org.greenrobot.eventbus.EventBus;
-
 import androidx.annotation.ColorInt;
 import androidx.annotation.IntegerRes;
+
+import org.greenrobot.eventbus.EventBus;
+
 import ru.melodin.fast.R;
 import ru.melodin.fast.fragment.FragmentSettings;
 
@@ -14,9 +15,9 @@ public class ThemeManager {
     public static final String KEY_THEME_UPDATE = "theme_update";
     private static boolean dark;
     @IntegerRes
-    private static int currentTheme, popupTheme;
+    private static int currentTheme, popupTheme, loginTheme;
     @ColorInt
-    private static int primary, primaryDark, accent, main, secondary, background;
+    private static int primary, primaryInverse, primaryDark, accent, main, secondary, background;
 
     public static void switchTheme(boolean dark) {
         AppGlobal.preferences.edit().putBoolean(FragmentSettings.KEY_DARK_STYLE, dark).apply();
@@ -29,8 +30,10 @@ public class ThemeManager {
 
         currentTheme = isDark() ? R.style.AppTheme_Dark : R.style.AppTheme_Light;
         popupTheme = isDark() ? R.style.ThemeOverlay_AppCompat : R.style.ThemeOverlay_AppCompat_Light;
+        loginTheme = isDark() ? R.style.AppTheme_Login_Dark : R.style.AppTheme_Login_Light;
 
         primary = getColor(isDark() ? R.color.dark_primary : R.color.primary);
+        primaryInverse = getColor(isDark() ? R.color.primary : R.color.dark_primary);
         primaryDark = getColor(isDark() ? R.color.dark_primary_dark : R.color.primary_dark);
         accent = getColor(isDark() ? R.color.dark_accent : R.color.accent);
         background = getColor(isDark() ? R.color.dark_background : R.color.background);
@@ -42,8 +45,16 @@ public class ThemeManager {
         return dark;
     }
 
+    public static int getPrimaryInverse() {
+        return primaryInverse;
+    }
+
     public static int getCurrentTheme() {
         return currentTheme;
+    }
+
+    public static int getLoginTheme() {
+        return loginTheme;
     }
 
     public static int getPopupTheme() {
@@ -76,6 +87,6 @@ public class ThemeManager {
 
     @ColorInt
     private static int getColor(int i) {
-        return AppGlobal.context.getResources().getColor(i);
+        return AppGlobal.context().getResources().getColor(i);
     }
 }

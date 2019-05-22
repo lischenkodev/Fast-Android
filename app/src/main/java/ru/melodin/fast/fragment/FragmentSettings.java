@@ -118,7 +118,6 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
         hideTyping.setSummary(hideTypingSummary);
     }
 
-
     private void switchTheme(boolean dark) {
         ThemeManager.switchTheme(dark);
         Util.restart(getActivity(), true);

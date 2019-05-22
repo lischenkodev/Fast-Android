@@ -11,6 +11,7 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,7 +49,7 @@ import ru.melodin.fast.adapter.RecyclerAdapter;
 import ru.melodin.fast.api.LongPollEvents;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
-import ru.melodin.fast.api.VKUtils;
+import ru.melodin.fast.api.VKUtil;
 import ru.melodin.fast.api.model.VKConversation;
 import ru.melodin.fast.api.model.VKGroup;
 import ru.melodin.fast.api.model.VKMessage;
@@ -60,7 +61,6 @@ import ru.melodin.fast.concurrent.LowThread;
 import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
-import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.fragment.FragmentSettings;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
@@ -100,6 +100,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private VKMessage pinned, last;
     private VKConversation conversation;
     private VKUser currentUser;
+
+    private boolean resumed;
+
+    private VKMessage notReaded;
 
     private View.OnClickListener sendClick = new View.OnClickListener() {
         @Override
@@ -148,6 +152,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle(title);
+        getSupportActionBar().setSubtitle(getSubtitle());
 
         message.addTextChangedListener(this);
 
@@ -177,6 +182,22 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         }
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+        resumed = false;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        resumed = true;
+        if (notReaded != null) {
+            adapter.readNewMessage(notReaded);
+            notReaded = null;
+        }
+    }
+
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void onReceive(Object[] data) {
         String key = (String) data[0];
@@ -198,7 +219,11 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 adapter.addMessage(conversation.last);
 
                 if (!conversation.last.out && conversation.last.peerId == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
-                    adapter.readNewMessage(conversation.last);
+                    if (!resumed) {
+                        notReaded = conversation.last;
+                    } else {
+                        adapter.readNewMessage(conversation.last);
+                    }
                 }
                 break;
             case LongPollEvents.KEY_MESSAGE_EDIT:
@@ -258,7 +283,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             send.setEnabled(false);
             smiles.setEnabled(false);
             message.setEnabled(false);
-            message.setText(VKUtils.getErrorReason(reason));
+            message.setText(VKUtil.getErrorReason(reason));
         }
     }
 
@@ -301,7 +326,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         if ((pinned.attachments != null || !ArrayUtil.isEmpty(pinned.fwd_messages)) && TextUtils.isEmpty(pinned.text)) {
 
-            String body = VKUtils.getAttachmentBody(pinned.attachments, pinned.fwd_messages);
+            String body = VKUtil.getAttachmentBody(pinned.attachments, pinned.fwd_messages);
 
             String r = "<b>" + body + "</b>";
             SpannableString span = new SpannableString(Html.fromHtml(r));
@@ -398,7 +423,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         msg.text = messageText.trim();
         msg.fromId = UserConfig.userId;
         msg.peerId = peerId;
-        msg.isAdded = true;
+        msg.added = true;
         msg.date = Calendar.getInstance().getTimeInMillis();
         msg.out = true;
         msg.status = VKMessage.STATUS_SENDING;
@@ -491,7 +516,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private void getHistory(final int offset, final int count) {
         if (!Util.hasConnection()) return;
         loading = true;
-        getSupportActionBar().setSubtitle(getString(R.string.loading));
+
+        if (TextUtils.isEmpty(getSupportActionBar().getSubtitle().toString()))
+            getSupportActionBar().setSubtitle(getString(R.string.loading));
 
         ThreadExecutor.execute(new AsyncCallback(this) {
 
@@ -561,7 +588,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             case 1:
                 return getString(R.string.group);
             case 2:
-                currentUser = MemoryCache.getUser(peerId);
+                currentUser = CacheStorage.getUser(peerId);
+                if (currentUser == null)
+                    loadUser(peerId);
                 return getUserSubtitle(currentUser);
             case 3:
                 return getString(R.string.channel) + " • " + getString(R.string.members_count, membersCount);
@@ -569,6 +598,28 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         }
 
         return "";
+    }
+
+    private void loadUser(final int peerId) {
+        ThreadExecutor.execute(new AsyncCallback(this) {
+            VKUser user;
+
+            @Override
+            public void ready() throws Exception {
+                user = VKApi.users().get().userId(peerId).fields(VKUser.FIELDS_DEFAULT).execute(VKUser.class).get(0);
+            }
+
+            @Override
+            public void done() {
+                CacheStorage.insert(DatabaseHelper.USERS_TABLE, user);
+                getSupportActionBar().setSubtitle(getSubtitle());
+            }
+
+            @Override
+            public void error(Exception e) {
+                Log.e("Error load user", Log.getStackTraceString(e));
+            }
+        });
     }
 
     private String getUserSubtitle(VKUser user) {
@@ -594,8 +645,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 if (adapter == null) return false;
                 if (!loading && !editing) {
                     adapter.clear();
-                    adapter.notifyDataSetChanged();
-                    checkCount();
                     getHistory(0, MESSAGES_COUNT);
                 }
                 break;

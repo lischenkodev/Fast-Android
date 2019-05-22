@@ -3,18 +3,17 @@ package ru.melodin.fast;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 
+import com.google.android.material.card.MaterialCardView;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -32,10 +31,9 @@ import ru.melodin.fast.util.ViewUtil;
 import ru.melodin.fast.view.CircleImageView;
 
 public class LoginActivity extends AppCompatActivity {
-    private CardView card;
+    private MaterialCardView card;
     private TextView name;
     private CircleImageView avatar;
-    private ImageView logo;
 
     private boolean loggedIn;
     private View.OnClickListener loginClick = new View.OnClickListener() {
@@ -63,27 +61,26 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         ViewUtil.applyWindowStyles(getWindow());
-        setTheme(ThemeManager.getCurrentTheme());
+        setTheme(ThemeManager.getLoginTheme());
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_login2);
 
-        logo = findViewById(R.id.logo);
-        card = findViewById(R.id.card);
-        name = findViewById(R.id.name);
-        avatar = findViewById(R.id.avatar);
-
-        setUserData(null);
-
-        ((ImageView) findViewById(R.id.logo)).getDrawable().setColorFilter(ThemeManager.getAccent(), PorterDuff.Mode.MULTIPLY);
-
-        logo.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.logo).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ThemeManager.switchTheme(!ThemeManager.isDark());
                 Util.restart(LoginActivity.this, true);
             }
         });
+
+        card = findViewById(R.id.card);
+
+        card = findViewById(R.id.card);
+        name = findViewById(R.id.name);
+        avatar = findViewById(R.id.avatar);
+
+        setUserData(null);
 
         UserConfig.restore();
         UserConfig.getUser();
@@ -164,7 +161,8 @@ public class LoginActivity extends AppCompatActivity {
         if (user == null) {
             loggedIn = false;
             name.setText(R.string.add_account);
-            avatar.setImageResource(R.drawable.placeholder_user);
+            avatar.setVisibility(View.GONE);
+            name.setGravity(Gravity.CENTER);
 
             card.setOnClickListener(loginClick);
             card.setOnLongClickListener(null);
@@ -172,6 +170,9 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         loggedIn = true;
+
+        avatar.setVisibility(View.VISIBLE);
+        name.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
 
         card.setOnLongClickListener(logoutClick);
         card.setOnClickListener(closeClick);
@@ -185,7 +186,7 @@ public class LoginActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess() {
                         super.onSuccess();
-                        ViewUtil.fadeView(avatar);
+                        ViewUtil.fadeView(avatar, true);
                     }
                 });
     }

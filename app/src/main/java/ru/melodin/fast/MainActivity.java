@@ -19,6 +19,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.microsoft.appcenter.AppCenter;
+import com.microsoft.appcenter.analytics.Analytics;
+import com.microsoft.appcenter.crashes.Crashes;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -99,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         PermissionManager.setActivity(this);
-        EventBus.getDefault().register(this);
         setTheme(ThemeManager.getCurrentTheme());
         ViewUtil.applyWindowStyles(getWindow());
         VKApi.config = UserConfig.restore();
@@ -121,7 +124,8 @@ public class MainActivity extends AppCompatActivity {
             PermissionManager.requestPermissions(44, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         }
 
-        loadUser();
+        EventBus.getDefault().register(this);
+        AppCenter.start(getApplication(), "bd53321b-546a-4579-82fb-c68edb4feb20", Analytics.class, Crashes.class);
     }
 
     private void loadUser() {
@@ -152,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
 
         String key = (String) data[0];
         if (key.equals(ThemeManager.KEY_THEME_UPDATE))
-            Util.restart(this, true);
+            Util.restart(this, false);
     }
 
     private void startLoginActivity() {
@@ -165,6 +169,7 @@ public class MainActivity extends AppCompatActivity {
         if (!UserConfig.isLoggedIn()) {
             startLoginActivity();
         } else {
+            loadUser();
             longPollIntent = new Intent(this, LongPollService.class);
             startService(longPollIntent);
             selectedFragment = fd;

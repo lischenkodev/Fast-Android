@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:minWidth="150dp"
     android:orientation="horizontal"
-    android:paddingLeft="6dp"
+    android:paddingStart="6dp"
     android:paddingTop="6dp"
-    android:paddingRight="8dp"
+    android:paddingEnd="8dp"
     android:paddingBottom="6dp">
 
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="8dp">
+        android:layout_marginEnd="8dp">
 
         <ru.melodin.fast.view.CircleImageView
             android:id="@+id/docCircleBackground"
@@ -49,8 +48,7 @@
             android:singleLine="true"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="?android:textColorPrimary"
-            android:textStyle="bold"
-            tools:text="Euphoria.apk" />
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/docBody"
@@ -59,8 +57,7 @@
             android:maxLines="1"
             android:singleLine="true"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="?android:textColorSecondary"
-            tools:text="3.8mb" />
+            android:textColor="?android:textColorSecondary" />
 
     </LinearLayout>
 

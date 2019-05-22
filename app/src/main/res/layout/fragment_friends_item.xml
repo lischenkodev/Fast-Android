@@ -11,8 +11,8 @@
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="6dp"
-        android:layout_marginRight="2dp"
+        android:layout_marginStart="6dp"
+        android:layout_marginEnd="2dp"
         android:padding="6dp"
         android:weightSum="1.0">
 
@@ -25,16 +25,16 @@
                 android:id="@+id/avatar"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
-                android:layout_gravity="bottom|right"
+                android:layout_gravity="bottom|end"
                 android:src="@drawable/placeholder_user" />
 
             <ru.melodin.fast.view.CircleImageView
                 android:id="@+id/online"
                 android:layout_width="14dp"
                 android:layout_height="14dp"
-                android:layout_gravity="bottom|right"
+                android:layout_gravity="bottom|end"
                 android:layout_margin="3dp"
-                android:src="?colorAccent"
+                android:src="@color/online"
                 app:border_color="?android:windowBackground"
                 app:border_width="2dp" />
 

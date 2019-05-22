@@ -53,7 +53,7 @@ public class Util {
     }
 
     public static void copyText(String text) {
-        ClipboardManager cm = (ClipboardManager) AppGlobal.context.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipboardManager cm = (ClipboardManager) AppGlobal.context().getSystemService(Context.CLIPBOARD_SERVICE);
         cm.setPrimaryClip(ClipData.newPlainText(null, text));
     }
 
@@ -99,15 +99,15 @@ public class Util {
     }
 
     public static float dp(float px) {
-        return px / AppGlobal.context.getResources().getDisplayMetrics().density;
+        return px / AppGlobal.context().getResources().getDisplayMetrics().density;
     }
 
     public static float px(float dp) {
-        return dp * AppGlobal.context.getResources().getDisplayMetrics().density;
+        return dp * AppGlobal.context().getResources().getDisplayMetrics().density;
     }
 
     public static boolean hasConnection() {
-        ConnectivityManager cm = (ConnectivityManager) AppGlobal.context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        ConnectivityManager cm = (ConnectivityManager) AppGlobal.context().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo info = cm.getActiveNetworkInfo();
         if (info == null) return false;
         return info.isConnected();

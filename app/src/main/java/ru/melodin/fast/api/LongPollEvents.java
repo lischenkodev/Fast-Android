@@ -162,7 +162,7 @@ public class LongPollEvents {
         int flags = item.optInt(2);
         int peerId = item.optInt(3);
         long time = item.optInt(4);
-        String text = item.optString(5);
+        String text = StringUtils.unescape(item.optString(5));
         JSONObject fromActions = item.optJSONObject(6);
         //JSONObject attachments = item.optJSONObject(7);
         int randomId = item.optInt(8);

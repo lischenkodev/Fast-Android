@@ -56,7 +56,7 @@ public class VKPhotoSizes extends VKModel implements Serializable {
         }
 
         PhotoSize(JSONObject source, boolean doc) {
-            this.src = doc ? source.optString("src") : source.optString("url");
+            this.src = doc ? source.optString("url") : source.optString("url");
             this.width = source.optInt("width");
             this.height = source.optInt("height");
             this.type = source.optString("type");

@@ -19,7 +19,7 @@ public abstract class VKModel implements Serializable {
     }
 
     protected static String getString(int res) {
-        return AppGlobal.context.getString(res);
+        return AppGlobal.context().getString(res);
     }
 
     public boolean isSelected() {

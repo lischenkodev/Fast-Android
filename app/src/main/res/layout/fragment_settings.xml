@@ -8,28 +8,29 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="120dp"
+        android:layout_height="66dp"
         android:background="?colorAccent"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
         <ru.melodin.fast.view.CircleImageView
             android:id="@+id/user_avatar"
             android:layout_width="56dp"
             android:layout_height="56dp"
+            android:layout_marginStart="20dp"
             app:border_color="?colorPrimary"
-            app:border_width="3dp"
+            app:border_width="2dp"
             tools:src="@drawable/ic_avatar" />
 
         <TextView
             android:id="@+id/user_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="20dp"
             android:fontFamily="@font/ps_medium"
             android:textColor="?android:textColorPrimaryInverse"
-            android:textSize="16sp"
+            android:textSize="20sp"
             tools:text="Danya Nikolaev" />
 
     </LinearLayout>
@@ -37,7 +38,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="5dp"
-        android:layout_marginTop="120dp"
+        android:layout_marginTop="66dp"
         android:background="@drawable/message_drop_shadow_dark"
         android:rotation="180" />
 
@@ -45,6 +46,5 @@
         android:id="@android:id/list_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="120dp" />
-
+        android:layout_marginTop="66dp" />
 </FrameLayout>

@@ -162,4 +162,8 @@
     <string name="no_data">Нет данных</string>
     <string name="cached_users">Кэшированные пользователи</string>
     <string name="clear">Очистить</string>
+
+    <string name="e_mail_or_phone_number">E-mail или номер телефона</string>
+    <string name="password">Пароль</string>
+    <string name="wall_post">Запись на стене</string>
 </resources>

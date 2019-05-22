@@ -50,7 +50,7 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
 
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = inflater.inflate(R.layout.fragment_friends_list, parent, false);
+        View v = inflater.inflate(R.layout.fragment_friends_item, parent, false);
         return new ViewHolder(v);
     }
 

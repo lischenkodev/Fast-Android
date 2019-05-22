@@ -10,6 +10,8 @@
     <color name="dark_accent">#1565c0</color>
     <color name="dark_background">#222222</color>
 
+    <color name="accent_alpha">#344284F4</color>
+
     <color name="colorPrimaryTeal">#15C1AD</color>
     <color name="colorPrimaryRed">#F31414</color>
     <color name="colorPrimaryPurple">#9414F3</color>
