@@ -177,9 +177,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         send.setBackground(gd);
 
         getCachedHistory();
-        if (Util.hasConnection()) {
-            getHistory(0, MESSAGES_COUNT);
-        }
     }
 
     @Override
@@ -511,6 +508,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (!ArrayUtil.isEmpty(messages)) {
             createAdapter(messages);
         }
+
+        if (Util.hasConnection())
+            getHistory(0, MESSAGES_COUNT);
     }
 
     private void getHistory(final int offset, final int count) {

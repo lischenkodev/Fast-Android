@@ -85,7 +85,6 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
         list.setLayoutManager(manager);
 
         getCachedFriends();
-        getFriends(0, 0);
     }
 
     private void initViews(View v) {
@@ -129,10 +128,10 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
     private void getCachedFriends() {
         ArrayList<VKUser> users = CacheStorage.getFriends(UserConfig.userId, false);
 
-        if (ArrayUtil.isEmpty(users))
-            return;
+        if (!ArrayUtil.isEmpty(users))
+            createAdapter(users, 0);
 
-        createAdapter(users, 0);
+        getFriends(0, 0);
     }
 
     private void getFriends(final int count, final int offset) {

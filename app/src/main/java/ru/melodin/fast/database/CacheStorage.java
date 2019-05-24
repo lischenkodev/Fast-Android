@@ -371,10 +371,19 @@ public class CacheStorage {
         dialog.photo_100 = getString(cursor, PHOTO_100);
         dialog.photo_200 = getString(cursor, PHOTO_200);
 
-        dialog.last = (VKMessage) Util.deserialize(getBlob(cursor, LAST_MESSAGE));
-        dialog.pinned = (VKMessage) Util.deserialize(getBlob(cursor, PINNED_MESSAGE));
-        dialog.conversation_users = (ArrayList) Util.deserialize(getBlob(cursor, USERS));
-        dialog.conversation_groups = (ArrayList) Util.deserialize(getBlob(cursor, GROUPS));
+        byte[] last = getBlob(cursor, LAST_MESSAGE);
+        byte[] pinned = getBlob(cursor, PINNED_MESSAGE);
+        byte[] users = getBlob(cursor, USERS);
+        byte[] groups = getBlob(cursor, GROUPS);
+
+        if (last != null)
+            dialog.last = (VKMessage) Util.deserialize(last);
+        if (pinned != null)
+            dialog.pinned = (VKMessage) Util.deserialize(pinned);
+        if (users != null)
+            dialog.conversation_users = (ArrayList) Util.deserialize(users);
+        if (groups != null)
+            dialog.conversation_groups = (ArrayList) Util.deserialize(groups);
         return dialog;
     }
 
@@ -394,10 +403,20 @@ public class CacheStorage {
         message.action = VKMessage.getAction(getString(cursor, ACTION_TYPE));
         message.actionText = getString(cursor, ACTION_TEXT);
         message.actionUserId = getInt(cursor, ACTION_USER_ID);
-        message.attachments = (ArrayList) Util.deserialize(getBlob(cursor, ATTACHMENTS));
-        message.fwd_messages = (ArrayList) Util.deserialize(getBlob(cursor, FWD_MESSAGES));
-        message.history_users = (ArrayList) Util.deserialize(getBlob(cursor, USERS));
-        message.history_groups = (ArrayList) Util.deserialize(getBlob(cursor, GROUPS));
+
+        byte[] attachments = getBlob(cursor, ATTACHMENTS);
+        byte[] forwarded = getBlob(cursor, FWD_MESSAGES);
+        byte[] users = getBlob(cursor, USERS);
+        byte[] groups = getBlob(cursor, GROUPS);
+
+        if (attachments != null)
+            message.attachments = (ArrayList) Util.deserialize(attachments);
+        if (forwarded != null)
+            message.fwd_messages = (ArrayList) Util.deserialize(forwarded);
+        if (users != null)
+            message.history_users = (ArrayList) Util.deserialize(users);
+        if (groups != null)
+            message.history_groups = (ArrayList) Util.deserialize(groups);
         return message;
     }
 
@@ -542,6 +561,7 @@ public class CacheStorage {
         values.put(IS_ADMIN, group.is_admin);
         values.put(PHOTO_50, group.photo_50);
         values.put(PHOTO_100, group.photo_100);
+        values.put(PHOTO_200, group.photo_200);
         values.put(MEMBERS_COUNT, group.members_count);
     }
 }

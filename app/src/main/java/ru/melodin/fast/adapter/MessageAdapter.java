@@ -157,7 +157,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         return -1;
     }
 
-    public void importantMessage(boolean important, int mId) {
+    private void importantMessage(boolean important, int mId) {
         for (int i = 0; i < getItemCount(); i++) {
             VKMessage message = getItem(i);
             if (message.id == mId) {
@@ -330,10 +330,13 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         }
     }
 
-    private void showForwardedMessages(VKMessage item, ViewGroup parent) {
-        for (int i = 0; i < item.fwd_messages.size(); i++) {
-            attacher.message(item, parent, item.fwd_messages.get(i));
-        }
+    private void showForwardedMessages(VKMessage item, ViewGroup parent, boolean reply) {
+        if (reply)
+            attacher.message(item, parent, item.reply);
+        else
+            for (int i = 0; i < item.fwd_messages.size(); i++) {
+                attacher.message(item, parent, item.fwd_messages.get(i));
+            }
     }
 
     private void showAttachments(VKMessage item, ViewHolder holder) {
@@ -652,7 +655,11 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             }
 
             if (!ArrayUtil.isEmpty(item.fwd_messages)) {
-                showForwardedMessages(item, attachments);
+                showForwardedMessages(item, attachments, false);
+            }
+
+            if (item.reply != null) {
+                showForwardedMessages(item, attachments, true);
             }
 
             avatar.setVisibility(item.out ? View.GONE : View.VISIBLE);
@@ -721,7 +728,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             parent.addView(body);
         }
 
-        public void wall(VKMessage item, ViewGroup parent, final VKWall source) {
+        void wall(VKMessage item, ViewGroup parent, final VKWall source) {
             View v = inflater.inflate(R.layout.activity_messages_attach_doc, parent, false);
 
             TextView title = v.findViewById(R.id.docTitle);
@@ -834,6 +841,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                         }
                     }
 
+                    intent.putExtra("selected", source);
                     intent.putExtra("photo", photos);
                     context.startActivity(intent);
                 }
@@ -906,8 +914,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             }
 
             if (!ArrayUtil.isEmpty(source.fwd_messages)) {
-                LinearLayout container = v.findViewById(R.id.attachments);
-                showForwardedMessages(source, container);
+                LinearLayout container = v.findViewById(R.id.forwarded);
+                showForwardedMessages(source, container, false);
             }
 
             parent.addView(v);

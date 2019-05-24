@@ -325,7 +325,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         if (peerId > 2_000_000_000) {
             return item.photo_200;
         } else if (peerId < 0) {
-            return group == null ? "" : group.photo_100;
+            return group == null ? "" : group.photo_200;
         } else {
             return user == null ? "" : user.photo_200;
         }

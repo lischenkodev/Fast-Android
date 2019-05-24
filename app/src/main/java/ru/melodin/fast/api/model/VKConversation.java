@@ -177,7 +177,7 @@ public class VKConversation extends VKModel implements Serializable {
 
             JSONObject o_pinned = ch.optJSONObject("pinned_message");
             if (o_pinned != null) {
-                pinned = VKMessage.parseFromAttach(o_pinned);
+                pinned = new VKMessage(o_pinned);
             }
         }
     }

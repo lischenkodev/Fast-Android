@@ -11,14 +11,15 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.ViewPager;
+
+import java.util.ArrayList;
+
 import ru.melodin.fast.adapter.PhotoViewAdapter;
 import ru.melodin.fast.api.model.VKPhoto;
 import ru.melodin.fast.common.PermissionManager;
@@ -38,6 +39,7 @@ public class PhotoViewActivity extends AppCompatActivity {
     private int likeState = LikeState.UNLIKED;
 
     private PhotoViewAdapter adapter;
+    private VKPhoto source;
 
     private ImageButton like, comment, repost;
     private Animator.AnimatorListener hideListener = new Animator.AnimatorListener() {
@@ -106,12 +108,25 @@ public class PhotoViewActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         ArrayList<VKPhoto> photos = (ArrayList<VKPhoto>) getIntent().getSerializableExtra("photo");
+        source = (VKPhoto) getIntent().getSerializableExtra("selected");
 
-        getSupportActionBar().setTitle(getString(R.string.photo_of_photo, "1", String.valueOf(photos.size())));
+        int selectedPosition = 0;
+
+        if (source != null)
+            for (int i = 0; i < photos.size(); i++) {
+                VKPhoto photo = photos.get(i);
+                if (photo.id == source.id)
+                    selectedPosition = i;
+            }
+
+        //getSupportActionBar().setTitle(getString(R.string.photo_of_photo, source == null ? "1" : selectedPosition, String.valueOf(photos.size())));
 
         if (!ArrayUtil.isEmpty(photos) && Util.hasConnection()) {
             createAdapter(photos);
         }
+
+        if (selectedPosition > 0)
+            pager.setCurrentItem(selectedPosition);
 
         like.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -221,12 +236,6 @@ public class PhotoViewActivity extends AppCompatActivity {
 
             }
         });
-    }
-
-    @Override
-    protected void onDestroy() {
-        //EventBus.getDefault().postSticky(arrayOf < Any > (-1))
-        super.onDestroy();
     }
 
     @Override

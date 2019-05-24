@@ -119,7 +119,6 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
         list.setLayoutManager(manager);
 
         getCachedConversations();
-        getConversations(CONVERSATIONS_COUNT);
     }
 
     private void initViews(View v) {
@@ -156,9 +155,11 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
     private void getCachedConversations() {
         ArrayList<VKConversation> conversations = CacheStorage.getConversations();
 
-        if (ArrayUtil.isEmpty(conversations)) return;
+        if (!ArrayUtil.isEmpty(conversations)) {
+            createAdapter(conversations);
+        }
 
-        createAdapter(conversations);
+        getConversations(CONVERSATIONS_COUNT);
     }
 
     private void getConversations(final int count) {

@@ -49,6 +49,7 @@ public class VKMessage extends VKModel implements Serializable {
     public int unread;
     public ArrayList<VKModel> attachments = new ArrayList<>();
     public ArrayList<VKMessage> fwd_messages;
+    public VKMessage reply;
     public ArrayList<VKUser> history_users;
     public ArrayList<VKGroup> history_groups;
     public long update_time;
@@ -136,6 +137,10 @@ public class VKMessage extends VKModel implements Serializable {
             actionText = a.optString("text");
         }
 
+        if (o.has("reply_message")) {
+            reply = new VKMessage(o.optJSONObject("reply_message"));
+        }
+
         JSONArray fws = o.optJSONArray("fwd_messages");
 
         if (fws != null && fws.length() > 0) {
@@ -167,7 +172,7 @@ public class VKMessage extends VKModel implements Serializable {
         for (int i = 0; i < a.length(); i++) {
             VKMessage m = new VKMessage(a.optJSONObject(i));
 
-                ms.add(m);
+            ms.add(m);
         }
 
         return ms;
