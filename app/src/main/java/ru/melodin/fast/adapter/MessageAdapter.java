@@ -524,8 +524,10 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             time.setText(time_);
 
-            timeContainer.setGravity(item.out ? Gravity.END : Gravity.START);
-            bubbleContainer.setGravity(timeContainer.getGravity());
+            int gravity = item.out ? Gravity.END : Gravity.START;
+
+            timeContainer.setGravity(gravity);
+            bubbleContainer.setGravity(gravity);
 
             ViewUtil.fadeView(important, item.important, new Animator.AnimatorListener() {
                 @Override
