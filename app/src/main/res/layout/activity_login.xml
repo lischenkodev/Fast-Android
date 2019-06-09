@@ -31,20 +31,6 @@
                 android:text="@string/fast_messenger"
                 android:textSize="26sp" />
 
-            <ImageView
-                android:id="@+id/logo"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginStart="60dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="60dp"
-                android:layout_marginBottom="10dp"
-                android:layout_weight="1"
-                android:contentDescription="TODO"
-                android:src="@drawable/ic_logo"
-                android:visibility="gone" />
-
             <LinearLayout
                 android:id="@+id/fields"
                 android:layout_width="match_parent"

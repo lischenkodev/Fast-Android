@@ -130,8 +130,10 @@ public class LoginActivity extends AppCompatActivity {
 
         webView.clearCache(true);
 
-        CookieManager cookieManager = CookieManager.getInstance();
-        cookieManager.setAcceptCookie(false);
+        CookieManager manager = CookieManager.getInstance();
+        manager.removeAllCookies(null);
+        manager.flush();
+        manager.setAcceptCookie(false);
 
         final String url =
                 "https://oauth.vk.com/token?grant_type=password&client_id=2274003&scope=notify,friends,photos,audio,video,docs,notes,pages,status,offers,questions,wall,groups,messages,email,notifications,stats,ads,,market,offline&client_secret=hHbZxrka2uZ6jB1inYsH&username="
@@ -163,15 +165,16 @@ public class LoginActivity extends AppCompatActivity {
 
                         switch (error) {
                             case "need_validation":
+                                //startWebLogin();
+
                                 final String redirect_uri = response.optString("redirect_uri");
                                 runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
                                         Intent intent = new Intent(LoginActivity.this, ValidationActivity.class);
                                         intent.putExtra("url", redirect_uri);
-                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                        startActivityForResult(intent, 99);
-                                        finish();
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                        startActivityForResult(intent, Requests.VALIDATE_LOGIN);
                                     }
                                 });
                                 break;
@@ -254,21 +257,20 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == Requests.WEB_LOGIN) {
+        if (!webLogin.isEnabled())
             webLogin.setEnabled(true);
 
-            if (resultCode == Activity.RESULT_OK) {
-                String token = data.getStringExtra("token");
-                int id = data.getIntExtra("id", -1);
+        if ((requestCode == Requests.VALIDATE_LOGIN || requestCode == Requests.WEB_LOGIN) && resultCode == Activity.RESULT_OK) {
+            String token = data.getStringExtra("token");
+            int id = data.getIntExtra("id", -1);
 
-                UserConfig.userId = id;
-                UserConfig.accessToken = token;
-                UserConfig.save();
-                VKApi.config = UserConfig.restore();
+            UserConfig.userId = id;
+            UserConfig.accessToken = token;
+            UserConfig.save();
+            VKApi.config = UserConfig.restore();
 
-                getCurrentUser(id);
-                startMainActivity();
-            }
+            getCurrentUser(id);
+            startMainActivity();
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -287,7 +289,7 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void done() {
-                if (processDialog.isShowing())
+                if (processDialog != null && processDialog.isShowing())
                     processDialog.dismiss();
             }
 

@@ -57,9 +57,14 @@ public class WebViewLoginActivity extends AppCompatActivity {
 
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebViewClient(new VKWebViewClient());
+        webView.getSettings().setDomStorageEnabled(true);
+        webView.getSettings().setSaveFormData(true);
+        webView.clearCache(true);
 
-        CookieManager.getInstance().removeAllCookies(null);
-        CookieManager.getInstance().flush();
+        CookieManager manager = CookieManager.getInstance();
+        manager.removeAllCookies(null);
+        manager.flush();
+        manager.setAcceptCookie(true);
 
         webView.loadUrl(Auth.getUrl(UserConfig.VK_DESKTOP_ID, Scopes.allInt()));
         showWarningDialog();
