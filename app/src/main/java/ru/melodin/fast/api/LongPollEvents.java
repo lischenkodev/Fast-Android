@@ -16,6 +16,7 @@ import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.database.MemoryCache;
+import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.StringUtils;
 
 public class LongPollEvents {
@@ -93,6 +94,7 @@ public class LongPollEvents {
                 VKApi.messages().getById().messageIds(mId).execute(VKMessage.class, new VKApi.OnResponseListener<VKMessage>() {
                     @Override
                     public void onSuccess(ArrayList<VKMessage> models) {
+                        if (ArrayUtil.isEmpty(models)) return;
                         message = models.get(0);
                         EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_UPDATE, mId});
 
