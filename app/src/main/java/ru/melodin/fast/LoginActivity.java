@@ -4,8 +4,17 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,50 +22,39 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.android.material.card.MaterialCardView;
-import com.squareup.picasso.Callback;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
+import ru.melodin.fast.concurrent.LowThread;
 import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.util.Requests;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.util.ViewUtil;
-import ru.melodin.fast.view.CircleImageView;
 
 public class LoginActivity extends AppCompatActivity {
-    private MaterialCardView card;
-    private TextView name;
-    private CircleImageView avatar;
 
-    private boolean loggedIn;
-    private View.OnClickListener loginClick = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            login();
-        }
-    };
-    private View.OnClickListener closeClick = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            startMainActivity();
-        }
-    };
-    private View.OnLongClickListener logoutClick = new View.OnLongClickListener() {
+    private String login_, password_;
 
-        @Override
-        public boolean onLongClick(View v) {
-            if (loggedIn)
-                showExitDialog();
-            return true;
-        }
-    };
+    private TextInputLayout password, login;
+    private MaterialButton sign;
+
+    private TextView webLogin;
+
+    private AlertDialog processDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -64,50 +62,189 @@ public class LoginActivity extends AppCompatActivity {
         setTheme(ThemeManager.getLoginTheme());
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_login2);
+        setContentView(R.layout.activity_login);
 
-        findViewById(R.id.logo).setOnClickListener(new View.OnClickListener() {
+        sign = findViewById(R.id.btn_login);
+
+        login = findViewById(R.id.login);
+        password = findViewById(R.id.password);
+
+        sign.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                ThemeManager.switchTheme(!ThemeManager.isDark());
-                Util.restart(LoginActivity.this, true);
+            public void onClick(View view) {
+                login();
             }
         });
 
-        card = findViewById(R.id.card);
-
-        card = findViewById(R.id.card);
-        name = findViewById(R.id.name);
-        avatar = findViewById(R.id.avatar);
-
-        setUserData(null);
-
-        UserConfig.restore();
-        UserConfig.getUser();
-        if (UserConfig.isLoggedIn()) {
-            setUserData(UserConfig.getUser());
-        }
-    }
-
-    private void showExitDialog() {
-        AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle(R.string.warning);
-        adb.setMessage(R.string.exit_message);
-        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+        findViewById(R.id.logo_text).setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) {
-                UserConfig.clear();
-                setUserData(null);
-                loggedIn = false;
-                card.setOnClickListener(loginClick);
+            public void onClick(View view) {
+                toggleTheme();
             }
         });
-        adb.setNegativeButton(R.string.no, null);
-        adb.create().show();
+
+        webLogin = findViewById(R.id.web_login);
+
+        webLogin.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                webLogin.setEnabled(false);
+                startWebLogin();
+            }
+        });
     }
 
     private void login() {
-        startActivityForResult(new Intent(this, WebViewLoginActivity.class), Requests.LOGIN);
+        String login = this.login.getEditText().getText().toString().trim();
+        String password = this.password.getEditText().getText().toString().trim();
+
+        if (login.isEmpty() || password.isEmpty()) {
+            Snackbar.make(sign, R.string.all_necessary_data, Snackbar.LENGTH_SHORT).show();
+            return;
+        }
+
+        login_ = login;
+        password_ = password;
+
+        processDialog = createProcessDialog();
+
+        login(login_, password_, "");
+    }
+
+    private AlertDialog createProcessDialog() {
+        return new AlertDialog.Builder(this)
+                .setMessage(R.string.loading)
+                .setCancelable(false)
+                .create();
+    }
+
+    public void login(final String login, final String password, String captcha) {
+        if (!processDialog.isShowing())
+            processDialog.show();
+        final WebView webView = new WebView(this);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setDomStorageEnabled(true);
+        webView.getSettings().setSaveFormData(true);
+        webView.getSettings().setLoadsImagesAutomatically(false);
+        webView.getSettings().setUserAgentString("Chrome/41.0.2228.0 Safari/537.36");
+
+        webView.clearCache(true);
+
+        CookieManager cookieManager = CookieManager.getInstance();
+        cookieManager.setAcceptCookie(false);
+
+        final String url =
+                "https://oauth.vk.com/token?grant_type=password&client_id=2274003&scope=notify,friends,photos,audio,video,docs,notes,pages,status,offers,questions,wall,groups,messages,email,notifications,stats,ads,,market,offline&client_secret=hHbZxrka2uZ6jB1inYsH&username="
+                        + login + "&password=" + password + captcha + "&v=5.68";
+
+        webView.addJavascriptInterface(new HandlerInterface(), "HtmlHandler");
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                webView.loadUrl("javascript:window.HtmlHandler.handleHtml" +
+                        "('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
+            }
+        });
+
+        webView.loadUrl(url);
+    }
+
+    public void authorize(final String jsonObject) {
+        if (processDialog.isShowing())
+            processDialog.dismiss();
+        new LowThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject response = new JSONObject(jsonObject);
+                    if (response.has("error")) {
+                        // final String error_description = response.optString("error_description");
+                        final String error = response.optString("error");
+
+                        switch (error) {
+                            case "need_validation":
+                                final String redirect_uri = response.optString("redirect_uri");
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Intent intent = new Intent(LoginActivity.this, ValidationActivity.class);
+                                        intent.putExtra("url", redirect_uri);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                        startActivityForResult(intent, 99);
+                                        finish();
+                                    }
+                                });
+                                break;
+                            case "need_captcha":
+                                String captcha_img = response.optString("captcha_img");
+                                String captcha_sid = response.optString("captcha_sid");
+                                showCaptchaDialog(captcha_sid, captcha_img);
+                                break;
+                            default:
+                                Snackbar.make(sign, R.string.error, Snackbar.LENGTH_LONG).show();
+                                break;
+                        }
+                    } else {
+                        UserConfig.userId = response.optInt("user_id", -1);
+                        UserConfig.accessToken = response.optString("access_token");
+                        UserConfig.save();
+
+                        processDialog.show();
+
+                        getCurrentUser(UserConfig.userId);
+                        startMainActivity();
+                    }
+                } catch (Exception e) {
+                    Log.e("Error auth void", e.toString());
+                }
+            }
+        }).start();
+    }
+
+    private void showCaptchaDialog(final String captcha_sid, final String captcha_img) {
+        runOnUiThread(new Runnable() {
+
+            @Override
+            public void run() {
+                DisplayMetrics metrics = getResources().getDisplayMetrics();
+
+                ImageView image = new ImageView(LoginActivity.this);
+                image.setLayoutParams(new ViewGroup.LayoutParams((int) (metrics.widthPixels / 3.5), getResources().getDisplayMetrics().heightPixels / 7));
+
+                Picasso.get().load(captcha_img).priority(Picasso.Priority.HIGH).into(image);
+
+                final TextInputEditText input = new TextInputEditText(LoginActivity.this);
+
+                input.setHint(getString(R.string.captcha));
+                input.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+
+                final AlertDialog.Builder adb = new AlertDialog.Builder(LoginActivity.this);
+
+                LinearLayout layout = new LinearLayout(LoginActivity.this);
+                layout.setOrientation(LinearLayout.VERTICAL);
+                layout.setGravity(Gravity.CENTER);
+                layout.addView(image);
+                layout.addView(input);
+
+                adb.setView(layout);
+                adb.setNegativeButton(android.R.string.cancel, null);
+                adb.setPositiveButton(android.R.string.ok,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                String captcha_code = input.getText().toString().trim();
+                                login(login_, password_, "&captcha_sid=" + captcha_sid + "&captcha_key=" + captcha_code);
+                            }
+                        });
+                adb.setTitle("Input text from picture:");
+                adb.setCancelable(true);
+                AlertDialog alert = adb.create();
+                alert.show();
+            }
+        });
+    }
+
+    private void startWebLogin() {
+        startActivityForResult(new Intent(this, WebViewLoginActivity.class), Requests.WEB_LOGIN);
     }
 
     private void startMainActivity() {
@@ -117,15 +254,21 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == Requests.LOGIN && resultCode == Activity.RESULT_OK) {
-            String token = data.getStringExtra("token");
-            int id = data.getIntExtra("id", -1);
+        if (requestCode == Requests.WEB_LOGIN) {
+            webLogin.setEnabled(true);
 
-            UserConfig config = new UserConfig(token, null, id, UserConfig.VK_DESKTOP_ID);
-            config.save();
-            VKApi.config = config;
+            if (resultCode == Activity.RESULT_OK) {
+                String token = data.getStringExtra("token");
+                int id = data.getIntExtra("id", -1);
 
-            getCurrentUser(id);
+                UserConfig.userId = id;
+                UserConfig.accessToken = token;
+                UserConfig.save();
+                VKApi.config = UserConfig.restore();
+
+                getCurrentUser(id);
+                startMainActivity();
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -144,51 +287,29 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void done() {
-                loggedIn = true;
-                setUserData(user);
-                card.setOnClickListener(closeClick);
+                if (processDialog.isShowing())
+                    processDialog.dismiss();
             }
 
             @Override
             public void error(Exception e) {
-                setUserData(null);
                 Toast.makeText(LoginActivity.this, R.string.error, Toast.LENGTH_LONG).show();
             }
         });
     }
 
-    private void setUserData(VKUser user) {
-        if (user == null) {
-            loggedIn = false;
-            name.setText(R.string.add_account);
-            avatar.setVisibility(View.GONE);
-            name.setGravity(Gravity.CENTER);
-
-            card.setOnClickListener(loginClick);
-            card.setOnLongClickListener(null);
-            return;
-        }
-
-        loggedIn = true;
-
-        avatar.setVisibility(View.VISIBLE);
-        name.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
-
-        card.setOnLongClickListener(logoutClick);
-        card.setOnClickListener(closeClick);
-
-        name.setText(user.toString());
-
-        Picasso.get()
-                .load(user.photo_200)
-                .priority(Picasso.Priority.HIGH)
-                .into(avatar, new Callback.EmptyCallback() {
-                    @Override
-                    public void onSuccess() {
-                        super.onSuccess();
-                        ViewUtil.fadeView(avatar, true);
-                    }
-                });
+    private void toggleTheme() {
+        ThemeManager.toggleTheme();
+        Util.restart(this, true);
     }
 
+    private class HandlerInterface {
+
+        @JavascriptInterface
+        public void handleHtml(String html) {
+            Document doc = Jsoup.parse(html);
+            String response_string = doc.select("pre[style=\"word-wrap: break-word; white-space: pre-wrap;\"]").first().text();
+            authorize(response_string);
+        }
+    }
 }

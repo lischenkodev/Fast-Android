@@ -178,9 +178,9 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         }
     }
 
-    public void addMessage(VKMessage msg) {
-        if (msg.peerId != peerId) return;
-        if (containsRandom(msg.randomId)) return;
+    public void addMessage(VKMessage msg, boolean fromApp) {
+        if (msg.peerId != peerId || (msg.out && !fromApp) || contains(msg.id)) return;
+        //if (containsRandom(msg.randomId)) return;
 
         add(msg);
 

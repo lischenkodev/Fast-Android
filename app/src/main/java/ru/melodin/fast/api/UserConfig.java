@@ -63,7 +63,7 @@ public class UserConfig {
                 .apply();
     }
 
-    public void save() {
+    public static void save() {
         AppGlobal.preferences.edit()
                 .putInt(USER_ID, userId)
                 .putInt(API_ID, apiId)

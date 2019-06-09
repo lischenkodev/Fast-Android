@@ -213,7 +213,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             case LongPollEvents.KEY_MESSAGE_NEW:
                 VKConversation conversation = (VKConversation) data[1];
 
-                adapter.addMessage(conversation.last);
+                adapter.addMessage(conversation.last, false);
 
                 if (!conversation.last.out && conversation.last.peerId == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
                     if (!resumed) {
@@ -426,7 +426,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         msg.status = VKMessage.STATUS_SENDING;
         msg.randomId = new Random().nextInt();
 
-        adapter.addMessage(msg);
+        adapter.addMessage(msg, true);
 
         final int position = adapter.getItemCount() - 1;
 

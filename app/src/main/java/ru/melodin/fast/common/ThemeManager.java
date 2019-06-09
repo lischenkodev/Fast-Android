@@ -25,6 +25,10 @@ public class ThemeManager {
         EventBus.getDefault().post(new Object[]{KEY_THEME_UPDATE});
     }
 
+    public static void toggleTheme() {
+        switchTheme(!isDark());
+    }
+
     static void init() {
         dark = AppGlobal.preferences.getBoolean(FragmentSettings.KEY_DARK_STYLE, false);
 

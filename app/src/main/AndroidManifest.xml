@@ -17,6 +17,9 @@
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="m">
+
+        <activity android:name=".ValidationActivity" />
+
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize">
@@ -39,7 +42,6 @@
             android:name=".WebViewLoginActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/login" />
-
         <activity
             android:name=".PhotoViewActivity"
             android:configChanges="screenSize|orientation|density"
@@ -53,4 +55,5 @@
             android:exported="true"
             tools:ignore="ExportedService" />
     </application>
+
 </manifest>
