@@ -1,7 +1,8 @@
 package ru.melodin.fast.fragment;
 
 import android.content.DialogInterface;
-import android.graphics.drawable.Drawable;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -12,7 +13,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -53,16 +53,12 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
     private ImageView avatar;
     private TextView name;
 
-    private Drawable placeholder;
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         avatar = view.findViewById(R.id.user_avatar);
         name = view.findViewById(R.id.user_name);
-
-        placeholder = ContextCompat.getDrawable(getContext(), R.drawable.ic_avatar);
 
         getUser();
         EventBus.getDefault().register(this);
@@ -93,9 +89,9 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
         name.setText(user.toString());
 
         if (TextUtils.isEmpty(user.photo_200)) {
-            avatar.setImageResource(R.drawable.ic_avatar);
+            avatar.setImageDrawable(null);
         } else {
-            Picasso.get().load(user.photo_200).priority(Picasso.Priority.HIGH).placeholder(placeholder).into(avatar);
+            Picasso.get().load(user.photo_200).priority(Picasso.Priority.HIGH).placeholder(new ColorDrawable(Color.TRANSPARENT)).into(avatar);
         }
     }
 

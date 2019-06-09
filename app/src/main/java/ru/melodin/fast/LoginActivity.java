@@ -114,7 +114,6 @@ public class LoginActivity extends AppCompatActivity {
     private AlertDialog createProcessDialog() {
         return new AlertDialog.Builder(this)
                 .setMessage(R.string.loading)
-                .setCancelable(false)
                 .create();
     }
 

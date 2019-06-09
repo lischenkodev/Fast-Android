@@ -461,7 +461,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
         Space space;
 
-        Drawable circle, sending, error, placeholder;
+        Drawable circle, sending, placeholder;
 
         ViewHolder(View v) {
             super(v);
@@ -478,7 +478,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             circle = new ColorDrawable(ThemeManager.getAccent());
             sending = getDrawable(R.drawable.ic_vector_access_time);
-            error = getDrawable(R.drawable.ic_msg_error);
 
             bubbleContainer = v.findViewById(R.id.bubble_container);
             messageContainer = v.findViewById(R.id.message_container);
@@ -512,7 +511,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             } else if (item.status == VKMessage.STATUS_SENT) {
                 read.setImageDrawable(circle);
             } else {
-                read.setImageDrawable(error);
+                read.setImageDrawable(circle);
             }
 
             read.setVisibility(item.out ? item.read ? View.GONE : View.GONE : View.GONE);

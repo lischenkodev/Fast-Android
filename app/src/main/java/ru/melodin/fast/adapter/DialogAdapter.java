@@ -433,7 +433,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView avatar, avatarSmall, online, out;
+        ImageView avatar, avatarSmall, online, out, muted;
         TextView title, body, time, counter;
         LinearLayout container;
         FrameLayout counterContainer;
@@ -454,6 +454,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
             avatarSmall = v.findViewById(R.id.avatar_small);
             online = v.findViewById(R.id.online);
             out = v.findViewById(R.id.icon_out_message);
+            muted = v.findViewById(R.id.muted);
 
             title = v.findViewById(R.id.title);
             body = v.findViewById(R.id.body);
@@ -473,6 +474,8 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         void bind(int position) {
             VKConversation item = getItem(position);
             VKMessage last = item.last;
+
+            muted.setVisibility(item.isNotificationsDisabled() ? View.VISIBLE : View.GONE);
 
             if (last == null) return;
 
