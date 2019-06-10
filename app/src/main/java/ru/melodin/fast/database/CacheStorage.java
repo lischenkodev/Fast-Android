@@ -398,7 +398,7 @@ public class CacheStorage {
         message.read = getInt(cursor, READ_STATE) == 1;
         message.out = getInt(cursor, IS_OUT) == 1;
         message.important = getInt(cursor, IMPORTANT) == 1;
-        message.status = getInt(cursor, STATUS);
+        //message.status = getInt(cursor, STATUS);
         message.update_time = getLong(cursor, UPDATE_TIME);
         message.action = VKMessage.getAction(getString(cursor, ACTION_TYPE));
         message.actionText = getString(cursor, ACTION_TEXT);
@@ -523,7 +523,7 @@ public class CacheStorage {
         values.put(TEXT, message.text);
         values.put(DATE, message.date);
         values.put(IS_OUT, message.out);
-        values.put(STATUS, message.status);
+        values.put(STATUS, -1);
         values.put(READ_STATE, message.read);
         values.put(UPDATE_TIME, message.update_time);
         values.put(ACTION_TEXT, message.actionText);

@@ -1,5 +1,7 @@
 package ru.melodin.fast.util;
 
+import org.json.JSONArray;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -262,16 +264,6 @@ public class ArrayUtil {
         return VALUE_NOT_FOUND;
     }
 
-    /**
-     * Creates a {@link String} representation of the specified array passed.
-     * Each element is converted to a {@link String} and separated by {@code ","}.
-     * Returns null if items is null or empty
-     *
-     * @param array the array to convert
-     * @param <T>   the generic type of {@link Collection}
-     * @return the {@link String} representation of items,
-     * or {@code ""} if array is null or empty
-     */
     @SafeVarargs
     public static <T> String toString(T... array) {
         if (array == null || array.length == 0) {
@@ -287,15 +279,6 @@ public class ArrayUtil {
         return buffer.toString();
     }
 
-    /**
-     * Creates a {@link String} representation of the specified array passed.
-     * Each element is converted to a {@link String} and separated by {@code ","}.
-     * Returns null if items is null or empty
-     *
-     * @param array the array to convert
-     * @return the {@link String} representation of items,
-     * or {@code ""} if array is null or empty
-     */
     public static String toString(int... array) {
         if (array == null || array.length == 0) {
             return null;
@@ -320,6 +303,10 @@ public class ArrayUtil {
         list.add(object);
 
         return list;
+    }
+
+    public static boolean isEmpty(JSONArray array) {
+        return array == null || array.length() == 0;
     }
 
     /**

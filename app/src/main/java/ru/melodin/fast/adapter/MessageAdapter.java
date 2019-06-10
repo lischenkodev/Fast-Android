@@ -79,12 +79,16 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     private AttachmentInflater attacher;
     private DisplayMetrics metrics;
 
+    private MessagesActivity activity;
+
     private LinearLayoutManager manager;
 
     private ArrayList<Integer> loadingIds = new ArrayList<>();
 
     public MessageAdapter(Context context, ArrayList<VKMessage> messages, int peerId) {
         super(context, messages);
+
+        this.activity = (MessagesActivity) context;
 
         this.peerId = peerId;
         this.attacher = new AttachmentInflater();
@@ -178,9 +182,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         }
     }
 
-    public void addMessage(VKMessage msg, boolean fromApp) {
-        if (msg.peerId != peerId || (msg.out && !fromApp) || contains(msg.id)) return;
-        //if (containsRandom(msg.randomId)) return;
+    public void addMessage(VKMessage msg) {
+        if (msg.peerId != peerId || containsRandom(msg.randomId)) return;
 
         add(msg);
 
@@ -191,7 +194,10 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     private boolean containsRandom(long randomId) {
-        return !(randomId > 0);
+        for (VKMessage message : getValues())
+            if (message.randomId == randomId)
+                return true;
+        return false;
     }
 
     private void readMessage(int mId) {
@@ -332,10 +338,10 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     private void showForwardedMessages(VKMessage item, ViewGroup parent, boolean reply) {
         if (reply)
-            attacher.message(item, parent, item.reply);
+            attacher.message(item, parent, item.reply.asMessage(), reply);
         else
             for (int i = 0; i < item.fwd_messages.size(); i++) {
-                attacher.message(item, parent, item.fwd_messages.get(i));
+                attacher.message(item, parent, item.fwd_messages.get(i), false);
             }
     }
 
@@ -355,10 +361,10 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         }
 
         inflateAttachments(item, holder.attachments, holder.photos,
-                item.attachments, holder.bubble, holder.bubble.getMaxWidth());
+                item.attachments, holder.bubble, holder.bubble.getMaxWidth(), false);
     }
 
-    private void inflateAttachments(VKMessage item, ViewGroup parent, ViewGroup images, ArrayList<VKModel> attachments, BoundedLinearLayout bubble, int maxWidth) {
+    private void inflateAttachments(VKMessage item, ViewGroup parent, ViewGroup images, ArrayList<VKModel> attachments, BoundedLinearLayout bubble, int maxWidth, boolean forwarded) {
         for (int i = 0; i < attachments.size(); i++) {
             parent.setVisibility(View.VISIBLE);
             VKModel attachment = attachments.get(i);
@@ -373,7 +379,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 }
                 attacher.sticker(parent, (VKSticker) attachment);
             } else if (attachment instanceof VKDoc) {
-                attacher.doc(item, parent, (VKDoc) attachment);
+                attacher.doc(item, parent, (VKDoc) attachment, forwarded);
             } else if (attachment instanceof VKLink) {
                 attacher.link(item, parent, (VKLink) attachment);
             } else if (attachment instanceof VKVideo) {
@@ -384,7 +390,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 }
                 attacher.graffiti(parent, (VKGraffiti) attachment);
             } else if (attachment instanceof VKVoice) {
-                attacher.voice(item, parent, (VKVoice) attachment);
+                attacher.voice(item, parent, (VKVoice) attachment, forwarded);
             } else if (attachment instanceof VKWall) {
                 attacher.wall(item, parent, (VKWall) attachment);
             } else {
@@ -504,14 +510,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 editColor = ColorUtil.alphaColor(ThemeManager.getAccent(), 0.6f);
             } else {
                 editColor = 0;
-            }
-
-            if (item.status == VKMessage.STATUS_SENDING) {
-                read.setImageDrawable(sending);
-            } else if (item.status == VKMessage.STATUS_SENT) {
-                read.setImageDrawable(circle);
-            } else {
-                read.setImageDrawable(circle);
             }
 
             read.setVisibility(item.out ? item.read ? View.GONE : View.GONE : View.GONE);
@@ -657,9 +655,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             if (!ArrayUtil.isEmpty(item.fwd_messages)) {
                 showForwardedMessages(item, attachments, false);
-            }
-
-            if (item.reply != null) {
+            } else if (item.reply != null) {
                 showForwardedMessages(item, attachments, true);
             }
 
@@ -853,7 +849,12 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             parent.addView(image);
         }
 
-        public void message(VKMessage item, ViewGroup parent, VKMessage source) {
+        public void message(VKMessage item, ViewGroup parent, VKMessage source, boolean reply) {
+            if (reply) {
+                empty(parent, "reply");
+                return;
+            }
+
             View v = inflater.inflate(R.layout.activity_messages_attach_message, parent, false);
             v.setClickable(false);
             v.setFocusable(false);
@@ -911,7 +912,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             if (!ArrayUtil.isEmpty(source.attachments)) {
                 LinearLayout container = v.findViewById(R.id.attachments);
-                inflateAttachments(source, container, container, source.attachments, null, -1);
+                inflateAttachments(source, container, container, source.attachments, null, -1, true);
             }
 
             if (!ArrayUtil.isEmpty(source.fwd_messages)) {
@@ -922,7 +923,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             parent.addView(v);
         }
 
-        void doc(VKMessage item, ViewGroup parent, final VKDoc source) {
+        void doc(VKMessage item, ViewGroup parent, final VKDoc source, boolean forwarded) {
             View v = inflater.inflate(R.layout.activity_messages_attach_doc, parent, false);
 
             TextView title = v.findViewById(R.id.docTitle);
@@ -940,7 +941,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             int titleColor, bodyColor, iconColor, bgColor;
 
-            if (item.out) {
+            if (item.out || forwarded) {
                 bgColor = Color.WHITE;
                 iconColor = ThemeManager.getAccent();
                 titleColor = Color.WHITE;
@@ -952,10 +953,10 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 bodyColor = ThemeManager.isDark() ? ColorUtil.darkenColor(titleColor) : ColorUtil.lightenColor(titleColor);
             }
 
-            Drawable arrow = context.getResources().getDrawable(R.drawable.ic_vector_file);
-            arrow.setTint(iconColor);
+            Drawable drawable = context.getResources().getDrawable(R.drawable.ic_vector_file);
+            drawable.setTint(iconColor);
 
-            icon.setImageDrawable(arrow);
+            icon.setImageDrawable(drawable);
             background.setImageDrawable(new ColorDrawable(bgColor));
 
             title.setTextColor(titleColor);
@@ -983,7 +984,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             });
         }
 
-        void voice(VKMessage item, ViewGroup parent, VKVoice source) {
+        void voice(VKMessage item, ViewGroup parent, VKVoice source, boolean forwarded) {
             View v = inflater.inflate(R.layout.activity_messages_attach_audio, parent, false);
 
             TextView title = v.findViewById(R.id.audioTitle);
@@ -1000,7 +1001,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             int titleColor, bodyColor, iconColor, bgColor;
 
-            if (item.out) {
+            if (item.out || forwarded) {
                 bgColor = Color.WHITE;
                 iconColor = ThemeManager.getAccent();
                 titleColor = Color.WHITE;

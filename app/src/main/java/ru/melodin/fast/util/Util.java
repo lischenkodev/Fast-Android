@@ -61,7 +61,7 @@ public class Util {
         long unit = 1024;
         if (sizeInBytes < unit) return sizeInBytes + " B";
         int exp = (int) (Math.log(sizeInBytes) / Math.log(unit));
-        String pre = ("KMGTPE").charAt(exp - 1) + ("i");
+        String pre = ("KMGTPE").charAt(exp - 1) + "";// + ("i");
         return String.format(Locale.US, "%.1f %sB", sizeInBytes / Math.pow(unit, exp), pre);
     }
 

@@ -73,7 +73,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private Drawable iconSend;
     private Drawable iconMic;
-    private Drawable iconDone;
+    //private Drawable iconDone;
 
     private Toolbar tb;
     private AppBarLayout appBar;
@@ -89,7 +89,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private MessageAdapter adapter;
 
-    private boolean loading, canWrite, editing, typing;
+    private boolean loading, canWrite, typing;
     private int cantWriteReason = -1, peerId, membersCount;
     private VKConversation.Reason reason;
     private String messageText;
@@ -97,13 +97,12 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private Timer timer;
 
-    private VKMessage pinned, last;
+    private VKMessage pinned;//, last;
     private VKConversation conversation;
-    private VKUser currentUser;
 
     private boolean resumed;
 
-    private VKMessage notReaded;
+    private VKMessage notRead;
 
     private View.OnClickListener sendClick = new View.OnClickListener() {
         @Override
@@ -129,7 +128,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         iconSend = ContextCompat.getDrawable(this, R.drawable.md_send);
         iconMic = ContextCompat.getDrawable(this, R.drawable.md_mic);
-        iconDone = ContextCompat.getDrawable(this, R.drawable.md_done);
+        //iconDone = ContextCompat.getDrawable(this, R.drawable.md_done);
 
         initViews();
         getIntentData();
@@ -189,9 +188,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     protected void onResume() {
         super.onResume();
         resumed = true;
-        if (notReaded != null) {
-            adapter.readNewMessage(notReaded);
-            notReaded = null;
+        if (notRead != null) {
+            adapter.readNewMessage(notRead);
+            notRead = null;
         }
     }
 
@@ -213,11 +212,12 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             case LongPollEvents.KEY_MESSAGE_NEW:
                 VKConversation conversation = (VKConversation) data[1];
 
-                adapter.addMessage(conversation.last, false);
+                adapter.addMessage(conversation.last);
+
 
                 if (!conversation.last.out && conversation.last.peerId == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
                     if (!resumed) {
-                        notReaded = conversation.last;
+                        notRead = conversation.last;
                     } else {
                         adapter.readNewMessage(conversation.last);
                     }
@@ -263,7 +263,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         reason = VKConversation.getReason(cantWriteReason);
 
         if (conversation != null) {
-            last = conversation.last;
+            //last = conversation.last;
             membersCount = conversation.membersCount;
             pinned = conversation.pinned;
         }
@@ -363,54 +363,11 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         }).start();
     }
 
-    private void applyStyles(boolean isEdit) {
-        if (isEdit) {
-            send.setImageDrawable(iconDone);
-        } else {
-            String s = message.getText().toString();
-
-            applyBtnStyle(s.trim().isEmpty());
-        }
-    }
-
-    private void applyBtnStyle(boolean isTextEmpty) {
-        if (isTextEmpty) {
-            send.setImageDrawable(iconMic);
-            if (!editing)
-                send.setOnClickListener(recordClick);
-        } else {
-            send.setImageDrawable(iconSend);
-            if (!editing)
-                send.setOnClickListener(sendClick);
-        }
-    }
-
     public void checkCount() {
         bar.setVisibility(loading ? View.VISIBLE : View.GONE);
 
         if (bar.getVisibility() != View.VISIBLE)
             empty.setVisibility(adapter == null ? View.VISIBLE : adapter.isEmpty() ? View.VISIBLE : View.GONE);
-    }
-
-    private void setNotEditing() {
-        editing = false;
-        applyStyles(editing);
-        message.setText("");
-        checkHovered();
-    }
-
-    private void checkHovered() {
-        int position = -1;
-
-        for (int i = 0; i < adapter.getMessagesCount(); i++) {
-            VKMessage m = adapter.getItem(i);
-            if (m.isSelected()) position = i;
-        }
-
-        if (position == -1) return;
-
-        adapter.getItem(position).setSelected(false);
-        adapter.notifyItemChanged(position, null);
     }
 
     private void sendMessage() {
@@ -423,10 +380,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         msg.added = true;
         msg.date = Calendar.getInstance().getTimeInMillis();
         msg.out = true;
-        msg.status = VKMessage.STATUS_SENDING;
         msg.randomId = new Random().nextInt();
 
-        adapter.addMessage(msg, true);
+        adapter.addMessage(msg);
 
         final int position = adapter.getItemCount() - 1;
 
@@ -453,7 +409,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
                 adapter.getItem(position).id = id;
 
-                msg.status = VKMessage.STATUS_SENT;
 
                 if (adapter.getItemCount() > size) {
                     int i = adapter.searchPosition(id);
@@ -467,7 +422,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
             @Override
             public void error(Exception e) {
-                msg.status = VKMessage.STATUS_ERROR;
+
                 adapter.notifyItemChanged(position, -1);
             }
         });
@@ -572,32 +527,30 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     }
 
     private String getSubtitle() {
-        int type = 2;
-        if (peerId > 2000000000) type = 0;
-        if (peerId < -1) type = 1;
+        if (conversation == null) return null;
 
-        if (conversation != null) {
-            if (conversation.group_channel) {
-                type = 3;
-            }
-        }
-
-        switch (type) {
-            case 0:
-                return membersCount > 0 ? getString(R.string.members_count, membersCount) : "";
-            case 1:
+        switch (conversation.getType()) {
+            case GROUP: {
                 return getString(R.string.group);
-            case 2:
-                currentUser = CacheStorage.getUser(peerId);
+            }
+            case USER: {
+                VKUser currentUser = CacheStorage.getUser(peerId);
                 if (currentUser == null)
                     loadUser(peerId);
                 return getUserSubtitle(currentUser);
-            case 3:
-                return getString(R.string.channel) + " • " + getString(R.string.members_count, membersCount);
-
+            }
+            case CHAT: {
+                if (conversation.isGroupChannel()) {
+                    return getString(R.string.channel) + " • " + getString(R.string.members_count, membersCount);
+                } else {
+                    return membersCount > 0 ? getString(R.string.members_count, membersCount) : "";
+                }
+            }
+            
+            default: {
+                return "Unknown type";
+            }
         }
-
-        return "";
     }
 
     private void loadUser(final int peerId) {
@@ -643,7 +596,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 break;
             case R.id.menuUpdate:
                 if (adapter == null) return false;
-                if (!loading && !editing) {
+                if (!loading) {
                     adapter.clear();
                     getHistory(0, MESSAGES_COUNT);
                 }
@@ -656,14 +609,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     protected void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (editing) {
-            setNotEditing();
-        } else
-            super.onBackPressed();
     }
 
     @Override
@@ -693,13 +638,29 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (!typing) {
             setTyping();
         }
-        if (!editing) {
-            applyBtnStyle(s.toString().trim().isEmpty());
-        }
+
+        setButtonStyle(!s.toString().trim().isEmpty());
     }
 
     @Override
     public void afterTextChanged(Editable s) {
 
+    }
+
+    private void setButtonStyle(boolean send) {
+        if (send)
+            setSendStyle();
+        else
+            setMicStyle();
+    }
+
+    private void setSendStyle() {
+        send.setImageDrawable(iconSend);
+        send.setOnClickListener(sendClick);
+    }
+
+    private void setMicStyle() {
+        send.setImageDrawable(iconMic);
+        send.setOnClickListener(recordClick);
     }
 }

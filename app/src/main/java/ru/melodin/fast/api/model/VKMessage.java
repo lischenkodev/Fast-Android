@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import ru.melodin.fast.api.UserConfig;
+import ru.melodin.fast.util.ArrayUtil;
 
 public class VKMessage extends VKModel implements Serializable {
 
@@ -23,9 +24,6 @@ public class VKMessage extends VKModel implements Serializable {
     public static final int MEDIA = 512;        //сообщение содержит медиаконтент
     public static final int BESEDA = 8192;      //беседа
 
-    public static final int STATUS_SENDING = 0;
-    public static final int STATUS_SENT = 1;
-    public static final int STATUS_ERROR = 2;
     public static int count;
     public static int lastHistoryCount;
     public static ArrayList<VKUser> users;
@@ -36,7 +34,6 @@ public class VKMessage extends VKModel implements Serializable {
     public int peerId;
     public int fromId;
     public int randomId = -1;
-    public int status;
     public int flags;
     public int chatMessageId;
     public String type;
@@ -49,7 +46,7 @@ public class VKMessage extends VKModel implements Serializable {
     public int unread;
     public ArrayList<VKModel> attachments = new ArrayList<>();
     public ArrayList<VKMessage> fwd_messages;
-    public VKMessage reply;
+    public VKReplyMessage reply;
     public ArrayList<VKUser> history_users;
     public ArrayList<VKGroup> history_groups;
     public long update_time;
@@ -114,8 +111,6 @@ public class VKMessage extends VKModel implements Serializable {
     }
 
     public VKMessage(JSONObject o) throws JSONException {
-        status = VKMessage.STATUS_SENT;
-
         history_groups = groups;
         history_users = users;
 
@@ -137,19 +132,21 @@ public class VKMessage extends VKModel implements Serializable {
             actionText = a.optString("text");
         }
 
-        if (o.has("reply_message")) {
-            reply = new VKMessage(o.optJSONObject("reply_message"));
+        JSONObject replyMessage = o.optJSONObject("reply_message");
+
+        if (replyMessage != null) {
+            reply = new VKReplyMessage(replyMessage);
         }
 
         JSONArray fws = o.optJSONArray("fwd_messages");
 
-        if (fws != null && fws.length() > 0) {
+        if (!ArrayUtil.isEmpty(fws)) {
             fwd_messages = parseForwarded(fws);
         }
 
         JSONArray attachments = o.optJSONArray("attachments");
 
-        if (attachments != null && attachments.length() > 0) {
+        if (!ArrayUtil.isEmpty(attachments)) {
             this.attachments = VKAttachments.parse(attachments);
         }
     }

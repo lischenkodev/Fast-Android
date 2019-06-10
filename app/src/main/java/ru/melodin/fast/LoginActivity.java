@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -252,6 +253,21 @@ public class LoginActivity extends AppCompatActivity {
     private void startMainActivity() {
         startActivity(new Intent(this, MainActivity.class));
         finish();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putStringArray("fields", new String[]{login.getEditText().getText().toString().trim(), password.getEditText().getText().toString().trim()});
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        String[] fields = savedInstanceState.getStringArray("fields");
+        if (fields == null) return;
+        login.getEditText().setText(fields[0]);
+        password.getEditText().setText(fields[1]);
     }
 
     @Override

@@ -23,7 +23,8 @@ public class VKConversation extends VKModel implements Serializable {
     public boolean can_write;
     public int reason;
 
-    public boolean read, group_channel;
+    public boolean read;
+    private boolean groupChannel;
 
     public VKMessage pinned, last;
 
@@ -156,7 +157,7 @@ public class VKConversation extends VKModel implements Serializable {
             title = ch.optString("title");
             membersCount = ch.optInt("members_count");
             state = ch.optString("state");
-            group_channel = ch.optBoolean("is_group_channel");
+            groupChannel = ch.optBoolean("is_group_channel");
 
             JSONObject p = ch.optJSONObject("photo");
             if (p != null) {
@@ -182,10 +183,18 @@ public class VKConversation extends VKModel implements Serializable {
         }
     }
 
+    public boolean isGroupChannel() {
+        return groupChannel;
+    }
+
     public static Type getType(int peerId) {
         if (VKConversation.isChatId(peerId)) return Type.CHAT;
         if (VKGroup.isGroupId(peerId)) return Type.GROUP;
         return Type.USER;
+    }
+
+    public Type getType() {
+        return type;
     }
 
     public static Type getType(String type) {

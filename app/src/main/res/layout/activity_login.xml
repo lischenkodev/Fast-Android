@@ -134,13 +134,13 @@
 
     </com.google.android.material.card.MaterialCardView>
 
-    <TextView
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/web_login"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="20dp"
-        android:text="@string/login_via_webview"
-        android:textColor="?colorAccent" />
+        android:text="@string/login_via_webview" />
 
 </FrameLayout>
