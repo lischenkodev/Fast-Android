@@ -319,14 +319,20 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         return group;
     }
 
-    private void loadUser(final Integer userId) {
-        if (loadingIds.contains(userId) || userId == 0) return;
-        loadingIds.add(userId);
+    private void loadUser(Integer id) {
+        if (loadingIds.contains(id) || id == 0) return;
+        if (id < 0)
+            id *= -1;
+        loadingIds.add(id);
+
+        final Integer userId = id;
+
         ThreadExecutor.execute(new AsyncCallback(((MessagesActivity) context)) {
             VKUser user;
 
             @Override
             public void ready() throws Exception {
+
                 user = VKApi.users().get().userId(userId).fields(VKUser.FIELDS_DEFAULT).execute(VKUser.class).get(0);
             }
 

@@ -1,16 +1,22 @@
 package ru.melodin.fast.util;
 
 import android.animation.Animator;
+import android.content.Context;
 import android.os.Build;
 import android.view.View;
 import android.view.ViewPropertyAnimator;
 import android.view.Window;
+import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.ColorInt;
 
+import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.common.ThemeManager;
 
 public class ViewUtil {
+
+    private static final InputMethodManager keyboard = (InputMethodManager)
+            AppGlobal.context().getSystemService(Context.INPUT_METHOD_SERVICE);
 
     public static void fadeView(View v, long duration, boolean show, Animator.AnimatorListener listener) {
         v.setAlpha(show ? 0 : 1);
@@ -29,6 +35,14 @@ public class ViewUtil {
 
     public static void fadeView(View v, boolean show, Animator.AnimatorListener listener) {
         fadeView(v, 200, show, listener);
+    }
+
+    public static void showKeyboard(View v) {
+        keyboard.showSoftInput(v, 0);
+    }
+
+    public static void hideKeyboard(View v) {
+        keyboard.hideSoftInputFromWindow(v.getWindowToken(), 0);
     }
 
     public static void applyWindowStyles(Window window) {

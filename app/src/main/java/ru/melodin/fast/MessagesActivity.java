@@ -131,6 +131,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private View.OnClickListener doneClick = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+            ViewUtil.hideKeyboard(message);
             editMessage(edited);
         }
     };
@@ -820,6 +821,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private void showEdit() {
         editing = true;
+        ViewUtil.showKeyboard(message);
 
         messageText = message.getText().toString();
         updateStyles();
