@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -821,6 +822,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private void showEdit() {
         editing = true;
+
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+
+        message.requestFocus();
         ViewUtil.showKeyboard(message);
 
         messageText = message.getText().toString();

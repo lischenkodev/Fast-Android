@@ -264,8 +264,6 @@ public class LongPollEvents {
             user.last_seen = time;
             user.online = false;
             user.online_mobile = false;
-
-            CacheStorage.update(DatabaseHelper.USERS_TABLE, user, DatabaseHelper.USER_ID, userId);
         }
 
         EventBus.getDefault().postSticky(new Object[]{KEY_USER_OFFLINE, userId, time, timeout});
@@ -280,8 +278,6 @@ public class LongPollEvents {
             user.last_seen = time;
             user.online = true;
             user.online_mobile = true;
-
-            CacheStorage.update(DatabaseHelper.USERS_TABLE, user, DatabaseHelper.USER_ID, userId);
         }
 
         EventBus.getDefault().postSticky(new Object[]{KEY_USER_ONLINE, userId, time});

@@ -19,7 +19,6 @@ import ru.melodin.fast.api.model.VKMessage;
 import ru.melodin.fast.api.model.VKModel;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.AppGlobal;
-import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.util.ArrayUtil;
 
@@ -85,7 +84,7 @@ public class VKUtil {
             }
         }
 
-        VKUser action_user = CacheStorage.getUser(msg.getActionUserId());
+        VKUser action_user = MemoryCache.getUser(msg.getActionUserId());
 
         String u_name = null;
 
