@@ -121,4 +121,5 @@
     <string name="delete">Удалить</string>
     <string name="edit">Изменить</string>
     <string name="for_everyone">Для всех</string>
+    <string name="pin_message">Закрепить</string>
 </resources>

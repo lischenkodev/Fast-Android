@@ -745,13 +745,17 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         EventBus.getDefault().unregister(this);
     }
 
-    private void showAlert(int position) {
+    private void showAlert(final int position) {
         final VKMessage item = adapter.getItem(position);
 
         ArrayList<String> list = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.message_functions)));
         ArrayList<String> remove = new ArrayList<>();
 
         remove.add(getString(R.string.edit));
+
+        if (!conversation.isCanChangePin()) {
+            remove.add(getString(R.string.pin_message));
+        }
 
         list.removeAll(remove);
 
@@ -765,13 +769,50 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 String title = items[i];
-                
+
                 if (title.equals(getString(R.string.delete))) {
                     showConfirmDeleteMessages(new ArrayList<>(Collections.singletonList(item)));
+                } else if (title.equals(getString(R.string.pin_message))) {
+                    showConfirmPinDialog(item);
                 }
             }
         });
         adb.show();
+    }
+
+    private void showConfirmPinDialog(final VKMessage message) {
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        adb.setTitle(R.string.confirmation);
+        adb.setMessage(R.string.are_you_sure);
+        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                pinMessage(message);
+            }
+        });
+        adb.setNegativeButton(R.string.no, null);
+        adb.show();
+    }
+
+    private void pinMessage(final VKMessage message) {
+        ThreadExecutor.execute(new AsyncCallback(this) {
+
+            @Override
+            public void ready() throws Exception {
+                VKApi.messages().pin().peerId(peerId).messageId(message.getId()).execute();
+            }
+
+            @Override
+            public void done() {
+                pinned = message;
+                showPinned(pinned);
+            }
+
+            @Override
+            public void error(Exception e) {
+                Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
