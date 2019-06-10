@@ -18,7 +18,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     static final String GROUP_ID = "group_id";
     static final String FRIEND_ID = "friend_id";
     static final String FROM_ID = "from_id";
-    static final String PEER_ID = "peer_id";
+    public static final String PEER_ID = "peer_id";
     public static final String MESSAGE_ID = "message_id";
     static final String TITLE = "title";
     static final String UNREAD_COUNT = "unread_count";
@@ -63,12 +63,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     static final String GROUPS = "groups";
     private static final String _ID = "_id";
     static final String CONVERSATION_TYPE = "type";
-    static final String USER_ID = "user_id";
+    public static final String USER_ID = "user_id";
     static final String ACTION_TYPE = "action_type";
     static final String ACTION_USER_ID = "action_user_id";
     static final String ACTION_TEXT = "action_text";
 
-    private static final int DATABASE_VERSION = 23;
+    private static final int DATABASE_VERSION = 24;
     private static final String DATABASE_NAME = "cache.db";
 
     /**
@@ -103,17 +103,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String SQL_CREATE_TABLE_DIALOGS = "CREATE TABLE " + DIALOGS_TABLE +
             " (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-            " [" + MESSAGE_ID + "] INTEGER, " +
             " [" + PEER_ID + "] INTEGER UNIQUE ON CONFLICT REPLACE, " +
             " [" + CONVERSATION_TYPE + "] VARCHAR(5), " +
-            " [" + FROM_ID + "] INTEGER, " +
             " [" + TITLE + "] VARCHAR(255), " +
-            " [" + TEXT + "] VARCHAR(255), " +
-            " [" + IS_OUT + "] INTEGER, " +
             " [" + READ_STATE + "] INTEGER, " +
             " [" + USERS_COUNT + "] INTEGER, " +
             " [" + UNREAD_COUNT + "] INTEGER, " +
-            " [" + DATE + "] INTEGER , " +
             " [" + PHOTO_50 + "] VARCHAR(255), " +
             " [" + PHOTO_100 + "] VARCHAR(255)," +
             " [" + PHOTO_200 + "] VARCHAR(255), " +
@@ -122,8 +117,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             " [" + NO_SOUND + "] INTEGER, " +
             " [" + USERS + "] BLOB, " +
             " [" + GROUPS + "] BLOB, " +
-            " [" + ATTACHMENTS + "] BLOB, " +
-            " [" + FWD_MESSAGES + "] BLOB, " +
             " [" + PINNED_MESSAGE + "] BLOB, " +
             " [" + LAST_MESSAGE + "] BLOB" +
             ");";

@@ -28,6 +28,7 @@ public class LongPollEvents {
     public static final String KEY_USER_ONLINE = "user_online";
     public static final String KEY_USER_OFFLINE = "user_offline";
     public static final String KEY_MESSAGE_UPDATE = "message_update";
+    public static final String KEY_NOTIFICATIONS_CHANGE = "notifications_change";
 
     private static LongPollEvents instance;
 
@@ -98,7 +99,7 @@ public class LongPollEvents {
                         message = models.get(0);
                         EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_UPDATE, mId});
 
-                        CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID + " = ?", String.valueOf(mId));
+                        CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID, mId);
                     }
 
                     @Override
@@ -127,7 +128,7 @@ public class LongPollEvents {
             if (VKMessage.isUnread(flags))
                 message.setRead(false);
 
-            CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID + " = ?", String.valueOf(mId));
+            CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID, mId);
         }
 
         EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_SET_FLAGS, mId, flags, peerId});
@@ -151,7 +152,7 @@ public class LongPollEvents {
             if (VKMessage.isUnread(flags))
                 message.setRead(true);
 
-            CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID + " = ?", String.valueOf(mId));
+            CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID, mId);
         }
 
         EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_CLEAR_FLAGS, mId, flags, peerId});
@@ -183,7 +184,7 @@ public class LongPollEvents {
         message.setConversationMessageId(conversationMessageId);
         message.setUpdateTime(updateTime);
 
-        CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID + " = ?", String.valueOf(id));
+        CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID, id);
 
         EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_EDIT, message});
     }
@@ -219,8 +220,23 @@ public class LongPollEvents {
                 case 61: //user types in dialog
                 case 62: //user types in chat
                     break;
+                case 114: //notifications changes
+                    changeNotifications(item);
+                    break;
             }
         }
+    }
+
+    private void changeNotifications(JSONArray item) {
+        JSONObject o = item.optJSONObject(1);
+
+        int peerId = o.optInt("peer_id", -1);
+        boolean sound = o.optInt("sound", -1) == 1;
+        int disabledUntil = o.optInt("disabled_until", -2);
+
+        EventBus.getDefault().postSticky(new Object[]{KEY_NOTIFICATIONS_CHANGE, peerId, !sound, disabledUntil});
+
+        Log.d("FVK Change Notif", item.toString());
     }
 
     private void userOffline(JSONArray item) {
@@ -233,6 +249,8 @@ public class LongPollEvents {
             user.last_seen = time;
             user.online = false;
             user.online_mobile = false;
+
+            CacheStorage.update(DatabaseHelper.USERS_TABLE, user, DatabaseHelper.USER_ID, userId);
         }
 
         EventBus.getDefault().postSticky(new Object[]{KEY_USER_OFFLINE, userId, time, timeout});
@@ -247,6 +265,8 @@ public class LongPollEvents {
             user.last_seen = time;
             user.online = true;
             user.online_mobile = true;
+
+            CacheStorage.update(DatabaseHelper.USERS_TABLE, user, DatabaseHelper.USER_ID, userId);
         }
 
         EventBus.getDefault().postSticky(new Object[]{KEY_USER_ONLINE, userId, time});

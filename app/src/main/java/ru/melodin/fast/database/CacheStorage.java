@@ -86,21 +86,6 @@ public class CacheStorage {
                 .asCursor(database);
     }
 
-    private static Cursor selectCursor(String table, String column, int... ids) {
-        StringBuilder where = new StringBuilder(5 * ids.length);
-
-        where.append(column);
-        where.append(" = ");
-        where.append(ids[0]);
-        for (int i = 1; i < ids.length; i++) {
-            where.append(" OR ");
-            where.append(column);
-            where.append(" = ");
-            where.append(ids[i]);
-        }
-        return selectCursor(table, where.toString());
-    }
-
     private static Cursor selectCursor(String table, String where) {
         return QueryBuilder.query()
                 .select("*").from(table).where(where)
@@ -195,6 +180,15 @@ public class CacheStorage {
         return users;
     }
 
+    public static VKConversation getConversation(int peerId) {
+        Cursor cursor = selectCursor(DIALOGS_TABLE, PEER_ID, peerId);
+        if (cursor.moveToFirst()) {
+            return parseDialog(cursor);
+        }
+
+        return null;
+    }
+
     public static ArrayList<VKConversation> getConversations() {
         Cursor cursor = selectCursor(DIALOGS_TABLE);
         if (cursor.getCount() <= 0) {
@@ -249,11 +243,11 @@ public class CacheStorage {
         return String.format(Locale.US, "%s = %d", PEER_ID, peerId);
     }
 
-    public static void update(String table, Object item, String where, String... args) {
+    public static void update(String table, Object item, Object where, Object... args) {
         update(table, new ArrayList(Collections.singleton(item)), where, args);
     }
 
-    public static void update(String table, ArrayList values, String where, String... args) {
+    public static void update(String table, ArrayList values, Object where, Object... args) {
         if (ArrayUtil.isEmpty(values)) return;
         database.beginTransaction();
 
@@ -278,7 +272,12 @@ public class CacheStorage {
                     break;
             }
 
-            database.update(table, cv, where, args);
+
+            String[] arguments = new String[args.length];
+            for (int j = 0; j < args.length; j++) {
+                arguments[j] = args[j] + "";
+            }
+            database.update(table, cv, where + " = ?", arguments);
             cv.clear();
         }
 
@@ -461,6 +460,7 @@ public class CacheStorage {
     }
 
     private static void putValues(ContentValues values, VKConversation dialog) {
+        values.put(PEER_ID, dialog.getLast().getPeerId());
         values.put(UNREAD_COUNT, dialog.getUnread());
         values.put(READ_STATE, dialog.isRead());
         values.put(USERS_COUNT, dialog.getMembersCount());

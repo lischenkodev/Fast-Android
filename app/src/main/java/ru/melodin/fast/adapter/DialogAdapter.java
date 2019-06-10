@@ -93,7 +93,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                 break;
             case LongPollEvents.KEY_MESSAGE_UPDATE:
                 //TODO доделать
-                //updateMessage((int) data[1]);
+                updateMessage((int) data[1]);
                 //Toast.makeText(context, "Update message", Toast.LENGTH_SHORT).show();
                 break;
             case FragmentSettings.KEY_MESSAGES_CLEAR_CACHE:
@@ -102,6 +102,9 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                 fragment.checkCount();
                 fragment.onRefresh();
                 break;
+            case LongPollEvents.KEY_NOTIFICATIONS_CHANGE:
+                changeNotifications((int) data[1], (boolean) data[2], (int) data[3]);
+                break;
             case "update_user":
                 updateUser((int) data[1]);
                 break;
@@ -109,6 +112,20 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                 updateGroup((int) data[1]);
                 break;
         }
+    }
+
+    private void changeNotifications(int peerId, boolean noSound, int disabledUntil) {
+        int position = findConversationPosition(peerId);
+        if (position == -1) return;
+
+        VKConversation conversation = getItem(position);
+        conversation.setNoSound(noSound);
+        conversation.setDisabledUntil(disabledUntil);
+        conversation.setDisabledForever(disabledUntil == -1);
+
+        notifyItemChanged(position, -1);
+
+        CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
     }
 
     private void handleClearFlags(Object[] data) {
@@ -270,6 +287,16 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
     public void destroy() {
         EventBus.getDefault().unregister(this);
+    }
+
+    private int findConversationPosition(int peerId) {
+        for (int i = 0; i < getItemCount(); i++) {
+            VKConversation conversation = getItem(i);
+            if (conversation.getLast().getPeerId() == peerId)
+                return i;
+        }
+
+        return -1;
     }
 
     @Nullable
