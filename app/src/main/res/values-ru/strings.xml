@@ -16,7 +16,7 @@
     <string name="application_title">Приложение</string>
     <string name="about_app">О приложении</string>
     <string name="interface_title">Интерфейс</string>
-    <string name="template_summary">Шаблон сообщения</string>
+    <string name="template_summary">Шаблон сообщения (удерживайте кнопку смайлов)</string>
     <string name="template_title">Шаблон</string>
     <string name="dark_theme_title">Темная тема</string>
     <string name="functions_title">Функции</string>

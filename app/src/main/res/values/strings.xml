@@ -16,7 +16,7 @@
     <string name="application_title">Application</string>
     <string name="about_app">About</string>
     <string name="interface_title">Interface</string>
-    <string name="template_summary">Message template</string>
+    <string name="template_summary">Message template (long tap on smile\'s button)</string>
     <string name="template_title">Template</string>
     <string name="dark_theme_title">Dark theme</string>
     <string name="functions_title">Functions</string>
