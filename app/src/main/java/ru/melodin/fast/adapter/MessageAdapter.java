@@ -476,7 +476,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             text = v.findViewById(R.id.text);
             time = v.findViewById(R.id.time);
 
-            placeholder = getDrawable(R.drawable.placeholder_user);
+            placeholder = new ColorDrawable(Color.TRANSPARENT);
 
             avatar = v.findViewById(R.id.avatar);
             read = v.findViewById(R.id.read_indicator);

@@ -1,6 +1,7 @@
 package ru.melodin.fast.adapter;
 
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.text.Html;
@@ -433,13 +434,11 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
+
         ImageView avatar, avatarSmall, online, out, muted;
         TextView title, body, time, counter;
         LinearLayout container;
         FrameLayout counterContainer;
-
-        Drawable holderUser = getDrawable(R.drawable.placeholder_user);
-        Drawable holderUsers = getDrawable(R.drawable.placeholder_users);
 
         @ColorInt
         int pushesEnabled, pushesDisabled;
@@ -520,7 +519,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                 avatarSmall.setVisibility(View.VISIBLE);
             }
 
-            Drawable placeholder = item.isChat() || item.isGroup() || item.isGroupChannel() ? holderUsers : holderUser;
+            Drawable placeholder = new ColorDrawable(Color.TRANSPARENT); //item.isChat() || item.isGroup() || item.isGroupChannel() ? holderUsers : holderUser;
 
             if (!TextUtils.isEmpty(peerAvatar)) {
                 Picasso.get()

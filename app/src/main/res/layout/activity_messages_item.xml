@@ -24,8 +24,7 @@
                 android:id="@+id/avatar"
                 android:layout_width="@dimen/avatar_chat_size"
                 android:layout_height="@dimen/avatar_chat_size"
-                android:layout_gravity="center"
-                android:src="@drawable/placeholder_user" />
+                android:layout_gravity="center" />
 
         </FrameLayout>
 

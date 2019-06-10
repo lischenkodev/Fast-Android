@@ -1,6 +1,7 @@
 package ru.melodin.fast.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
@@ -104,7 +105,7 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
         ViewHolder(View v) {
             super(v);
 
-            placeholder = getDrawable(R.drawable.placeholder_user);
+            placeholder = new ColorDrawable(Color.TRANSPARENT);
 
             avatar = v.findViewById(R.id.avatar);
             online = v.findViewById(R.id.online);
