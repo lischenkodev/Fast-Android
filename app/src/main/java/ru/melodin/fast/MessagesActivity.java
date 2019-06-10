@@ -241,7 +241,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 int lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
 
                 if (lastVisibleItem >= adapter.getItemCount() - 4) {
-                    list.smoothScrollToPosition(adapter.getItemCount() - 1);
+                    list.scrollToPosition(adapter.getItemCount() - 1);
                 }
 
                 if (!conversation.getLast().isOut() && conversation.getLast().getPeerId() == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
@@ -711,13 +711,13 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         final MaterialCheckBox checkBox = v.findViewById(R.id.checkBox);
         checkBox.setText(R.string.for_everyone);
-        checkBox.setEnabled(can);
+        checkBox.setEnabled(peerId != UserConfig.userId && can);
         checkBox.setChecked(true);
 
         if (self)
             adb.setView(v);
 
-        final Boolean forAll = self ? checkBox.isChecked() : null;
+        final Boolean forAll = self ? checkBox.isEnabled() ? checkBox.isChecked() : null : null;
 
         adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
             @Override
@@ -784,7 +784,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             remove.add(getString(R.string.pin_message));
         }
 
-        if (conversation.getLast().getDate() * 1000L < System.currentTimeMillis() - AlarmManager.INTERVAL_DAY) {
+        if (conversation.getLast().getDate() * 1000L < System.currentTimeMillis() - AlarmManager.INTERVAL_DAY || !item.isOut()) {
             remove.add(getString(R.string.edit));
         }
 

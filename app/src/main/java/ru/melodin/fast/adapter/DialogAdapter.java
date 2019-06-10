@@ -4,7 +4,6 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
-import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -379,7 +378,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
     }
 
     private void loadUser(final Integer userId) {
-        if (loadingIds.contains(userId)) return;
+        if (loadingIds.contains(userId) || userId == 0) return;
         loadingIds.add(userId);
         ThreadExecutor.execute(new AsyncCallback(fragment.getActivity()) {
             VKUser user;
@@ -580,16 +579,16 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                     String body_ = VKUtil.getAttachmentBody(item.getLast().getAttachments(), item.getLast().getFwdMessages());
 
                     Spannable span = new SpannableString(body_);
-                    span.setSpan(new ForegroundColorSpan(ThemeManager.getAccent()), 0, body_.length(), 0);
+                    span.setSpan(new ForegroundColorSpan(accentColor), 0, body_.length(), 0);
 
-                    body.setTextColor(bodyColor);
                     body.append(span);
                 }
             } else {
                 String body_ = VKUtil.getActionBody(last, true);
 
-                body.setTextColor(accentColor);
-                body.setText(Html.fromHtml(body_));
+                Spannable span = new SpannableString(body_);
+                span.setSpan(new ForegroundColorSpan(accentColor), 0, body_.length(), 0);
+                body.setText(span);
             }
 
             counter.setVisibility(TextUtils.isEmpty(counter.getText().toString()) ? View.GONE : View.VISIBLE);
