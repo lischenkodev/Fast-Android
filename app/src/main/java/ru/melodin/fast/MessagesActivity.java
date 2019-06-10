@@ -1,5 +1,6 @@
 package ru.melodin.fast;
 
+import android.app.AlarmManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PorterDuff;
@@ -13,6 +14,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -28,11 +30,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.Toolbar;
+import androidx.collection.SparseArrayCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.checkbox.MaterialCheckBox;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -68,7 +72,7 @@ import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.util.ViewUtil;
 
-public class MessagesActivity extends AppCompatActivity implements RecyclerAdapter.OnItemClickListener, TextWatcher {
+public class MessagesActivity extends AppCompatActivity implements RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener, TextWatcher {
 
     private static final int MESSAGES_COUNT = 60;
 
@@ -497,6 +501,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (adapter == null) {
             adapter = new MessageAdapter(this, messages, peerId);
             adapter.setOnItemClickListener(this);
+            adapter.setOnItemLongClickListener(this);
             list.setAdapter(adapter);
 
             if (adapter.getItemCount() > 0 && !list.isComputingLayout())
@@ -586,28 +591,30 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private String getSubtitle() {
         if (conversation == null) return null;
 
-        switch (conversation.getType()) {
-            case GROUP: {
-                return getString(R.string.group);
-            }
-            case USER: {
-                VKUser currentUser = CacheStorage.getUser(peerId);
-                if (currentUser == null)
-                    loadUser(peerId);
-                return getUserSubtitle(currentUser);
-            }
-            case CHAT: {
-                if (conversation.isGroupChannel()) {
-                    return getString(R.string.channel) + " • " + getString(R.string.members_count, membersCount);
-                } else {
-                    return membersCount > 0 ? getString(R.string.members_count, membersCount) : "";
+        if (adapter != null && adapter.isSelected()) {
+            return getString(R.string.selected_count, adapter.getSelectedCount() + "");
+        } else
+            switch (conversation.getType()) {
+                case GROUP: {
+                    return getString(R.string.group);
+                }
+                case USER: {
+                    VKUser currentUser = CacheStorage.getUser(peerId);
+                    if (currentUser == null)
+                        loadUser(peerId);
+                    return getUserSubtitle(currentUser);
+                }
+                case CHAT: {
+                    if (conversation.isGroupChannel()) {
+                        return getString(R.string.channel) + " • " + getString(R.string.members_count, membersCount);
+                    } else {
+                        return membersCount > 0 ? getString(R.string.members_count, membersCount) : "";
+                    }
                 }
             }
 
-            default: {
-                return "Unknown type";
-            }
-        }
+
+        return "Unknown";
     }
 
     private void loadUser(final int peerId) {
@@ -651,30 +658,98 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             case android.R.id.home:
                 onBackPressed();
                 break;
-            case R.id.menuUpdate:
+            case R.id.update:
                 if (adapter == null) return false;
                 if (!loading) {
                     adapter.clear();
                     getHistory(0, MESSAGES_COUNT);
                 }
                 break;
+            case R.id.delete:
+                showConfirmDeleteMessages();
+
+                break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void showConfirmDeleteMessages() {
+        SparseArrayCompat<VKMessage> selectedItems = adapter.getSelectedItems();
+
+        final ArrayList<VKMessage> messages = new ArrayList<>();
+        final int[] mIds = new int[selectedItems.size()];
+
+        boolean self = true;
+        boolean can = true;
+
+        for (int i = 0; i < selectedItems.size(); i++) {
+            VKMessage message = selectedItems.valueAt(i);
+            messages.add(message);
+
+            mIds[i] = message.getId();
+
+            if (message.getDate() * 1000L < System.currentTimeMillis() - AlarmManager.INTERVAL_DAY)
+                can = false;
+
+            if (message.getFromId() != UserConfig.userId)
+                self = false;
+        }
+
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        adb.setTitle(R.string.are_you_sure);
+        //adb.setMessage(R.string.are_you_sure);
+
+        View v = LayoutInflater.from(this).inflate(R.layout.activity_messages_dialog_checkbox, null, false);
+
+        final MaterialCheckBox checkBox = v.findViewById(R.id.checkBox);
+        checkBox.setText(R.string.for_everyone);
+        checkBox.setEnabled(can);
+        checkBox.setChecked(true);
+
+        if (self)
+            adb.setView(v);
+
+        final Boolean forAll = self ? checkBox.isChecked() : null;
+
+        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                deleteMessages(messages, forAll, mIds);
+            }
+        });
+        adb.setNegativeButton(R.string.no, null);
+        adb.show();
+    }
+
+    private void deleteMessages(final ArrayList<VKMessage> messages, final Boolean forAll, final int... mIds) {
+        ThreadExecutor.execute(new AsyncCallback(this) {
+
+            @Override
+            public void ready() throws Exception {
+                VKApi.messages().delete().messageIds(mIds).every(forAll).execute();
+            }
+
+            @Override
+            public void done() {
+                adapter.getValues().removeAll(messages);
+                adapter.clearSelected();
+                adapter.notifyDataSetChanged();
+
+                invalidateOptionsMenu();
+                getSupportActionBar().setSubtitle(getSubtitle());
+            }
+
+            @Override
+            public void error(Exception e) {
+                Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
-    }
-
-    @Override
-    public void onItemClick(View v, int position) {
-        VKMessage item = adapter.getItem(position);
-
-        if (item.getAction() != null) return;
-
-        showAlertDialog(position);
     }
 
     private void showAlertDialog(int position) {
@@ -719,5 +794,66 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private void setMicStyle() {
         send.setImageDrawable(iconMic);
         send.setOnClickListener(recordClick);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (adapter != null && adapter.isSelected()) {
+            adapter.clearSelected();
+            invalidateOptionsMenu();
+            getSupportActionBar().setSubtitle(getSubtitle());
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
+        } else
+            super.onBackPressed();
+    }
+
+    @Override
+    public void onItemClick(View v, int position) {
+        VKMessage item = adapter.getItem(position);
+        if (item.getAction() != null) return;
+
+        if (adapter.isSelected()) {
+            adapter.toggleSelected(position);
+            adapter.notifyItemChanged(position, -1);
+            getSupportActionBar().setSubtitle(getSubtitle());
+            invalidateOptionsMenu();
+        }
+
+        showAlertDialog(position);
+    }
+
+    @Override
+    public void onItemLongClick(View v, int position) {
+        VKMessage item = adapter.getItem(position);
+        if (item.getAction() != null) return;
+
+        if (adapter.isSelected()) {
+            adapter.clearSelected();
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
+        } else {
+            adapter.setSelected(position, true);
+            adapter.notifyItemChanged(position, -1);
+        }
+
+        getSupportActionBar().setSubtitle(getSubtitle());
+        invalidateOptionsMenu();
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem delete = menu.findItem(R.id.delete);
+        MenuItem update = menu.findItem(R.id.update);
+
+        delete.getIcon().setTint(ThemeManager.getMain());
+
+        if (adapter != null && adapter.isSelected()) {
+            delete.setVisible(true);
+            update.setVisible(false);
+        } else {
+            delete.setVisible(false);
+            update.setVisible(true);
+        }
+
+        return super.onPrepareOptionsMenu(menu);
     }
 }

@@ -1,11 +1,15 @@
 package ru.melodin.fast.util;
 
 import android.animation.Animator;
+import android.content.Context;
+import android.content.res.Resources;
 import android.os.Build;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewPropertyAnimator;
 import android.view.Window;
 
+import androidx.annotation.AttrRes;
 import androidx.annotation.ColorInt;
 
 import ru.melodin.fast.common.ThemeManager;
@@ -60,4 +64,11 @@ public class ViewUtil {
         window.setNavigationBarColor(window.getStatusBarColor());
     }
 
+    public static int getAttrValue(Context context, @AttrRes int id) {
+        TypedValue value = new TypedValue();
+        Resources.Theme theme = context.getTheme();
+        theme.resolveAttribute(id, value, true);
+
+        return value.data;
+    }
 }

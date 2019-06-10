@@ -3,8 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menuUpdate"
+        android:id="@+id/update"
         android:title="@string/update"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/delete"
+        android:icon="@drawable/ic_trash"
+        android:title="@string/delete"
+        app:showAsAction="ifRoom" />
 
 </menu>

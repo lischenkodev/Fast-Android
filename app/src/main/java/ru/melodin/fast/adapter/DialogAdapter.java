@@ -468,13 +468,15 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         FrameLayout counterContainer;
 
         @ColorInt
-        int pushesEnabled, pushesDisabled;
+        int pushesEnabled, pushesDisabled, bodyColor, accentColor;
 
         ViewHolder(@NonNull View v) {
             super(v);
 
-            pushesEnabled = ThemeManager.getAccent();
+            accentColor = ThemeManager.getAccent();
+            pushesEnabled = accentColor;
             pushesDisabled = ThemeManager.isDark() ? ColorUtil.lightenColor(ThemeManager.getPrimary(), 2) : Color.GRAY;
+            bodyColor = ThemeManager.getBodyTextColor();
 
             avatar = v.findViewById(R.id.avatar);
             avatarSmall = v.findViewById(R.id.avatar_small);
@@ -580,12 +582,13 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                     Spannable span = new SpannableString(body_);
                     span.setSpan(new ForegroundColorSpan(ThemeManager.getAccent()), 0, body_.length(), 0);
 
+                    body.setTextColor(bodyColor);
                     body.append(span);
                 }
             } else {
                 String body_ = VKUtil.getActionBody(last, true);
 
-                body.setTextColor(ThemeManager.getAccent());
+                body.setTextColor(accentColor);
                 body.setText(Html.fromHtml(body_));
             }
 

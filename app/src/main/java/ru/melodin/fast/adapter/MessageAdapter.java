@@ -27,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.collection.SparseArrayCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -85,6 +86,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     private ArrayList<Integer> loadingIds = new ArrayList<>();
 
+    private SparseArrayCompat<VKMessage> selectedItems = new SparseArrayCompat<>();
+
     public MessageAdapter(Context context, ArrayList<VKMessage> messages, int peerId) {
         super(context, messages);
 
@@ -95,6 +98,53 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         this.metrics = context.getResources().getDisplayMetrics();
 
         manager = (LinearLayoutManager) ((MessagesActivity) context).getRecyclerView().getLayoutManager();
+    }
+
+    public boolean isSelected() {
+        return getSelectedCount() > 0;
+    }
+
+    public void setSelected(int position, boolean selected) {
+        VKMessage message = getItem(position);
+        message.setSelected(selected);
+
+        if (selected) {
+            selectedItems.append(position, message);
+        } else {
+            selectedItems.remove(position);
+        }
+    }
+
+    public void clearSelected() {
+        for (VKMessage message : getValues())
+            message.setSelected(false);
+
+        selectedItems.clear();
+    }
+
+    public boolean isSelected(int position) {
+        return getItem(position).isSelected();
+    }
+
+    public void toggleSelected(int position) {
+        VKMessage message = getItem(position);
+
+        boolean selected = !message.isSelected();
+        message.setSelected(selected);
+
+        if (selected) {
+            selectedItems.append(position, message);
+        } else {
+            selectedItems.remove(position);
+        }
+    }
+
+    public int getSelectedCount() {
+        return selectedItems.size();
+    }
+
+    public SparseArrayCompat<VKMessage> getSelectedItems() {
+        return selectedItems;
     }
 
     public void readNewMessage(final VKMessage message) {
@@ -450,12 +500,12 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         TextView text;
         TextView time;
 
-        LinearLayout main_container;
+        LinearLayout mainContainer;
 
         BoundedLinearLayout bubble;
         LinearLayout attachments;
         LinearLayout photos;
-        LinearLayout service_container;
+        LinearLayout serviceContainer;
         LinearLayout messageContainer;
         LinearLayout timeContainer;
         LinearLayout bubbleContainer;
@@ -463,6 +513,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         Space space;
 
         Drawable circle, sending, placeholder;
+
 
         ViewHolder(View v) {
             super(v);
@@ -482,8 +533,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             bubbleContainer = v.findViewById(R.id.bubble_container);
             messageContainer = v.findViewById(R.id.message_container);
-            service_container = v.findViewById(R.id.service_container);
-            main_container = v.findViewById(R.id.root);
+            serviceContainer = v.findViewById(R.id.service_container);
+            mainContainer = v.findViewById(R.id.root);
             bubble = v.findViewById(R.id.bubble);
             attachments = v.findViewById(R.id.attachments);
             photos = v.findViewById(R.id.photos);
@@ -499,6 +550,12 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             final VKUser user = searchUser(item.getFromId());
             final VKGroup group = searchGroup(VKGroup.toGroupId(item.getFromId()));
 
+            if (item.isSelected()) {
+                mainContainer.setBackgroundColor(ColorUtil.alphaColor(ThemeManager.getAccent()));
+            } else {
+                mainContainer.setBackgroundColor(ThemeManager.getBackground());
+            }
+
             int editColor;
 
             if (item.isSelected()) {
@@ -509,10 +566,10 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             read.setVisibility(item.isOut() ? item.isRead() ? View.GONE : View.GONE : View.GONE);
 
-            main_container.setBackgroundColor(editColor);
+            mainContainer.setBackgroundColor(editColor);
 
             String s = item.getUpdateTime() > 0 ? getString(R.string.edited) + ", " : "";
-            String time_ = s + Util.dateFormatter.format(item.getDate() * (item.isAdded() ? 1000L : 1L));
+            String time_ = s + Util.dateFormatter.format(item.isAdded() ? item.getDate() : item.getDate() * 1000L);
 
             time.setText(time_);
 
@@ -617,17 +674,17 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 avatar.setVisibility(View.GONE);
                 messageContainer.setVisibility(View.GONE);
                 time.setVisibility(View.GONE);
-                service_container.setVisibility(View.VISIBLE);
+                serviceContainer.setVisibility(View.VISIBLE);
 
-                service_container.removeAllViews();
-                attacher.service(item, service_container);
+                serviceContainer.removeAllViews();
+                attacher.service(item, serviceContainer);
 
                 bg.setTint(Color.TRANSPARENT);
             } else {
                 avatar.setVisibility(View.VISIBLE);
                 time.setVisibility(View.VISIBLE);
                 messageContainer.setVisibility(View.VISIBLE);
-                service_container.setVisibility(View.GONE);
+                serviceContainer.setVisibility(View.GONE);
                 bg.setColorFilter(bgColor, PorterDuff.Mode.MULTIPLY);
             }
 

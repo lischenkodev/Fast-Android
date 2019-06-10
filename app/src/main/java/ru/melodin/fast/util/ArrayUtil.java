@@ -1,5 +1,7 @@
 package ru.melodin.fast.util;
 
+import androidx.collection.SparseArrayCompat;
+
 import org.json.JSONArray;
 
 import java.util.ArrayList;
@@ -303,6 +305,10 @@ public class ArrayUtil {
         list.add(object);
 
         return list;
+    }
+
+    public static boolean isEmpty(SparseArrayCompat array) {
+        return array == null || array.size() == 0;
     }
 
     public static boolean isEmpty(JSONArray array) {
