@@ -1,5 +1,6 @@
 package ru.melodin.fast;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -333,6 +334,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         unpin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                showConfirmUnpinMessage();
             }
         });
 
@@ -346,6 +348,46 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
             pText.append(span);
         }
+    }
+
+    private void showConfirmUnpinMessage() {
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        adb.setTitle(R.string.confirmation);
+        adb.setMessage(R.string.are_you_sure);
+        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                unpinMessage();
+            }
+        });
+        adb.setNegativeButton(R.string.no, null);
+        adb.show();
+    }
+
+    private void unpinMessage() {
+        ThreadExecutor.execute(new AsyncCallback(this) {
+            int response;
+
+            @Override
+            public void ready() throws Exception {
+                response = VKApi.messages().unpin().peerId(peerId).execute(Integer.class).get(0);
+            }
+
+            @Override
+            public void done() {
+                if (response == 1) {
+                    conversation.setPinned(null);
+                    showPinned(null);
+                    CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
+                }
+            }
+
+            @Override
+            public void error(Exception e) {
+                Log.e("Error unpin", Log.getStackTraceString(e));
+                Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void setTyping() {

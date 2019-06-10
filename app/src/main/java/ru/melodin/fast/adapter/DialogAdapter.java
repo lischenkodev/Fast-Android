@@ -187,7 +187,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         int firstVisiblePosition = manager.findFirstVisibleItemPosition();
         //int totalVisibleItems = manager.findLastCompletelyVisibleItemPosition() + 1;
 
-        int index = searchConversationPosition(conversation.getLast().getPeerId());
+        int index = findConversationPosition(conversation.getLast().getPeerId());
         if (index >= 0) {
             VKConversation current = getItem(index);
 

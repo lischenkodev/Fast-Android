@@ -58,15 +58,30 @@ public class LongPollEvents {
         last.setFlags(flags);
         last.setPeerId(peerId);
         last.setDate(date);
-        last.setText(text);
         last.setConversationMessageId(conversationMessageId);
         last.setUpdateTime(updateTime);
-
         conversation.setRead((last.getFlags() & VKMessage.UNREAD) == 0);
 
         last.setRead(conversation.isRead());
         last.setOut((last.getFlags() & VKMessage.OUTBOX) != 0);
-        last.setFromId(fromActions != null && fromActions.has("from") ? fromActions.optInt("from") : last.isOut() ? UserConfig.userId : peerId);
+        last.setFromId(fromActions != null && fromActions.has("from") ? fromActions.optInt("from", -1) : last.isOut() ? UserConfig.userId : peerId);
+
+        if (fromActions != null) {
+            String actionType = fromActions.optString("source_act");
+            String actionText = fromActions.optString("source_message");
+            int actionId = fromActions.optInt("source_mid", -1);
+            //conversationMessageId = fromActions.optInt("source_chat_local_id", -1);
+
+            if (actionId != -1) {
+                last.setActionUserId(actionId);
+                last.setAction(VKMessage.getAction(actionType));
+                last.setActionText(actionText);
+                //last.setConversationMessageId(conversationMessageId);
+                //last.setPeerId(2_000_000_000 + chatId);
+            }
+        }
+
+        last.setText(fromActions != null && fromActions.optInt("source_mid", -1) != -1 ? "" : text);
 
         if (attachments != null && attachments.length() > 0) {
             loadMessage(mId);

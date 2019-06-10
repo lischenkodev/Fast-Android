@@ -119,9 +119,10 @@
     <string name="e_mail_or_phone_number">E-mail or phone number</string>
     <string name="link">Link</string>
     <string name="wall_post">Wall post</string>
-    <string name="fast_messenger"><b>Fast</b> Messenger</string>
+    <string name="fast_messenger" translatable="false"><b>Fast</b> Messenger</string>
     <string name="captcha">Captcha</string>
     <string name="all_necessary_data">Input all necessary data</string>
-    <string name="login_via_webview">Login via webview</string>
+    <string name="login_via_webview">Login via WebView</string>
+    <string name="are_you_sure">Are you sure?</string>
 
 </resources>

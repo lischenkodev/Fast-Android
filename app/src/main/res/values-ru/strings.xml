@@ -114,4 +114,8 @@
     <string name="e_mail_or_phone_number">E-mail или номер телефона</string>
     <string name="password">Пароль</string>
     <string name="wall_post">Запись на стене</string>
+    <string name="captcha">Капча</string>
+    <string name="are_you_sure">Вы уверены?</string>
+    <string name="all_necessary_data">Введите все необходимые данные</string>
+    <string name="login_via_webview">Зайти через WebView</string>
 </resources>
