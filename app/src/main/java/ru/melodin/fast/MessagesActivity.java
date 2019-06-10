@@ -80,7 +80,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private Drawable iconSend;
     private Drawable iconMic;
-    //private Drawable iconDone;
+    private Drawable iconDone;
+    private Drawable iconTrash;
 
     private Toolbar tb;
     private AppBarLayout appBar;
@@ -104,10 +105,11 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private Timer timer;
 
-    private VKMessage pinned;//, last;
+    private VKMessage pinned, edited;
+    private int editingPosition;
     private VKConversation conversation;
 
-    private boolean resumed;
+    private boolean resumed, editing;
 
     private VKMessage notRead;
 
@@ -126,6 +128,12 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         }
     };
     private View.OnClickListener recordClick = null;
+    private View.OnClickListener doneClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            editMessage(edited);
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -138,7 +146,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         iconSend = ContextCompat.getDrawable(this, R.drawable.md_send);
         iconMic = ContextCompat.getDrawable(this, R.drawable.md_mic);
-        //iconDone = ContextCompat.getDrawable(this, R.drawable.md_done);
+        iconDone = ContextCompat.getDrawable(this, R.drawable.md_done);
+        iconTrash = ContextCompat.getDrawable(this, R.drawable.ic_trash);
 
         initViews();
         getIntentData();
@@ -322,6 +331,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 if (adapter == null) return;
                 if (adapter.contains(pinned.getId())) {
                     list.scrollToPosition(adapter.findPosition(pinned.getId()));
+                } else {
+                    Toast.makeText(MessagesActivity.this, "Сообщения нет в списке, скоро запилю его отображение", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -591,7 +602,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private String getSubtitle() {
         if (conversation == null) return null;
 
-        if (adapter != null && adapter.isSelected()) {
+        if (editing) {
+            return getString(R.string.editing);
+        } else if (adapter != null && adapter.isSelected()) {
             return getString(R.string.selected_count, adapter.getSelectedCount() + "");
         } else
             switch (conversation.getType()) {
@@ -707,6 +720,16 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int which) {
+                if (editing) {
+                    editing = false;
+                    updateStyles();
+
+                    editingPosition = -1;
+
+                    adapter.clearSelected();
+                    adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
+                }
+
                 deleteMessages(items, forAll, mIds);
             }
         });
@@ -730,6 +753,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
                 invalidateOptionsMenu();
                 getSupportActionBar().setSubtitle(getSubtitle());
+
+                for (VKMessage message : messages) {
+                    CacheStorage.delete(DatabaseHelper.MESSAGES_TABLE, DatabaseHelper.MESSAGE_ID, message.getId());
+                }
             }
 
             @Override
@@ -751,10 +778,12 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         ArrayList<String> list = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.message_functions)));
         ArrayList<String> remove = new ArrayList<>();
 
-        remove.add(getString(R.string.edit));
-
         if (!conversation.isCanChangePin()) {
             remove.add(getString(R.string.pin_message));
+        }
+
+        if (conversation.getLast().getDate() * 1000L < System.currentTimeMillis() - AlarmManager.INTERVAL_DAY) {
+            remove.add(getString(R.string.edit));
         }
 
         list.removeAll(remove);
@@ -774,10 +803,93 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                     showConfirmDeleteMessages(new ArrayList<>(Collections.singletonList(item)));
                 } else if (title.equals(getString(R.string.pin_message))) {
                     showConfirmPinDialog(item);
+                } else if (title.equals(getString(R.string.edit))) {
+                    edited = item;
+
+                    adapter.setSelected(position, true);
+                    adapter.notifyItemChanged(position, -1);
+
+                    editingPosition = position;
+
+                    showEdit();
                 }
             }
         });
         adb.show();
+    }
+
+    private void showEdit() {
+        editing = true;
+
+        messageText = message.getText().toString();
+        updateStyles();
+    }
+
+    private void updateStyles() {
+        if (editing) {
+            message.setText(edited.getText());
+            setDoneStyle();
+        } else {
+            adapter.clearSelected();
+            adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
+
+            if (messageText.trim().isEmpty()) {
+                message.setText("");
+                setMicStyle();
+            } else {
+                message.setText(messageText);
+                setSendStyle();
+            }
+
+            messageText = null;
+        }
+
+        getSupportActionBar().setSubtitle(getSubtitle());
+        message.setSelection(message.getText().length());
+    }
+
+    private void editMessage(final VKMessage edited) {
+        edited.setText(message.getText().toString().trim());
+        if (edited.getText().trim().isEmpty() && ArrayUtil.isEmpty(edited.getAttachments()) && ArrayUtil.isEmpty(edited.getFwdMessages())) {
+            showConfirmDeleteMessages(new ArrayList<>(Collections.singletonList(edited)));
+        } else
+            ThreadExecutor.execute(new AsyncCallback(this) {
+                int response;
+
+                @Override
+                public void ready() throws Exception {
+                    response = VKApi.messages().edit()
+                            .peerId(peerId)
+                            .text(edited.getText())
+                            .messageId(edited.getId())
+                            .attachment(edited.getAttachments())
+                            .keepForwardMessages(true)
+                            .keepSnippets(true)
+                            .execute(Integer.class)
+                            .get(0);
+                }
+
+                @Override
+                public void done() {
+                    if (response != 1) return;
+
+                    MessagesActivity.this.edited = null;
+                    editing = false;
+                    updateStyles();
+
+                    VKMessage message = adapter.getItem(editingPosition);
+                    message.setText(edited.getText());
+                    message.setUpdateTime(System.currentTimeMillis());
+
+                    adapter.notifyItemChanged(editingPosition, -1);
+                    editingPosition = -1;
+                }
+
+                @Override
+                public void error(Exception e) {
+                    Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
+                }
+            });
     }
 
     private void showConfirmPinDialog(final VKMessage message) {
@@ -806,6 +918,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             public void done() {
                 pinned = message;
                 showPinned(pinned);
+
+                conversation.setPinned(pinned);
+
+                CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
             }
 
             @Override
@@ -826,19 +942,29 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             setTyping();
         }
 
-        setButtonStyle(!s.toString().trim().isEmpty());
+        if (!editing) {
+            if (s.toString().trim().isEmpty())
+                setMicStyle();
+            else
+                setSendStyle();
+        } else {
+            if (s.toString().trim().isEmpty()) {
+                setTrashStyle();
+                send.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        showConfirmDeleteMessages(new ArrayList<>(Collections.singletonList(edited)));
+                    }
+                });
+            } else {
+                setDoneStyle();
+            }
+        }
     }
 
     @Override
     public void afterTextChanged(Editable s) {
 
-    }
-
-    private void setButtonStyle(boolean send) {
-        if (send)
-            setSendStyle();
-        else
-            setMicStyle();
     }
 
     private void setSendStyle() {
@@ -851,9 +977,21 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         send.setOnClickListener(recordClick);
     }
 
+    private void setDoneStyle() {
+        send.setImageDrawable(iconDone);
+        send.setOnClickListener(doneClick);
+    }
+
+    private void setTrashStyle() {
+        send.setImageDrawable(iconTrash);
+    }
+
     @Override
     public void onBackPressed() {
-        if (adapter != null && adapter.isSelected()) {
+        if (editing) {
+            editing = false;
+            updateStyles();
+        } else if (adapter != null && adapter.isSelected()) {
             adapter.clearSelected();
             invalidateOptionsMenu();
             getSupportActionBar().setSubtitle(getSubtitle());

@@ -322,8 +322,8 @@ public class CacheStorage {
         insert(table, new ArrayList(Collections.singleton(item)));
     }
 
-    public static void delete(String table, String where) {
-        database.delete(table, where, null);
+    public static void delete(String table, Object where, Object args) {
+        database.delete(table, where + " = ?", new String[]{args + ""});
     }
 
     public static void delete(String table) {
