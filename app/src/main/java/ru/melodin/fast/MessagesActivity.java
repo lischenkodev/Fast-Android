@@ -546,7 +546,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                     return membersCount > 0 ? getString(R.string.members_count, membersCount) : "";
                 }
             }
-            
+
             default: {
                 return "Unknown type";
             }

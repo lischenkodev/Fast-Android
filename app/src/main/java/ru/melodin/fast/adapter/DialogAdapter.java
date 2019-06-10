@@ -184,7 +184,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
             conversation.disabled_forever = current.disabled_forever;
             conversation.disabled_until = current.disabled_until;
             conversation.no_sound = current.no_sound;
-            conversation.group_channel = current.group_channel;
+            conversation.setGroupChannel(current.isGroupChannel());
             conversation.can_change_info = current.can_change_info;
             conversation.can_change_invite_link = current.can_change_invite_link;
             conversation.can_change_pin = current.can_change_pin;
@@ -300,7 +300,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
             if (group.name.toLowerCase().contains(lowerQuery)) return true;
         }
 
-        if (item.isChat() || item.group_channel) {
+        if (item.isChat() || item.isGroupChannel()) {
             return item.title.toLowerCase().contains(lowerQuery);
         }
 
@@ -514,13 +514,13 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
             counter.getBackground().setTint(item.isNotificationsDisabled() ? pushesDisabled : pushesEnabled);
 
-            if ((!last.out && !item.isChat()) || item.group_channel) {
+            if ((!last.out && !item.isChat()) || item.isGroupChannel()) {
                 avatarSmall.setVisibility(View.GONE);
             } else {
                 avatarSmall.setVisibility(View.VISIBLE);
             }
 
-            Drawable placeholder = item.isChat() || item.isGroup() || item.group_channel ? holderUsers : holderUser;
+            Drawable placeholder = item.isChat() || item.isGroup() || item.isGroupChannel() ? holderUsers : holderUser;
 
             if (!TextUtils.isEmpty(peerAvatar)) {
                 Picasso.get()

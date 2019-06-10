@@ -187,6 +187,10 @@ public class VKConversation extends VKModel implements Serializable {
         return groupChannel;
     }
 
+    public void setGroupChannel(boolean groupChannel) {
+        this.groupChannel = groupChannel;
+    }
+
     public static Type getType(int peerId) {
         if (VKConversation.isChatId(peerId)) return Type.CHAT;
         if (VKGroup.isGroupId(peerId)) return Type.GROUP;
@@ -240,7 +244,7 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public boolean isUser() {
-        return !isGroup() && !isChat() && !group_channel;
+        return !isGroup() && !isChat() && !isGroupChannel();
     }
 
     public boolean isFromUser() {
