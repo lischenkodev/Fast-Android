@@ -13,37 +13,38 @@ public class VKConversation extends VKModel implements Serializable {
     public static int count;
     public static ArrayList<VKUser> users = new ArrayList<>();
     public static ArrayList<VKGroup> groups = new ArrayList<>();
-    public int conversations_count;
-    public int read_in;
-    public int read_out;
-    public int last_mId;
-    public int unread;
-    public int membersCount;
 
-    public boolean can_write;
-    public int reason;
+    private int conversationsCount;
+    private int readIn;
+    private int readOut;
+    private int lastMessageId;
+    private int unread;
+    private int membersCount;
 
-    public boolean read;
+    private boolean canWrite;
+    private int reason;
+
+    private boolean read;
     private boolean groupChannel;
 
-    public VKMessage pinned, last;
+    private VKMessage pinned, last;
 
-    public String title;
-    public Type type;
-    public String state;
-    public String photo_50, photo_100, photo_200;
+    private String title;
+    private Type type;
+    private String state;
+    private String photo50, photo100, photo200;
 
     //other
-    public ArrayList<VKUser> conversation_users;
-    public ArrayList<VKGroup> conversation_groups;
+    private ArrayList<VKUser> conversationUsers;
+    private ArrayList<VKGroup> conversationGroups;
 
     //acl
-    public boolean can_change_pin, can_change_info, can_change_invite_link, can_invite, can_promote_users, can_see_invite_link;
+    private boolean canChangePin, canChangeInfo, canChangeInviteLink, canInvite, canPromoteUsers, canSeeInviteLink;
 
     //push_settings
-    public int disabled_until;
-    public boolean disabled_forever;
-    public boolean no_sound;
+    private int disabledUntil;
+    private boolean disabledForever;
+    private boolean noSound;
 
     public enum Type {
         CHAT, GROUP, USER
@@ -118,10 +119,9 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public VKConversation(JSONObject o, JSONObject msg) throws JSONException {
-
-        conversations_count = count;
-        conversation_groups = groups;
-        conversation_users = users;
+        conversationsCount = count;
+        conversationGroups = groups;
+        conversationUsers = users;
 
         groups = null;
         users = null;
@@ -130,55 +130,55 @@ public class VKConversation extends VKModel implements Serializable {
             last = new VKMessage(msg);
 
         JSONObject peer = o.optJSONObject("peer");
-        type = msg != null ? getType(last.peerId) : getType(peer.optString("type"));
+        this.type = msg != null ? getType(this.last.getPeerId()) : getType(peer.optString("type"));
 
-        read_in = o.optInt("in_read");
-        read_out = o.optInt("out_read");
-        last_mId = o.optInt("last_message_id");
-        unread = o.optInt("unread_count");
+        this.readIn = o.optInt("in_read");
+        this.readOut = o.optInt("out_read");
+        this.lastMessageId = o.optInt("last_message_id");
+        this.unread = o.optInt("unread_count");
 
-        read = last == null || (last.out && read_out == last_mId || !last.out && read_in == last_mId);
+        this.read = this.last == null || (this.last.isOut() && this.readOut == this.lastMessageId || !this.last.isOut() && this.readIn == this.lastMessageId);
 
-        JSONObject j_can_write = o.optJSONObject("can_write");
-        can_write = j_can_write.optBoolean("allowed");
-        if (!can_write) {
-            reason = j_can_write.optInt("reason", -1);
+        JSONObject canWrite = o.optJSONObject("can_write");
+        this.canWrite = canWrite.optBoolean("allowed");
+        if (!this.canWrite) {
+            this.reason = canWrite.optInt("reason", -1);
         }
 
         JSONObject push_settings = o.optJSONObject("push_settings");
         if (push_settings != null) {
-            disabled_until = push_settings.optInt("disabled_until", -1);
-            disabled_forever = push_settings.optBoolean("disabled_forever", false);
-            no_sound = push_settings.optBoolean("no_sound");
+            this.disabledUntil = push_settings.optInt("disabled_until", -1);
+            this.disabledForever = push_settings.optBoolean("disabled_forever", false);
+            this.noSound = push_settings.optBoolean("no_sound");
         }
 
         JSONObject ch = o.optJSONObject("chat_settings");
         if (ch != null) {
-            title = ch.optString("title");
-            membersCount = ch.optInt("members_count");
-            state = ch.optString("state");
-            groupChannel = ch.optBoolean("is_group_channel");
+            this.title = ch.optString("title");
+            this.membersCount = ch.optInt("members_count");
+            this.state = ch.optString("state");
+            this.groupChannel = ch.optBoolean("is_group_channel");
 
-            JSONObject p = ch.optJSONObject("photo");
-            if (p != null) {
-                photo_50 = p.optString("photo_50", "");
-                photo_100 = p.optString("photo_100", "");
-                photo_200 = p.optString("photo_200", "");
+            JSONObject photo = ch.optJSONObject("photo");
+            if (photo != null) {
+                this.photo50 = photo.optString("photo_50");
+                this.photo100 = photo.optString("photo_100");
+                this.photo200 = photo.optString("photo_200");
             }
 
             JSONObject acl = ch.optJSONObject("acl");
             if (acl != null) {
-                can_invite = acl.optBoolean("can_invite");
-                can_promote_users = acl.optBoolean("can_promote_users");
-                can_see_invite_link = acl.optBoolean("can_see_invite_link");
-                can_change_invite_link = acl.optBoolean("can_change_invite_link");
-                can_change_info = acl.optBoolean("can_change_info");
-                can_change_pin = acl.optBoolean("can_change_pin");
+                this.canInvite = acl.optBoolean("can_invite");
+                this.canPromoteUsers = acl.optBoolean("can_promote_users");
+                this.canSeeInviteLink = acl.optBoolean("can_see_invite_link");
+                this.canChangeInviteLink = acl.optBoolean("can_change_invite_link");
+                this.canChangeInfo = acl.optBoolean("can_change_info");
+                this.canChangePin = acl.optBoolean("can_change_pin");
             }
 
-            JSONObject o_pinned = ch.optJSONObject("pinned_message");
-            if (o_pinned != null) {
-                pinned = new VKMessage(o_pinned);
+            JSONObject pinned = ch.optJSONObject("pinned_message");
+            if (pinned != null) {
+                this.pinned = new VKMessage(pinned);
             }
         }
     }
@@ -232,15 +232,15 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public boolean isChat() {
-        return isChatId(last.peerId);
+        return isChatId(this.last.getPeerId());
     }
 
     public boolean isFromGroup() {
-        return VKGroup.isGroupId(last.fromId);
+        return VKGroup.isGroupId(this.last.getFromId());
     }
 
     public boolean isGroup() {
-        return VKGroup.isGroupId(last.peerId);
+        return this.last != null && VKGroup.isGroupId(this.last.getPeerId());
     }
 
     public boolean isUser() {
@@ -252,7 +252,226 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public boolean isNotificationsDisabled() {
-        return disabled_forever || disabled_until > 0 || no_sound;
+        return this.disabledForever || this.disabledUntil > 0 || this.noSound;
+    }
 
+    public int getConversationsCount() {
+        return conversationsCount;
+    }
+
+    public void setConversationsCount(int conversationsCount) {
+        this.conversationsCount = conversationsCount;
+    }
+
+    public int getReadIn() {
+        return readIn;
+    }
+
+    public void setReadIn(int readIn) {
+        this.readIn = readIn;
+    }
+
+    public int getReadOut() {
+        return readOut;
+    }
+
+    public void setReadOut(int readOut) {
+        this.readOut = readOut;
+    }
+
+    public int getLastMessageId() {
+        return lastMessageId;
+    }
+
+    public void setLastMessageId(int lastMessageId) {
+        this.lastMessageId = lastMessageId;
+    }
+
+    public int getUnread() {
+        return unread;
+    }
+
+    public void setUnread(int unread) {
+        this.unread = unread;
+    }
+
+    public int getMembersCount() {
+        return membersCount;
+    }
+
+    public void setMembersCount(int membersCount) {
+        this.membersCount = membersCount;
+    }
+
+    public boolean isCanWrite() {
+        return canWrite;
+    }
+
+    public void setCanWrite(boolean canWrite) {
+        this.canWrite = canWrite;
+    }
+
+    public int getReason() {
+        return reason;
+    }
+
+    public void setReason(int reason) {
+        this.reason = reason;
+    }
+
+    public boolean isRead() {
+        return read;
+    }
+
+    public void setRead(boolean read) {
+        this.read = read;
+    }
+
+    public VKMessage getPinned() {
+        return pinned;
+    }
+
+    public void setPinned(VKMessage pinned) {
+        this.pinned = pinned;
+    }
+
+    public VKMessage getLast() {
+        return last;
+    }
+
+    public void setLast(VKMessage last) {
+        this.last = last;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getPhoto50() {
+        return photo50;
+    }
+
+    public void setPhoto50(String photo50) {
+        this.photo50 = photo50;
+    }
+
+    public String getPhoto100() {
+        return photo100;
+    }
+
+    public void setPhoto100(String photo100) {
+        this.photo100 = photo100;
+    }
+
+    public String getPhoto200() {
+        return photo200;
+    }
+
+    public void setPhoto200(String photo200) {
+        this.photo200 = photo200;
+    }
+
+    public ArrayList<VKUser> getConversationUsers() {
+        return conversationUsers;
+    }
+
+    public void setConversationUsers(ArrayList<VKUser> conversationUsers) {
+        this.conversationUsers = conversationUsers;
+    }
+
+    public ArrayList<VKGroup> getConversationGroups() {
+        return conversationGroups;
+    }
+
+    public void setConversationGroups(ArrayList<VKGroup> conversationGroups) {
+        this.conversationGroups = conversationGroups;
+    }
+
+    public boolean isCanChangePin() {
+        return canChangePin;
+    }
+
+    public void setCanChangePin(boolean canChangePin) {
+        this.canChangePin = canChangePin;
+    }
+
+    public boolean isCanChangeInfo() {
+        return canChangeInfo;
+    }
+
+    public void setCanChangeInfo(boolean canChangeInfo) {
+        this.canChangeInfo = canChangeInfo;
+    }
+
+    public boolean isCanChangeInviteLink() {
+        return canChangeInviteLink;
+    }
+
+    public void setCanChangeInviteLink(boolean canChangeInviteLink) {
+        this.canChangeInviteLink = canChangeInviteLink;
+    }
+
+    public boolean isCanInvite() {
+        return canInvite;
+    }
+
+    public void setCanInvite(boolean canInvite) {
+        this.canInvite = canInvite;
+    }
+
+    public boolean isCanPromoteUsers() {
+        return canPromoteUsers;
+    }
+
+    public void setCanPromoteUsers(boolean canPromoteUsers) {
+        this.canPromoteUsers = canPromoteUsers;
+    }
+
+    public boolean isCanSeeInviteLink() {
+        return canSeeInviteLink;
+    }
+
+    public void setCanSeeInviteLink(boolean canSeeInviteLink) {
+        this.canSeeInviteLink = canSeeInviteLink;
+    }
+
+    public int getDisabledUntil() {
+        return disabledUntil;
+    }
+
+    public void setDisabledUntil(int disabledUntil) {
+        this.disabledUntil = disabledUntil;
+    }
+
+    public boolean isDisabledForever() {
+        return disabledForever;
+    }
+
+    public void setDisabledForever(boolean disabledForever) {
+        this.disabledForever = disabledForever;
+    }
+
+    public boolean isNoSound() {
+        return noSound;
+    }
+
+    public void setNoSound(boolean noSound) {
+        this.noSound = noSound;
     }
 }

@@ -98,16 +98,16 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     public void readNewMessage(final VKMessage message) {
-        if (message.out) return;
+        if (message.isOut()) return;
         ThreadExecutor.execute(new AsyncCallback(((MessagesActivity) context)) {
             @Override
             public void ready() throws Exception {
-                VKApi.messages().markAsRead().peerId(message.peerId).execute(Integer.class);
+                VKApi.messages().markAsRead().peerId(message.getPeerId()).execute(Integer.class);
             }
 
             @Override
             public void done() {
-                readMessage(message.id);
+                readMessage(message.getId());
             }
 
             @Override
@@ -146,16 +146,12 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     public boolean contains(int id) {
-        for (VKMessage m : getValues()) {
-            if (m.id == id) return true;
-        }
-
-        return false;
+        return findPosition(id) != -1;
     }
 
     public int findPosition(int id) {
         for (int i = 0; i < getItemCount(); i++) {
-            if (getItem(i).id == id) return i;
+            if (getItem(i).getId() == id) return i;
         }
 
         return -1;
@@ -164,8 +160,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     private void importantMessage(boolean important, int mId) {
         for (int i = 0; i < getItemCount(); i++) {
             VKMessage message = getItem(i);
-            if (message.id == mId) {
-                message.important = important;
+            if (message.getId() == mId) {
+                message.setImportant(important);
                 notifyItemChanged(i, -1);
                 break;
             }
@@ -175,7 +171,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     public void editMessage(VKMessage edited) {
         for (int i = 0; i < getItemCount(); i++) {
             VKMessage message = getItem(i);
-            if (message.id == edited.id) {
+            if (message.getId() == edited.getId()) {
                 notifyItemChanged(i, -1);
                 break;
             }
@@ -183,7 +179,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     public void addMessage(VKMessage msg) {
-        if (msg.peerId != peerId || containsRandom(msg.randomId)) return;
+        if (msg.getPeerId() != peerId || containsRandom(msg.getRandomId())) return;
 
         add(msg);
 
@@ -195,7 +191,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     private boolean containsRandom(long randomId) {
         for (VKMessage message : getValues())
-            if (message.randomId == randomId)
+            if (message.getRandomId() == randomId)
                 return true;
         return false;
     }
@@ -203,7 +199,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     private void readMessage(int mId) {
         for (int i = 0; i < getItemCount(); i++) {
             VKMessage message = getItem(i);
-            if (message.id == mId) {
+            if (message.getId() == mId) {
                 notifyItemChanged(i, -1);
                 break;
             }
@@ -237,7 +233,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     public int searchPosition(int mId) {
         for (int i = 0; i < getItemCount(); i++)
-            if (getItem(i).id == mId) return i;
+            if (getItem(i).getId() == mId) return i;
 
         return -1;
     }
@@ -319,7 +315,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     private void updateUser(int userId) {
         for (int i = 0; i < getItemCount(); i++) {
             VKMessage message = getItem(i);
-            if (message.fromId == userId) {
+            if (message.getFromId() == userId) {
                 notifyItemChanged(i, -1);
                 break;
             }
@@ -329,7 +325,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     private void updateGroup(int groupId) {
         for (int i = 0; i < getItemCount(); i++) {
             VKMessage message = getItem(i);
-            if (message.fromId == groupId) {
+            if (message.getFromId() == groupId) {
                 notifyItemChanged(i, -1);
                 break;
             }
@@ -338,17 +334,17 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     private void showForwardedMessages(VKMessage item, ViewGroup parent, boolean reply) {
         if (reply)
-            attacher.message(item, parent, item.reply.asMessage(), reply);
+            attacher.message(item, parent, item.getReply().asMessage(), reply);
         else
-            for (int i = 0; i < item.fwd_messages.size(); i++) {
-                attacher.message(item, parent, item.fwd_messages.get(i), false);
+            for (int i = 0; i < item.getFwdMessages().size(); i++) {
+                attacher.message(item, parent, item.getFwdMessages().get(i), false);
             }
     }
 
     private void showAttachments(VKMessage item, ViewHolder holder) {
         boolean onlyPhotos = true;
-        if (TextUtils.isEmpty(item.text)) {
-            for (VKModel attach : item.attachments) {
+        if (TextUtils.isEmpty(item.getText())) {
+            for (VKModel attach : item.getAttachments()) {
                 boolean isPhoto = attach instanceof VKPhoto;
                 if (!isPhoto) {
                     onlyPhotos = false;
@@ -361,7 +357,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         }
 
         inflateAttachments(item, holder.attachments, holder.photos,
-                item.attachments, holder.bubble, holder.bubble.getMaxWidth(), false);
+                item.getAttachments(), holder.bubble, holder.bubble.getMaxWidth(), false);
     }
 
     private void inflateAttachments(VKMessage item, ViewGroup parent, ViewGroup images, ArrayList<VKModel> attachments, BoundedLinearLayout bubble, int maxWidth, boolean forwarded) {
@@ -400,7 +396,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     private void onAvatarLongClick(int position) {
-        VKUser user = CacheStorage.getUser(getValues().get(position).fromId);
+        VKUser user = CacheStorage.getUser(getValues().get(position).getFromId());
         if (user == null) return;
 
         Toast.makeText(context, user.toString(), Toast.LENGTH_SHORT).show();
@@ -501,8 +497,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
         void bind(final int position) {
             final VKMessage item = getItem(position);
-            final VKUser user = searchUser(item.fromId);
-            final VKGroup group = searchGroup(VKGroup.toGroupId(item.fromId));
+            final VKUser user = searchUser(item.getFromId());
+            final VKGroup group = searchGroup(VKGroup.toGroupId(item.getFromId()));
 
             int editColor;
 
@@ -512,30 +508,30 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 editColor = 0;
             }
 
-            read.setVisibility(item.out ? item.read ? View.GONE : View.GONE : View.GONE);
+            read.setVisibility(item.isOut() ? item.isRead() ? View.GONE : View.GONE : View.GONE);
 
             main_container.setBackgroundColor(editColor);
 
-            String s = item.update_time > 0 ? getString(R.string.edited) + ", " : "";
-            String time_ = s + Util.dateFormatter.format(item.added ? item.date : item.date * 1000L);
+            String s = item.getUpdateTime() > 0 ? getString(R.string.edited) + ", " : "";
+            String time_ = s + Util.dateFormatter.format(item.getDate() * (item.isAdded() ? 1000L : 1L));
 
             time.setText(time_);
 
-            int gravity = item.out ? Gravity.END : Gravity.START;
+            int gravity = item.isOut() ? Gravity.END : Gravity.START;
 
             timeContainer.setGravity(gravity);
             bubbleContainer.setGravity(gravity);
 
-            ViewUtil.fadeView(important, item.important, new Animator.AnimatorListener() {
+            ViewUtil.fadeView(important, item.isImportant(), new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animation) {
-                    if (item.important)
+                    if (item.isImportant())
                         important.setVisibility(View.VISIBLE);
                 }
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    if (!item.important)
+                    if (!item.isImportant())
                         important.setVisibility(View.GONE);
                 }
 
@@ -579,20 +575,20 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 }
             });
 
-            time.setGravity(item.out ? Gravity.END : Gravity.START);
-            messageContainer.setGravity(item.out ? Gravity.END : Gravity.START);
+            time.setGravity(item.isOut() ? Gravity.END : Gravity.START);
+            messageContainer.setGravity(item.isOut() ? Gravity.END : Gravity.START);
 
-            if (TextUtils.isEmpty(item.text)) {
+            if (TextUtils.isEmpty(item.getText())) {
                 text.setText("");
                 text.setVisibility(View.GONE);
             } else {
                 text.setVisibility(View.VISIBLE);
-                text.setText(item.text.trim());
+                text.setText(item.getText().trim());
             }
 
             int textColor, timeColor, bgColor, linkColor;
 
-            if (item.out) {
+            if (item.isOut()) {
                 textColor = Color.WHITE;
                 bgColor = ThemeManager.getAccent();
                 linkColor = Color.WHITE;
@@ -618,7 +614,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             Drawable bg = context.getResources().getDrawable(R.drawable.msg_in_bg);
 
 
-            if (item.action != null) {
+            if (item.getAction() != null) {
                 avatar.setVisibility(View.GONE);
                 messageContainer.setVisibility(View.GONE);
                 time.setVisibility(View.GONE);
@@ -638,7 +634,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             bubble.setBackground(bg);
 
-            if (!ArrayUtil.isEmpty(item.fwd_messages) || !ArrayUtil.isEmpty(item.attachments)) {
+            if (!ArrayUtil.isEmpty(item.getFwdMessages()) || !ArrayUtil.isEmpty(item.getAttachments())) {
                 attachments.setVisibility(View.VISIBLE);
                 attachments.removeAllViews();
 
@@ -649,17 +645,17 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 photos.setVisibility(View.GONE);
             }
 
-            if (!ArrayUtil.isEmpty(item.attachments)) {
+            if (!ArrayUtil.isEmpty(item.getAttachments())) {
                 showAttachments(item, this);
             }
 
-            if (!ArrayUtil.isEmpty(item.fwd_messages)) {
+            if (!ArrayUtil.isEmpty(item.getFwdMessages())) {
                 showForwardedMessages(item, attachments, false);
-            } else if (item.reply != null) {
+            } else if (item.getReply() != null) {
                 showForwardedMessages(item, attachments, true);
             }
 
-            avatar.setVisibility(item.out ? View.GONE : View.VISIBLE);
+            avatar.setVisibility(item.isOut() ? View.GONE : View.VISIBLE);
             space.setVisibility(avatar.getVisibility());
         }
     }
@@ -741,7 +737,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             int titleColor, bodyColor, iconColor, bgColor;
 
-            if (item.out) {
+            if (item.isOut()) {
                 bgColor = Color.WHITE;
                 iconColor = ThemeManager.getAccent();
                 titleColor = Color.WHITE;
@@ -832,7 +828,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
                     ArrayList<VKPhoto> photos = new ArrayList<>();
 
-                    for (VKModel m : item.attachments) {
+                    for (VKModel m : item.getAttachments()) {
                         if (m instanceof VKPhoto) {
                             photos.add((VKPhoto) m);
                         }
@@ -864,7 +860,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             ImageView avatar = v.findViewById(R.id.user_avatar);
             View line = v.findViewById(R.id.message_line);
 
-            VKUser user = MemoryCache.getUser(source.fromId);
+            VKUser user = MemoryCache.getUser(source.getFromId());
             if (user == null) {
                 user = VKUser.EMPTY;
             }
@@ -882,13 +878,13 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             GradientDrawable lineBackground = new GradientDrawable();
             lineBackground.setCornerRadius(100);
-            lineBackground.setColor(item.out ? Color.WHITE : ThemeManager.getAccent());
+            lineBackground.setColor(item.isOut() ? Color.WHITE : ThemeManager.getAccent());
 
             line.setBackground(lineBackground);
 
             int nameColor, messageColor;
 
-            if (item.out) {
+            if (item.isOut()) {
                 nameColor = Color.WHITE;
                 messageColor = ColorUtil.darkenColor(nameColor);
             } else {
@@ -904,18 +900,18 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             name.setText(user.toString());
 
-            if (TextUtils.isEmpty(source.text)) {
+            if (TextUtils.isEmpty(source.getText())) {
                 message.setVisibility(View.GONE);
             } else {
-                message.setText(source.text);
+                message.setText(source.getText());
             }
 
-            if (!ArrayUtil.isEmpty(source.attachments)) {
+            if (!ArrayUtil.isEmpty(source.getAttachments())) {
                 LinearLayout container = v.findViewById(R.id.attachments);
-                inflateAttachments(source, container, container, source.attachments, null, -1, true);
+                inflateAttachments(source, container, container, source.getAttachments(), null, -1, true);
             }
 
-            if (!ArrayUtil.isEmpty(source.fwd_messages)) {
+            if (!ArrayUtil.isEmpty(source.getFwdMessages())) {
                 LinearLayout container = v.findViewById(R.id.forwarded);
                 showForwardedMessages(source, container, false);
             }
@@ -941,7 +937,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             int titleColor, bodyColor, iconColor, bgColor;
 
-            if (item.out || forwarded) {
+            if (item.isOut() || forwarded) {
                 bgColor = Color.WHITE;
                 iconColor = ThemeManager.getAccent();
                 titleColor = Color.WHITE;
@@ -1001,7 +997,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             int titleColor, bodyColor, iconColor, bgColor;
 
-            if (item.out || forwarded) {
+            if (item.isOut() || forwarded) {
                 bgColor = Color.WHITE;
                 iconColor = ThemeManager.getAccent();
                 titleColor = Color.WHITE;
@@ -1052,7 +1048,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             int titleColor, bodyColor, iconColor, bgColor;
 
-            if (item.out) {
+            if (item.isOut()) {
                 bgColor = Color.WHITE;
                 iconColor = ThemeManager.getAccent();
                 titleColor = Color.WHITE;
@@ -1104,7 +1100,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             int titleColor, bodyColor, iconColor, bgColor;
 
-            if (item.out) {
+            if (item.isOut()) {
                 bgColor = Color.WHITE;
                 iconColor = ThemeManager.getAccent();
                 titleColor = Color.WHITE;

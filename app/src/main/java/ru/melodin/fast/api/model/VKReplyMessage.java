@@ -38,13 +38,13 @@ public class VKReplyMessage implements Serializable {
     public VKMessage asMessage() {
         VKMessage message = new VKMessage();
 
-        message.id = this.id;
-        message.fromId = this.fromId;
-        message.peerId = this.peerId;
-        message.date = this.date;
-        message.chatMessageId = this.conversationMessageId;
-        message.text = this.text;
-        message.attachments = this.attachments;
+        message.setId(getId());
+        message.setFromId(getFromId());
+        message.setPeerId(getPeerId());
+        message.setDate(getDate());
+        message.setConversationMessageId(getConversationMessageId());
+        message.setText(getText());
+        message.setAttachments(getAttachments());
 
         return message;
     }

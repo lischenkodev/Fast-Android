@@ -186,12 +186,12 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
                 CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE);
                 CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, conversations);
 
-                ArrayList<VKUser> users = conversations.get(0).conversation_users;
-                ArrayList<VKGroup> groups = conversations.get(0).conversation_groups;
+                ArrayList<VKUser> users = conversations.get(0).getConversationUsers();
+                ArrayList<VKGroup> groups = conversations.get(0).getConversationGroups();
                 ArrayList<VKMessage> messages = new ArrayList<>();
 
                 for (VKConversation conversation : conversations)
-                    messages.add(conversation.last);
+                    messages.add(conversation.getLast());
 
                 CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
                 CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, groups);
@@ -218,18 +218,21 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
 
     private void openChat(int position) {
         VKConversation conversation = adapter.getItem(position);
-        VKUser user = MemoryCache.getUser(conversation.last.peerId);
-        VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(conversation.last.peerId));
+
+        int peerId = conversation.getLast().getPeerId();
+
+        VKUser user = MemoryCache.getUser(peerId);
+        VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(peerId));
 
         Intent intent = new Intent(getActivity(), MessagesActivity.class);
         intent.putExtra("title", adapter.getTitle(conversation, user, group));
         intent.putExtra("photo", adapter.getPhoto(conversation, user, group));
         intent.putExtra("conversation", conversation);
-        intent.putExtra("peer_id", conversation.last.peerId);
-        intent.putExtra("can_write", conversation.can_write);
+        intent.putExtra("peer_id", peerId);
+        intent.putExtra("can_write", conversation.isCanWrite());
 
-        if (!conversation.can_write) {
-            intent.putExtra("reason", conversation.reason);
+        if (!conversation.isCanWrite()) {
+            intent.putExtra("reason", conversation.getReason());
         }
 
         startActivity(intent);
@@ -239,7 +242,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
         ThreadExecutor.execute(new AsyncCallback(getActivity()) {
             @Override
             public void ready() throws Exception {
-                VKApi.messages().markAsRead().peerId(adapter.getItem(position).last.peerId).execute();
+                VKApi.messages().markAsRead().peerId(adapter.getItem(position).getLast().getPeerId()).execute();
             }
 
             @Override
@@ -265,7 +268,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
 
         VKConversation conversation = adapter.getItem(position);
 
-        if (!conversation.read && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
+        if (!conversation.isRead() && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
             readMessage(position);
         }
     }

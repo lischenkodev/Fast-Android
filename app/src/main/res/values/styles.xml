@@ -50,14 +50,6 @@
         <item name="android:windowExitAnimation">@anim/slide_down</item>
     </style>
 
-    <style name="BottomSheet.Light" parent="Theme.Design.Light.BottomSheetDialog">
-        <item name="colorAccent">@color/accent</item>
-    </style>
-
-    <style name="BottomSheet.Dark" parent="Theme.Design.BottomSheetDialog">
-        <item name="colorAccent">@color/dark_accent</item>
-    </style>
-
     <style name="AlertDialog.Theme.Light" parent="Theme.MaterialComponents.Light.Dialog.Alert">
         <item name="dialogCornerRadius">12dp</item>
         <item name="buttonBarPositiveButtonStyle">@style/AlertDialog.Button.Light</item>

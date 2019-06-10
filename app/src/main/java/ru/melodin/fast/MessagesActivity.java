@@ -71,6 +71,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private static final int MESSAGES_COUNT = 60;
 
+    private Random random = new Random();
+
     private Drawable iconSend;
     private Drawable iconMic;
     //private Drawable iconDone;
@@ -103,6 +105,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private boolean resumed;
 
     private VKMessage notRead;
+
+    private LinearLayoutManager layoutManager;
 
     private View.OnClickListener sendClick = new View.OnClickListener() {
         @Override
@@ -141,9 +145,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 chatPanel.getBackground().setColorFilter(ColorUtil.lightenColor(ThemeManager.getBackground()), PorterDuff.Mode.MULTIPLY);
             }
 
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        layoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
         layoutManager.setStackFromEnd(true);
-        layoutManager.setOrientation(RecyclerView.VERTICAL);
 
         list.setLayoutManager(layoutManager);
 
@@ -212,16 +215,22 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             case LongPollEvents.KEY_MESSAGE_NEW:
                 VKConversation conversation = (VKConversation) data[1];
 
-                adapter.addMessage(conversation.last);
+                adapter.addMessage(conversation.getLast());
 
+                int lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
 
-                if (!conversation.last.out && conversation.last.peerId == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
+                if (lastVisibleItem != adapter.getItemCount() - 1 && !conversation.getLast().isOut()) {
+
+                }
+
+                if (!conversation.getLast().isOut() && conversation.getLast().getPeerId() == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
                     if (!resumed) {
-                        notRead = conversation.last;
+                        notRead = conversation.getLast();
                     } else {
-                        adapter.readNewMessage(conversation.last);
+                        adapter.readNewMessage(conversation.getLast());
                     }
                 }
+
                 break;
             case LongPollEvents.KEY_MESSAGE_EDIT:
                 adapter.editMessage((VKMessage) data[1]);
@@ -264,8 +273,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         if (conversation != null) {
             //last = conversation.last;
-            membersCount = conversation.membersCount;
-            pinned = conversation.pinned;
+            membersCount = conversation.getMembersCount();
+            pinned = conversation.getPinned();
         }
     }
 
@@ -300,30 +309,30 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             @Override
             public void onClick(View v) {
                 if (adapter == null) return;
-                if (adapter.contains(pinned.id)) {
-                    list.scrollToPosition(adapter.findPosition(pinned.id));
+                if (adapter.contains(pinned.getId())) {
+                    list.scrollToPosition(adapter.findPosition(pinned.getId()));
                 }
             }
         });
 
-        VKUser user = CacheStorage.getUser(pinned.fromId);
+        VKUser user = CacheStorage.getUser(pinned.getFromId());
         if (user == null) user = VKUser.EMPTY;
 
         pName.setText(user.toString().trim());
-        pDate.setText(Util.dateFormatter.format(pinned.date * 1000));
+        pDate.setText(Util.dateFormatter.format(pinned.getDate() * 1000));
 
-        pText.setText(pinned.text);
+        pText.setText(pinned.getText());
 
-        unpin.setVisibility(conversation.can_change_pin ? View.VISIBLE : View.GONE);
+        unpin.setVisibility(conversation.isCanChangePin() ? View.VISIBLE : View.GONE);
         unpin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
             }
         });
 
-        if ((pinned.attachments != null || !ArrayUtil.isEmpty(pinned.fwd_messages)) && TextUtils.isEmpty(pinned.text)) {
+        if ((pinned.getAttachments() != null || !ArrayUtil.isEmpty(pinned.getFwdMessages())) && TextUtils.isEmpty(pinned.getText())) {
 
-            String body = VKUtil.getAttachmentBody(pinned.attachments, pinned.fwd_messages);
+            String body = VKUtil.getAttachmentBody(pinned.getAttachments(), pinned.getFwdMessages());
 
             String r = "<b>" + body + "</b>";
             SpannableString span = new SpannableString(Html.fromHtml(r));
@@ -374,13 +383,13 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (messageText.trim().isEmpty()) return;
 
         final VKMessage msg = new VKMessage();
-        msg.text = messageText.trim();
-        msg.fromId = UserConfig.userId;
-        msg.peerId = peerId;
-        msg.added = true;
-        msg.date = Calendar.getInstance().getTimeInMillis();
-        msg.out = true;
-        msg.randomId = new Random().nextInt();
+        msg.setText(messageText.trim());
+        msg.setFromId(UserConfig.userId);
+        msg.setPeerId(peerId);
+        msg.setAdded(true);
+        msg.setDate(Calendar.getInstance().getTimeInMillis());
+        msg.setOut(true);
+        msg.setRandomId(random.nextInt());
 
         adapter.addMessage(msg);
 
@@ -394,7 +403,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
             @Override
             public void ready() throws Exception {
-                id = VKApi.messages().send().peerId(peerId).randomId(msg.randomId).text(messageText.trim()).execute(Integer.class).get(0);
+                id = VKApi.messages().send().peerId(peerId).randomId(msg.getRandomId()).text(messageText.trim()).execute(Integer.class).get(0);
             }
 
             @Override
@@ -407,8 +416,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
                 checkCount();
 
-                adapter.getItem(position).id = id;
-
+                adapter.getItem(position).setId(id);
 
                 if (adapter.getItemCount() > size) {
                     int i = adapter.searchPosition(id);
@@ -442,9 +450,12 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             adapter = new MessageAdapter(this, messages, peerId);
             adapter.setOnItemClickListener(this);
             list.setAdapter(adapter);
+
             EventBus.getDefault().register(this);
-            if (adapter.getItemCount() > 0)
+
+            if (adapter.getItemCount() > 0 && !list.isComputingLayout())
                 list.scrollToPosition(adapter.getItemCount() - 1);
+
             checkCount();
             return;
         }
@@ -452,7 +463,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         adapter.changeItems(messages);
         adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
 
-        if (adapter.getItemCount() > 0)
+        if (adapter.getItemCount() > 0 && !list.isComputingLayout())
             list.scrollToPosition(adapter.getItemCount() - 1);
 
         checkCount();
@@ -491,8 +502,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
                 Collections.reverse(messages);
 
-                ArrayList<VKUser> users = messages.get(0).history_users;
-                ArrayList<VKGroup> groups = messages.get(0).history_groups;
+                ArrayList<VKUser> users = messages.get(0).getHistoryUsers();
+                ArrayList<VKGroup> groups = messages.get(0).getHistoryGroups();
 
                 if (!ArrayUtil.isEmpty(users)) {
                     CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
@@ -615,7 +626,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     public void onItemClick(View v, int position) {
         VKMessage item = adapter.getItem(position);
 
-        if (item.action != null) return;
+        if (item.getAction() != null) return;
 
         showAlertDialog(position);
     }

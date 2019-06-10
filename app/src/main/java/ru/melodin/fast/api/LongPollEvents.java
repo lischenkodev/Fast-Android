@@ -40,7 +40,7 @@ public class LongPollEvents {
         int mId = item.optInt(1);
         int flags = item.optInt(2);
         int peerId = item.optInt(3);
-        int time = item.optInt(4);
+        int date = item.optInt(4);
         String text = StringUtils.unescape(item.optString(5));
 
         JSONObject fromActions = item.optJSONObject(6);
@@ -53,18 +53,19 @@ public class LongPollEvents {
         VKConversation conversation = new VKConversation();
 
         VKMessage last = new VKMessage();
-        last.id = mId;
-        last.flags = flags;
-        last.peerId = peerId;
-        last.date = time;
-        last.text = text;
-        last.chatMessageId = conversationMessageId;
-        last.update_time = updateTime;
+        last.setId(mId);
+        last.setFlags(flags);
+        last.setPeerId(peerId);
+        last.setDate(date);
+        last.setText(text);
+        last.setConversationMessageId(conversationMessageId);
+        last.setUpdateTime(updateTime);
 
-        conversation.read = last.read = ((last.flags & VKMessage.UNREAD) == 0);
+        conversation.setRead((last.getFlags() & VKMessage.UNREAD) == 0);
 
-        last.out = (last.flags & VKMessage.OUTBOX) != 0;
-        last.fromId = fromActions != null && fromActions.has("from") ? fromActions.optInt("from") : last.out ? UserConfig.userId : peerId;
+        last.setRead(conversation.isRead());
+        last.setOut((last.getFlags() & VKMessage.OUTBOX) != 0);
+        last.setFromId(fromActions != null && fromActions.has("from") ? fromActions.optInt("from") : last.isOut() ? UserConfig.userId : peerId);
 
         if (attachments != null && attachments.length() > 0) {
             loadMessage(mId);
@@ -72,11 +73,11 @@ public class LongPollEvents {
         //last.attachments = VKAttachments.parseFromLongPoll(attachments);
 
 
-        last.randomId = randomId;
+        last.setRandomId(randomId);
 
-        conversation.type = VKConversation.getType(last.peerId);
+        conversation.setType(VKConversation.getType(last.getPeerId()));
 
-        conversation.last = last;
+        conversation.setLast(last);
 
         EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_NEW, conversation});
         Log.d("FVK New Message", item.toString());
@@ -118,14 +119,14 @@ public class LongPollEvents {
         VKMessage message = CacheStorage.getMessage(mId);
 
         if (message != null) {
-            message.flags = flags;
-            message.peerId = peerId;
+            message.setFlags(flags);
+            message.setPeerId(peerId);
 
             if (VKMessage.isImportant(flags))
-                message.important = true;
+                message.setImportant(true);
 
             if (VKMessage.isUnread(flags))
-                message.read = false;
+                message.setRead(false);
 
             CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID + " = ?", String.valueOf(mId));
         }
@@ -142,14 +143,14 @@ public class LongPollEvents {
         VKMessage message = CacheStorage.getMessage(mId);
 
         if (message != null) {
-            message.flags = flags;
-            message.peerId = peerId;
+            message.setFlags(flags);
+            message.setPeerId(peerId);
 
             if (VKMessage.isImportant(flags))
-                message.important = false;
+                message.setImportant(false);
 
             if (VKMessage.isUnread(flags))
-                message.read = true;
+                message.setRead(true);
 
             CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID + " = ?", String.valueOf(mId));
         }
@@ -163,7 +164,7 @@ public class LongPollEvents {
         int id = item.optInt(1);
         int flags = item.optInt(2);
         int peerId = item.optInt(3);
-        long time = item.optInt(4);
+        long date = item.optInt(4);
         String text = StringUtils.unescape(item.optString(5));
         JSONObject fromActions = item.optJSONObject(6);
         //JSONObject attachments = item.optJSONObject(7);
@@ -174,14 +175,14 @@ public class LongPollEvents {
         VKMessage message = CacheStorage.getMessage(id);
         if (message == null) return;
 
-        message.flags = flags;
-        message.peerId = peerId;
-        message.date = time;
-        message.text = text;
-        message.fromId = fromActions != null && fromActions.has("from") ? fromActions.optInt("from") : message.out ? UserConfig.userId : peerId;
-        message.randomId = randomId;
-        message.chatMessageId = conversationMessageId;
-        message.update_time = updateTime;
+        message.setFlags(flags);
+        message.setPeerId(peerId);
+        message.setDate(date);
+        message.setText(text);
+        message.setFromId(fromActions != null && fromActions.has("from") ? fromActions.optInt("from") : message.isOut() ? UserConfig.userId : peerId);
+        message.setRandomId(randomId);
+        message.setConversationMessageId(conversationMessageId);
+        message.setUpdateTime(updateTime);
 
         CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID + " = ?", String.valueOf(id));
 

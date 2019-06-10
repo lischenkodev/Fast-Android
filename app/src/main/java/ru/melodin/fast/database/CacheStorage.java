@@ -356,20 +356,20 @@ public class CacheStorage {
     private static VKConversation parseDialog(Cursor cursor) {
         VKConversation dialog = new VKConversation();
 
-        dialog.read = getInt(cursor, READ_STATE) == 1;
-        dialog.title = getString(cursor, TITLE);
-        dialog.membersCount = getInt(cursor, USERS_COUNT);
-        dialog.unread = getInt(cursor, UNREAD_COUNT);
+        dialog.setRead(getInt(cursor, READ_STATE) == 1);
+        dialog.setTitle(getString(cursor, TITLE));
+        dialog.setMembersCount(getInt(cursor, USERS_COUNT));
+        dialog.setUnread(getInt(cursor, UNREAD_COUNT));
 
-        dialog.no_sound = getInt(cursor, NO_SOUND) == 1;
-        dialog.disabled_forever = getInt(cursor, DISABLED_FOREVER) == 1;
-        dialog.disabled_until = getInt(cursor, DISABLED_UNTIL);
+        dialog.setNoSound(getInt(cursor, NO_SOUND) == 1);
+        dialog.setDisabledForever(getInt(cursor, DISABLED_FOREVER) == 1);
+        dialog.setDisabledUntil(getInt(cursor, DISABLED_UNTIL));
 
-        dialog.type = VKConversation.getType(getString(cursor, CONVERSATION_TYPE));
+        dialog.setType(VKConversation.getType(getString(cursor, CONVERSATION_TYPE)));
 
-        dialog.photo_50 = getString(cursor, PHOTO_50);
-        dialog.photo_100 = getString(cursor, PHOTO_100);
-        dialog.photo_200 = getString(cursor, PHOTO_200);
+        dialog.setPhoto50(getString(cursor, PHOTO_50));
+        dialog.setPhoto100(getString(cursor, PHOTO_100));
+        dialog.setPhoto200(getString(cursor, PHOTO_200));
 
         byte[] last = getBlob(cursor, LAST_MESSAGE);
         byte[] pinned = getBlob(cursor, PINNED_MESSAGE);
@@ -377,32 +377,32 @@ public class CacheStorage {
         byte[] groups = getBlob(cursor, GROUPS);
 
         if (last != null)
-            dialog.last = (VKMessage) Util.deserialize(last);
+            dialog.setLast((VKMessage) Util.deserialize(last));
         if (pinned != null)
-            dialog.pinned = (VKMessage) Util.deserialize(pinned);
+            dialog.setPinned((VKMessage) Util.deserialize(pinned));
         if (users != null)
-            dialog.conversation_users = (ArrayList) Util.deserialize(users);
+            dialog.setConversationUsers((ArrayList) Util.deserialize(users));
         if (groups != null)
-            dialog.conversation_groups = (ArrayList) Util.deserialize(groups);
+            dialog.setConversationGroups((ArrayList) Util.deserialize(groups));
         return dialog;
     }
 
     @SuppressWarnings("unchecked")
     private static VKMessage parseMessage(Cursor cursor) {
         VKMessage message = new VKMessage();
-        message.id = getInt(cursor, MESSAGE_ID);
-        message.peerId = getInt(cursor, PEER_ID);
-        message.fromId = getInt(cursor, FROM_ID);
-        message.date = getInt(cursor, DATE);
-        message.text = getString(cursor, TEXT);
-        message.read = getInt(cursor, READ_STATE) == 1;
-        message.out = getInt(cursor, IS_OUT) == 1;
-        message.important = getInt(cursor, IMPORTANT) == 1;
+        message.setId(getInt(cursor, MESSAGE_ID));
+        message.setPeerId(getInt(cursor, PEER_ID));
+        message.setFromId(getInt(cursor, FROM_ID));
+        message.setDate(getInt(cursor, DATE));
+        message.setText(getString(cursor, TEXT));
+        message.setRead(getInt(cursor, READ_STATE) == 1);
+        message.setOut(getInt(cursor, IS_OUT) == 1);
+        message.setImportant(getInt(cursor, IMPORTANT) == 1);
         //message.status = getInt(cursor, STATUS);
-        message.update_time = getLong(cursor, UPDATE_TIME);
-        message.action = VKMessage.getAction(getString(cursor, ACTION_TYPE));
-        message.actionText = getString(cursor, ACTION_TEXT);
-        message.actionUserId = getInt(cursor, ACTION_USER_ID);
+        message.setUpdateTime(getLong(cursor, UPDATE_TIME));
+        message.setAction(VKMessage.getAction(getString(cursor, ACTION_TYPE)));
+        message.setActionText(getString(cursor, ACTION_TEXT));
+        message.setActionUserId(getInt(cursor, ACTION_USER_ID));
 
         byte[] attachments = getBlob(cursor, ATTACHMENTS);
         byte[] forwarded = getBlob(cursor, FWD_MESSAGES);
@@ -410,13 +410,13 @@ public class CacheStorage {
         byte[] groups = getBlob(cursor, GROUPS);
 
         if (attachments != null)
-            message.attachments = (ArrayList) Util.deserialize(attachments);
+            message.setAttachments((ArrayList) Util.deserialize(attachments));
         if (forwarded != null)
-            message.fwd_messages = (ArrayList) Util.deserialize(forwarded);
+            message.setFwdMessages((ArrayList) Util.deserialize(forwarded));
         if (users != null)
-            message.history_users = (ArrayList) Util.deserialize(users);
+            message.setHistoryUsers((ArrayList) Util.deserialize(users));
         if (groups != null)
-            message.history_groups = (ArrayList) Util.deserialize(groups);
+            message.setHistoryGroups((ArrayList) Util.deserialize(groups));
         return message;
     }
 
@@ -461,90 +461,88 @@ public class CacheStorage {
     }
 
     private static void putValues(ContentValues values, VKConversation dialog) {
-        values.put(UNREAD_COUNT, dialog.unread);
-        values.put(READ_STATE, dialog.read);
-        values.put(USERS_COUNT, dialog.membersCount);
-        values.put(CONVERSATION_TYPE, VKConversation.getType(dialog.type));
-        values.put(DISABLED_FOREVER, dialog.disabled_forever);
-        values.put(DISABLED_UNTIL, dialog.disabled_until);
+        values.put(UNREAD_COUNT, dialog.getUnread());
+        values.put(READ_STATE, dialog.isRead());
+        values.put(USERS_COUNT, dialog.getMembersCount());
+        values.put(CONVERSATION_TYPE, VKConversation.getType(dialog.getType()));
+        values.put(DISABLED_FOREVER, dialog.isDisabledForever());
+        values.put(DISABLED_UNTIL, dialog.getDisabledUntil());
+        values.put(NO_SOUND, dialog.isNoSound());
 
-        values.put(NO_SOUND, dialog.no_sound);
-
-        if (!ArrayUtil.isEmpty(dialog.conversation_groups)) {
-            values.put(GROUPS, Util.serialize(dialog.conversation_groups));
+        if (!ArrayUtil.isEmpty(dialog.getConversationGroups())) {
+            values.put(GROUPS, Util.serialize(dialog.getConversationGroups()));
         }
 
-        if (!ArrayUtil.isEmpty(dialog.conversation_users)) {
-            values.put(USERS, Util.serialize(dialog.conversation_users));
+        if (!ArrayUtil.isEmpty(dialog.getConversationUsers())) {
+            values.put(USERS, Util.serialize(dialog.getConversationUsers()));
         }
 
-        if (dialog.last != null) {
-            values.put(LAST_MESSAGE, Util.serialize(dialog.last));
+        if (dialog.getLast() != null) {
+            values.put(LAST_MESSAGE, Util.serialize(dialog.getLast()));
         }
 
-        if (dialog.pinned != null) {
-            values.put(PINNED_MESSAGE, Util.serialize(dialog.pinned));
+        if (dialog.getPinned() != null) {
+            values.put(PINNED_MESSAGE, Util.serialize(dialog.getPinned()));
         }
 
-        if (TextUtils.isEmpty(dialog.title)) {
+        if (TextUtils.isEmpty(dialog.getTitle())) {
             if (dialog.isGroup()) {
-                VKGroup group = getGroup(dialog.last.peerId);
+                VKGroup group = getGroup(dialog.getLast().getPeerId());
                 values.put(TITLE, group == null ? "" : group.name);
             } else {
-                VKUser user = getUser(dialog.last.peerId);
+                VKUser user = getUser(dialog.getLast().getPeerId());
                 values.put(TITLE, user == null ? "" : user.name + " " + user.surname);
             }
         } else {
-            values.put(TITLE, dialog.title);
+            values.put(TITLE, dialog.getTitle());
         }
 
-        if (TextUtils.isEmpty(dialog.photo_50) && TextUtils.isEmpty(dialog.photo_100) && TextUtils.isEmpty(dialog.photo_200)) {
+        if (TextUtils.isEmpty(dialog.getPhoto50()) && TextUtils.isEmpty(dialog.getPhoto100()) && TextUtils.isEmpty(dialog.getPhoto200())) {
             if (dialog.isGroup()) {
-                VKGroup group = getGroup(dialog.last.peerId);
+                VKGroup group = getGroup(dialog.getLast().getPeerId());
                 values.put(PHOTO_50, group == null ? "" : group.photo_50);
                 values.put(PHOTO_100, group == null ? "" : group.photo_100);
                 values.put(PHOTO_200, group == null ? "" : group.photo_200);
             } else {
-                VKUser user = getUser(dialog.last.peerId);
+                VKUser user = getUser(dialog.getLast().getPeerId());
                 values.put(PHOTO_50, user == null ? "" : user.photo_50);
                 values.put(PHOTO_100, user == null ? "" : user.photo_100);
                 values.put(PHOTO_200, user == null ? "" : user.photo_200);
             }
         } else {
-            values.put(PHOTO_50, dialog.photo_50);
-            values.put(PHOTO_100, dialog.photo_100);
-            values.put(PHOTO_200, dialog.photo_200);
+            values.put(PHOTO_50, dialog.getPhoto50());
+            values.put(PHOTO_100, dialog.getPhoto100());
+            values.put(PHOTO_200, dialog.getPhoto200());
         }
     }
 
     private static void putValues(ContentValues values, VKMessage message) {
-        values.put(MESSAGE_ID, message.id);
-        values.put(PEER_ID, message.peerId);
-        values.put(TEXT, message.text);
-        values.put(DATE, message.date);
-        values.put(IS_OUT, message.out);
+        values.put(MESSAGE_ID, message.getId());
+        values.put(PEER_ID, message.getPeerId());
+        values.put(TEXT, message.getText());
+        values.put(DATE, message.getDate());
+        values.put(IS_OUT, message.isOut());
         values.put(STATUS, -1);
-        values.put(READ_STATE, message.read);
-        values.put(UPDATE_TIME, message.update_time);
-        values.put(ACTION_TEXT, message.actionText);
-        values.put(ACTION_TYPE, VKMessage.getAction(message.action));
-        values.put(ACTION_USER_ID, message.actionUserId);
+        values.put(READ_STATE, message.isRead());
+        values.put(UPDATE_TIME, message.getUpdateTime());
+        values.put(ACTION_TEXT, message.getActionText());
+        values.put(ACTION_TYPE, VKMessage.getAction(message.getAction()));
+        values.put(ACTION_USER_ID, message.getActionUserId());
+        values.put(IMPORTANT, message.isImportant());
 
-        values.put(IMPORTANT, message.important);
-
-        if (!ArrayUtil.isEmpty(message.history_groups)) {
-            values.put(GROUPS, Util.serialize(message.history_groups));
+        if (!ArrayUtil.isEmpty(message.getHistoryGroups())) {
+            values.put(GROUPS, Util.serialize(message.getHistoryGroups()));
         }
 
-        if (!ArrayUtil.isEmpty(message.history_users)) {
-            values.put(USERS, Util.serialize(message.history_users));
+        if (!ArrayUtil.isEmpty(message.getHistoryUsers())) {
+            values.put(USERS, Util.serialize(message.getHistoryUsers()));
         }
 
-        if (!ArrayUtil.isEmpty(message.attachments)) {
-            values.put(ATTACHMENTS, Util.serialize(message.attachments));
+        if (!ArrayUtil.isEmpty(message.getAttachments())) {
+            values.put(ATTACHMENTS, Util.serialize(message.getAttachments()));
         }
-        if (!ArrayUtil.isEmpty(message.fwd_messages)) {
-            values.put(FWD_MESSAGES, Util.serialize(message.fwd_messages));
+        if (!ArrayUtil.isEmpty(message.getFwdMessages())) {
+            values.put(FWD_MESSAGES, Util.serialize(message.getFwdMessages()));
         }
 
     }

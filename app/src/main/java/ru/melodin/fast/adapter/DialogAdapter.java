@@ -122,8 +122,8 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
     private void updateMessage(int mId) {
         for (int i = 0; i < getItemCount(); i++) {
             VKConversation conversation = getItem(i);
-            if (conversation.last.id == mId) {
-                conversation.last = CacheStorage.getMessage(mId);
+            if (conversation.getLast().getId() == mId) {
+                conversation.setLast(CacheStorage.getMessage(mId));
                 notifyItemChanged(i, -1);
                 break;
             }
@@ -134,12 +134,12 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         for (int i = 0; i < getItemCount(); i++) {
             VKConversation conversation = getItem(i);
             if (conversation.isUser()) {
-                if (conversation.last.peerId == userId) {
+                if (conversation.getLast().getPeerId() == userId) {
                     notifyItemChanged(i, -1);
                     break;
                 }
             } else if (conversation.isFromUser()) {
-                if (conversation.last.fromId == userId) {
+                if (conversation.getLast().getFromId() == userId) {
                     notifyItemChanged(i, -1);
                     break;
                 }
@@ -153,12 +153,12 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         for (int i = 0; i < getItemCount(); i++) {
             VKConversation conversation = getItem(i);
             if (conversation.isGroup()) {
-                if (conversation.last.peerId == groupId) {
+                if (conversation.getLast().getPeerId() == groupId) {
                     notifyItemChanged(i, -1);
                     break;
                 }
             } else if (conversation.isFromGroup()) {
-                if (conversation.last.fromId == groupId) {
+                if (conversation.getLast().getFromId() == groupId) {
                     notifyItemChanged(i, -1);
                     break;
                 }
@@ -170,33 +170,33 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         int firstVisiblePosition = manager.findFirstVisibleItemPosition();
         //int totalVisibleItems = manager.findLastCompletelyVisibleItemPosition() + 1;
 
-        int index = searchConversationPosition(conversation.last.peerId);
+        int index = searchConversationPosition(conversation.getLast().getPeerId());
         if (index >= 0) {
             VKConversation current = getItem(index);
 
-            conversation.photo_50 = current.photo_50;
-            conversation.photo_100 = current.photo_100;
-            conversation.photo_200 = current.photo_200;
-            conversation.pinned = current.pinned;
-            conversation.title = current.title;
-            conversation.can_write = current.can_write;
-            conversation.type = current.type;
-            conversation.unread = current.unread + 1;
-            conversation.disabled_forever = current.disabled_forever;
-            conversation.disabled_until = current.disabled_until;
-            conversation.no_sound = current.no_sound;
+            conversation.setPhoto50(current.getPhoto50());
+            conversation.setPhoto100(current.getPhoto100());
+            conversation.setPhoto200(current.getPhoto200());
+            conversation.setPinned(current.getPinned());
+            conversation.setTitle(current.getTitle());
+            conversation.setCanWrite(current.isCanWrite());
+            conversation.setType(current.getType());
+            conversation.setUnread(current.getUnread() + 1);
+            conversation.setDisabledForever(current.isDisabledForever());
+            conversation.setDisabledUntil(current.getDisabledUntil());
+            conversation.setNoSound(current.isNoSound());
             conversation.setGroupChannel(current.isGroupChannel());
-            conversation.can_change_info = current.can_change_info;
-            conversation.can_change_invite_link = current.can_change_invite_link;
-            conversation.can_change_pin = current.can_change_pin;
-            conversation.can_invite = current.can_invite;
-            conversation.can_promote_users = current.can_promote_users;
-            conversation.can_see_invite_link = current.can_see_invite_link;
-            conversation.membersCount = current.membersCount;
+            conversation.setCanChangeInfo(current.isCanChangeInfo());
+            conversation.setCanChangeInviteLink(current.isCanChangeInviteLink());
+            conversation.setCanChangePin(current.isCanChangePin());
+            conversation.setCanInvite(current.isCanInvite());
+            conversation.setCanPromoteUsers(current.isCanPromoteUsers());
+            conversation.setCanSeeInviteLink(current.isCanSeeInviteLink());
+            conversation.setMembersCount(current.getMembersCount());
 
-            if (conversation.last.out) {
-                conversation.unread = 0;
-                conversation.read = false;
+            if (conversation.getLast().isOut()) {
+                conversation.setUnread(0);
+                conversation.setRead(false);
             }
 
             if (index > 0) {
@@ -213,8 +213,8 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                 notifyItemChanged(0, -1);
             }
         } else {
-            if (!conversation.last.out)
-                conversation.unread++;
+            if (!conversation.getLast().isOut())
+                conversation.setUnread(conversation.getUnread() + 1);
             add(0, conversation);
             notifyItemInserted(0);
             notifyItemRangeChanged(0, getItemCount(), -1);
@@ -225,7 +225,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
             CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, conversation);
         }
 
-        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last);
+        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.getLast());
     }
 
     private void readMessage(int id) {
@@ -234,22 +234,22 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         if (position == -1) return;
 
         VKConversation current = getItem(position);
-        current.read = true;
-        current.unread = 0;
+        current.setRead(true);
+        current.setUnread(0);
 
         notifyItemChanged(position, -1);
     }
 
     private void editMessage(VKMessage edited) {
-        int position = searchMessagePosition(edited.id);
+        int position = searchMessagePosition(edited.getId());
         if (position == -1) return;
 
         VKConversation current = getItem(position);
-        VKMessage last = current.last;
-        last.flags = edited.flags;
-        last.text = edited.text;
-        last.update_time = edited.update_time;
-        last.attachments = edited.attachments;
+        VKMessage last = current.getLast();
+        last.setFlags(edited.getFlags());
+        last.setText(edited.getText());
+        last.setUpdateTime(edited.getUpdateTime());
+        last.setAttachments(edited.getAttachments());
 
         notifyItemChanged(position, -1);
     }
@@ -290,26 +290,26 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         if (item == null) return false;
 
         if (item.isUser()) {
-            VKUser user = CacheStorage.getUser(item.last.peerId);
+            VKUser user = CacheStorage.getUser(item.getLast().getPeerId());
             if (user == null) return false;
             if (user.toString().toLowerCase().contains(lowerQuery)) return true;
         }
 
         if (item.isGroup()) {
-            VKGroup group = CacheStorage.getGroup(item.last.peerId);
+            VKGroup group = CacheStorage.getGroup(item.getLast().getPeerId());
             if (group == null) return false;
             if (group.name.toLowerCase().contains(lowerQuery)) return true;
         }
 
         if (item.isChat() || item.isGroupChannel()) {
-            return item.title.toLowerCase().contains(lowerQuery);
+            return item.getTitle().toLowerCase().contains(lowerQuery);
         }
 
         return false;
     }
 
     public String getTitle(VKConversation item, VKUser user, VKGroup group) {
-        int peerId = item.last.peerId;
+        int peerId = item.getLast().getPeerId();
 
         if (peerId > 2_000_000_000) {
             return item.toString();
@@ -321,10 +321,10 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
     }
 
     public String getPhoto(VKConversation item, VKUser user, VKGroup group) {
-        int peerId = item.last.peerId;
+        int peerId = item.getLast().getPeerId();
 
         if (peerId > 2_000_000_000) {
-            return item.photo_200;
+            return item.getPhoto200();
         } else if (peerId < 0) {
             return group == null ? "" : group.photo_200;
         } else {
@@ -333,12 +333,12 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
     }
 
     private String getFromPhoto(VKConversation item, VKUser user, VKGroup group) {
-        int fromId = item.last.fromId;
+        int fromId = item.getLast().getFromId();
 
         if (fromId < 0) {
             return group == null ? "" : group.photo_100;
         } else {
-            return item.last.out && !item.isChat() ? UserConfig.user.photo_100 : user == null ? "" : user.photo_100;
+            return item.getLast().isOut() && !item.isChat() ? UserConfig.user.photo_100 : user == null ? "" : user.photo_100;
         }
     }
 
@@ -415,7 +415,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
     private int searchConversationPosition(int peerId) {
         for (int i = 0; i < getItemCount(); i++) {
             VKConversation conversation = getItem(i);
-            if (conversation.last.peerId == peerId) {
+            if (conversation.getLast().getPeerId() == peerId) {
                 return i;
             }
         }
@@ -424,8 +424,8 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
     private int searchMessagePosition(int mId) {
         for (int i = 0; i < getItemCount(); i++) {
-            VKMessage m = getItem(i).last;
-            if (m.id == mId) {
+            VKMessage m = getItem(i).getLast();
+            if (m.getId() == mId) {
                 return i;
             }
         }
@@ -468,18 +468,21 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
             background.setCornerRadius(200f);
 
             counter.setBackground(background);
+
+            body.setTextColor(ThemeManager.getBodyTextColor());
+            muted.getDrawable().setTint(ThemeManager.getBodyTextColor());
         }
 
         void bind(int position) {
             VKConversation item = getItem(position);
-            VKMessage last = item.last;
+            VKMessage last = item.getLast();
 
             muted.setVisibility(item.isNotificationsDisabled() ? View.VISIBLE : View.GONE);
 
             if (last == null) return;
 
-            boolean isGroup = last.peerId < 0;
-            boolean isFromGroup = last.fromId < 0;
+            boolean isGroup = last.getPeerId() < 0;
+            boolean isFromGroup = last.getFromId() < 0;
 
             VKGroup fromGroup = null;
             VKGroup peerGroup;
@@ -489,31 +492,31 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
             if (isGroup) {
                 peerUser = null;
-                peerGroup = searchGroup(VKGroup.toGroupId(last.peerId));
+                peerGroup = searchGroup(VKGroup.toGroupId(last.getPeerId()));
             } else {
                 peerGroup = null;
-                peerUser = searchUser(last.peerId);
+                peerUser = searchUser(last.getPeerId());
             }
 
             if (isFromGroup) {
-                fromGroup = searchGroup(VKGroup.toGroupId(last.fromId));
+                fromGroup = searchGroup(VKGroup.toGroupId(last.getFromId()));
             } else if (item.isFromUser()) {
-                fromUser = searchUser(last.fromId);
+                fromUser = searchUser(last.getFromId());
             }
 
             String title_ = getTitle(item, peerUser, peerGroup);
             String peerAvatar = getPhoto(item, peerUser, peerGroup);
             String fromAvatar = getFromPhoto(item, fromUser, fromGroup);
 
-            body.setText(last.text);
+            body.setText(last.getText());
             title.setText(title_);
 
-            counter.setText(item.unread > 0 ? String.valueOf(item.unread) : "");
-            time.setText(Util.dateFormatter.format(last.date * 1000));
+            counter.setText(item.getUnread() > 0 ? String.valueOf(item.getUnread()) : "");
+            time.setText(Util.dateFormatter.format(last.getDate() * 1000));
 
             counter.getBackground().setTint(item.isNotificationsDisabled() ? pushesDisabled : pushesEnabled);
 
-            if ((!last.out && !item.isChat()) || item.isGroupChannel()) {
+            if ((!last.isOut() && !item.isChat()) || item.isGroupChannel()) {
                 avatarSmall.setVisibility(View.GONE);
             } else {
                 avatarSmall.setVisibility(View.VISIBLE);
@@ -542,11 +545,10 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                     avatarSmall.setImageDrawable(placeholder);
                 }
 
-            body.setTextColor(!ThemeManager.isDark() ? -0x70000000 : -0x6f000001);
 
-            if (last.action == null) {
-                if ((last.attachments != null || !ArrayUtil.isEmpty(last.fwd_messages)) && TextUtils.isEmpty(last.text)) {
-                    String body_ = VKUtil.getAttachmentBody(item.last.attachments, item.last.fwd_messages);
+            if (last.getAction() == null) {
+                if ((last.getAttachments() != null || !ArrayUtil.isEmpty(last.getFwdMessages())) && TextUtils.isEmpty(last.getText())) {
+                    String body_ = VKUtil.getAttachmentBody(item.getLast().getAttachments(), item.getLast().getFwdMessages());
 
                     Spannable span = new SpannableString(body_);
                     span.setSpan(new ForegroundColorSpan(ThemeManager.getAccent()), 0, body_.length(), 0);
@@ -562,9 +564,9 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
             counter.setVisibility(TextUtils.isEmpty(counter.getText().toString()) ? View.GONE : View.VISIBLE);
 
-            out.setVisibility(last.out && !item.read ? View.VISIBLE : View.GONE);
+            out.setVisibility(last.isOut() && !item.isRead() ? View.VISIBLE : View.GONE);
             online.setVisibility(peerUser == null ? View.GONE : peerUser.online ? View.VISIBLE : View.GONE);
-            counterContainer.setVisibility(item.read ? View.GONE : View.VISIBLE);
+            counterContainer.setVisibility(item.isRead() ? View.GONE : View.VISIBLE);
         }
     }
 }

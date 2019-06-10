@@ -111,7 +111,7 @@ public class VKApi {
                     source = source.optJSONObject("message");
                 }
                 VKMessage message = new VKMessage(source);
-                message.unread = unread;
+                message.setUnread(unread);
                 models.add((T) message);
             }
         } else if (cls == VKGroup.class) {

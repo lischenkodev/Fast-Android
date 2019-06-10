@@ -6,7 +6,6 @@
     android:background="?android:windowBackground">
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -32,7 +31,6 @@
                 android:textSize="26sp" />
 
             <LinearLayout
-                android:id="@+id/fields"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
