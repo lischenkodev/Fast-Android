@@ -143,6 +143,16 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         return selectedItems.size();
     }
 
+    public ArrayList<VKMessage> getSelectedMessages() {
+        ArrayList<VKMessage> messages = new ArrayList<>();
+
+        for (VKMessage message : getValues())
+            if (message.isSelected())
+                messages.add(message);
+
+        return messages;
+    }
+
     public SparseArrayCompat<VKMessage> getSelectedItems() {
         return selectedItems;
     }

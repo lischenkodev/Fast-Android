@@ -118,4 +118,7 @@
     <string name="are_you_sure">Вы уверены?</string>
     <string name="all_necessary_data">Введите все необходимые данные</string>
     <string name="login_via_webview">Зайти через WebView</string>
+    <string name="delete">Удалить</string>
+    <string name="edit">Изменить</string>
+    <string name="for_everyone">Для всех</string>
 </resources>

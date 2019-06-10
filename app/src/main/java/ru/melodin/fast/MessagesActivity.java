@@ -30,7 +30,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.Toolbar;
-import androidx.collection.SparseArrayCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -43,6 +42,7 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Random;
@@ -666,26 +666,20 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 }
                 break;
             case R.id.delete:
-                showConfirmDeleteMessages();
-
+                showConfirmDeleteMessages(adapter.getSelectedMessages());
                 break;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private void showConfirmDeleteMessages() {
-        SparseArrayCompat<VKMessage> selectedItems = adapter.getSelectedItems();
-
-        final ArrayList<VKMessage> messages = new ArrayList<>();
-        final int[] mIds = new int[selectedItems.size()];
+    private void showConfirmDeleteMessages(final ArrayList<VKMessage> items) {
+        final int[] mIds = new int[items.size()];
 
         boolean self = true;
         boolean can = true;
 
-        for (int i = 0; i < selectedItems.size(); i++) {
-            VKMessage message = selectedItems.valueAt(i);
-            messages.add(message);
-
+        for (int i = 0; i < items.size(); i++) {
+            VKMessage message = items.get(i);
             mIds[i] = message.getId();
 
             if (message.getDate() * 1000L < System.currentTimeMillis() - AlarmManager.INTERVAL_DAY)
@@ -697,7 +691,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
         adb.setTitle(R.string.are_you_sure);
-        //adb.setMessage(R.string.are_you_sure);
 
         View v = LayoutInflater.from(this).inflate(R.layout.activity_messages_dialog_checkbox, null, false);
 
@@ -714,7 +707,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int which) {
-                deleteMessages(messages, forAll, mIds);
+                deleteMessages(items, forAll, mIds);
             }
         });
         adb.setNegativeButton(R.string.no, null);
@@ -752,12 +745,33 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         EventBus.getDefault().unregister(this);
     }
 
-    private void showAlertDialog(int position) {
-        VKMessage item = adapter.getItem(position);
-        ArrayList<String> items = new ArrayList<>();
+    private void showAlert(int position) {
+        final VKMessage item = adapter.getItem(position);
+
+        ArrayList<String> list = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.message_functions)));
+        ArrayList<String> remove = new ArrayList<>();
+
+        remove.add(getString(R.string.edit));
+
+        list.removeAll(remove);
+
+        final String[] items = new String[list.size()];
+        for (int i = 0; i < list.size(); i++)
+            items[i] = list.get(i);
 
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
 
+        adb.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                String title = items[i];
+                
+                if (title.equals(getString(R.string.delete))) {
+                    showConfirmDeleteMessages(new ArrayList<>(Collections.singletonList(item)));
+                }
+            }
+        });
+        adb.show();
     }
 
     @Override
@@ -810,6 +824,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     @Override
     public void onItemClick(View v, int position) {
         VKMessage item = adapter.getItem(position);
+
         if (item.getAction() != null) return;
 
         if (adapter.isSelected()) {
@@ -817,9 +832,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             adapter.notifyItemChanged(position, -1);
             getSupportActionBar().setSubtitle(getSubtitle());
             invalidateOptionsMenu();
-        }
-
-        showAlertDialog(position);
+        } else
+            showAlert(position);
     }
 
     @Override
