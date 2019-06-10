@@ -72,7 +72,6 @@ public class LongPollEvents {
         }
         //last.attachments = VKAttachments.parseFromLongPoll(attachments);
 
-
         last.setRandomId(randomId);
 
         conversation.setType(VKConversation.getType(last.getPeerId()));

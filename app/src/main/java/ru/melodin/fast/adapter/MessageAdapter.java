@@ -179,14 +179,13 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     public void addMessage(VKMessage msg) {
-        if (msg.getPeerId() != peerId || containsRandom(msg.getRandomId())) return;
+        if (msg.getPeerId() != peerId || (msg.getRandomId() != 0 && containsRandom(msg.getRandomId())))
+            return;
 
         add(msg);
 
         notifyItemInserted(getItemCount() - 1);
         ((MessagesActivity) context).checkCount();
-
-        manager.scrollToPosition(getItemCount() - 1);
     }
 
     private boolean containsRandom(long randomId) {

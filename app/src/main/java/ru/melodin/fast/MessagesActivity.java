@@ -124,6 +124,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        EventBus.getDefault().register(this);
         setTheme(ThemeManager.getCurrentTheme());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messages);
@@ -207,20 +208,24 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 setUserOnline((int) data[1]);
                 break;
             case LongPollEvents.KEY_MESSAGE_CLEAR_FLAGS:
-                adapter.handleClearFlags(data);
+                if (adapter != null)
+                    adapter.handleClearFlags(data);
                 break;
             case LongPollEvents.KEY_MESSAGE_SET_FLAGS:
-                adapter.handleSetFlags(data);
+                if (adapter != null)
+                    adapter.handleSetFlags(data);
                 break;
             case LongPollEvents.KEY_MESSAGE_NEW:
                 VKConversation conversation = (VKConversation) data[1];
+
+                if (adapter == null) return;
 
                 adapter.addMessage(conversation.getLast());
 
                 int lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
 
-                if (lastVisibleItem != adapter.getItemCount() - 1 && !conversation.getLast().isOut()) {
-
+                if (lastVisibleItem >= adapter.getItemCount() - 4) {
+                    list.smoothScrollToPosition(adapter.getItemCount() - 1);
                 }
 
                 if (!conversation.getLast().isOut() && conversation.getLast().getPeerId() == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
@@ -233,7 +238,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
                 break;
             case LongPollEvents.KEY_MESSAGE_EDIT:
-                adapter.editMessage((VKMessage) data[1]);
+                if (adapter != null)
+                    adapter.editMessage((VKMessage) data[1]);
                 break;
         }
     }
@@ -450,8 +456,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             adapter = new MessageAdapter(this, messages, peerId);
             adapter.setOnItemClickListener(this);
             list.setAdapter(adapter);
-
-            EventBus.getDefault().register(this);
 
             if (adapter.getItemCount() > 0 && !list.isComputingLayout())
                 list.scrollToPosition(adapter.getItemCount() - 1);
