@@ -71,10 +71,9 @@ import ru.melodin.fast.util.ViewUtil;
 import ru.melodin.fast.view.BoundedLinearLayout;
 import ru.melodin.fast.view.CircleImageView;
 
-public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.ViewHolder> {
+import static ru.melodin.fast.database.CacheStorage.getMessage;
 
-    private static final int TYPE_NORMAL = 1;
-    private static final int TYPE_FOOTER = 2;
+public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.ViewHolder> {
 
     private int peerId;
     private AttachmentInflater attacher;
@@ -267,27 +266,13 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     @Override
     public MessageAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        switch (viewType) {
-            case TYPE_NORMAL:
-                View v = inflater.inflate(R.layout.activity_messages_item, parent, false);
-                return new ViewHolder(v);
-            case TYPE_FOOTER:
-                return new FooterViewHolder(createView());
-            default:
-                return null;
-        }
+        return new ViewHolder(inflater.inflate(R.layout.activity_messages_item, parent, false));
     }
 
     @Override
     public void onBindViewHolder(@NonNull MessageAdapter.ViewHolder holder, int position) {
-        if (holder.isFooter()) return;
         super.onBindViewHolder(holder, position);
         holder.bind(position);
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return position == getItemCount() - 1 ? TYPE_FOOTER : TYPE_NORMAL;
     }
 
     public int searchPosition(int mId) {
@@ -461,50 +446,10 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     private void onAvatarLongClick(int position) {
-        VKUser user = CacheStorage.getUser(getValues().get(position).getFromId());
+        VKUser user = CacheStorage.getUser(getMessage(position).getFromId());
         if (user == null) return;
 
         Toast.makeText(context, user.toString(), Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public int getItemCount() {
-        return super.getItemCount() + 1;
-    }
-
-    @Override
-    public VKMessage getItem(int position) {
-        if (getItemViewType(position) == TYPE_FOOTER) {
-            return super.getItem(position - 1);
-        }
-        return super.getItem(position);
-    }
-
-    public int getMessagesCount() {
-        return getValues().size();
-    }
-
-    private View createView() {
-        View v = new View(context);
-        v.setBackgroundColor(Color.TRANSPARENT);
-        v.setVisibility(View.INVISIBLE);
-        v.setEnabled(false);
-        v.setClickable(false);
-        v.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) Util.px(66)));
-
-        return v;
-    }
-
-    class FooterViewHolder extends ViewHolder {
-
-        FooterViewHolder(View v) {
-            super(v);
-        }
-
-        public boolean isFooter() {
-            return true;
-        }
-
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -555,10 +500,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             attachments = v.findViewById(R.id.attachments);
             photos = v.findViewById(R.id.photos);
             timeContainer = v.findViewById(R.id.time_container);
-        }
-
-        public boolean isFooter() {
-            return false;
         }
 
         void bind(final int position) {

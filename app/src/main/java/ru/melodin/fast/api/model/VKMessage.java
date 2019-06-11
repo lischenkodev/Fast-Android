@@ -112,6 +112,7 @@ public class VKMessage extends VKModel implements Serializable {
     }
 
     public VKMessage(JSONObject o) throws JSONException {
+
         historyGroups = groups;
         historyUsers = users;
 

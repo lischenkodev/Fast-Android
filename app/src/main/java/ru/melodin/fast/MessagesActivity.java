@@ -165,6 +165,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         layoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
         layoutManager.setStackFromEnd(true);
 
+        list.setItemViewCacheSize(20);
+        list.setDrawingCacheEnabled(true);
+        list.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+
         list.setLayoutManager(layoutManager);
 
         setSupportActionBar(tb);
@@ -397,8 +401,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             @Override
             public void done() {
                 if (response == 1) {
+                    pinned = null;
                     conversation.setPinned(null);
                     showPinned(null);
+
                     CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
                 }
             }
@@ -510,7 +516,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         return list;
     }
 
-    private void createAdapter(ArrayList<VKMessage> messages) {
+    private void createAdapter(ArrayList<VKMessage> messages, int offset) {
         if (ArrayUtil.isEmpty(messages)) {
             return;
         }
@@ -528,6 +534,13 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             return;
         }
 
+        if (offset > 0) {
+            adapter.getValues().addAll(messages);
+            adapter.notifyDataSetChanged();
+            checkCount();
+            return;
+        }
+
         adapter.changeItems(messages);
         adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
 
@@ -540,7 +553,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private void getCachedHistory() {
         ArrayList<VKMessage> messages = CacheStorage.getMessages(peerId);
         if (!ArrayUtil.isEmpty(messages)) {
-            createAdapter(messages);
+            createAdapter(messages, 0);
         }
     }
 
@@ -587,7 +600,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
             @Override
             public void done() {
-                createAdapter(messages);
+                createAdapter(messages, offset);
 
                 getSupportActionBar().setSubtitle(getSubtitle());
             }

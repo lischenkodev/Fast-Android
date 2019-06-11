@@ -84,6 +84,11 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
 
         LinearLayoutManager manager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
         list.setHasFixedSize(true);
+
+        list.setItemViewCacheSize(20);
+        list.setDrawingCacheEnabled(true);
+        list.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+
         list.setLayoutManager(manager);
 
         getCachedFriends();
