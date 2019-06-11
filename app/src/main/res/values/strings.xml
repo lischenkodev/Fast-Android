@@ -130,4 +130,7 @@
 
     <string name="pin_message">Pin</string>
     <string name="editing">Editing</string>
+    <string name="enable_notifications">Enable notifications</string>
+    <string name="disable_notifications">Disable notifications</string>
+    <string name="clear_messages_history">Clear messages history</string>
 </resources>

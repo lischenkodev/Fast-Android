@@ -127,7 +127,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             " [" + PEER_ID + "] INTEGER, " +
             " [" + FROM_ID + "] INTEGER, " +
             " [" + TEXT + "] VARCHAR(255), " +
-            " [" + STATUS + "] INTEGER, " +
+            " [" + STATUS + "] VARCHAR(255), " +
             " [" + UPDATE_TIME + "] LONG, " +
             " [" + DATE + "] INTEGER, " +
             " [" + READ_STATE + "] INTEGER, " +

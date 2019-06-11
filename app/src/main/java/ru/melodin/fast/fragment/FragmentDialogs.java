@@ -19,6 +19,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +30,7 @@ import ru.melodin.fast.MessagesActivity;
 import ru.melodin.fast.R;
 import ru.melodin.fast.adapter.DialogAdapter;
 import ru.melodin.fast.adapter.RecyclerAdapter;
-import ru.melodin.fast.api.UserConfig;
+import ru.melodin.fast.api.LongPollEvents;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.model.VKConversation;
 import ru.melodin.fast.api.model.VKGroup;
@@ -58,7 +60,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
 
     @Override
     public void onDestroy() {
-        if (adapter != null) adapter.destroy();
+        EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
 
@@ -76,6 +78,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        EventBus.getDefault().register(this);
         super.onViewCreated(view, savedInstanceState);
         initViews(view);
 
@@ -162,6 +165,51 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
         checkCount();
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onReceive(Object[] data) {
+        if (ArrayUtil.isEmpty(data)) return;
+
+        String key = (String) data[0];
+
+        switch (key) {
+            case LongPollEvents.KEY_USER_OFFLINE:
+                adapter.setUserOnline(false, (int) data[1], (int) data[2]);
+                break;
+            case LongPollEvents.KEY_USER_ONLINE:
+                adapter.setUserOnline(true, (int) data[1], (int) data[2]);
+                break;
+            case LongPollEvents.KEY_MESSAGE_CLEAR_FLAGS:
+                adapter.handleClearFlags(data);
+                break;
+            case LongPollEvents.KEY_MESSAGE_NEW:
+                VKConversation conversation = (VKConversation) data[1];
+                adapter.addMessage(conversation);
+                break;
+            case LongPollEvents.KEY_MESSAGE_EDIT:
+                VKMessage message = (VKMessage) data[1];
+                adapter.editMessage(message);
+                break;
+            case LongPollEvents.KEY_MESSAGE_UPDATE:
+                adapter.updateMessage((int) data[1]);
+                break;
+            case FragmentSettings.KEY_MESSAGES_CLEAR_CACHE:
+                adapter.clear();
+                adapter.notifyDataSetChanged();
+                checkCount();
+                onRefresh();
+                break;
+            case LongPollEvents.KEY_NOTIFICATIONS_CHANGE:
+                adapter.changeNotifications((int) data[1], (boolean) data[2], (int) data[3]);
+                break;
+            case "update_user":
+                adapter.updateUser((int) data[1]);
+                break;
+            case "update_group":
+                adapter.updateGroup((int) data[1]);
+                break;
+        }
+    }
+
     private void getCachedConversations() {
         ArrayList<VKConversation> conversations = CacheStorage.getConversations();
 
@@ -202,7 +250,6 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
 
             @Override
             public void done() {
-                EventBus.getDefault().post(CacheStorage.getUser(UserConfig.userId));
                 createAdapter(conversations);
                 refreshLayout.setRefreshing(false);
 

@@ -48,13 +48,42 @@ public class VKMessage extends VKModel implements Serializable {
     private ArrayList<VKModel> attachments = new ArrayList<>();
     private ArrayList<VKMessage> fwdMessages;
     private VKReplyMessage reply;
-    private ArrayList<VKUser> historyUsers;
-    private ArrayList<VKGroup> historyGroups;
     private long updateTime;
     private boolean added;
+    private Status status = Status.SENT;
 
     public enum Action {
         CHAT_CREATE, CHAT_INVITE_USER, CHAT_KICK_USER, CHAT_TITLE_UPDATE, CHAT_PHOTO_UPDATE, CHAT_PHOTO_REMOVE, CHAT_PIN_MESSAGE, CHAT_UNPIN_MESSAGE, CHAT_INVITE_USER_BY_LINK
+    }
+
+    public enum Status {
+        SENDING, SENT, ERROR
+    }
+
+    public static Status getStatus(String status) {
+        switch (status) {
+            case "sending":
+                return Status.SENDING;
+            case "sent":
+                return Status.SENT;
+            case "error":
+                return Status.ERROR;
+        }
+
+        return null;
+    }
+
+    public static String getStatus(Status status) {
+        if (status == null) return "";
+        switch (status) {
+            case SENT:
+                return "sent";
+            case ERROR:
+                return "error";
+            case SENDING:
+                return "sending";
+        }
+        return "";
     }
 
     public static Action getAction(String action) {
@@ -77,9 +106,8 @@ public class VKMessage extends VKModel implements Serializable {
                 return Action.CHAT_UNPIN_MESSAGE;
             case "chat_invite_user_by_link":
                 return Action.CHAT_INVITE_USER_BY_LINK;
-            default:
-                return null;
         }
+        return null;
     }
 
     public static String getAction(Action action) {
@@ -103,19 +131,15 @@ public class VKMessage extends VKModel implements Serializable {
                 return "chat_unpin_message";
             case CHAT_INVITE_USER_BY_LINK:
                 return "chat_invite_user_by_link";
-            default:
-                return "";
         }
+
+        return "";
     }
 
     public VKMessage() {
     }
 
     public VKMessage(JSONObject o) throws JSONException {
-
-        historyGroups = groups;
-        historyUsers = users;
-
         this.date = o.optLong("date", -1);
         this.fromId = o.optInt("from_id", -1);
         this.peerId = o.optInt("peer_id", -1);
@@ -196,6 +220,13 @@ public class VKMessage extends VKModel implements Serializable {
     }
 
 
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 
     public Action getAction() {
         return action;
@@ -347,22 +378,6 @@ public class VKMessage extends VKModel implements Serializable {
 
     public void setReply(VKReplyMessage reply) {
         this.reply = reply;
-    }
-
-    public ArrayList<VKUser> getHistoryUsers() {
-        return historyUsers;
-    }
-
-    public void setHistoryUsers(ArrayList<VKUser> historyUsers) {
-        this.historyUsers = historyUsers;
-    }
-
-    public ArrayList<VKGroup> getHistoryGroups() {
-        return historyGroups;
-    }
-
-    public void setHistoryGroups(ArrayList<VKGroup> historyGroups) {
-        this.historyGroups = historyGroups;
     }
 
     public long getUpdateTime() {

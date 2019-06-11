@@ -397,7 +397,7 @@ public class CacheStorage {
         message.setRead(getInt(cursor, READ_STATE) == 1);
         message.setOut(getInt(cursor, IS_OUT) == 1);
         message.setImportant(getInt(cursor, IMPORTANT) == 1);
-        //message.status = getInt(cursor, STATUS);
+        message.setStatus(VKMessage.getStatus(getString(cursor, STATUS)));
         message.setUpdateTime(getLong(cursor, UPDATE_TIME));
         message.setAction(VKMessage.getAction(getString(cursor, ACTION_TYPE)));
         message.setActionText(getString(cursor, ACTION_TEXT));
@@ -405,17 +405,11 @@ public class CacheStorage {
 
         byte[] attachments = getBlob(cursor, ATTACHMENTS);
         byte[] forwarded = getBlob(cursor, FWD_MESSAGES);
-        byte[] users = getBlob(cursor, USERS);
-        byte[] groups = getBlob(cursor, GROUPS);
 
         if (attachments != null)
             message.setAttachments((ArrayList) Util.deserialize(attachments));
         if (forwarded != null)
             message.setFwdMessages((ArrayList) Util.deserialize(forwarded));
-        if (users != null)
-            message.setHistoryUsers((ArrayList) Util.deserialize(users));
-        if (groups != null)
-            message.setHistoryGroups((ArrayList) Util.deserialize(groups));
         return message;
     }
 
@@ -522,7 +516,7 @@ public class CacheStorage {
         values.put(TEXT, message.getText());
         values.put(DATE, message.getDate());
         values.put(IS_OUT, message.isOut());
-        values.put(STATUS, -1);
+        values.put(STATUS, VKMessage.getStatus(message.getStatus()));
         values.put(READ_STATE, message.isRead());
         values.put(UPDATE_TIME, message.getUpdateTime());
         values.put(ACTION_TEXT, message.getActionText());
@@ -530,21 +524,13 @@ public class CacheStorage {
         values.put(ACTION_USER_ID, message.getActionUserId());
         values.put(IMPORTANT, message.isImportant());
 
-        if (!ArrayUtil.isEmpty(message.getHistoryGroups())) {
-            values.put(GROUPS, Util.serialize(message.getHistoryGroups()));
-        }
-
-        if (!ArrayUtil.isEmpty(message.getHistoryUsers())) {
-            values.put(USERS, Util.serialize(message.getHistoryUsers()));
-        }
-
         if (!ArrayUtil.isEmpty(message.getAttachments())) {
             values.put(ATTACHMENTS, Util.serialize(message.getAttachments()));
         }
+
         if (!ArrayUtil.isEmpty(message.getFwdMessages())) {
             values.put(FWD_MESSAGES, Util.serialize(message.getFwdMessages()));
         }
-
     }
 
     private static void putValues(ContentValues values, VKGroup group) {

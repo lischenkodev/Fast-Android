@@ -51,7 +51,7 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public enum Reason {
-        KICKED, LEFT, USER_DELETED, USER_BLACKLIST, USER_PRIVACY, MESSAGES_OFF, MESSAGES_BLOCKED, NO_ACCESS_CHAT, NO_ACCESS_EMAIL, NO_ACCESS_GROUP
+        KICKED, LEFT, USER_DELETED, USER_BLACKLIST, USER_PRIVACY, MESSAGES_OFF, MESSAGES_BLOCKED, NO_ACCESS_CHAT, NO_ACCESS_EMAIL, NO_ACCESS_GROUP, UNKNOWN
     }
 
     @NonNull
@@ -114,7 +114,7 @@ public class VKConversation extends VKModel implements Serializable {
             case 203:
                 return Reason.NO_ACCESS_GROUP;
             default:
-                return null;
+                return Reason.UNKNOWN;
         }
     }
 

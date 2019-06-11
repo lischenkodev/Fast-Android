@@ -29,7 +29,7 @@ public class VKApi {
     private static final String TAG = "Fast.VKApi";
 
     public static final String BASE_URL = "https://api.vk.com/method/";
-    public static final String API_VERSION = "5.92";
+    public static final String API_VERSION = "5.95";
 
     public static UserConfig config;
     public static String lang = AppGlobal.locale.getLanguage();
@@ -125,7 +125,7 @@ public class VKApi {
         } else if (cls == VKModel.class && url.contains("messages.getHistoryAttachments")) {
             return (ArrayList<T>) VKAttachments.parse(array);
         } else if (cls == VKConversation.class) {
-            if (url.contains("messages.getConversations")) {
+            if (url.contains("messages.getConversations?")) {
                 JSONObject response = json.optJSONObject("response");
                 VKConversation.count = response.optInt("count");
 
@@ -594,19 +594,16 @@ public class VKApi {
     }
 
     public static class VKAccounts {
-
-        /**
-         * Marks a current user as offline.
-         */
         public MethodSetter setOffline() {
             return new MethodSetter("account.setOffline");
         }
 
-        /**
-         * Marks the current user as online for 15 minutes.
-         */
         public MethodSetter setOnline() {
             return new MethodSetter("account.setOnline");
+        }
+
+        public MethodSetter setSilenceMode() {
+            return new MethodSetter("account.setSilenceMode");
         }
     }
 

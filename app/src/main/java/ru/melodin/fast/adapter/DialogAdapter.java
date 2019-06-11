@@ -25,13 +25,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 
 import ru.melodin.fast.R;
-import ru.melodin.fast.api.LongPollEvents;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.VKUtil;
@@ -46,7 +43,6 @@ import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.fragment.FragmentDialogs;
-import ru.melodin.fast.fragment.FragmentSettings;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
@@ -62,58 +58,10 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         super(fragment.getContext(), values);
         this.fragment = fragment;
         manager = (LinearLayoutManager) fragment.getRecyclerView().getLayoutManager();
-        EventBus.getDefault().register(this);
         UserConfig.getUser();
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void onReceive(Object[] data) {
-        if (ArrayUtil.isEmpty(data)) return;
-
-        String key = (String) data[0];
-
-        switch (key) {
-            case LongPollEvents.KEY_USER_OFFLINE:
-                setUserOnline(false, (int) data[1], (int) data[2]);
-                break;
-            case LongPollEvents.KEY_USER_ONLINE:
-                setUserOnline(true, (int) data[1], (int) data[2]);
-                break;
-            case LongPollEvents.KEY_MESSAGE_CLEAR_FLAGS:
-                handleClearFlags(data);
-                break;
-            case LongPollEvents.KEY_MESSAGE_NEW:
-                VKConversation conversation = (VKConversation) data[1];
-                addMessage(conversation);
-                break;
-            case LongPollEvents.KEY_MESSAGE_EDIT:
-                VKMessage message = (VKMessage) data[1];
-                editMessage(message);
-                break;
-            case LongPollEvents.KEY_MESSAGE_UPDATE:
-                //TODO доделать
-                updateMessage((int) data[1]);
-                //Toast.makeText(context, "Update message", Toast.LENGTH_SHORT).show();
-                break;
-            case FragmentSettings.KEY_MESSAGES_CLEAR_CACHE:
-                clear();
-                notifyDataSetChanged();
-                fragment.checkCount();
-                fragment.onRefresh();
-                break;
-            case LongPollEvents.KEY_NOTIFICATIONS_CHANGE:
-                changeNotifications((int) data[1], (boolean) data[2], (int) data[3]);
-                break;
-            case "update_user":
-                updateUser((int) data[1]);
-                break;
-            case "update_group":
-                updateGroup((int) data[1]);
-                break;
-        }
-    }
-
-    private void changeNotifications(int peerId, boolean noSound, int disabledUntil) {
+    public void changeNotifications(int peerId, boolean noSound, int disabledUntil) {
         int position = findConversationPosition(peerId);
         if (position == -1) return;
 
@@ -127,7 +75,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
     }
 
-    private void handleClearFlags(Object[] data) {
+    public void handleClearFlags(Object[] data) {
         int mId = (int) data[1];
         int flags = (int) data[2];
 
@@ -135,7 +83,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
             readMessage(mId);
     }
 
-    private void updateMessage(int mId) {
+    public void updateMessage(int mId) {
         for (int i = 0; i < getItemCount(); i++) {
             VKConversation conversation = getItem(i);
             if (conversation.getLast().getId() == mId) {
@@ -146,7 +94,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         }
     }
 
-    private void updateUser(int userId) {
+    public void updateUser(int userId) {
         for (int i = 0; i < getItemCount(); i++) {
             VKConversation conversation = getItem(i);
             if (conversation.isUser()) {
@@ -163,7 +111,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         }
     }
 
-    private void updateGroup(int groupId) {
+    public void updateGroup(int groupId) {
         if (groupId > 0)
             groupId *= -1;
         for (int i = 0; i < getItemCount(); i++) {
@@ -182,7 +130,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         }
     }
 
-    private void addMessage(VKConversation conversation) {
+    public void addMessage(VKConversation conversation) {
         int firstVisiblePosition = manager.findFirstVisibleItemPosition();
         //int totalVisibleItems = manager.findLastCompletelyVisibleItemPosition() + 1;
 
@@ -256,7 +204,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         notifyItemChanged(position, -1);
     }
 
-    private void editMessage(VKMessage edited) {
+    public void editMessage(VKMessage edited) {
         int position = searchMessagePosition(edited.getId());
         if (position == -1) return;
 
@@ -270,7 +218,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         notifyItemChanged(position, -1);
     }
 
-    private void setUserOnline(boolean online, int userId, int time) {
+    public void setUserOnline(boolean online, int userId, int time) {
         for (int i = 0; i < getItemCount(); i++) {
             VKConversation conversation = getItem(i);
             if (conversation.isUser()) {
@@ -282,10 +230,6 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                 break;
             }
         }
-    }
-
-    public void destroy() {
-        EventBus.getDefault().unregister(this);
     }
 
     private int findConversationPosition(int peerId) {
@@ -377,8 +321,8 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         return user;
     }
 
-    private void loadUser(final Integer userId) {
-        if (loadingIds.contains(userId) || userId == 0) return;
+    private void loadUser(final int userId) {
+        if (loadingIds.contains(userId)) return;
         loadingIds.add(userId);
         ThreadExecutor.execute(new AsyncCallback(fragment.getActivity()) {
             VKUser user;
@@ -412,9 +356,11 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
         return group;
     }
 
-    private void loadGroup(final Integer groupId) {
-        if (loadingIds.contains(groupId)) return;
-        loadingIds.add(groupId);
+    private void loadGroup(final int id) {
+        if (loadingIds.contains(id)) return;
+        loadingIds.add(id);
+
+        final int groupId = id < 0 ? id * -1 : id;
         ThreadExecutor.execute(new AsyncCallback(fragment.getActivity()) {
             VKGroup group;
 
@@ -509,24 +455,19 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
             if (last == null) return;
 
-            boolean isGroup = last.getPeerId() < 0;
-            boolean isFromGroup = last.getFromId() < 0;
-
             VKGroup fromGroup = null;
-            VKGroup peerGroup;
+            VKGroup peerGroup = null;
 
             VKUser fromUser = null;
-            VKUser peerUser;
+            VKUser peerUser = null;
 
-            if (isGroup) {
-                peerUser = null;
+            if (item.isGroup() || item.isGroupChannel()) {
                 peerGroup = searchGroup(VKGroup.toGroupId(last.getPeerId()));
-            } else {
-                peerGroup = null;
+            } else if (item.isUser() || item.isChat()) {
                 peerUser = searchUser(last.getPeerId());
             }
 
-            if (isFromGroup) {
+            if (item.isFromGroup()) {
                 fromGroup = searchGroup(VKGroup.toGroupId(last.getFromId()));
             } else if (item.isFromUser()) {
                 fromUser = searchUser(last.getFromId());
@@ -544,13 +485,17 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
             counter.getBackground().setTint(item.isNotificationsDisabled() ? pushesDisabled : pushesEnabled);
 
-            if ((!last.isOut() && !item.isChat()) || item.isGroupChannel()) {
-                avatarSmall.setVisibility(View.GONE);
-            } else {
+            if (last.isOut()) {
                 avatarSmall.setVisibility(View.VISIBLE);
+            } else if (item.isChat()) {
+                avatarSmall.setVisibility(View.VISIBLE);
+            } else if (item.isGroupChannel()) {
+                avatarSmall.setVisibility(View.VISIBLE);
+            } else {
+                avatarSmall.setVisibility(View.GONE);
             }
 
-            Drawable placeholder = new ColorDrawable(Color.TRANSPARENT); //item.isChat() || item.isGroup() || item.isGroupChannel() ? holderUsers : holderUser;
+            Drawable placeholder = new ColorDrawable(Color.TRANSPARENT);
 
             if (!TextUtils.isEmpty(peerAvatar)) {
                 Picasso.get()

@@ -123,4 +123,7 @@
     <string name="for_everyone">Для всех</string>
     <string name="pin_message">Закрепить</string>
     <string name="editing">Редактирование</string>
+    <string name="clear_messages_history">Очистить историю сообщений</string>
+    <string name="disable_notifications">Выключить уведомления</string>
+    <string name="enable_notifications">Включить уведомления</string>
 </resources>

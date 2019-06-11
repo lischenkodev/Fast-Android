@@ -75,6 +75,9 @@ import static ru.melodin.fast.database.CacheStorage.getMessage;
 
 public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.ViewHolder> {
 
+    private static final int TYPE_NORMAL = 0;
+    private static final int TYPE_FOOTER = 10;
+
     private int peerId;
     private AttachmentInflater attacher;
     private DisplayMetrics metrics;
@@ -237,13 +240,15 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         }
     }
 
-    public void addMessage(VKMessage msg) {
+    public void addMessage(VKMessage msg, boolean anim) {
         if (msg.getPeerId() != peerId || (msg.getRandomId() != 0 && containsRandom(msg.getRandomId())))
             return;
 
         add(msg);
 
-        notifyItemInserted(getItemCount() - 1);
+        if (anim)
+            notifyItemInserted(getItemCount() - 1);
+
         ((MessagesActivity) context).checkCount();
     }
 
@@ -265,12 +270,40 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     @Override
+    public int getItemCount() {
+        return super.getItemCount() + 1;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (getValues().size() == position) {
+            return TYPE_FOOTER;
+        } else {
+            return TYPE_NORMAL;
+        }
+    }
+
+    @Override
+    public VKMessage getItem(int position) {
+        if (getItemViewType(position) == TYPE_FOOTER) {
+            return super.getItem(position - 1);
+        }
+        return super.getItem(position);
+    }
+
+    @Override
     public MessageAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(inflater.inflate(R.layout.activity_messages_item, parent, false));
+        if (viewType == TYPE_FOOTER) {
+            return new FooterViewHolder(createFooter());
+        }
+
+        View v = inflater.inflate(R.layout.activity_messages_item, parent, false);
+        return new ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull MessageAdapter.ViewHolder holder, int position) {
+        if (holder.isFooter()) return;
         super.onBindViewHolder(holder, position);
         holder.bind(position);
     }
@@ -305,7 +338,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     private void loadUser(Integer id) {
-        if (loadingIds.contains(id) || id == 0) return;
+        if (loadingIds.contains(id)) return;
         if (id < 0)
             id *= -1;
         loadingIds.add(id);
@@ -317,7 +350,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             @Override
             public void ready() throws Exception {
-
                 user = VKApi.users().get().userId(userId).fields(VKUser.FIELDS_DEFAULT).execute(VKUser.class).get(0);
             }
 
@@ -452,6 +484,32 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         Toast.makeText(context, user.toString(), Toast.LENGTH_SHORT).show();
     }
 
+    class FooterViewHolder extends ViewHolder {
+
+        FooterViewHolder(View v) {
+            super(v);
+        }
+
+        @Override
+        public boolean isFooter() {
+            return true;
+        }
+
+    }
+
+
+    private View createFooter() {
+        View footer = new View(context);
+        footer.setVisibility(View.VISIBLE);
+        footer.setBackgroundColor(Color.TRANSPARENT);
+        footer.setVisibility(View.INVISIBLE);
+        footer.setEnabled(false);
+        footer.setClickable(false);
+        footer.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) Util.px(66)));
+
+        return footer;
+    }
+
     class ViewHolder extends RecyclerView.ViewHolder {
 
         CircleImageView avatar;
@@ -475,6 +533,9 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
         Drawable circle, sending, placeholder;
 
+        public boolean isFooter() {
+            return false;
+        }
 
         ViewHolder(View v) {
             super(v);

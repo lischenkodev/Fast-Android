@@ -21,7 +21,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -90,7 +89,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private AppCompatImageButton smiles, send, unpin;
     private AppCompatEditText message;
-    private ProgressBar bar;
     private LinearLayout chatPanel;
     private FrameLayout pinnedContainer;
     private View empty, pinnedShadow;
@@ -154,7 +152,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         initViews();
         getIntentData();
         showPinned(pinned);
-
+        getConversation(peerId);
         checkCanWrite();
 
         if (ThemeManager.isDark())
@@ -206,6 +204,45 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             getHistory(0, MESSAGES_COUNT);
     }
 
+    private void getConversation(final int peerId) {
+        ThreadExecutor.execute(new AsyncCallback(this) {
+            VKMessage last;
+
+            @Override
+            public void ready() throws Exception {
+                conversation =
+                        VKApi.messages()
+                                .getConversationsById()
+                                .peerIds(peerId)
+                                .extended(true)
+                                .fields(VKUser.FIELDS_DEFAULT)
+                                .execute(VKConversation.class)
+                                .get(0);
+                last =
+                        VKApi.messages()
+                                .getById()
+                                .messageIds(conversation.getLastMessageId())
+                                .extended(false)
+                                .execute(VKMessage.class)
+                                .get(0);
+
+                conversation.setLast(last);
+            }
+
+            @Override
+            public void done() {
+                invalidateOptionsMenu();
+                CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
+            }
+
+            @Override
+            public void error(Exception e) {
+                Log.e("Error load dialog", Log.getStackTraceString(e));
+                Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     @Override
     protected void onPause() {
         super.onPause();
@@ -244,7 +281,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
                 if (adapter == null) return;
 
-                adapter.addMessage(conversation.getLast());
+                adapter.addMessage(conversation.getLast(), true);
 
                 int lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
 
@@ -274,7 +311,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     }
 
     private void initViews() {
-        bar = findViewById(R.id.progress);
         chatPanel = findViewById(R.id.chat_panel);
         smiles = findViewById(R.id.smiles);
         tb = findViewById(R.id.tb);
@@ -448,10 +484,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     }
 
     public void checkCount() {
-        bar.setVisibility(loading ? View.VISIBLE : View.GONE);
-
-        if (bar.getVisibility() != View.VISIBLE)
-            empty.setVisibility(adapter == null ? View.VISIBLE : adapter.isEmpty() ? View.VISIBLE : View.GONE);
+        empty.setVisibility(adapter == null ? View.VISIBLE : adapter.isEmpty() ? View.VISIBLE : View.GONE);
     }
 
     private void sendMessage() {
@@ -466,7 +499,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         msg.setOut(true);
         msg.setRandomId(random.nextInt());
 
-        adapter.addMessage(msg);
+        adapter.addMessage(msg, true);
+        list.smoothScrollToPosition(adapter.getItemCount() - 1);
 
         final int position = adapter.getItemCount() - 1;
 
@@ -478,7 +512,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
             @Override
             public void ready() throws Exception {
-                id = VKApi.messages().send().peerId(peerId).randomId(msg.getRandomId()).text(messageText.trim()).execute(Integer.class).get(0);
+                id = VKApi.messages().send().randomId(msg.getRandomId()).text(messageText.trim()).peerId(peerId).execute(Integer.class).get(0);
             }
 
             @Override
@@ -496,20 +530,19 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 if (adapter.getItemCount() > size) {
                     int i = adapter.searchPosition(id);
                     adapter.remove(i);
-                    adapter.notifyItemRemoved(i);
                     adapter.add(msg);
-                    adapter.notifyItemInserted(adapter.getItemCount() - 1);
+                    adapter.notifyItemMoved(i, adapter.getItemCount() - 1);
                     adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
                 }
             }
 
             @Override
             public void error(Exception e) {
-
-                adapter.notifyItemChanged(position, -1);
+                Log.e("Error send message", Log.getStackTraceString(e));
+                Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
+                //adapter.notifyItemChanged(position, -1);
             }
         });
-
     }
 
     public RecyclerView getRecyclerView() {
@@ -561,8 +594,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (!Util.hasConnection()) return;
         loading = true;
 
-        if (TextUtils.isEmpty(getSupportActionBar().getSubtitle().toString()))
-            getSupportActionBar().setSubtitle(getString(R.string.loading));
+        getSupportActionBar().setSubtitle(getString(R.string.loading));
 
         ThreadExecutor.execute(new AsyncCallback(this) {
 
@@ -580,8 +612,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
                 Collections.reverse(messages);
 
-                ArrayList<VKUser> users = messages.get(0).getHistoryUsers();
-                ArrayList<VKGroup> groups = messages.get(0).getHistoryGroups();
+                ArrayList<VKUser> users = VKMessage.users;
+                ArrayList<VKGroup> groups = VKMessage.groups;
 
                 if (!ArrayUtil.isEmpty(users)) {
                     CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
@@ -692,18 +724,63 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             case android.R.id.home:
                 onBackPressed();
                 break;
-            case R.id.update:
-                if (adapter == null) return false;
-                if (!loading) {
-                    adapter.clear();
-                    getHistory(0, MESSAGES_COUNT);
-                }
-                break;
             case R.id.delete:
                 showConfirmDeleteMessages(adapter.getSelectedMessages());
                 break;
+            case R.id.clear:
+                showConfirmDeleteConversation();
+                break;
+            case R.id.notifications:
+                toggleNotifications();
+                invalidateOptionsMenu();
+                break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void toggleNotifications() {
+        if (conversation == null) return;
+        if (conversation.isNotificationsDisabled()) {
+            conversation.setNoSound(false);
+            conversation.setDisabledForever(false);
+            conversation.setDisabledUntil(0);
+        } else {
+            conversation.setNoSound(true);
+            conversation.setDisabledUntil(-1);
+            conversation.setDisabledForever(true);
+        }
+
+        setNotifications(!conversation.isNotificationsDisabled());
+    }
+
+    private void setNotifications(final boolean on) {
+        ThreadExecutor.execute(new AsyncCallback(this) {
+            int response;
+
+            @Override
+            public void ready() throws Exception {
+                response = VKApi.account()
+                        .setSilenceMode()
+                        .peerId(peerId)
+                        .time(on ? 0 : -1)
+                        .sound(on)
+                        .execute(Integer.class).get(0);
+            }
+
+            @Override
+            public void done() {
+                conversation.setDisabledForever(!on);
+                conversation.setDisabledUntil(on ? 0 : -1);
+                conversation.setNoSound(!on);
+
+                CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
+            }
+
+            @Override
+            public void error(Exception e) {
+
+            }
+        });
     }
 
     private void showConfirmDeleteMessages(final ArrayList<VKMessage> items) {
@@ -885,12 +962,12 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 @Override
                 public void ready() throws Exception {
                     response = VKApi.messages().edit()
-                            .peerId(peerId)
                             .text(edited.getText())
                             .messageId(edited.getId())
                             .attachment(edited.getAttachments())
                             .keepForwardMessages(true)
                             .keepSnippets(true)
+                            .peerId(peerId)
                             .execute(Integer.class)
                             .get(0);
                 }
@@ -937,7 +1014,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
             @Override
             public void ready() throws Exception {
-                VKApi.messages().pin().peerId(peerId).messageId(message.getId()).execute();
+                VKApi.messages().pin().messageId(message.getId()).peerId(peerId).execute();
             }
 
             @Override
@@ -1058,20 +1135,72 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         invalidateOptionsMenu();
     }
 
+    private void showConfirmDeleteConversation() {
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        adb.setTitle(R.string.confirmation);
+        adb.setMessage(R.string.are_you_sure);
+        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                deleteConversation();
+            }
+        });
+        adb.setNegativeButton(R.string.no, null);
+        adb.show();
+    }
+
+    private void deleteConversation() {
+        if (!Util.hasConnection()) {
+            return;
+        }
+
+        ThreadExecutor.execute(new AsyncCallback(this) {
+            int response;
+
+            @Override
+            public void ready() throws Exception {
+                response = VKApi.messages().deleteConversation().peerId(peerId).offset(0).execute(Integer.class).get(0);
+            }
+
+            @Override
+            public void done() {
+                CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE, DatabaseHelper.PEER_ID, peerId);
+                adapter.getValues().clear();
+                adapter.notifyDataSetChanged();
+                checkCount();
+            }
+
+            @Override
+            public void error(Exception e) {
+                Log.e("Error delete dialog", Log.getStackTraceString(e));
+                Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem delete = menu.findItem(R.id.delete);
-        MenuItem update = menu.findItem(R.id.update);
+        MenuItem clear = menu.findItem(R.id.clear);
+        MenuItem notifications = menu.findItem(R.id.notifications);
+
+        if (conversation != null) {
+            if (conversation.isNotificationsDisabled()) {
+                notifications.setTitle(R.string.enable_notifications);
+                notifications.setIcon(R.drawable.ic_volume_full_black_24dp);
+            } else {
+                notifications.setTitle(R.string.disable_notifications);
+                notifications.setIcon(R.drawable.ic_volume_off_black_24dp);
+            }
+        }
 
         delete.getIcon().setTint(ThemeManager.getMain());
 
-        if (adapter != null && adapter.isSelected()) {
-            delete.setVisible(true);
-            update.setVisible(false);
-        } else {
-            delete.setVisible(false);
-            update.setVisible(true);
-        }
+        boolean selecting = adapter != null && adapter.isSelected();
+
+        delete.setVisible(selecting);
+        clear.setVisible(!selecting);
+        notifications.setVisible(!selecting);
 
         return super.onPrepareOptionsMenu(menu);
     }

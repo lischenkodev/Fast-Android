@@ -92,6 +92,8 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
         list.setLayoutManager(manager);
 
         getCachedFriends();
+        if (Util.hasConnection())
+            getFriends(FRIENDS_COUNT, 0);
     }
 
     private void initViews(View v) {
@@ -130,8 +132,6 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
         adapter.notifyDataSetChanged();
 
         checkCount();
-        if (Util.hasConnection())
-            getFriends(FRIENDS_COUNT, 0);
     }
 
     private void getCachedFriends() {

@@ -132,9 +132,10 @@ public class MethodSetter {
         return put("owner_id", value);
     }
 
-    /**
-     * ID of community.
-     */
+    public MethodSetter peerId(int value) {
+        return put("peer_id", value);
+    }
+
     public MethodSetter groupId(int value) {
         return put("group_id", value);
     }
@@ -143,36 +144,31 @@ public class MethodSetter {
         return put("group_ids", ArrayUtil.toString(ids));
     }
 
-    /**
-     * Profile/Group fields separated by ','
-     */
     public MethodSetter fields(String values) {
         return put("fields", values);
     }
 
-    /**
-     * Number of users/messages/audios... to return
-     * NOTE: even when using the offset parameter for information available
-     * only the first 1000 results!.
-     */
     public MethodSetter count(int value) {
         return put("count", value);
     }
 
-    /**
-     * Sort order.
-     */
+    public MethodSetter sound(boolean value) {
+        return put("sound", value);
+    }
+
     public MethodSetter sort(int value) {
-        put("sort", value);
-        return this;
+        return put("sort", value);
+    }
+
+    public MethodSetter time(int value) {
+        return put("time", value);
     }
 
     /**
      * Order to return a list
      */
     public MethodSetter order(String value) {
-        put("order", value);
-        return this;
+        return put("order", value);
     }
 
     /**
@@ -214,5 +210,9 @@ public class MethodSetter {
      */
     public MethodSetter withConfig(UserConfig config) {
         return put("access_token", UserConfig.accessToken);
+    }
+
+    public MethodSetter extended(boolean value) {
+        return put("extended", value);
     }
 }
