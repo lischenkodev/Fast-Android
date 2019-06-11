@@ -323,6 +323,13 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
     }
 
     private void deleteConversation(final int position) {
+        if (!Util.hasConnection()) {
+            refreshLayout.setRefreshing(false);
+            return;
+        }
+
+        refreshLayout.setRefreshing(true);
+
         VKConversation conversation = adapter.getItem(position);
         final int peerId = conversation.getLast().getPeerId();
 

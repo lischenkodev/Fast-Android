@@ -223,25 +223,31 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
 
         refreshLayout.setRefreshing(true);
 
+        VKUser user = adapter.getItem(position);
+        final int userId = user.getId();
+
         ThreadExecutor.execute(new AsyncCallback(getActivity()) {
 
             @Override
             public void ready() throws Exception {
-                VKApi.friends().delete().userId(adapter.getItem(position).getId()).execute(Integer.class);
+                VKApi.friends().delete().userId(userId).execute();
             }
 
             @Override
             public void done() {
                 adapter.remove(position);
-                adapter.notifyDataSetChanged();
+                adapter.notifyItemRemoved(position);
+                adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
                 refreshLayout.setRefreshing(false);
+
+                CacheStorage.delete(DatabaseHelper.FRIENDS_TABLE, DatabaseHelper.USER_ID, userId);
             }
 
             @Override
             public void error(Exception e) {
                 Log.e("Error delete friend", Log.getStackTraceString(e));
                 refreshLayout.setRefreshing(false);
-                Toast.makeText(getActivity(), getString(R.string.error) + "!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), R.string.error, Toast.LENGTH_SHORT).show();
             }
         });
     }
