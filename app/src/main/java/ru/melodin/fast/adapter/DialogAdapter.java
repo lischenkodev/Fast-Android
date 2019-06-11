@@ -322,7 +322,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
     }
 
     private void loadUser(final int userId) {
-        if (loadingIds.contains(userId)) return;
+        if (loadingIds.contains(userId) || userId == 0) return;
         loadingIds.add(userId);
         ThreadExecutor.execute(new AsyncCallback(fragment.getActivity()) {
             VKUser user;
@@ -382,16 +382,6 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                 Log.e("Error load group", Log.getStackTraceString(e));
             }
         });
-    }
-
-    private int searchConversationPosition(int peerId) {
-        for (int i = 0; i < getItemCount(); i++) {
-            VKConversation conversation = getItem(i);
-            if (conversation.getLast().getPeerId() == peerId) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     private int searchMessagePosition(int mId) {

@@ -87,7 +87,7 @@ public class VKUser extends VKModel implements Serializable {
 
     @Override
     public String toString() {
-        return name.concat(" ").concat(surname);
+        return name + " " + surname;
     }
 
     public boolean isDeactivated() {

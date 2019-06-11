@@ -218,13 +218,14 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                                 .fields(VKUser.FIELDS_DEFAULT)
                                 .execute(VKConversation.class)
                                 .get(0);
-                last =
-                        VKApi.messages()
-                                .getById()
-                                .messageIds(conversation.getLastMessageId())
-                                .extended(false)
-                                .execute(VKMessage.class)
-                                .get(0);
+                if (conversation.getLastMessageId() != 0)
+                    last =
+                            VKApi.messages()
+                                    .getById()
+                                    .messageIds(conversation.getLastMessageId())
+                                    .extended(false)
+                                    .execute(VKMessage.class)
+                                    .get(0);
 
                 conversation.setLast(last);
             }
@@ -232,7 +233,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             @Override
             public void done() {
                 invalidateOptionsMenu();
-                CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
+                if (conversation.getLastMessageId() != 0)
+                    CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
             }
 
             @Override

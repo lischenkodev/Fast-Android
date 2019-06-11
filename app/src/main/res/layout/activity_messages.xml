@@ -47,7 +47,7 @@
     <LinearLayout
         android:id="@+id/chat_panel"
         android:layout_width="match_parent"
-        android:layout_height="66dp"
+        android:layout_height="60dp"
         android:layout_gravity="bottom"
         android:layout_marginBottom="-2dp"
         android:background="@drawable/chat_panel_bg"

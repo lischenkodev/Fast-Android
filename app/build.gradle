@@ -7,8 +7,8 @@ android {
         applicationId "ru.melodin.fast"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 7
-        versionName "0.6 Beta 7"
+        versionCode 8
+        versionName "0.6 Beta 8"
     }
     buildTypes {
         release {
@@ -27,10 +27,6 @@ dependencies {
     implementation 'com.squareup.picasso:picasso:2.71828'
 
     implementation 'org.greenrobot:eventbus:3.1.1'
-
-    def appCenterSdkVersion = '2.0.0'
-    implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
-    implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
 
     implementation 'org.jsoup:jsoup:1.8.3'
 }

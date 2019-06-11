@@ -14,7 +14,6 @@ public class VKConversation extends VKModel implements Serializable {
     public static ArrayList<VKUser> users = new ArrayList<>();
     public static ArrayList<VKGroup> groups = new ArrayList<>();
 
-    private int conversationsCount;
     private int readIn;
     private int readOut;
     private int lastMessageId;
@@ -33,10 +32,6 @@ public class VKConversation extends VKModel implements Serializable {
     private Type type;
     private String state;
     private String photo50, photo100, photo200;
-
-    //other
-    private ArrayList<VKUser> conversationUsers;
-    private ArrayList<VKGroup> conversationGroups;
 
     //acl
     private boolean canChangePin, canChangeInfo, canChangeInviteLink, canInvite, canPromoteUsers, canSeeInviteLink;
@@ -119,13 +114,6 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public VKConversation(JSONObject o, JSONObject msg) throws JSONException {
-        conversationsCount = count;
-        conversationGroups = groups;
-        conversationUsers = users;
-
-        groups = null;
-        users = null;
-
         if (msg != null)
             last = new VKMessage(msg);
 
@@ -255,14 +243,6 @@ public class VKConversation extends VKModel implements Serializable {
         return this.disabledForever || this.disabledUntil > 0 || this.noSound;
     }
 
-    public int getConversationsCount() {
-        return conversationsCount;
-    }
-
-    public void setConversationsCount(int conversationsCount) {
-        this.conversationsCount = conversationsCount;
-    }
-
     public int getReadIn() {
         return readIn;
     }
@@ -385,22 +365,6 @@ public class VKConversation extends VKModel implements Serializable {
 
     public void setPhoto200(String photo200) {
         this.photo200 = photo200;
-    }
-
-    public ArrayList<VKUser> getConversationUsers() {
-        return conversationUsers;
-    }
-
-    public void setConversationUsers(ArrayList<VKUser> conversationUsers) {
-        this.conversationUsers = conversationUsers;
-    }
-
-    public ArrayList<VKGroup> getConversationGroups() {
-        return conversationGroups;
-    }
-
-    public void setConversationGroups(ArrayList<VKGroup> conversationGroups) {
-        this.conversationGroups = conversationGroups;
     }
 
     public boolean isCanChangePin() {

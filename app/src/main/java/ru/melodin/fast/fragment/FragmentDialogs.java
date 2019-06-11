@@ -231,20 +231,21 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
                         .extended(true)
                         .fields(VKUser.FIELDS_DEFAULT)
                         .count(count)
+                        .offset(offset)
                         .execute(VKConversation.class);
 
                 CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE);
                 CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, conversations);
 
-                ArrayList<VKUser> users = conversations.get(0).getConversationUsers();
-                ArrayList<VKGroup> groups = conversations.get(0).getConversationGroups();
+                //ArrayList<VKUser> users = VKConversation.users;
+                //ArrayList<VKGroup> groups = VKConversation.groups;
                 ArrayList<VKMessage> messages = new ArrayList<>();
 
                 for (VKConversation conversation : conversations)
                     messages.add(conversation.getLast());
 
-                CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
-                CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, groups);
+                //CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
+                //CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, groups);
                 CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, messages);
             }
 

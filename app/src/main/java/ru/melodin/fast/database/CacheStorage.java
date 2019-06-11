@@ -35,7 +35,6 @@ import static ru.melodin.fast.database.DatabaseHelper.FRIENDS_TABLE;
 import static ru.melodin.fast.database.DatabaseHelper.FRIEND_ID;
 import static ru.melodin.fast.database.DatabaseHelper.FROM_ID;
 import static ru.melodin.fast.database.DatabaseHelper.FWD_MESSAGES;
-import static ru.melodin.fast.database.DatabaseHelper.GROUPS;
 import static ru.melodin.fast.database.DatabaseHelper.GROUPS_TABLE;
 import static ru.melodin.fast.database.DatabaseHelper.GROUP_ID;
 import static ru.melodin.fast.database.DatabaseHelper.IMPORTANT;
@@ -67,7 +66,6 @@ import static ru.melodin.fast.database.DatabaseHelper.TITLE;
 import static ru.melodin.fast.database.DatabaseHelper.TYPE;
 import static ru.melodin.fast.database.DatabaseHelper.UNREAD_COUNT;
 import static ru.melodin.fast.database.DatabaseHelper.UPDATE_TIME;
-import static ru.melodin.fast.database.DatabaseHelper.USERS;
 import static ru.melodin.fast.database.DatabaseHelper.USERS_COUNT;
 import static ru.melodin.fast.database.DatabaseHelper.USERS_TABLE;
 import static ru.melodin.fast.database.DatabaseHelper.USER_ID;
@@ -372,17 +370,11 @@ public class CacheStorage {
 
         byte[] last = getBlob(cursor, LAST_MESSAGE);
         byte[] pinned = getBlob(cursor, PINNED_MESSAGE);
-        byte[] users = getBlob(cursor, USERS);
-        byte[] groups = getBlob(cursor, GROUPS);
 
         if (last != null)
             dialog.setLast((VKMessage) Util.deserialize(last));
         if (pinned != null)
             dialog.setPinned((VKMessage) Util.deserialize(pinned));
-        if (users != null)
-            dialog.setConversationUsers((ArrayList) Util.deserialize(users));
-        if (groups != null)
-            dialog.setConversationGroups((ArrayList) Util.deserialize(groups));
         return dialog;
     }
 
@@ -462,14 +454,6 @@ public class CacheStorage {
         values.put(DISABLED_FOREVER, dialog.isDisabledForever());
         values.put(DISABLED_UNTIL, dialog.getDisabledUntil());
         values.put(NO_SOUND, dialog.isNoSound());
-
-        if (!ArrayUtil.isEmpty(dialog.getConversationGroups())) {
-            values.put(GROUPS, Util.serialize(dialog.getConversationGroups()));
-        }
-
-        if (!ArrayUtil.isEmpty(dialog.getConversationUsers())) {
-            values.put(USERS, Util.serialize(dialog.getConversationUsers()));
-        }
 
         if (dialog.getLast() != null) {
             values.put(LAST_MESSAGE, Util.serialize(dialog.getLast()));
