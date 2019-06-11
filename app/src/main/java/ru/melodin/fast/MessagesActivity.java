@@ -75,7 +75,7 @@ import ru.melodin.fast.util.ViewUtil;
 
 public class MessagesActivity extends AppCompatActivity implements RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener, TextWatcher {
 
-    private static final int MESSAGES_COUNT = 60;
+    private static final int MESSAGES_COUNT = 30;
 
     private Random random = new Random();
 
@@ -171,7 +171,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setTitle(title);
-        getSupportActionBar().setSubtitle(getSubtitle());
+
+        updateToolbar();
 
         message.addTextChangedListener(this);
 
@@ -196,6 +197,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         send.setBackground(gd);
 
         getCachedHistory();
+
+        if (Util.hasConnection())
+            getHistory(0, MESSAGES_COUNT);
     }
 
     @Override
@@ -538,9 +542,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (!ArrayUtil.isEmpty(messages)) {
             createAdapter(messages);
         }
-
-        if (Util.hasConnection())
-            getHistory(0, MESSAGES_COUNT);
     }
 
     private void getHistory(final int offset, final int count) {
@@ -599,6 +600,11 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 Toast.makeText(MessagesActivity.this, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void updateToolbar() {
+        invalidateOptionsMenu();
+        getSupportActionBar().setSubtitle(getSubtitle());
     }
 
     private String getSubtitle() {

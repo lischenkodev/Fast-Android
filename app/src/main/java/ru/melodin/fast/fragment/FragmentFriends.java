@@ -39,6 +39,8 @@ import ru.melodin.fast.util.Util;
 
 public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener {
 
+    private static final int FRIENDS_COUNT = 30;
+
     private Toolbar tb;
     private View empty;
     private RecyclerView list;
@@ -48,7 +50,7 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
 
     @Override
     public void onRefresh() {
-        getFriends(0, 0);
+        getFriends(FRIENDS_COUNT, 0);
     }
 
     @Override
@@ -123,6 +125,8 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
         adapter.notifyDataSetChanged();
 
         checkCount();
+        if (Util.hasConnection())
+            getFriends(FRIENDS_COUNT, 0);
     }
 
     private void getCachedFriends() {
@@ -130,16 +134,9 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
 
         if (!ArrayUtil.isEmpty(users))
             createAdapter(users, 0);
-
-        getFriends(0, 0);
     }
 
     private void getFriends(final int count, final int offset) {
-        if (!Util.hasConnection()) {
-            refreshLayout.setRefreshing(false);
-            return;
-        }
-
         refreshLayout.setRefreshing(true);
 
         ThreadExecutor.execute(new AsyncCallback(getActivity()) {

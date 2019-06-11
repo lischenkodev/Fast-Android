@@ -1,5 +1,6 @@
 package ru.melodin.fast.fragment;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +12,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,6 +21,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import ru.melodin.fast.CreateChatActivity;
 import ru.melodin.fast.MessagesActivity;
@@ -44,7 +47,7 @@ import ru.melodin.fast.util.Util;
 
 public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener {
 
-    private final int CONVERSATIONS_COUNT = 60;
+    private final int CONVERSATIONS_COUNT = 30;
 
     private SwipeRefreshLayout refreshLayout;
     private RecyclerView list;
@@ -107,7 +110,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
                             adapter.notifyDataSetChanged();
                         }
                         checkCount();
-                        getConversations(CONVERSATIONS_COUNT);
+                        getConversations(CONVERSATIONS_COUNT, 0);
                         break;
                 }
                 return true;
@@ -119,6 +122,8 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
         list.setLayoutManager(manager);
 
         getCachedConversations();
+        if (Util.hasConnection())
+            getConversations(CONVERSATIONS_COUNT, 0);
     }
 
     private void initViews(View v) {
@@ -158,17 +163,9 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
         if (!ArrayUtil.isEmpty(conversations)) {
             createAdapter(conversations);
         }
-
-        getConversations(CONVERSATIONS_COUNT);
     }
 
-    private void getConversations(final int count) {
-        if (!Util.hasConnection()) {
-            if (refreshLayout.isRefreshing())
-                refreshLayout.setRefreshing(false);
-            return;
-        }
-
+    private void getConversations(final int count, final int offset) {
         refreshLayout.setRefreshing(true);
         ThreadExecutor.execute(new AsyncCallback(getActivity()) {
 
@@ -259,7 +256,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
 
     @Override
     public void onRefresh() {
-        getConversations(CONVERSATIONS_COUNT);
+        getConversations(CONVERSATIONS_COUNT, 0);
     }
 
     @Override
@@ -275,6 +272,81 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
 
     @Override
     public void onItemLongClick(View v, int position) {
+        showAlert(position);
+    }
 
+    private void showAlert(final int position) {
+        AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
+
+        VKConversation conversation = adapter.getItem(position);
+
+        int peerId = conversation.getLast().getPeerId();
+
+        VKUser user = MemoryCache.getUser(peerId);
+        VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(peerId));
+
+        adb.setTitle(adapter.getTitle(conversation, user, group));
+
+        ArrayList<String> list = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.conversation_functions)));
+        ArrayList<String> remove = new ArrayList<>();
+        list.removeAll(remove);
+
+        final String[] items = new String[list.size()];
+        for (int i = 0; i < list.size(); i++)
+            items[i] = list.get(i);
+
+        adb.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                String title = items[i];
+
+                if (title.equals(getString(R.string.clear))) {
+                    showConfirmDeleteConversation(position);
+                }
+            }
+        });
+        adb.show();
+    }
+
+    private void showConfirmDeleteConversation(final int position) {
+        AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
+        adb.setTitle(R.string.confirmation);
+        adb.setMessage(R.string.are_you_sure);
+        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                deleteConversation(position);
+            }
+        });
+        adb.setNegativeButton(R.string.no, null);
+        adb.show();
+    }
+
+    private void deleteConversation(final int position) {
+        VKConversation conversation = adapter.getItem(position);
+        final int peerId = conversation.getLast().getPeerId();
+
+        ThreadExecutor.execute(new AsyncCallback(getActivity()) {
+            int response;
+
+            @Override
+            public void ready() throws Exception {
+                response = VKApi.messages().deleteConversation().peerId(peerId).offset(0).execute(Integer.class).get(0);
+            }
+
+            @Override
+            public void done() {
+                CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE, DatabaseHelper.PEER_ID, peerId);
+                adapter.remove(position);
+                adapter.notifyItemRemoved(position);
+                adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
+            }
+
+            @Override
+            public void error(Exception e) {
+                Log.e("Error delete dialog", Log.getStackTraceString(e));
+                Toast.makeText(getActivity(), R.string.error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
