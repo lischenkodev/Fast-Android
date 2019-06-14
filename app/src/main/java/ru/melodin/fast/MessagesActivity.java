@@ -1253,6 +1253,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         MenuItem notifications = menu.findItem(R.id.notifications);
         MenuItem leave = menu.findItem(R.id.leave);
 
+        delete.getIcon().setTint(ThemeManager.getMain());
+
         if (conversation != null) {
             if (conversation.getLast() != null && (conversation.isChat() || conversation.isGroupChannel()) && conversation.getState() != VKConversation.State.KICKED) {
                 leave.setVisible(true);
@@ -1272,11 +1274,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             }
         }
 
-        delete.getIcon().setTint(ThemeManager.getMain());
-
         boolean selecting = adapter != null && adapter.isSelected();
 
         delete.setVisible(selecting);
+        leave.setVisible(!selecting);
         clear.setVisible(!selecting);
         notifications.setVisible(!selecting);
 
