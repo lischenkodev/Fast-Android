@@ -3,14 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:paddingStart="4dp"
+    android:paddingEnd="0dp">
 
     <View
         android:id="@+id/message_line"
         android:layout_width="2dp"
         android:layout_height="match_parent"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp" />
+        android:layout_marginEnd="4dp"
+        tools:background="?colorAccent" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -25,10 +27,11 @@
 
             <ru.melodin.fast.view.CircleImageView
                 android:id="@+id/user_avatar"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_marginStart="2dp"
-                android:layout_marginTop="7dp" />
+                android:layout_marginTop="7dp"
+                tools:src="@drawable/ic_stars_black_24dp" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -41,19 +44,19 @@
                     android:id="@+id/user_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxLines="1"
+                    android:fontFamily="@font/ps_medium"
                     android:singleLine="true"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textStyle="bold"
-                    tools:text="User Name" />
+                    android:textColor="?android:textColorPrimary"
+                    tools:text="User name" />
 
                 <TextView
                     android:id="@+id/user_message"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="?android:textColorPrimary"
-                    tools:text="Hello!" />
+                    android:textColor="?android:textColorSecondary"
+                    tools:text="User message" />
 
                 <LinearLayout
                     android:id="@+id/attachments"

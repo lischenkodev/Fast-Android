@@ -24,6 +24,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,7 +35,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.checkbox.MaterialCheckBox;
 
 import org.greenrobot.eventbus.EventBus;
@@ -60,6 +60,7 @@ import ru.melodin.fast.api.model.VKGroup;
 import ru.melodin.fast.api.model.VKMessage;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.AppGlobal;
+import ru.melodin.fast.common.AttachmentInflater;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
 import ru.melodin.fast.concurrent.LowThread;
@@ -84,19 +85,18 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private Drawable iconTrash;
 
     private Toolbar tb;
-    private AppBarLayout appBar;
     private RecyclerView list;
 
     private AppCompatImageButton smiles, send, unpin;
     private AppCompatEditText message;
     private LinearLayout chatPanel;
     private FrameLayout pinnedContainer;
-    private View empty, pinnedShadow;
+    private View pinnedShadow, tbShadow;
     private TextView pName, pDate, pText;
 
     private MessageAdapter adapter;
 
-    private boolean loading, canWrite, typing;
+    private boolean canWrite, typing;
     private int cantWriteReason = -1, peerId, membersCount;
     private VKConversation.Reason reason;
     private String messageText;
@@ -108,7 +108,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private int editingPosition;
     private VKConversation conversation;
 
-    private boolean resumed, editing;
+    private boolean loading, resumed, editing;
 
     private VKMessage notRead;
 
@@ -154,6 +154,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         showPinned(pinned);
         getConversation(peerId);
         checkCanWrite();
+
+        initListScrollListener();
 
         if (ThemeManager.isDark())
             if (chatPanel.getBackground() != null) {
@@ -202,6 +204,48 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         if (Util.hasConnection())
             getHistory(0, MESSAGES_COUNT);
+    }
+
+    private void initListScrollListener() {
+        list.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            private boolean animating;
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (dy > 0) {
+                    if (animating) return;
+                    animating = true;
+                    pinnedContainer.animate().alpha(1).setDuration(150).withStartAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            tbShadow.setVisibility(View.GONE);
+                            pinnedContainer.setVisibility(View.VISIBLE);
+                        }
+                    }).withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            animating = false;
+                        }
+                    }).start();
+                } else if (dy < 0) {
+                    if (animating) return;
+                    animating = true;
+                    pinnedContainer.animate().alpha(0).setDuration(150).withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            animating = false;
+                            tbShadow.setVisibility(View.VISIBLE);
+                            pinnedContainer.setVisibility(View.GONE);
+                        }
+                    }).start();
+                }
+            }
+
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+        });
     }
 
     private void getConversation(final int peerId) {
@@ -319,11 +363,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         chatPanel = findViewById(R.id.chat_panel);
         smiles = findViewById(R.id.smiles);
         tb = findViewById(R.id.tb);
-        appBar = (AppBarLayout) tb.getParent();
         list = findViewById(R.id.list);
         send = findViewById(R.id.send);
         message = findViewById(R.id.message_edit_text);
-        empty = findViewById(R.id.no_items_layout);
+        tbShadow = findViewById(R.id.tb_shadow);
 
         pinnedContainer = findViewById(R.id.pinned_msg_container);
         pinnedShadow = findViewById(R.id.pinned_shadow);
@@ -343,7 +386,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         reason = VKConversation.getReason(cantWriteReason);
 
         if (conversation != null) {
-            //last = conversation.last;
             membersCount = conversation.getMembersCount();
             pinned = conversation.getPinned();
         }
@@ -368,11 +410,11 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (pinned == null) {
             pinnedContainer.setVisibility(View.GONE);
             pinnedShadow.setVisibility(View.GONE);
-            appBar.setElevation(0);
+            tbShadow.setVisibility(View.VISIBLE);
             return;
         }
 
-        appBar.setElevation(8);
+        tbShadow.setVisibility(View.GONE);
         pinnedContainer.setVisibility(View.VISIBLE);
         pinnedShadow.setVisibility(View.VISIBLE);
 
@@ -381,9 +423,25 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             public void onClick(View v) {
                 if (adapter == null) return;
                 if (adapter.contains(pinned.getId())) {
-                    list.scrollToPosition(adapter.searchPosition(pinned.getId()));
+                    final int position = adapter.searchPosition(pinned.getId());
+                    list.smoothScrollToPosition(position);
+                    adapter.setSelected(position, true);
+                    adapter.notifyItemChanged(position);
+
+                    new Timer().schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    adapter.setSelected(position, false);
+                                    adapter.notifyItemChanged(position, -1);
+                                }
+                            });
+                        }
+                    }, 3500);
                 } else {
-                    Toast.makeText(MessagesActivity.this, "Сообщения нет в списке, скоро запилю его отображение", Toast.LENGTH_SHORT).show();
+                    showPinnedAlert(pinned);
                 }
             }
         });
@@ -392,7 +450,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (user == null) user = VKUser.EMPTY;
 
         pName.setText(user.toString().trim());
-        pDate.setText(Util.dateFormatter.format(pinned.getDate() * 1000));
+        pDate.setText(Util.dateFormatter.format(pinned.getDate() * 1000L));
 
         pText.setText(pinned.getText());
 
@@ -414,6 +472,15 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
             pText.append(span);
         }
+    }
+
+    private void showPinnedAlert(VKMessage pinned) {
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+
+        View v = AttachmentInflater.getInstance(this).message(null, null, pinned, false, false);
+        adb.setView(v);
+        adb.setPositiveButton(android.R.string.ok, null);
+        adb.show();
     }
 
     private void showConfirmUnpinMessage() {
@@ -488,10 +555,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         }).start();
     }
 
-    public void checkCount() {
-        empty.setVisibility(adapter == null ? View.VISIBLE : adapter.isEmpty() ? View.VISIBLE : View.GONE);
-    }
-
     private void sendMessage() {
         if (messageText.trim().isEmpty()) return;
 
@@ -504,7 +567,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         msg.setOut(true);
         msg.setRandomId(random.nextInt());
 
-        adapter.addMessage(msg, true);
+        adapter.addMessage(msg, false);
         list.smoothScrollToPosition(adapter.getItemCount() - 1);
 
         final int position = adapter.getItemCount() - 1;
@@ -527,8 +590,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                     if (timer != null)
                         timer.cancel();
                 }
-
-                checkCount();
 
                 adapter.getItem(position).setId(id);
 
@@ -567,15 +628,12 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
             if (adapter.getItemCount() > 0 && !list.isComputingLayout())
                 list.scrollToPosition(adapter.getItemCount() - 1);
-
-            checkCount();
             return;
         }
 
         if (offset > 0) {
             adapter.getValues().addAll(messages);
             adapter.notifyDataSetChanged();
-            checkCount();
             return;
         }
 
@@ -584,8 +642,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         if (adapter.getItemCount() > 0 && !list.isComputingLayout())
             list.scrollToPosition(adapter.getItemCount() - 1);
-
-        checkCount();
     }
 
     private void getCachedHistory() {
@@ -645,7 +701,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             @Override
             public void error(Exception e) {
                 loading = false;
-                checkCount();
                 getSupportActionBar().setSubtitle(getSubtitle());
                 Toast.makeText(MessagesActivity.this, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show();
             }
@@ -664,30 +719,26 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             return getString(R.string.editing);
         } else if (adapter != null && adapter.isSelected()) {
             return getString(R.string.selected_count, adapter.getSelectedCount() + "");
-        } else if (conversation.getLast() != null && (conversation.isChat() || conversation.isGroupChannel()) && conversation.getState() != VKConversation.State.IN) {
+        } else if (conversation.getLast() != null && conversation.isChat() && conversation.getState() != VKConversation.State.IN) {
             boolean kicked = conversation.getState() == VKConversation.State.KICKED;
 
             return getString(kicked ? R.string.kicked_out_text : R.string.leave_from_chat_text);
         } else
             switch (conversation.getType()) {
-                case GROUP: {
+                case GROUP:
                     return getString(R.string.group);
-                }
-                case USER: {
+                case USER:
                     VKUser currentUser = CacheStorage.getUser(peerId);
                     if (currentUser == null)
                         loadUser(peerId);
                     return getUserSubtitle(currentUser);
-                }
-                case CHAT: {
+                case CHAT:
                     if (conversation.isGroupChannel()) {
                         return getString(R.string.channel) + " • " + getString(R.string.members_count, membersCount);
                     } else {
                         return membersCount > 0 ? getString(R.string.members_count, membersCount) : "";
                     }
-                }
             }
-
 
         return "Unknown";
     }
@@ -1235,7 +1286,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE, DatabaseHelper.PEER_ID, peerId);
                 adapter.getValues().clear();
                 adapter.notifyDataSetChanged();
-                checkCount();
             }
 
             @Override
@@ -1255,16 +1305,24 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         delete.getIcon().setTint(ThemeManager.getMain());
 
+        boolean selecting = adapter != null && adapter.isSelected();
+
+        delete.setVisible(selecting);
+        leave.setVisible(!selecting);
+        clear.setVisible(!selecting);
+        notifications.setVisible(!selecting);
+
         if (conversation != null) {
-            if (conversation.getLast() != null && (conversation.isChat() || conversation.isGroupChannel()) && conversation.getState() != VKConversation.State.KICKED) {
-                leave.setVisible(true);
+            if (conversation.getType() != VKConversation.Type.CHAT)
+                leave.setVisible(false);
+
+            if (conversation.getState() != VKConversation.State.KICKED && leave.isVisible()) {
                 String title = getString(conversation.getState() == VKConversation.State.IN ? R.string.leave_from : R.string.return_to);
                 String s = getString(conversation.isGroupChannel() ? R.string.channel : R.string.chat).toLowerCase();
 
                 leave.setTitle(String.format(title, s));
-            } else {
-                leave.setVisible(false);
             }
+
             if (conversation.isNotificationsDisabled()) {
                 notifications.setTitle(R.string.enable_notifications);
                 notifications.setIcon(R.drawable.ic_volume_full_black_24dp);
@@ -1273,13 +1331,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 notifications.setIcon(R.drawable.ic_volume_off_black_24dp);
             }
         }
-
-        boolean selecting = adapter != null && adapter.isSelected();
-
-        delete.setVisible(selecting);
-        leave.setVisible(!selecting);
-        clear.setVisible(!selecting);
-        notifications.setVisible(!selecting);
 
         return super.onPrepareOptionsMenu(menu);
     }

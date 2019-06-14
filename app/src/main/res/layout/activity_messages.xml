@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <include
-        layout="@layout/toolbar"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/tb"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="?actionBarSize"
+        android:elevation="0dp"
+        app:layout_scrollFlags="scroll|enterAlways" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="?actionBarSize" />
+        android:layout_marginTop="?actionBarSize"
+        tools:visibility="gone" />
 
-    <LinearLayout
-        android:id="@+id/no_items_layout"
+    <View
+        android:id="@+id/tb_shadow"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:layout_marginBottom="40dp"
-        android:visibility="gone">
-
-        <include layout="@layout/list_empty" />
-
-    </LinearLayout>
+        android:layout_height="3dp"
+        android:layout_marginTop="?actionBarSize"
+        android:background="@drawable/message_drop_shadow_dark"
+        android:rotation="180" />
 
     <FrameLayout
         android:id="@+id/pinned_msg_container"
@@ -33,7 +33,78 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="?actionBarSize">
 
-        <include layout="@layout/pinned_message" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="?colorPrimary"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="10dp">
+
+                    <TextView
+                        android:id="@+id/name"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/ps_medium"
+                        android:gravity="center_vertical"
+                        android:paddingStart="6dp"
+                        android:paddingEnd="0dp"
+                        android:singleLine="true"
+                        android:textColor="?android:textColorPrimary"
+                        tools:text="Danil Nikolaev" />
+
+                    <TextView
+                        android:id="@+id/date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:singleLine="true"
+                        android:textColor="?android:textColorSecondary"
+                        android:textSize="12sp"
+                        tools:text="12:30" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/message"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:autoLink="all"
+                    android:linksClickable="false"
+                    android:singleLine="true"
+                    android:textColor="?android:textColorPrimary"
+                    tools:text="Pinned Message" />
+
+            </LinearLayout>
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/unpin"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="0"
+                android:background="?selectableItemBackgroundBorderless"
+                android:src="@drawable/md_clear"
+                android:tint="?android:textColorPrimary" />
+        </LinearLayout>
 
         <View
             android:id="@+id/pinned_shadow"
@@ -70,11 +141,12 @@
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/smiles"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
             android:layout_gravity="bottom"
-            android:layout_marginStart="4dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginBottom="8dp"
+            android:layout_weight="0"
             android:background="?selectableItemBackgroundBorderless"
             android:src="@drawable/md_online_status"
             app:backgroundTint="@android:color/transparent"
@@ -82,12 +154,13 @@
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/send"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
+            android:layout_width="45dp"
+            android:layout_height="45dp"
             android:layout_gravity="bottom"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:layout_marginBottom="8dp"
+            android:layout_weight="0"
             android:background="?selectableItemBackgroundBorderless"
             android:src="@drawable/md_mic"
             app:backgroundTint="?colorAccent"
@@ -95,4 +168,3 @@
 
     </LinearLayout>
 </FrameLayout>
-

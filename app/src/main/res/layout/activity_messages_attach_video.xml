@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:padding="10dp">
 
     <ImageView
-        android:id="@+id/videoImage"
+        android:id="@+id/image"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:adjustViewBounds="true"
@@ -19,31 +18,29 @@
         android:layout_gravity="center"
         android:background="@drawable/play_circle"
         android:padding="8dp"
-        android:tint="@android:color/white"
-        app:srcCompat="@drawable/ic_vector_play_arrow" />
+        android:src="@drawable/ic_vector_play_arrow"
+        android:tint="@android:color/white" />
 
     <TextView
-        android:id="@+id/videoTitle"
+        android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
-        android:background="@drawable/message_drop_shadow_dark"
+        android:fontFamily="@font/ps_medium"
         android:maxLines="1"
         android:padding="4dp"
         android:singleLine="true"
         android:textAppearance="?android:textAppearanceSmall"
-        android:visibility="gone" />
+        tools:text="Some video title" />
 
     <TextView
-        android:id="@+id/videoTime"
+        android:id="@+id/time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
-        android:background="#4f000000"
         android:padding="4dp"
         android:singleLine="true"
         android:textAppearance="?android:textAppearanceSmall"
-        android:visibility="gone"
         tools:text="06:25" />
 
 </FrameLayout>
