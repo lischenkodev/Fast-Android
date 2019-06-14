@@ -62,7 +62,7 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.title = getString(R.string.fragment_friends);
+        setTitle(getString(R.string.fragment_friends));
     }
 
     @Nullable
@@ -75,8 +75,10 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         initViews(view);
 
-        tb.setTitle(title);
+        setToolbar(tb);
         setRecyclerView(list);
+
+        tb.setTitle(getTitle());
 
         refreshLayout.setOnRefreshListener(this);
         refreshLayout.setColorSchemeColors(ThemeManager.getAccent());

@@ -67,7 +67,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.title = getString(R.string.fragment_messages);
+        setTitle(getString(R.string.fragment_messages));
     }
 
     @Nullable
@@ -82,13 +82,14 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
         super.onViewCreated(view, savedInstanceState);
         initViews(view);
 
+        setToolbar(tb);
         setRecyclerView(list);
 
         refreshLayout.setColorSchemeColors(ThemeManager.getAccent());
         refreshLayout.setOnRefreshListener(this);
         refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.getBackground());
 
-        tb.setTitle(title);
+        tb.setTitle(getTitle());
         tb.inflateMenu(R.menu.fragment_dialogs_menu);
 
         for (int i = 0; i < tb.getMenu().size(); i++) {
@@ -254,7 +255,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
                 createAdapter(conversations);
                 refreshLayout.setRefreshing(false);
 
-                tb.setTitle(title);
+                tb.setTitle(getTitle());
             }
 
             @Override

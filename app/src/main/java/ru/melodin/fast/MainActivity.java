@@ -34,6 +34,7 @@ import ru.melodin.fast.common.PermissionManager;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
 import ru.melodin.fast.concurrent.ThreadExecutor;
+import ru.melodin.fast.current.BaseFragment;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.fragment.FragmentDialogs;
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
     private FragmentFriends ff = new FragmentFriends();
 
     private int selectedId = -1;
-    private Fragment selectedFragment;
+    private BaseFragment selectedFragment;
 
     private Intent longPollIntent;
 
@@ -68,8 +69,7 @@ public class MainActivity extends AppCompatActivity {
             switch (v.getId()) {
                 case R.id.tb_messages:
                     if (selectedFragment == fd) {
-                        if (fd.getRecyclerView() != null)
-                            fd.getRecyclerView().scrollToPosition(0);
+                        selectedFragment.scrollToTop();
                         return;
                     }
                     selectedFragment = fd;
@@ -80,8 +80,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case R.id.tb_friends:
                     if (selectedFragment == ff) {
-                        if (ff.getRecyclerView() != null)
-                            ff.getRecyclerView().scrollToPosition(0);
+                        selectedFragment.scrollToTop();
                         return;
                     }
                     selectedFragment = ff;
@@ -189,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void error(Exception e) {
-
+                Log.e("Error track visitor", Log.getStackTraceString(e));
             }
         });
     }
