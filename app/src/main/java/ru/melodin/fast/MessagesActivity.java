@@ -304,6 +304,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 if (adapter != null)
                     adapter.editMessage((VKMessage) data[1]);
                 break;
+            case LongPollEvents.KEY_MESSAGE_UPDATE:
+                adapter.updateMessage((VKMessage) data[1]);
+                break;
         }
     }
 
@@ -378,7 +381,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             public void onClick(View v) {
                 if (adapter == null) return;
                 if (adapter.contains(pinned.getId())) {
-                    list.scrollToPosition(adapter.findPosition(pinned.getId()));
+                    list.scrollToPosition(adapter.searchPosition(pinned.getId()));
                 } else {
                     Toast.makeText(MessagesActivity.this, "Сообщения нет в списке, скоро запилю его отображение", Toast.LENGTH_SHORT).show();
                 }

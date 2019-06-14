@@ -1,10 +1,8 @@
 package ru.melodin.fast.adapter;
 
-import android.animation.Animator;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
@@ -70,8 +68,6 @@ import ru.melodin.fast.util.Util;
 import ru.melodin.fast.util.ViewUtil;
 import ru.melodin.fast.view.BoundedLinearLayout;
 import ru.melodin.fast.view.CircleImageView;
-
-import static ru.melodin.fast.database.CacheStorage.getMessage;
 
 public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.ViewHolder> {
 
@@ -174,7 +170,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             @Override
             public void error(Exception e) {
-
+                Log.e("Error read message", Log.getStackTraceString(e));
             }
         });
     }
@@ -208,36 +204,35 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     public boolean contains(int id) {
-        return findPosition(id) != -1;
-    }
-
-    public int findPosition(int id) {
-        for (int i = 0; i < getItemCount(); i++) {
-            if (getItem(i).getId() == id) return i;
-        }
-
-        return -1;
+        return searchPosition(id) != -1;
     }
 
     private void importantMessage(boolean important, int mId) {
-        for (int i = 0; i < getItemCount(); i++) {
-            VKMessage message = getItem(i);
-            if (message.getId() == mId) {
-                message.setImportant(important);
-                notifyItemChanged(i, -1);
-                break;
-            }
-        }
+        int position = searchPosition(mId);
+        if (position == -1) return;
+
+        VKMessage message = getItem(position);
+
+        message.setImportant(important);
+        notifyItemChanged(position, -1);
+    }
+
+    public void updateMessage(VKMessage msg) {
+        int position = searchPosition(msg.getId());
+        if (position == -1) return;
+
+        remove(position);
+        add(position, msg);
+        notifyItemChanged(position, -1);
     }
 
     public void editMessage(VKMessage edited) {
-        for (int i = 0; i < getItemCount(); i++) {
-            VKMessage message = getItem(i);
-            if (message.getId() == edited.getId()) {
-                notifyItemChanged(i, -1);
-                break;
-            }
-        }
+        int position = searchPosition(edited.getId());
+        if (position == -1) return;
+
+        remove(position);
+        add(position, edited);
+        notifyItemChanged(position, -1);
     }
 
     public void addMessage(VKMessage msg, boolean anim) {
@@ -339,8 +334,10 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     private void loadUser(Integer id) {
         if (loadingIds.contains(id)) return;
+        if (id == 0) return;
         if (id < 0)
             id *= -1;
+
         loadingIds.add(id);
 
         final Integer userId = id;
@@ -455,7 +452,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 if (bubble != null) {
                     bubble.setBackgroundColor(Color.TRANSPARENT);
                 }
-                attacher.sticker(parent, (VKSticker) attachment);
+                parent.setVisibility(View.GONE);
+                attacher.sticker(images, (VKSticker) attachment);
             } else if (attachment instanceof VKDoc) {
                 attacher.doc(item, parent, (VKDoc) attachment, forwarded);
             } else if (attachment instanceof VKLink) {
@@ -478,7 +476,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     private void onAvatarLongClick(int position) {
-        VKUser user = CacheStorage.getUser(getMessage(position).getFromId());
+        VKUser user = CacheStorage.getUser(getItem(position).getFromId());
         if (user == null) return;
 
         Toast.makeText(context, user.toString(), Toast.LENGTH_SHORT).show();
@@ -568,23 +566,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             final VKUser user = searchUser(item.getFromId());
             final VKGroup group = searchGroup(VKGroup.toGroupId(item.getFromId()));
 
-            if (item.isSelected()) {
-                mainContainer.setBackgroundColor(ColorUtil.alphaColor(ThemeManager.getAccent()));
-            } else {
-                mainContainer.setBackgroundColor(ThemeManager.getBackground());
-            }
-
-            int editColor;
-
-            if (item.isSelected()) {
-                editColor = ColorUtil.alphaColor(ThemeManager.getAccent(), 0.6f);
-            } else {
-                editColor = 0;
-            }
-
             read.setVisibility(item.isOut() ? item.isRead() ? View.GONE : View.GONE : View.GONE);
-
-            mainContainer.setBackgroundColor(editColor);
 
             String s = item.getUpdateTime() > 0 ? getString(R.string.edited) + ", " : "";
             String time_ = s + Util.dateFormatter.format(item.isAdded() ? item.getDate() : item.getDate() * 1000L);
@@ -596,29 +578,20 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             timeContainer.setGravity(gravity);
             bubbleContainer.setGravity(gravity);
 
-            ViewUtil.fadeView(important, item.isImportant(), new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    if (item.isImportant())
-                        important.setVisibility(View.VISIBLE);
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    if (!item.isImportant())
-                        important.setVisibility(View.GONE);
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-
-                }
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {
-
-                }
-            });
+            ViewUtil.fadeView(important, item.isImportant(),
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            if (item.isImportant())
+                                important.setVisibility(View.VISIBLE);
+                        }
+                    }, new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!item.isImportant())
+                                important.setVisibility(View.GONE);
+                        }
+                    });
 
             bubble.setVisibility(View.VISIBLE);
 
@@ -687,7 +660,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             Drawable bg = context.getResources().getDrawable(R.drawable.msg_in_bg);
 
-
             if (item.getAction() != null) {
                 avatar.setVisibility(View.GONE);
                 messageContainer.setVisibility(View.GONE);
@@ -703,7 +675,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 time.setVisibility(View.VISIBLE);
                 messageContainer.setVisibility(View.VISIBLE);
                 serviceContainer.setVisibility(View.GONE);
-                bg.setColorFilter(bgColor, PorterDuff.Mode.MULTIPLY);
+                bg.setColorFilter(item.isSelected() ? Color.GRAY : bgColor, PorterDuff.Mode.MULTIPLY);
             }
 
             bubble.setBackground(bg);
@@ -735,22 +707,26 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     private class AttachmentInflater {
-        private void loadImage(final ImageView image, String smallSrc, final String normalSrc) {
+        private void loadImage(final ImageView image, final String smallSrc, final String normalSrc) {
             if (TextUtils.isEmpty(smallSrc)) return;
             try {
                 Picasso.get()
                         .load(smallSrc)
-                        .config(Bitmap.Config.RGB_565)
                         .priority(Picasso.Priority.HIGH)
-                        .placeholder(new ColorDrawable(Color.TRANSPARENT))
+                        .placeholder(new ColorDrawable(Color.GRAY))
                         .into(image, new Callback.EmptyCallback() {
                             @Override
                             public void onSuccess() {
-                                if (TextUtils.isEmpty(normalSrc)) return;
+                                if (TextUtils.isEmpty(normalSrc))
+                                    return;
+
+                                int height = image.getMaxHeight();
+                                int width = image.getMaxWidth();
+
                                 Picasso.get()
                                         .load(normalSrc)
-                                        .priority(Picasso.Priority.NORMAL)
                                         .placeholder(image.getDrawable())
+                                        .priority(Picasso.Priority.HIGH)
                                         .into(image);
                             }
                         });
@@ -915,16 +891,11 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             });
 
             if (source.sizes != null)
-                loadImage(image, source.sizes.forType("m").src, source.getMaxSize());
+                loadImage(image, source.getMaxSize(), source.getMaxSize());
             parent.addView(image);
         }
 
         public void message(VKMessage item, ViewGroup parent, VKMessage source, boolean reply) {
-            if (reply) {
-                empty(parent, "reply");
-                return;
-            }
-
             View v = inflater.inflate(R.layout.activity_messages_attach_message, parent, false);
             v.setClickable(false);
             v.setFocusable(false);

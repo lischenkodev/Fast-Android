@@ -124,6 +124,11 @@ public class MessageMethodSetter extends MethodSetter {
         return this;
     }
 
+    public MessageMethodSetter messageIds(int id) {
+        put("message_ids", id);
+        return this;
+    }
+
     public MessageMethodSetter every(Boolean every) {
         if (every != null) {
             put("delete_for_all", every);

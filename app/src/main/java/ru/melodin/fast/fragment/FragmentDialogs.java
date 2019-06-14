@@ -190,7 +190,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
                 adapter.editMessage(message);
                 break;
             case LongPollEvents.KEY_MESSAGE_UPDATE:
-                adapter.updateMessage((int) data[1]);
+                adapter.updateMessage((VKMessage) data[1]);
                 break;
             case FragmentSettings.KEY_MESSAGES_CLEAR_CACHE:
                 adapter.clear();
@@ -237,15 +237,15 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
                 CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE);
                 CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, conversations);
 
-                //ArrayList<VKUser> users = VKConversation.users;
-                //ArrayList<VKGroup> groups = VKConversation.groups;
+                ArrayList<VKUser> users = VKConversation.users;
+                ArrayList<VKGroup> groups = VKConversation.groups;
                 ArrayList<VKMessage> messages = new ArrayList<>();
 
                 for (VKConversation conversation : conversations)
                     messages.add(conversation.getLast());
 
-                //CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
-                //CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, groups);
+                CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
+                CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, groups);
                 CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, messages);
             }
 

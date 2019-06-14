@@ -29,6 +29,7 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.ArrayList;
 
 import ru.melodin.fast.R;
+import ru.melodin.fast.api.LongPollEvents;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.VKUtil;
@@ -53,6 +54,7 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
     private FragmentDialogs fragment;
 
     private ArrayList<Integer> loadingIds = new ArrayList<>();
+    private int lastUpdateId;
 
     public DialogAdapter(FragmentDialogs fragment, ArrayList<VKConversation> values) {
         super(fragment.getContext(), values);
@@ -83,11 +85,13 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
             readMessage(mId);
     }
 
-    public void updateMessage(int mId) {
+    public void updateMessage(VKMessage message) {
+        if (message.getId() == lastUpdateId) return;
+        lastUpdateId = message.getId();
         for (int i = 0; i < getItemCount(); i++) {
             VKConversation conversation = getItem(i);
-            if (conversation.getLast().getId() == mId) {
-                conversation.setLast(CacheStorage.getMessage(mId));
+            if (conversation.getLast().getId() == message.getId()) {
+                conversation.setLast(message);
                 notifyItemChanged(i, -1);
                 break;
             }
@@ -132,7 +136,6 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
 
     public void addMessage(VKConversation conversation) {
         int firstVisiblePosition = manager.findFirstVisibleItemPosition();
-        //int totalVisibleItems = manager.findLastCompletelyVisibleItemPosition() + 1;
 
         int index = findConversationPosition(conversation.getLast().getPeerId());
         if (index >= 0) {
@@ -176,6 +179,9 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                 add(0, conversation);
                 notifyItemChanged(0, -1);
             }
+
+            CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, conversation.getLast().getPeerId());
+            CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, conversation.getLast(), DatabaseHelper.MESSAGE_ID, conversation.getLast().getId());
         } else {
             if (!conversation.getLast().isOut())
                 conversation.setUnread(conversation.getUnread() + 1);
@@ -187,9 +193,36 @@ public class DialogAdapter extends RecyclerAdapter<VKConversation, DialogAdapter
                 manager.scrollToPosition(0);
 
             CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, conversation);
+            CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.getLast());
         }
 
-        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.getLast());
+        if (conversation.getLast().isNeedUpdate()) {
+            loadMessage(conversation.getLast().getId());
+        }
+    }
+
+    private void loadMessage(final int id) {
+        ThreadExecutor.execute(new AsyncCallback(fragment.getActivity()) {
+            VKMessage message;
+
+            @Override
+            public void ready() throws Exception {
+                message = VKApi.messages().getById().messageIds(id).extended(true).filter(VKUser.FIELDS_DEFAULT).execute(VKMessage.class).get(0);
+            }
+
+            @Override
+            public void done() {
+                CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID, id);
+                EventBus.getDefault().postSticky(new Object[]{LongPollEvents.KEY_MESSAGE_UPDATE, message});
+
+                updateMessage(message);
+            }
+
+            @Override
+            public void error(Exception e) {
+                Log.e("Error load message", Log.getStackTraceString(e));
+            }
+        });
     }
 
     private void readMessage(int id) {

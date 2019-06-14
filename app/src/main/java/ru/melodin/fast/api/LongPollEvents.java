@@ -6,17 +6,12 @@ import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-
 import ru.melodin.fast.api.model.VKConversation;
 import ru.melodin.fast.api.model.VKMessage;
 import ru.melodin.fast.api.model.VKUser;
-import ru.melodin.fast.concurrent.LowThread;
-import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.database.MemoryCache;
-import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.StringUtils;
 
 public class LongPollEvents {
@@ -70,23 +65,19 @@ public class LongPollEvents {
             String actionType = fromActions.optString("source_act");
             String actionText = fromActions.optString("source_message");
             int actionId = fromActions.optInt("source_mid", -1);
-            //conversationMessageId = fromActions.optInt("source_chat_local_id", -1);
 
             if (actionId != -1) {
                 last.setActionUserId(actionId);
                 last.setAction(VKMessage.getAction(actionType));
                 last.setActionText(actionText);
-                //last.setConversationMessageId(conversationMessageId);
-                //last.setPeerId(2_000_000_000 + chatId);
             }
         }
 
         last.setText(fromActions != null && fromActions.optInt("source_mid", -1) != -1 ? "" : text);
 
         if (attachments != null && attachments.length() > 0) {
-            loadMessage(mId);
+            last.setNeedUpdate(true);
         }
-        //last.attachments = VKAttachments.parseFromLongPoll(attachments);
 
         last.setRandomId(randomId);
 
@@ -96,34 +87,6 @@ public class LongPollEvents {
 
         EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_NEW, conversation});
         Log.d("FVK New Message", item.toString());
-    }
-
-    private void loadMessage(final int mId) {
-        ThreadExecutor.execute(new LowThread() {
-
-            VKMessage message;
-
-            @Override
-            public void run() {
-                super.run();
-
-                VKApi.messages().getById().messageIds(mId).execute(VKMessage.class, new VKApi.OnResponseListener<VKMessage>() {
-                    @Override
-                    public void onSuccess(ArrayList<VKMessage> models) {
-                        if (ArrayUtil.isEmpty(models)) return;
-                        message = models.get(0);
-                        EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_UPDATE, mId});
-
-                        CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID, mId);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Log.e("Error load message", Log.getStackTraceString(e));
-                    }
-                });
-            }
-        });
     }
 
     private void messageSetFlags(JSONArray item) {

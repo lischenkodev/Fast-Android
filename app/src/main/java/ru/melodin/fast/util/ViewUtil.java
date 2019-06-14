@@ -1,6 +1,5 @@
 package ru.melodin.fast.util;
 
-import android.animation.Animator;
 import android.content.Context;
 import android.os.Build;
 import android.view.View;
@@ -18,23 +17,25 @@ public class ViewUtil {
     private static final InputMethodManager keyboard = (InputMethodManager)
             AppGlobal.context().getSystemService(Context.INPUT_METHOD_SERVICE);
 
-    public static void fadeView(View v, long duration, boolean show, Animator.AnimatorListener listener) {
+    public static void fadeView(View v, long duration, boolean show, Runnable startAction, Runnable endAction) {
         v.setAlpha(show ? 0 : 1);
 
         ViewPropertyAnimator animator = v.animate();
         animator.alpha(show ? 1 : 0);
         animator.setDuration(duration);
-        if (listener != null)
-            animator.setListener(listener);
+        if (startAction != null)
+            animator.withStartAction(startAction);
+        if (endAction != null)
+            animator.withEndAction(endAction);
         animator.start();
     }
 
     public static void fadeView(View v, boolean show) {
-        fadeView(v, 200, show, null);
+        fadeView(v, 200, show, null, null);
     }
 
-    public static void fadeView(View v, boolean show, Animator.AnimatorListener listener) {
-        fadeView(v, 200, show, listener);
+    public static void fadeView(View v, boolean show, Runnable startAction, Runnable endAction) {
+        fadeView(v, 200, show, startAction, endAction);
     }
 
     public static void showKeyboard(View v) {
