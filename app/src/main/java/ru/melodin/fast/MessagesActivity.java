@@ -664,6 +664,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             return getString(R.string.editing);
         } else if (adapter != null && adapter.isSelected()) {
             return getString(R.string.selected_count, adapter.getSelectedCount() + "");
+        } else if (conversation.getLast() != null && (conversation.isChat() || conversation.isGroupChannel()) && conversation.getState() != VKConversation.State.IN) {
+            boolean kicked = conversation.getState() == VKConversation.State.KICKED;
+
+            return getString(kicked ? R.string.kicked_out_text : R.string.leave_from_chat_text);
         } else
             switch (conversation.getType()) {
                 case GROUP: {
@@ -739,8 +743,67 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 toggleNotifications();
                 invalidateOptionsMenu();
                 break;
+            case R.id.leave:
+                toggleChatState();
+                invalidateOptionsMenu();
+                break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void toggleChatState() {
+        if (conversation == null) return;
+        AlertDialog.Builder adb = new AlertDialog.Builder(this);
+        adb.setTitle(R.string.confirmation);
+        adb.setMessage(R.string.are_you_sure);
+        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                boolean leave = conversation.getState() == VKConversation.State.IN;
+                int chatId = conversation.getLast().getPeerId() - 2_000_000_000;
+                setChatState(chatId, leave);
+            }
+        });
+        adb.setNegativeButton(R.string.no, null);
+        adb.show();
+    }
+
+    private void setChatState(final int chatId, final boolean leave) {
+        ThreadExecutor.execute(new AsyncCallback(this) {
+
+            int response;
+
+            @Override
+            public void ready() throws Exception {
+                response = leave ?
+                        VKApi.messages()
+                                .removeChatUser()
+                                .chatId(chatId)
+                                .userId(UserConfig.userId)
+                                .execute(Integer.class).get(0) :
+
+                        VKApi.messages()
+                                .addChatUser()
+                                .chatId(chatId)
+                                .userId(UserConfig.userId)
+                                .execute(Integer.class).get(0);
+            }
+
+            @Override
+            public void done() {
+                if (response == 1) {
+                    conversation.setState(leave ? VKConversation.State.LEFT : VKConversation.State.IN);
+                    CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
+                    invalidateOptionsMenu();
+                    getSupportActionBar().setSubtitle(getSubtitle());
+                }
+            }
+
+            @Override
+            public void error(Exception e) {
+                Log.e("Error toggle state", Log.getStackTraceString(e));
+            }
+        });
     }
 
     private void toggleNotifications() {
@@ -1188,8 +1251,18 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         MenuItem delete = menu.findItem(R.id.delete);
         MenuItem clear = menu.findItem(R.id.clear);
         MenuItem notifications = menu.findItem(R.id.notifications);
+        MenuItem leave = menu.findItem(R.id.leave);
 
         if (conversation != null) {
+            if (conversation.getLast() != null && (conversation.isChat() || conversation.isGroupChannel()) && conversation.getState() != VKConversation.State.KICKED) {
+                leave.setVisible(true);
+                String title = getString(conversation.getState() == VKConversation.State.IN ? R.string.leave_from : R.string.return_to);
+                String s = getString(conversation.isGroupChannel() ? R.string.channel : R.string.chat).toLowerCase();
+
+                leave.setTitle(String.format(title, s));
+            } else {
+                leave.setVisible(false);
+            }
             if (conversation.isNotificationsDisabled()) {
                 notifications.setTitle(R.string.enable_notifications);
                 notifications.setIcon(R.drawable.ic_volume_full_black_24dp);

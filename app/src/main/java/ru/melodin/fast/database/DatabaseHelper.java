@@ -59,16 +59,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     static final String DISABLED_FOREVER = "disabled_forever";
     static final String DISABLED_UNTIL = "disabled_until";
     static final String NO_SOUND = "no_sound";
-    static final String USERS = "users";
-    static final String GROUPS = "groups";
+    private static final String USERS = "users";
+    private static final String GROUPS = "groups";
     private static final String _ID = "_id";
     static final String CONVERSATION_TYPE = "type";
     public static final String USER_ID = "user_id";
     static final String ACTION_TYPE = "action_type";
     static final String ACTION_USER_ID = "action_user_id";
     static final String ACTION_TEXT = "action_text";
+    static final String STATE = "state";
 
-    private static final int DATABASE_VERSION = 25;
+    private static final int DATABASE_VERSION = 26;
     private static final String DATABASE_NAME = "cache.db";
 
     /**
@@ -109,6 +110,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             " [" + READ_STATE + "] INTEGER, " +
             " [" + USERS_COUNT + "] INTEGER, " +
             " [" + UNREAD_COUNT + "] INTEGER, " +
+            " [" + STATE + "] VARCHAR(255), " +
             " [" + PHOTO_50 + "] VARCHAR(255), " +
             " [" + PHOTO_100 + "] VARCHAR(255)," +
             " [" + PHOTO_200 + "] VARCHAR(255), " +

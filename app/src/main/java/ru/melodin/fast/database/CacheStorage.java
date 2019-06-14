@@ -60,6 +60,7 @@ import static ru.melodin.fast.database.DatabaseHelper.PINNED_MESSAGE;
 import static ru.melodin.fast.database.DatabaseHelper.READ_STATE;
 import static ru.melodin.fast.database.DatabaseHelper.SCREEN_NAME;
 import static ru.melodin.fast.database.DatabaseHelper.SEX;
+import static ru.melodin.fast.database.DatabaseHelper.STATE;
 import static ru.melodin.fast.database.DatabaseHelper.STATUS;
 import static ru.melodin.fast.database.DatabaseHelper.TEXT;
 import static ru.melodin.fast.database.DatabaseHelper.TITLE;
@@ -357,6 +358,7 @@ public class CacheStorage {
         dialog.setTitle(getString(cursor, TITLE));
         dialog.setMembersCount(getInt(cursor, USERS_COUNT));
         dialog.setUnread(getInt(cursor, UNREAD_COUNT));
+        dialog.setState(VKConversation.getState(getString(cursor, STATE)));
 
         dialog.setNoSound(getInt(cursor, NO_SOUND) == 1);
         dialog.setDisabledForever(getInt(cursor, DISABLED_FOREVER) == 1);
@@ -454,6 +456,7 @@ public class CacheStorage {
         values.put(DISABLED_FOREVER, dialog.isDisabledForever());
         values.put(DISABLED_UNTIL, dialog.getDisabledUntil());
         values.put(NO_SOUND, dialog.isNoSound());
+        values.put(STATE, VKConversation.getState(dialog.getState()));
 
         if (dialog.getLast() != null) {
             values.put(LAST_MESSAGE, Util.serialize(dialog.getLast()));

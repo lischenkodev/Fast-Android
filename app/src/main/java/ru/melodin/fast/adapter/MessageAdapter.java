@@ -452,8 +452,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 if (bubble != null) {
                     bubble.setBackgroundColor(Color.TRANSPARENT);
                 }
-                parent.setVisibility(View.GONE);
-                attacher.sticker(images, (VKSticker) attachment);
+                attacher.sticker(parent, (VKSticker) attachment);
             } else if (attachment instanceof VKDoc) {
                 attacher.doc(item, parent, (VKDoc) attachment, forwarded);
             } else if (attachment instanceof VKLink) {

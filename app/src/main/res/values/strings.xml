@@ -87,7 +87,6 @@
     <string name="voice_message">Voice message</string>
     <string name="edited">edited</string>
     <string name="group">Group</string>
-    <string name="channel">Channel</string>
     <string name="confirmation">Confirmation</string>
     <string name="groups">Groups</string>
     <string name="confirm_delete_friend">Are you really want to delete this friend?</string>
@@ -133,4 +132,9 @@
     <string name="enable_notifications">Enable notifications</string>
     <string name="disable_notifications">Disable notifications</string>
     <string name="clear_messages_history">Clear messages history</string>
+    <string name="leave_from">Leave from %s</string>
+    <string name="return_to">Return to %s</string>
+    <string name="chat">Chat</string>
+    <string name="channel">Channel</string>
+    <string name="leave_from_chat_text">You were leaved from chat</string>
 </resources>

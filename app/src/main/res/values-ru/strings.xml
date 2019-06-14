@@ -126,4 +126,8 @@
     <string name="clear_messages_history">Очистить историю сообщений</string>
     <string name="disable_notifications">Выключить уведомления</string>
     <string name="enable_notifications">Включить уведомления</string>
+    <string name="chat">Чат</string>
+    <string name="leave_from">Выйти из %s</string>
+    <string name="leave_from_chat_text">Вы вышли из беседы</string>
+    <string name="return_to">Вернуться в %s</string>
 </resources>

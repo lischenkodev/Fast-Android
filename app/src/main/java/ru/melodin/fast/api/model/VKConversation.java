@@ -1,5 +1,7 @@
 package ru.melodin.fast.api.model;
 
+import android.text.TextUtils;
+
 import androidx.annotation.NonNull;
 
 import org.json.JSONException;
@@ -30,7 +32,7 @@ public class VKConversation extends VKModel implements Serializable {
 
     private String title;
     private Type type;
-    private String state;
+    private State state = State.IN;
     private String photo50, photo100, photo200;
 
     //acl
@@ -40,6 +42,10 @@ public class VKConversation extends VKModel implements Serializable {
     private int disabledUntil;
     private boolean disabledForever;
     private boolean noSound;
+
+    public enum State {
+        IN, KICKED, LEFT
+    }
 
     public enum Type {
         CHAT, GROUP, USER
@@ -57,6 +63,34 @@ public class VKConversation extends VKModel implements Serializable {
 
     public VKConversation() {
 
+    }
+
+    public static State getState(String state) {
+        if (TextUtils.isEmpty(state)) return null;
+        switch (state) {
+            case "kicked":
+                return State.KICKED;
+            case "in":
+                return State.IN;
+            case "left":
+                return State.LEFT;
+        }
+
+        return null;
+    }
+
+    public static String getState(State state) {
+        if (state == null) return null;
+        switch (state) {
+            case KICKED:
+                return "kicked";
+            case LEFT:
+                return "left";
+            case IN:
+                return "in";
+        }
+
+        return null;
     }
 
     public static int getReason(Reason reason) {
@@ -144,7 +178,7 @@ public class VKConversation extends VKModel implements Serializable {
         if (ch != null) {
             this.title = ch.optString("title");
             this.membersCount = ch.optInt("members_count");
-            this.state = ch.optString("state");
+            this.state = VKConversation.getState(ch.optString("state"));
             this.groupChannel = ch.optBoolean("is_group_channel");
 
             JSONObject photo = ch.optJSONObject("photo");
@@ -335,11 +369,11 @@ public class VKConversation extends VKModel implements Serializable {
         this.type = type;
     }
 
-    public String getState() {
+    public State getState() {
         return state;
     }
 
-    public void setState(String state) {
+    public void setState(State state) {
         this.state = state;
     }
 
