@@ -16,8 +16,12 @@ public class VKSticker extends VKModel implements Serializable {
 
     private int id;
     private int productId;
-    private ArrayList<String> images = new ArrayList<>();
-    private ArrayList<String> backgroundImages = new ArrayList<>();
+    private ArrayList<Size> images = new ArrayList<>();
+    private ArrayList<Size> backgroundImages = new ArrayList<>();
+    private int maxWidth;
+    private int maxHeight;
+    private String maxSize;
+    private String maxBackgroundSize;
 
     public VKSticker(JSONObject source) {
         this.id = source.optInt("sticker_id");
@@ -26,23 +30,27 @@ public class VKSticker extends VKModel implements Serializable {
         JSONArray images = source.optJSONArray("images");
         for (int i = 0; i < images.length(); i++) {
             JSONObject size = images.optJSONObject(i);
-            String url = size.optString("url");
-            this.images.add(url);
+            this.images.add(new Size(size));
         }
 
         JSONArray backgroundImages = source.optJSONArray("images_with_background");
         for (int i = 0; i < backgroundImages.length(); i++) {
             JSONObject size = backgroundImages.optJSONObject(i);
-            String url = size.optString("url");
-            this.backgroundImages.add(url);
+            this.backgroundImages.add(new Size(size));
         }
+
+        maxSize = findMaxSize();
+        maxBackgroundSize = findMaxBackgroundSize();
     }
 
-    public String getMaxSize() {
+    private String findMaxSize() {
         if (ArrayUtil.isEmpty(images)) return null;
         for (int i = images.size() - 1; i >= 0; i--) {
-            String image = images.get(i);
+            Size size = images.get(i);
+            String image = size.getUrl();
             if (!TextUtils.isEmpty(image)) {
+                maxWidth = size.getWidth();
+                maxHeight = size.getHeight();
                 return image;
             }
         }
@@ -50,10 +58,10 @@ public class VKSticker extends VKModel implements Serializable {
         return null;
     }
 
-    public String getMaxBackgroundSize() {
+    private String findMaxBackgroundSize() {
         if (ArrayUtil.isEmpty(backgroundImages)) return null;
         for (int i = backgroundImages.size() - 1; i >= 0; i--) {
-            String image = backgroundImages.get(i);
+            String image = backgroundImages.get(i).getUrl();
             if (!TextUtils.isEmpty(image)) {
                 return image;
             }
@@ -70,7 +78,49 @@ public class VKSticker extends VKModel implements Serializable {
         return productId;
     }
 
-    public ArrayList<String> getImages() {
+    public ArrayList<Size> getImages() {
         return images;
+    }
+
+    public String getMaxBackgroundSize() {
+        return maxBackgroundSize;
+    }
+
+    public String getMaxSize() {
+        return maxSize;
+    }
+
+    public int getMaxHeight() {
+        return maxHeight;
+    }
+
+    public int getMaxWidth() {
+        return maxWidth;
+    }
+
+    public class Size implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        private int width;
+        private int height;
+        private String url;
+
+        public Size(JSONObject o) {
+            this.width = o.optInt("width");
+            this.height = o.optInt("height");
+            this.url = o.optString("url");
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public String getUrl() {
+            return url;
+        }
     }
 }

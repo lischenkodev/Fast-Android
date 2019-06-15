@@ -543,15 +543,13 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
                 case GROUP:
                     peerGroup = searchGroup(VKGroup.toGroupId(last.getPeerId()));
                     break;
-                case CHAT:
-                    if (item.isGroupChannel()) {
-                        peerGroup = searchGroup(VKGroup.toGroupId(last.getPeerId()));
-                    }
-                    break;
                 case USER:
                     peerUser = searchUser(last.getPeerId());
                     break;
             }
+
+            if (peerGroup == null && item.isGroupChannel())
+                peerGroup = searchGroup(VKGroup.toGroupId(last.getPeerId()));
 
             if (item.isFromGroup()) {
                 fromGroup = searchGroup(VKGroup.toGroupId(last.getFromId()));

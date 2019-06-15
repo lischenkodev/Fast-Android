@@ -29,7 +29,6 @@ public class FileStreams {
 
     public static final BigInteger ONE_ZB = BigInteger.valueOf(ONE_EB).multiply(BigInteger.valueOf(1024L));
     public static final BigInteger ONE_YB = ONE_ZB.multiply(BigInteger.valueOf(1024L));
-    ;
 
     // only static methods
     private FileStreams() {

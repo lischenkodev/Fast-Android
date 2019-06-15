@@ -134,4 +134,5 @@
     <string name="cached_groups">Кэшированные группы</string>
     <string name="event">Событие</string>
     <string name="page">Публичная страница</string>
+    <string name="hide_keyboard_on_scroll_title">Скрывать клавиатуру при скролле вверх</string>
 </resources>

@@ -3,18 +3,21 @@
 
     <PreferenceCategory
         android:key="interface_"
-        android:title="@string/interface_title">
+        android:title="@string/interface_title" />
 
-        <SwitchPreference
-            android:defaultValue="false"
-            android:key="dark_theme"
-            android:title="@string/dark_theme_title" />
-
-    </PreferenceCategory>
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="dark_theme"
+        android:title="@string/dark_theme_title" />
 
     <PreferenceCategory
         android:key="functional"
         android:title="@string/functions_title" />
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="hide_keyboard_on_scroll"
+        android:title="@string/hide_keyboard_on_scroll_title" />
 
     <EditTextPreference
         android:id="@android:id/edit"
@@ -25,50 +28,47 @@
 
     <PreferenceCategory
         android:key="invisible"
-        android:title="@string/invisible_title">
+        android:title="@string/invisible_title" />
 
-        <SwitchPreference
-            android:defaultValue="false"
-            android:key="hide_typing"
-            android:title="@string/hide_typing_title" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="hide_typing"
+        android:title="@string/hide_typing_title" />
 
-        <SwitchPreference
-            android:defaultValue="false"
-            android:key="not_read"
-            android:summary="@string/not_read_summary"
-            android:title="@string/not_read_title" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="not_read"
+        android:summary="@string/not_read_summary"
+        android:title="@string/not_read_title" />
 
-    </PreferenceCategory>
     <PreferenceCategory
         android:key="cache"
-        android:title="@string/cache">
+        android:title="@string/cache" />
 
-        <PreferenceScreen
-            android:key="show_cached_users"
-            android:title="@string/show_caches_users_title" />
+    <PreferenceScreen
+        android:key="show_cached_users"
+        android:title="@string/show_caches_users_title" />
 
-        <PreferenceScreen
-            android:key="show_cached_groups"
-            android:title="@string/show_cached_groups_title" />
+    <PreferenceScreen
+        android:key="show_cached_groups"
+        android:title="@string/show_cached_groups_title" />
 
-        <PreferenceScreen
-            android:key="clear_messages_cache"
-            android:title="@string/clear_messages_cache" />
-    </PreferenceCategory>
+    <PreferenceScreen
+        android:key="clear_messages_cache"
+        android:title="@string/clear_messages_cache" />
+
     <PreferenceCategory
         android:key="application"
-        android:title="@string/application_title">
+        android:title="@string/application_title" />
 
-        <SwitchPreference
-            android:defaultValue="false"
-            android:key="show_error"
-            android:summary="@string/show_error_summary"
-            android:title="@string/show_error_title" />
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="show_error"
+        android:summary="@string/show_error_summary"
+        android:title="@string/show_error_title" />
 
+    <PreferenceScreen
+        android:key="about"
+        android:title="@string/about_app" />
 
-        <PreferenceScreen
-            android:key="about"
-            android:title="@string/about_app" />
-
-    </PreferenceCategory>
 </PreferenceScreen>

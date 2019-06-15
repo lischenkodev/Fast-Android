@@ -61,7 +61,6 @@ import ru.melodin.fast.fragment.FragmentSettings;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
-import ru.melodin.fast.util.ViewUtil;
 import ru.melodin.fast.view.BoundedLinearLayout;
 import ru.melodin.fast.view.CircleImageView;
 
@@ -119,8 +118,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
                 if (peerId != conversation.getLast().getPeerId()) return;
 
-                addMessage(conversation.getLast());
-                notifyDataSetChanged();
+                addMessage(conversation.getLast(), true);
 
                 int lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
 
@@ -287,11 +285,15 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         notifyItemChanged(position, -1);
     }
 
-    public void addMessage(VKMessage msg) {
+    public void addMessage(VKMessage msg, boolean anim) {
         if (msg.getRandomId() != 0 && containsRandom(msg.getRandomId()))
             return;
 
         add(msg);
+        if (anim) {
+            notifyItemInserted(getItemCount() - 1);
+            notifyItemRangeChanged(0, getItemCount(), -1);
+        }
     }
 
     private boolean containsRandom(long randomId) {
@@ -566,20 +568,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             timeContainer.setGravity(gravity);
             bubbleContainer.setGravity(gravity);
 
-            ViewUtil.fadeView(important, item.isImportant(),
-                    new Runnable() {
-                        @Override
-                        public void run() {
-                            if (item.isImportant())
-                                important.setVisibility(View.VISIBLE);
-                        }
-                    }, new Runnable() {
-                        @Override
-                        public void run() {
-                            if (!item.isImportant())
-                                important.setVisibility(View.GONE);
-                        }
-                    });
+            important.setVisibility(item.isImportant() ? View.VISIBLE : View.GONE);
 
             bubble.setVisibility(View.VISIBLE);
 
@@ -618,7 +607,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 text.setVisibility(View.GONE);
             } else {
                 text.setVisibility(View.VISIBLE);
-                text.setText(item.getText().trim());
+                String text = item.getText().trim() + "       ";
+                this.text.setText(text);
             }
 
             int textColor, timeColor, bgColor, linkColor;
@@ -638,7 +628,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 }
             }
 
-            timeColor = ThemeManager.isDark() ? 0xffdddddd : 0xff404040;
+            timeColor = item.isOut() ? ColorUtil.darkenColor(textColor, 0.9f) : ThemeManager.isDark() ? 0xffdddddd : 0xff404040;
 
             text.setTextColor(textColor);
             text.setLinkTextColor(linkColor);
@@ -686,6 +676,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             }
 
             avatar.setVisibility(item.isOut() ? View.GONE : View.VISIBLE);
+            //((FrameLayout) attachments.getParent()).setLayoutParams(new BoundedLinearLayout.LayoutParams(bubble.getMaxWidth(), ViewGroup.LayoutParams.WRAP_CONTENT));
         }
     }
 
@@ -703,10 +694,10 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 if (TextUtils.isEmpty(item.getText()))
                     bubble.setBackgroundColor(Color.TRANSPARENT);
 
-                attacher.photo(item, parent, (VKPhoto) attachment);
+                attacher.photo(item, parent, (VKPhoto) attachment, forwarded ? maxWidth : -1);
             } else if (attachment instanceof VKSticker) {
                 bubble.setBackgroundColor(Color.TRANSPARENT);
-                attacher.sticker(parent, (VKSticker) attachment, maxWidth);
+                attacher.sticker(parent, (VKSticker) attachment, forwarded ? maxWidth : -1);
             } else if (attachment instanceof VKDoc) {
                 attacher.doc(item, parent, (VKDoc) attachment, forwarded, withStyles);
             } else if (attachment instanceof VKLink) {
@@ -715,7 +706,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 if (TextUtils.isEmpty(item.getText()))
                     bubble.setBackgroundColor(Color.TRANSPARENT);
 
-                attacher.video(parent, (VKVideo) attachment, maxWidth);
+                attacher.video(parent, (VKVideo) attachment, forwarded ? maxWidth : -1);
             } else if (attachment instanceof VKGraffiti) {
                 bubble.setBackgroundColor(Color.TRANSPARENT);
                 attacher.graffiti(parent, (VKGraffiti) attachment);

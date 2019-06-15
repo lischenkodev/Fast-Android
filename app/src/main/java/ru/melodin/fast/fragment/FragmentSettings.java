@@ -52,6 +52,7 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
     public static final String KEY_MESSAGES_CLEAR_CACHE = "clear_messages_cache";
     private static final String KEY_SHOW_CACHED_USERS = "show_cached_users";
     private static final String KEY_SHOW_CACHED_GROUPS = "show_cached_groups";
+    public static final String KEY_HIDE_KEYBOARD_ON_SCROLL = "hide_keyboard_on_scroll";
 
     private ImageView avatar;
     private TextView name;

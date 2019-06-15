@@ -5,13 +5,16 @@ import android.text.TextUtils;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+
+import ru.melodin.fast.util.ArrayUtil;
 
 public class VKVideo extends VKModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private int id;
-    private int owner_id;
+    private int ownerId;
     private String title;
     private String description;
     private int duration;
@@ -25,45 +28,57 @@ public class VKVideo extends VKModel implements Serializable {
     private String photo800;
     private String photo1280;
 
-    private String access_key;
+    private String accessKey;
 
-    public VKVideo() {
-    }
+    private int maxWidth;
+    private String maxSize;
+
+    private ArrayList<Size> sizes = new ArrayList<>();
 
     public VKVideo(JSONObject source) {
         this.id = source.optInt("id");
-        this.owner_id = source.optInt("owner_id");
+        this.ownerId = source.optInt("owner_id");
         this.title = source.optString("title");
         this.description = source.optString("description");
         this.duration = source.optInt("duration");
         this.date = source.optLong("date");
         this.player = source.optString("player");
-        this.access_key = source.optString("access_key");
+        this.accessKey = source.optString("access_key");
 
         this.photo130 = source.optString("photo_130");
         this.photo320 = source.optString("photo_320");
         this.photo640 = source.optString("photo_640");
         this.photo800 = source.optString("photo_800");
         this.photo1280 = source.optString("photo_1280");
+
+        sizes.add(new Size(130, photo130));
+        sizes.add(new Size(320, photo320));
+        sizes.add(new Size(640, photo640));
+        sizes.add(new Size(800, photo800));
+        sizes.add(new Size(1280, photo1280));
+
+        maxSize = findMaxSize();
     }
 
-    public String getMaxSize() {
-        return
-                TextUtils.isEmpty(photo1280) ?
-                        TextUtils.isEmpty(photo800) ?
-                                TextUtils.isEmpty(photo640) ?
-                                        TextUtils.isEmpty(photo320) ? photo130 :
-                                                photo320 :
-                                        photo640 :
-                                photo800 :
-                        photo1280;
+    private String findMaxSize() {
+        if (ArrayUtil.isEmpty(sizes)) return null;
+        for (int i = sizes.size() - 1; i >= 0; i--) {
+            Size size = sizes.get(i);
+            String image = size.getUrl();
+            if (!TextUtils.isEmpty(image)) {
+                maxWidth = size.getWidth();
+                return image;
+            }
+        }
+
+        return null;
     }
 
     public CharSequence toAttachmentString() {
-        StringBuilder result = new StringBuilder("video").append(owner_id).append('_').append(id);
-        if (!TextUtils.isEmpty(access_key)) {
+        StringBuilder result = new StringBuilder("video").append(ownerId).append('_').append(id);
+        if (!TextUtils.isEmpty(accessKey)) {
             result.append('_');
-            result.append(access_key);
+            result.append(accessKey);
         }
         return result;
     }
@@ -78,8 +93,8 @@ public class VKVideo extends VKModel implements Serializable {
         return id;
     }
 
-    public int getOwner_id() {
-        return owner_id;
+    public int getOwnerId() {
+        return ownerId;
     }
 
     public String getTitle() {
@@ -122,7 +137,35 @@ public class VKVideo extends VKModel implements Serializable {
         return photo1280;
     }
 
-    public String getAccess_key() {
-        return access_key;
+    public String getAccessKey() {
+        return accessKey;
+    }
+
+    public String getMaxSize() {
+        return maxSize;
+    }
+
+    public int getMaxWidth() {
+        return maxWidth;
+    }
+
+    public class Size implements Serializable {
+        private static final long serialVersionUID = 1L;
+
+        private int width;
+        private String url;
+
+        public Size(int width, String url) {
+            this.width = width;
+            this.url = url;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public String getUrl() {
+            return url;
+        }
     }
 }

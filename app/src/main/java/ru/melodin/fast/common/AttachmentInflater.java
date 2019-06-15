@@ -81,15 +81,15 @@ public class AttachmentInflater {
             if (attachment instanceof VKAudio) {
                 audio(item, parent, (VKAudio) attachment, withStyles);
             } else if (attachment instanceof VKPhoto) {
-                photo(item, images, (VKPhoto) attachment);
+                photo(item, images, (VKPhoto) attachment, forwarded ? maxWidth : -1);
             } else if (attachment instanceof VKSticker) {
-                sticker(images, (VKSticker) attachment, maxWidth);
+                sticker(images, (VKSticker) attachment, forwarded ? maxWidth : -1);
             } else if (attachment instanceof VKDoc) {
                 doc(item, parent, (VKDoc) attachment, forwarded, withStyles);
             } else if (attachment instanceof VKLink) {
                 link(item, parent, (VKLink) attachment, withStyles);
             } else if (attachment instanceof VKVideo) {
-                video(parent, (VKVideo) attachment, maxWidth);
+                video(parent, (VKVideo) attachment, forwarded ? maxWidth : -1);
             } else if (attachment instanceof VKGraffiti) {
                 graffiti(parent, (VKGraffiti) attachment);
             } else if (attachment instanceof VKVoice) {
@@ -137,6 +137,10 @@ public class AttachmentInflater {
         return getParams(-1);
     }
 
+    private LinearLayout.LayoutParams getParams(int width, int height) {
+        return new LinearLayout.LayoutParams(width, height);
+    }
+
     private LinearLayout.LayoutParams getParams(int layoutWidth) {
         return layoutWidth == -1 ?
                 new LinearLayout.LayoutParams(
@@ -145,6 +149,10 @@ public class AttachmentInflater {
                 new LinearLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         getHeight(layoutWidth));
+    }
+
+    private FrameLayout.LayoutParams getFrameParams(int width, int height) {
+        return new FrameLayout.LayoutParams(width, height);
     }
 
     private FrameLayout.LayoutParams getFrameParams(int layoutWidth) {
@@ -217,7 +225,7 @@ public class AttachmentInflater {
         final ImageView image = (ImageView) inflater.inflate(R.layout.activity_messages_attach_photo, parent, false);
 
         image.setLayoutParams(getParams());
-        loadImage(image, source.url, "");
+        loadImage(image, source.url, null);
 
         image.setClickable(false);
         image.setFocusable(false);
@@ -228,7 +236,7 @@ public class AttachmentInflater {
     public void sticker(ViewGroup parent, VKSticker source, int maxWidth) {
         final ImageView image = (ImageView) inflater.inflate(R.layout.activity_messages_attach_photo, parent, false);
 
-        image.setLayoutParams(getParams(maxWidth));
+        image.setLayoutParams(maxWidth == -1 ? getParams(source.getMaxWidth(), source.getMaxHeight()) : getParams(maxWidth));
         loadImage(image, ThemeManager.isDark() ? source.getMaxBackgroundSize() : source.getMaxSize(), null);
 
         image.setClickable(false);
@@ -260,16 +268,16 @@ public class AttachmentInflater {
         String duration = String.format(AppGlobal.locale, "%d:%02d", source.getDuration() / 60, source.getDuration() % 60);
         time.setText(duration);
 
-        image.setLayoutParams(getFrameParams(maxWidth != -1 ? maxWidth : (int) (metrics.widthPixels / 1.5)));
+        image.setLayoutParams(maxWidth == -1 ? getFrameParams(source.getMaxWidth(), FrameLayout.LayoutParams.WRAP_CONTENT) : getFrameParams(maxWidth));
 
         loadImage(image, source.getMaxSize(), null);
         parent.addView(v);
     }
 
-    public void photo(final VKMessage item, ViewGroup parent, final VKPhoto source) {
+    public void photo(final VKMessage item, ViewGroup parent, final VKPhoto source, int maxWidth) {
         ImageView image = (ImageView) inflater.inflate(R.layout.activity_messages_attach_photo, parent, false);
 
-        image.setLayoutParams(getParams());
+        image.setLayoutParams(maxWidth == -1 ? getParams(source.getMaxWidth(), source.getMaxHeight()) : getParams(maxWidth));
         image.setOnClickListener(new View.OnClickListener() {
 
             @Override

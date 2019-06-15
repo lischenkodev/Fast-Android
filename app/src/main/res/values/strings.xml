@@ -141,4 +141,5 @@
     <string name="cached_groups">Cached groups</string>
     <string name="event">Event</string>
     <string name="page">Page</string>
+    <string name="hide_keyboard_on_scroll_title">Hide keyboard on scroll top</string>
 </resources>

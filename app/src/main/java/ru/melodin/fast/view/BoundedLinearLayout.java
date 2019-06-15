@@ -51,7 +51,6 @@ public class BoundedLinearLayout extends LinearLayout {
         if (mBoundedHeight != height) {
             mBoundedHeight = height;
             requestLayout();
-            ;
         }
     }
 

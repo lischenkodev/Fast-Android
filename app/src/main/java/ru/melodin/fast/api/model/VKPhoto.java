@@ -22,9 +22,9 @@ public class VKPhoto extends VKModel implements Serializable {
     private long date;
     private String accessKey;
     private ArrayList<VKPhotoSizes.PhotoSize> sizes;
-
-    public VKPhoto() {
-    }
+    private int maxWidth;
+    private int maxHeight;
+    private String maxSize;
 
     public VKPhoto(JSONObject source) {
         this.id = source.optInt("id");
@@ -36,14 +36,18 @@ public class VKPhoto extends VKModel implements Serializable {
         this.text = source.optString("text");
         this.accessKey = source.optString("access_key");
         this.sizes = new VKPhotoSizes(source.optJSONArray("sizes")).getSizes();
+
+        maxSize = findMaxSize();
     }
 
-    public String getMaxSize() {
+    private String findMaxSize() {
         if (ArrayUtil.isEmpty(sizes)) return null;
         for (int i = sizes.size() - 1; i >= 0; i--) {
             VKPhotoSizes.PhotoSize image = sizes.get(i);
             String src = image.getSrc();
             if (!TextUtils.isEmpty(src)) {
+                maxWidth = image.getWidth();
+                maxHeight = image.getHeight();
                 return src;
             }
         }
@@ -85,5 +89,17 @@ public class VKPhoto extends VKModel implements Serializable {
 
     public ArrayList<VKPhotoSizes.PhotoSize> getSizes() {
         return sizes;
+    }
+
+    public String getMaxSize() {
+        return maxSize;
+    }
+
+    public int getMaxWidth() {
+        return maxWidth;
+    }
+
+    public int getMaxHeight() {
+        return maxHeight;
     }
 }

@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -220,6 +221,11 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                     if (adapter != null && layoutManager.findLastVisibleItemPosition() < adapter.getItemCount() - 10 && !fab.isShown())
                         fab.show();
 
+                } else {
+                    fab.hide();
+                }
+                if (dy > 0) {
+
                     if (animating || pinned == null) return;
                     animating = true;
                     pinnedContainer.animate().alpha(1).setDuration(150).withStartAction(new Runnable() {
@@ -234,8 +240,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                             animating = false;
                         }
                     }).start();
-                } else {//(dy < 0) {
-                    fab.hide();
+                } else if (dy < 0) {
+                    if (message.isFocused() && AppGlobal.preferences.getBoolean(FragmentSettings.KEY_HIDE_KEYBOARD_ON_SCROLL, true))
+                        ViewUtil.hideKeyboard(message);
 
                     if (animating || pinned == null) return;
                     animating = true;
@@ -253,6 +260,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
+                if (newState != RecyclerView.SCROLL_STATE_SETTLING && layoutManager.findLastVisibleItemPosition() >= adapter.getItemCount() - 10) {
+                    fab.hide();
+                }
             }
         });
     }
@@ -528,8 +538,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         msg.setOut(true);
         msg.setRandomId(random.nextInt());
 
-        adapter.addMessage(msg);
-        list.smoothScrollToPosition(adapter.getItemCount() - 1);
+        adapter.addMessage(msg, true);
 
         final int position = adapter.getItemCount() - 1;
 
