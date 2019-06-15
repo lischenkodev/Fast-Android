@@ -3,9 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:paddingStart="4dp"
-    android:paddingEnd="0dp">
+    android:orientation="horizontal">
 
     <View
         android:id="@+id/message_line"

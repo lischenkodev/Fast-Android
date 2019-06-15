@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root"
     android:layout_width="match_parent"
@@ -40,7 +41,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
 
-                    <TextView
+                    <ru.melodin.fast.view.TimeTextView
                         android:id="@+id/text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -52,6 +53,7 @@
                         android:autoLink="all"
                         android:gravity="fill"
                         android:linksClickable="true"
+                        app:timeSize="10sp"
                         tools:text="Boyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy       " />
 
                     <LinearLayout
@@ -62,23 +64,8 @@
                         android:layout_marginTop="26dp"
                         android:gravity="center_vertical"
                         android:orientation="vertical"
-                        android:padding="6dp"
-
                         tools:visibility="visible" />
 
-                    <TextView
-                        android:id="@+id/time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="end|bottom"
-                        android:layout_marginStart="6dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginEnd="6dp"
-                        android:linksClickable="true"
-                        android:textSize="9sp"
-                        android:visibility="visible"
-                        tools:background="@drawable/attachment_video_panel"
-                        tools:text="03:15" />
                 </FrameLayout>
 
             </ru.melodin.fast.view.BoundedLinearLayout>

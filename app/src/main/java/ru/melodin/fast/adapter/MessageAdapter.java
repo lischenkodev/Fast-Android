@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.ColorInt;
@@ -63,6 +62,7 @@ import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.view.BoundedLinearLayout;
 import ru.melodin.fast.view.CircleImageView;
+import ru.melodin.fast.view.TimeTextView;
 
 public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.ViewHolder> {
 
@@ -498,8 +498,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         CircleImageView avatar;
         ImageView important;
 
-        TextView text;
-        TextView time;
+        TimeTextView text;
 
         LinearLayout mainContainer;
 
@@ -513,7 +512,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         Drawable circle, sending, placeholder;
         @ColorInt
         int alphaAccentColor;
-
 
         public boolean isFooter() {
             return false;
@@ -532,7 +530,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             alphaAccentColor = ColorUtil.alphaColor(ThemeManager.getAccent(), 0.3f);
 
             text = v.findViewById(R.id.text);
-            time = v.findViewById(R.id.time);
 
             placeholder = new ColorDrawable(Color.TRANSPARENT);
 
@@ -561,7 +558,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             String s = item.getUpdateTime() > 0 ? getString(R.string.edited) + ", " : "";
             String time_ = s + Util.dateFormatter.format(item.isAdded() ? item.getDate() : item.getDate() * 1000L);
 
-            time.setText(time_);
+            text.setTimeText(time_);
 
             int gravity = item.isOut() ? Gravity.END : Gravity.START;
 
@@ -599,7 +596,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 }
             });
 
-            time.setGravity(item.isOut() ? Gravity.END : Gravity.START);
             messageContainer.setGravity(item.isOut() ? Gravity.END : Gravity.START);
 
             if (TextUtils.isEmpty(item.getText())) {
@@ -607,11 +603,11 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 text.setVisibility(View.GONE);
             } else {
                 text.setVisibility(View.VISIBLE);
-                String text = item.getText().trim() + "       ";
+                String text = item.getText().trim();
                 this.text.setText(text);
             }
 
-            int textColor, timeColor, bgColor, linkColor;
+            int textColor, bgColor, linkColor;
 
             if (item.isOut()) {
                 textColor = Color.WHITE;
@@ -628,11 +624,9 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 }
             }
 
-            timeColor = item.isOut() ? ColorUtil.darkenColor(textColor, 0.9f) : ThemeManager.isDark() ? 0xffdddddd : 0xff404040;
-
             text.setTextColor(textColor);
             text.setLinkTextColor(linkColor);
-            time.setTextColor(timeColor);
+            text.setTimeTextColor(textColor);
 
             bubble.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 3));
 
@@ -641,7 +635,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             if (item.getAction() != null) {
                 avatar.setVisibility(View.GONE);
                 messageContainer.setVisibility(View.GONE);
-                time.setVisibility(View.GONE);
                 serviceContainer.setVisibility(View.VISIBLE);
 
                 serviceContainer.removeAllViews();
@@ -650,7 +643,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 bg.setTint(Color.TRANSPARENT);
             } else {
                 avatar.setVisibility(View.VISIBLE);
-                time.setVisibility(View.VISIBLE);
                 messageContainer.setVisibility(View.VISIBLE);
                 serviceContainer.setVisibility(View.GONE);
                 bg.setColorFilter(bgColor, PorterDuff.Mode.MULTIPLY);

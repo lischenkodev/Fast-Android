@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.text.Html;
 import android.text.TextUtils;
@@ -328,10 +327,7 @@ public class AttachmentInflater {
                     .into(avatar);
         }
 
-        GradientDrawable lineBackground = new GradientDrawable();
-        lineBackground.setCornerRadius(100);
-
-        line.setBackground(lineBackground);
+        line.setBackgroundColor(ThemeManager.getMain());
 
         @ColorInt int nameColor, messageColor, lineColor;
 
@@ -346,7 +342,7 @@ public class AttachmentInflater {
                 messageColor = ThemeManager.isDark() ? ColorUtil.lightenColor(nameColor) : ColorUtil.darkenColor(nameColor);
             }
 
-            lineBackground.setColor(lineColor);
+            line.setBackgroundColor(lineColor);
         } else {
             nameColor = ThemeManager.isDark() ? Color.WHITE : Color.DKGRAY;
             messageColor = ThemeManager.isDark() ? ColorUtil.lightenColor(nameColor) : ColorUtil.darkenColor(nameColor);
