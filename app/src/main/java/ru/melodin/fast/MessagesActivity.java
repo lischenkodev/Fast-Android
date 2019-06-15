@@ -36,10 +36,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.checkbox.MaterialCheckBox;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,7 +48,6 @@ import java.util.TimerTask;
 
 import ru.melodin.fast.adapter.MessageAdapter;
 import ru.melodin.fast.adapter.RecyclerAdapter;
-import ru.melodin.fast.api.LongPollEvents;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.VKUtil;
@@ -86,6 +82,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private Toolbar tb;
     private RecyclerView list;
+    private FloatingActionButton fab;
 
     private AppCompatImageButton smiles, send, unpin;
     private AppCompatEditText message;
@@ -108,9 +105,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private int editingPosition;
     private VKConversation conversation;
 
-    private boolean loading, resumed, editing;
+    public boolean loading, resumed, editing;
 
-    private VKMessage notRead;
+    public VKMessage notRead;
 
     private LinearLayoutManager layoutManager;
 
@@ -137,7 +134,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        EventBus.getDefault().register(this);
         setTheme(ThemeManager.getCurrentTheme());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_messages);
@@ -155,6 +151,14 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         getConversation(peerId);
         checkCanWrite();
 
+        fab.hide();
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (adapter != null)
+                    list.smoothScrollToPosition(adapter.getItemCount() - 1);
+            }
+        });
         initListScrollListener();
 
         if (ThemeManager.isDark())
@@ -213,7 +217,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 if (dy > 0) {
-                    if (animating) return;
+                    if (adapter != null && layoutManager.findLastVisibleItemPosition() < adapter.getItemCount() - 10 && !fab.isShown())
+                        fab.show();
+
+                    if (animating || pinned == null) return;
                     animating = true;
                     pinnedContainer.animate().alpha(1).setDuration(150).withStartAction(new Runnable() {
                         @Override
@@ -227,8 +234,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                             animating = false;
                         }
                     }).start();
-                } else if (dy < 0) {
-                    if (animating) return;
+                } else {//(dy < 0) {
+                    fab.hide();
+
+                    if (animating || pinned == null) return;
                     animating = true;
                     pinnedContainer.animate().alpha(0).setDuration(150).withEndAction(new Runnable() {
                         @Override
@@ -305,56 +314,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void onReceive(Object[] data) {
-        String key = (String) data[0];
-
-        switch (key) {
-            case LongPollEvents.KEY_USER_OFFLINE:
-            case LongPollEvents.KEY_USER_ONLINE:
-                setUserOnline((int) data[1]);
-                break;
-            case LongPollEvents.KEY_MESSAGE_CLEAR_FLAGS:
-                if (adapter != null)
-                    adapter.handleClearFlags(data);
-                break;
-            case LongPollEvents.KEY_MESSAGE_SET_FLAGS:
-                if (adapter != null)
-                    adapter.handleSetFlags(data);
-                break;
-            case LongPollEvents.KEY_MESSAGE_NEW:
-                VKConversation conversation = (VKConversation) data[1];
-
-                if (adapter == null) return;
-
-                adapter.addMessage(conversation.getLast(), true);
-
-                int lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
-
-                if (lastVisibleItem >= adapter.getItemCount() - 4) {
-                    list.scrollToPosition(adapter.getItemCount() - 1);
-                }
-
-                if (!conversation.getLast().isOut() && conversation.getLast().getPeerId() == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
-                    if (!resumed) {
-                        notRead = conversation.getLast();
-                    } else {
-                        adapter.readNewMessage(conversation.getLast());
-                    }
-                }
-
-                break;
-            case LongPollEvents.KEY_MESSAGE_EDIT:
-                if (adapter != null)
-                    adapter.editMessage((VKMessage) data[1]);
-                break;
-            case LongPollEvents.KEY_MESSAGE_UPDATE:
-                adapter.updateMessage((VKMessage) data[1]);
-                break;
-        }
-    }
-
-    private void setUserOnline(int userId) {
+    public void setUserOnline(int userId) {
         if (peerId == userId)
             getSupportActionBar().setSubtitle(getSubtitle());
     }
@@ -367,6 +327,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         send = findViewById(R.id.send);
         message = findViewById(R.id.message_edit_text);
         tbShadow = findViewById(R.id.tb_shadow);
+        fab = findViewById(R.id.scroll_to_bottom);
 
         pinnedContainer = findViewById(R.id.pinned_msg_container);
         pinnedShadow = findViewById(R.id.pinned_shadow);
@@ -567,7 +528,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         msg.setOut(true);
         msg.setRandomId(random.nextInt());
 
-        adapter.addMessage(msg, false);
+        adapter.addMessage(msg);
         list.smoothScrollToPosition(adapter.getItemCount() - 1);
 
         final int position = adapter.getItemCount() - 1;
@@ -767,9 +728,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private String getUserSubtitle(VKUser user) {
         if (user == null) return "";
-        if (user.online) return getString(R.string.online);
+        if (user.isOnline()) return getString(R.string.online);
 
-        return getString(user.sex == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w, Util.dateFormatter.format(user.last_seen * 1000));
+        return getString(user.getSex() == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w, Util.dateFormatter.format(user.getLastSeen() * 1000));
     }
 
     @Override
@@ -985,8 +946,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     @Override
     protected void onDestroy() {
+        if (adapter != null)
+            adapter.destroy();
         super.onDestroy();
-        EventBus.getDefault().unregister(this);
     }
 
     private void showAlert(final int position) {

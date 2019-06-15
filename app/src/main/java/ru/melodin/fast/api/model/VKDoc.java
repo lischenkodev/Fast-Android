@@ -7,8 +7,13 @@ import androidx.annotation.NonNull;
 import org.json.JSONObject;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+
+import ru.melodin.fast.util.ArrayUtil;
 
 public class VKDoc extends VKModel implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     public static final int TYPE_NONE = 0;
     public static final int TYPE_TEXT = 1;
@@ -20,54 +25,59 @@ public class VKDoc extends VKModel implements Serializable {
     public static final int TYPE_BOOK = 7;
     public static final int TYPE_UNKNOWN = 8;
 
-    public int id;
-    public int owner_id;
-    public String title;
-    public int size;
-    public String ext;
-    public String url;
-    public String access_key;
-    public int type;
-    public VKPhotoSizes photo_sizes;
-
-    public VKVoice voice;
-    public VKGraffiti graffiti;
-
-    public VKDoc() {
-    }
-
-    VKDoc(int peerId, int attId) {
-        this.owner_id = peerId;
-        this.id = attId;
-    }
+    private int id;
+    private int ownerId;
+    private String title;
+    private int size;
+    private String ext;
+    private String url;
+    private String accessKey;
+    private int type;
+    private ArrayList<VKPhotoSizes.PhotoSize> sizes;
 
     VKDoc(JSONObject source) {
-        tag = VKAttachments.TYPE_DOC;
-
         this.id = source.optInt("id");
-        this.owner_id = source.optInt("owner_id");
+        this.ownerId = source.optInt("owner_id");
         this.title = source.optString("title");
         this.url = source.optString("url");
         this.size = source.optInt("size");
         this.type = source.optInt("type");
         this.ext = source.optString("ext");
-        this.access_key = source.optString("access_key");
+        this.accessKey = source.optString("access_key");
         this.type = source.optInt("type");
 
         JSONObject preview = source.optJSONObject("preview");
 
         if (preview != null) {
-            if (preview.has("photo")) {
-                photo_sizes = new VKPhotoSizes(preview.optJSONObject("photo").optJSONArray("sizes"));
+            JSONObject photo = preview.optJSONObject("photo");
+            if (photo != null) {
+                sizes = new VKPhotoSizes(photo.optJSONArray("sizes")).getSizes();
             }
         }
     }
 
+    public String getSrc() {
+        return ArrayUtil.isEmpty(sizes) ? null : sizes.get(0).getSrc();
+    }
+
+    public String getMaxSize() {
+        if (ArrayUtil.isEmpty(sizes)) return null;
+        for (int i = sizes.size() - 1; i >= 0; i--) {
+            VKPhotoSizes.PhotoSize image = sizes.get(i);
+            String src = image.getSrc();
+            if (!TextUtils.isEmpty(src)) {
+                return src;
+            }
+        }
+
+        return null;
+    }
+
     public String toAttachmentString() {
-        StringBuilder result = new StringBuilder("doc").append(owner_id).append('_').append(id);
-        if (!TextUtils.isEmpty(access_key)) {
+        StringBuilder result = new StringBuilder("doc").append(ownerId).append('_').append(id);
+        if (!TextUtils.isEmpty(accessKey)) {
             result.append('_');
-            result.append(access_key);
+            result.append(accessKey);
         }
         return result.toString();
     }
@@ -76,5 +86,42 @@ public class VKDoc extends VKModel implements Serializable {
     @Override
     public String toString() {
         return title;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public int getOwnerId() {
+        return ownerId;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public String getExt() {
+        return ext;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+
+    public int getType() {
+        return type;
+    }
+
+    public String getAccessKey() {
+        return accessKey;
+    }
+
+    public ArrayList<VKPhotoSizes.PhotoSize> getSizes() {
+        return sizes;
     }
 }

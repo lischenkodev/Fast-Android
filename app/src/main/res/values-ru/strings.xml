@@ -130,4 +130,8 @@
     <string name="leave_from">Выйти из %s</string>
     <string name="leave_from_chat_text">Вы вышли из беседы</string>
     <string name="return_to">Вернуться в %s</string>
+    <string name="show_cached_groups_title">Показать кэшированные группы</string>
+    <string name="cached_groups">Кэшированные группы</string>
+    <string name="event">Событие</string>
+    <string name="page">Публичная страница</string>
 </resources>

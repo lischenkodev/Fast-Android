@@ -40,11 +40,11 @@ public class MemoryCache {
     }
 
     public static void append(VKGroup value) {
-        groups.append(value.id, value);
+        groups.append(value.getId(), value);
     }
 
     public static void append(VKUser value) {
-        users.append(value.id, value);
+        users.append(value.getId(), value);
     }
 
     public static void clear() {

@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:adjustViewBounds="true"
-    android:paddingStart="8dp"
+    android:paddingStart="4dp"
     android:paddingTop="4dp"
-    android:paddingEnd="8dp"
-    android:scaleType="fitCenter" />
+    android:paddingEnd="4dp"
+    android:scaleType="centerCrop" />

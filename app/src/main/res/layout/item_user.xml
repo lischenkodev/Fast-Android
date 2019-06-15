@@ -13,8 +13,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="6dp"
         android:layout_marginEnd="2dp"
-        android:padding="6dp"
-        android:weightSum="1.0">
+        android:baselineAligned="false"
+        android:padding="6dp">
 
         <FrameLayout
             android:layout_width="wrap_content"
@@ -25,7 +25,8 @@
                 android:id="@+id/avatar"
                 android:layout_width="60dp"
                 android:layout_height="60dp"
-                android:layout_gravity="bottom|end"/>
+                android:layout_gravity="bottom|end"
+                tools:src="@drawable/user" />
 
             <ru.melodin.fast.view.CircleImageView
                 android:id="@+id/online"
@@ -50,19 +51,20 @@
 
             <TextView
                 android:id="@+id/name"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
                 android:fontFamily="@font/ps_regular"
                 android:maxLines="1"
                 android:singleLine="true"
                 android:textSize="18sp"
-                tools:text="Имя Фамилия" />
+                tools:text="User name" />
 
             <TextView
                 android:id="@+id/last_seen"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                tools:text="Last seen at 4:20" />
 
         </LinearLayout>
 

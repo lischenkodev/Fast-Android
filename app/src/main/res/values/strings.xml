@@ -137,4 +137,8 @@
     <string name="chat">Chat</string>
     <string name="channel">Channel</string>
     <string name="leave_from_chat_text">You were leaved from chat</string>
+    <string name="show_cached_groups_title">Show cached groups</string>
+    <string name="cached_groups">Cached groups</string>
+    <string name="event">Event</string>
+    <string name="page">Page</string>
 </resources>

@@ -62,9 +62,10 @@
                     android:layout_marginBottom="4dp"
                     android:fontFamily="@font/ps_regular"
                     android:maxLines="1"
+                    android:layout_weight="0"
                     android:singleLine="true"
                     android:textSize="18sp"
-                    tools:text="Имя Фамилия" />
+                    tools:text="94. FlyInk" />
 
                 <ImageView
                     android:id="@+id/muted"
@@ -72,6 +73,7 @@
                     android:layout_height="15dp"
                     android:layout_gravity="center"
                     android:layout_marginStart="4dp"
+                    android:layout_weight="0"
                     android:src="@drawable/ic_volume_off_black_24dp" />
 
                 <Space
@@ -83,12 +85,13 @@
                     android:id="@+id/date"
                     android:layout_width="40dp"
                     android:layout_height="22dp"
+                    android:layout_weight="0"
                     android:gravity="center"
                     android:maxLines="1"
                     android:minWidth="40dp"
                     android:padding="2dp"
                     android:textSize="12sp"
-                    tools:text="Дата" />
+                    tools:text="03:55" />
 
             </LinearLayout>
 

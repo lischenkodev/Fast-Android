@@ -7,9 +7,6 @@ import ru.melodin.fast.common.AppGlobal;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    /**
-     * Tables
-     */
     public static final String USERS_TABLE = "users";
     public static final String FRIENDS_TABLE = "friends";
     public static final String DIALOGS_TABLE = "dialogs";
@@ -49,7 +46,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     static final String SCREEN_NAME = "screen_name";
     static final String IS_CLOSED = "is_closed";
     static final String IS_ADMIN = "is_admin";
-    static final String ADMIN_LEVER = "admin_level";
+    static final String ADMIN_LEVEL = "admin_level";
     static final String TYPE = "type";
     static final String DESCRIPTION = "description";
     static final String MEMBERS_COUNT = "members_count";
@@ -69,12 +66,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     static final String ACTION_TEXT = "action_text";
     static final String STATE = "state";
 
-    private static final int DATABASE_VERSION = 26;
+    private static final int DATABASE_VERSION = 31;
     private static final String DATABASE_NAME = "cache.db";
-
-    /**
-     * Columns
-     */
 
     private static final String SQL_CREATE_TABLE_USERS = "CREATE TABLE " + USERS_TABLE +
             " (" + USER_ID + " INTEGER PRIMARY KEY ON CONFLICT REPLACE, " +
@@ -92,7 +85,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             " [" + PHOTO_100 + "] VARCHAR(255), " +
             " [" + PHOTO_200 + "] VARCHAR(255), " +
             " [" + PHOTO_MAX + "] VARCHAR(255), " +
-            " [" + DEACTIVATED + "] VARCHAR(255), " +
+            " [" + DEACTIVATED + "] INTEGER, " +
             " [" + SEX + "] INTEGER" +
             ");";
 
@@ -150,10 +143,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             " [" + SCREEN_NAME + "] VARCHAR(255), " +
             " [" + DESCRIPTION + "] VARCHAR(255), " +
             " [" + STATUS + "] VARCHAR(255), " +
-            " [" + TYPE + "] INTEGER, " +
+            " [" + TYPE + "] VARCHAR(255), " +
             " [" + IS_CLOSED + "] INTEGER, " +
             " [" + IS_ADMIN + "] INTEGER, " +
-            " [" + ADMIN_LEVER + "] INTEGER, " +
+            " [" + ADMIN_LEVEL + "] INTEGER, " +
             " [" + PHOTO_50 + "] VARCHAR(255), " +
             " [" + PHOTO_100 + "] VARCHAR(255), " +
             " [" + PHOTO_200 + "] VARCHAR(255), " +
@@ -205,6 +198,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void dropUsersTable(SQLiteDatabase db) {
         db.execSQL(SQL_DELETE_USERS);
         db.execSQL(SQL_CREATE_TABLE_USERS);
+    }
+
+    public void dropGroupsTable(SQLiteDatabase db) {
+        db.execSQL(SQL_DELETE_GROUPS);
+        db.execSQL(SQL_CREATE_TABLE_GROUPS);
     }
 
     public void dropTables(SQLiteDatabase db) {

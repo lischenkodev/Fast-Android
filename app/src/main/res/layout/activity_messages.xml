@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -26,6 +26,17 @@
         android:layout_marginTop="?actionBarSize"
         android:background="@drawable/message_drop_shadow_dark"
         android:rotation="180" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/scroll_to_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="76dp"
+        android:src="@drawable/ic_keyboard_arrow_down_black_24dp"
+        app:useCompatPadding="true"
+        app:fabSize="mini" />
 
     <FrameLayout
         android:id="@+id/pinned_msg_container"
@@ -167,4 +178,4 @@
             app:tint="#ffffff" />
 
     </LinearLayout>
-</FrameLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -5,13 +5,18 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:minWidth="150dp"
-    android:orientation="horizontal"
-    android:padding="4dp">
+    android:orientation="horizontal">
 
     <FrameLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp">
+
+        <ru.melodin.fast.view.CircleImageView
+            android:id="@+id/photo"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:scaleType="centerCrop" />
 
         <ImageView
             android:id="@+id/icon"
@@ -19,7 +24,7 @@
             android:layout_height="24dp"
             android:layout_gravity="center"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_vector_file"
+            android:src="@drawable/ic_vector_link_arrow"
             tools:tint="?colorAccent" />
 
     </FrameLayout>
@@ -35,21 +40,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/ps_medium"
-            android:maxLines="1"
-            android:singleLine="true"
+            android:maxLines="2"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="?android:textColorPrimary"
-            tools:text="Document title" />
+            tools:text="Link title" />
 
         <TextView
-            android:id="@+id/body"
+            android:id="@+id/description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxLines="1"
             android:singleLine="true"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="?android:textColorSecondary"
-            tools:text="Document Body" />
+            tools:text="Link description" />
 
     </LinearLayout>
 

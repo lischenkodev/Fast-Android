@@ -11,9 +11,9 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.Space;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,15 +26,30 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 
 import ru.melodin.fast.MessagesActivity;
 import ru.melodin.fast.R;
+import ru.melodin.fast.api.LongPollEvents;
 import ru.melodin.fast.api.VKApi;
+import ru.melodin.fast.api.model.VKAudio;
+import ru.melodin.fast.api.model.VKConversation;
+import ru.melodin.fast.api.model.VKDoc;
+import ru.melodin.fast.api.model.VKGraffiti;
 import ru.melodin.fast.api.model.VKGroup;
+import ru.melodin.fast.api.model.VKLink;
 import ru.melodin.fast.api.model.VKMessage;
+import ru.melodin.fast.api.model.VKModel;
+import ru.melodin.fast.api.model.VKPhoto;
+import ru.melodin.fast.api.model.VKSticker;
 import ru.melodin.fast.api.model.VKUser;
+import ru.melodin.fast.api.model.VKVideo;
+import ru.melodin.fast.api.model.VKVoice;
+import ru.melodin.fast.api.model.VKWall;
+import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.common.AttachmentInflater;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
@@ -42,6 +57,7 @@ import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.database.MemoryCache;
+import ru.melodin.fast.fragment.FragmentSettings;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
@@ -60,7 +76,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     private MessagesActivity activity;
 
-    private LinearLayoutManager manager;
+    private LinearLayoutManager layoutManager;
 
     private ArrayList<Integer> loadingIds = new ArrayList<>();
 
@@ -75,7 +91,59 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         this.attacher = new AttachmentInflater(context);
         this.metrics = context.getResources().getDisplayMetrics();
 
-        manager = (LinearLayoutManager) ((MessagesActivity) context).getRecyclerView().getLayoutManager();
+        layoutManager = (LinearLayoutManager) ((MessagesActivity) context).getRecyclerView().getLayoutManager();
+        EventBus.getDefault().register(this);
+    }
+
+    public void destroy() {
+        EventBus.getDefault().unregister(this);
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onReceive(Object[] data) {
+        String key = (String) data[0];
+
+        switch (key) {
+            case LongPollEvents.KEY_USER_OFFLINE:
+            case LongPollEvents.KEY_USER_ONLINE:
+                activity.setUserOnline((int) data[1]);
+                break;
+            case LongPollEvents.KEY_MESSAGE_CLEAR_FLAGS:
+                handleClearFlags(data);
+                break;
+            case LongPollEvents.KEY_MESSAGE_SET_FLAGS:
+                handleSetFlags(data);
+                break;
+            case LongPollEvents.KEY_MESSAGE_NEW:
+                VKConversation conversation = (VKConversation) data[1];
+
+                if (peerId != conversation.getLast().getPeerId()) return;
+
+                addMessage(conversation.getLast());
+                notifyDataSetChanged();
+
+                int lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
+
+                if (lastVisibleItem >= getItemCount() - 4) {
+                    activity.getRecyclerView().scrollToPosition(getItemCount() - 1);
+                }
+
+                if (!conversation.getLast().isOut() && conversation.getLast().getPeerId() == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
+                    if (!activity.resumed) {
+                        activity.notRead = conversation.getLast();
+                    } else {
+                        readNewMessage(conversation.getLast());
+                    }
+                }
+
+                break;
+            case LongPollEvents.KEY_MESSAGE_EDIT:
+                editMessage((VKMessage) data[1]);
+                break;
+            case LongPollEvents.KEY_MESSAGE_UPDATE:
+                updateMessage((VKMessage) data[1]);
+                break;
+        }
     }
 
     public boolean isSelected() {
@@ -136,16 +204,20 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     public void readNewMessage(final VKMessage message) {
-        if (message.isOut()) return;
+        if (message.isOut() || layoutManager.findLastCompletelyVisibleItemPosition() < searchPosition(message.getId()))
+            return;
         ThreadExecutor.execute(new AsyncCallback(((MessagesActivity) context)) {
+            int response;
+
             @Override
             public void ready() throws Exception {
-                VKApi.messages().markAsRead().peerId(message.getPeerId()).execute(Integer.class);
+                response = VKApi.messages().markAsRead().messageIds(message.getId()).execute(Integer.class).get(0);
             }
 
             @Override
             public void done() {
-                readMessage(message.getId());
+                if (response == 1)
+                    readMessage(message.getId());
             }
 
             @Override
@@ -215,14 +287,11 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         notifyItemChanged(position, -1);
     }
 
-    public void addMessage(VKMessage msg, boolean anim) {
-        if (msg.getPeerId() != peerId || (msg.getRandomId() != 0 && containsRandom(msg.getRandomId())))
+    public void addMessage(VKMessage msg) {
+        if (msg.getRandomId() != 0 && containsRandom(msg.getRandomId()))
             return;
 
         add(msg);
-
-        if (anim)
-            notifyItemInserted(getItemCount() - 1);
     }
 
     private boolean containsRandom(long randomId) {
@@ -270,7 +339,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             return new FooterViewHolder(createFooter());
         }
 
-        View v = inflater.inflate(R.layout.activity_messages_item, parent, false);
+        View v = inflater.inflate(R.layout.item_message, parent, false);
         return new ViewHolder(v);
     }
 
@@ -425,7 +494,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     class ViewHolder extends RecyclerView.ViewHolder {
 
         CircleImageView avatar;
-        ImageView read;
         ImageView important;
 
         TextView text;
@@ -435,17 +503,15 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
         BoundedLinearLayout bubble;
         LinearLayout attachments;
-        LinearLayout photos;
         LinearLayout serviceContainer;
         LinearLayout messageContainer;
         LinearLayout timeContainer;
         LinearLayout bubbleContainer;
 
-        Space space;
-
         Drawable circle, sending, placeholder;
         @ColorInt
         int alphaAccentColor;
+
 
         public boolean isFooter() {
             return false;
@@ -454,16 +520,21 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         ViewHolder(View v) {
             super(v);
 
+            final int px = (int) Util.px(6);
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+            params.bottomMargin = px;
+            params.topMargin = px;
+            params.setMarginEnd(px);
+            params.setMarginStart(px);
+
             alphaAccentColor = ColorUtil.alphaColor(ThemeManager.getAccent(), 0.3f);
 
-            space = v.findViewById(R.id.space);
             text = v.findViewById(R.id.text);
             time = v.findViewById(R.id.time);
 
             placeholder = new ColorDrawable(Color.TRANSPARENT);
 
             avatar = v.findViewById(R.id.avatar);
-            read = v.findViewById(R.id.read_indicator);
             important = v.findViewById(R.id.important);
 
             circle = new ColorDrawable(ThemeManager.getAccent());
@@ -475,7 +546,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             mainContainer = v.findViewById(R.id.root);
             bubble = v.findViewById(R.id.bubble);
             attachments = v.findViewById(R.id.attachments);
-            photos = v.findViewById(R.id.photos);
             timeContainer = v.findViewById(R.id.time_container);
         }
 
@@ -485,9 +555,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             final VKGroup group = searchGroup(VKGroup.toGroupId(item.getFromId()));
 
             itemView.setBackgroundColor(item.isSelected() ? alphaAccentColor : 0);
-
-
-            read.setVisibility(item.isOut() ? item.isRead() ? View.GONE : View.GONE : View.GONE);
 
             String s = item.getUpdateTime() > 0 ? getString(R.string.edited) + ", " : "";
             String time_ = s + Util.dateFormatter.format(item.isAdded() ? item.getDate() : item.getDate() * 1000L);
@@ -516,12 +583,12 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             bubble.setVisibility(View.VISIBLE);
 
-            String avatar_link = item.isFromGroup() ? group.photo_100 : user.photo_100;
+            String avatar_link = item.isFromGroup() ? group.getPhoto100() : user.getPhoto100();
 
             if (item.isFromUser()) {
-                avatar_link = user.photo_100;
+                avatar_link = user.getPhoto100();
             } else if (item.isFromGroup()) {
-                avatar_link = group.photo_100;
+                avatar_link = group.getPhoto100();
             }
 
             if (TextUtils.isEmpty(avatar_link)) {
@@ -604,16 +671,12 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             if (!ArrayUtil.isEmpty(item.getFwdMessages()) || !ArrayUtil.isEmpty(item.getAttachments())) {
                 attachments.setVisibility(View.VISIBLE);
                 attachments.removeAllViews();
-
-                photos.setVisibility(View.VISIBLE);
-                photos.removeAllViews();
             } else {
                 attachments.setVisibility(View.GONE);
-                photos.setVisibility(View.GONE);
             }
 
             if (!ArrayUtil.isEmpty(item.getAttachments())) {
-                attacher.inflateAttachments(item, attachments, photos, -1, false, true);
+                inflateAttachments(item, attachments, bubble, bubble.getMaxWidth(), false, true);
             }
 
             if (!ArrayUtil.isEmpty(item.getFwdMessages())) {
@@ -623,9 +686,47 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             }
 
             avatar.setVisibility(item.isOut() ? View.GONE : View.VISIBLE);
-            space.setVisibility(avatar.getVisibility());
         }
     }
 
+    private void inflateAttachments(VKMessage item, ViewGroup parent, BoundedLinearLayout bubble, int maxWidth, boolean forwarded, boolean withStyles) {
+        final Drawable background = bubble.getBackground();
+        ArrayList<VKModel> attachments = item.getAttachments();
+        for (int i = 0; i < attachments.size(); i++) {
+            bubble.setBackground(background);
+            bubble.setVisibility(View.VISIBLE);
+            parent.setVisibility(View.VISIBLE);
+            VKModel attachment = attachments.get(i);
+            if (attachment instanceof VKAudio) {
+                attacher.audio(item, parent, (VKAudio) attachment, withStyles);
+            } else if (attachment instanceof VKPhoto) {
+                if (TextUtils.isEmpty(item.getText()))
+                    bubble.setBackgroundColor(Color.TRANSPARENT);
+
+                attacher.photo(item, parent, (VKPhoto) attachment);
+            } else if (attachment instanceof VKSticker) {
+                bubble.setBackgroundColor(Color.TRANSPARENT);
+                attacher.sticker(parent, (VKSticker) attachment, maxWidth);
+            } else if (attachment instanceof VKDoc) {
+                attacher.doc(item, parent, (VKDoc) attachment, forwarded, withStyles);
+            } else if (attachment instanceof VKLink) {
+                attacher.link(item, parent, (VKLink) attachment, withStyles);
+            } else if (attachment instanceof VKVideo) {
+                if (TextUtils.isEmpty(item.getText()))
+                    bubble.setBackgroundColor(Color.TRANSPARENT);
+
+                attacher.video(parent, (VKVideo) attachment, maxWidth);
+            } else if (attachment instanceof VKGraffiti) {
+                bubble.setBackgroundColor(Color.TRANSPARENT);
+                attacher.graffiti(parent, (VKGraffiti) attachment);
+            } else if (attachment instanceof VKVoice) {
+                attacher.voice(item, parent, (VKVoice) attachment, forwarded, withStyles);
+            } else if (attachment instanceof VKWall) {
+                attacher.wall(item, parent, (VKWall) attachment, withStyles);
+            } else {
+                attacher.empty(parent, context.getString(R.string.unknown));
+            }
+        }
+    }
 
 }

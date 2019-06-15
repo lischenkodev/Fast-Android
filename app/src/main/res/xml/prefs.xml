@@ -48,6 +48,10 @@
             android:title="@string/show_caches_users_title" />
 
         <PreferenceScreen
+            android:key="show_cached_groups"
+            android:title="@string/show_cached_groups_title" />
+
+        <PreferenceScreen
             android:key="clear_messages_cache"
             android:title="@string/clear_messages_cache" />
     </PreferenceCategory>

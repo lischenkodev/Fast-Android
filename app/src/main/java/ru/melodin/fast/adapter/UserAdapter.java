@@ -51,7 +51,7 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
 
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = inflater.inflate(R.layout.fragment_friends_item, parent, false);
+        View v = inflater.inflate(R.layout.item_user, parent, false);
         return new ViewHolder(v);
     }
 
@@ -80,9 +80,9 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
     private void setUserOnline(boolean online, int userId, int time) {
         for (int i = 0; i < getItemCount(); i++) {
             VKUser user = getItem(i);
-            if (user.id == userId) {
-                user.online = online;
-                user.last_seen = time;
+            if (user.getId() == userId) {
+                user.setOnline(online);
+                user.setLastSeen(time);
                 notifyItemChanged(i, -1);
             }
         }
@@ -143,7 +143,7 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
 
             name.setText(user.toString());
 
-            if (user.online) {
+            if (user.isOnline()) {
                 lastSeen.setVisibility(View.GONE);
                 online.setVisibility(View.VISIBLE);
             } else {
@@ -151,7 +151,7 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
                 online.setVisibility(View.GONE);
             }
 
-            String seen = getString(user.sex == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w, Util.dateFormatter.format(user.last_seen * 1000));
+            String seen = getString(user.getSex() == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w, Util.dateFormatter.format(user.getLastSeen() * 1000));
 
             if (lastSeen.getVisibility() == View.VISIBLE) {
                 lastSeen.setText(seen);
@@ -159,11 +159,11 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
                 lastSeen.setText("");
             }
 
-            if (TextUtils.isEmpty(user.photo_200)) {
+            if (TextUtils.isEmpty(user.getPhoto200())) {
                 avatar.setImageDrawable(new ColorDrawable(ColorUtil.alphaColor(ThemeManager.getPrimary(), 0.5f)));
             } else {
                 Picasso.get()
-                        .load(user.photo_200)
+                        .load(user.getPhoto200())
                         .priority(Picasso.Priority.HIGH)
                         .placeholder(placeholder)
                         .into(avatar);

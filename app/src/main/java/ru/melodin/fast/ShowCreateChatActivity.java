@@ -22,7 +22,6 @@ import java.util.ArrayList;
 
 import ru.melodin.fast.adapter.ShowCreateAdapter;
 import ru.melodin.fast.api.VKApi;
-import ru.melodin.fast.api.model.VKConversation;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
@@ -135,24 +134,23 @@ public class ShowCreateChatActivity extends AppCompatActivity {
 
             int peerId;
             StringBuilder title_;
-            VKConversation conversation;
 
             @Override
             public void ready() {
                 ArrayList<Integer> ids = new ArrayList<>();
                 for (VKUser user : adapter.getValues()) {
-                    ids.add(user.id);
+                    ids.add(user.getId());
                 }
 
                 title_ = new StringBuilder(title.getText().toString().trim());
 
                 if (TextUtils.isEmpty(title_.toString())) {
                     if (users.size() == 1) {
-                        title_.append(users.get(0).name);
+                        title_.append(users.get(0).getName());
                     } else
                         for (int i = 0; i < users.size(); i++) {
                             VKUser user = adapter.getItem(i);
-                            title_.append(user.name).append(i == users.size() ? "" : ", ");
+                            title_.append(user.getName()).append(i == users.size() ? "" : ", ");
                         }
                 }
 

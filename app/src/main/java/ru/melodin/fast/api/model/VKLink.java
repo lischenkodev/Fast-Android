@@ -6,29 +6,51 @@ import java.io.Serializable;
 
 public class VKLink extends VKModel implements Serializable {
 
-    public String url;
-    public String title;
-    public String caption;
-    public String description;
-    public String preview_page;
-    public String preview_url;
+    private static final long serialVersionUID = 1L;
 
-    public VKPhoto photo;
+    private String url;
+    private String title;
+    private String caption;
+    private String description;
+    private String previewUrl;
 
-    public VKLink() {
-    }
+    private VKPhoto photo;
 
     public VKLink(JSONObject source) {
-        tag = VKAttachments.TYPE_LINK;
         this.url = source.optString("url");
         this.title = source.optString("title");
         this.caption = source.optString("caption");
-        this.preview_url = source.optString("preview_url");
+        this.previewUrl = source.optString("preview_url");
+        this.description = source.optString("description");
 
         JSONObject linkPhoto = source.optJSONObject("photo");
         if (linkPhoto != null) {
             this.photo = new VKPhoto(linkPhoto);
         }
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getCaption() {
+        return caption;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getPreviewUrl() {
+        return previewUrl;
+    }
+
+    public VKPhoto getPhoto() {
+        return photo;
     }
 }
 

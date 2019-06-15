@@ -21,7 +21,7 @@ import static ru.melodin.fast.common.AppGlobal.database;
 import static ru.melodin.fast.database.DatabaseHelper.ACTION_TEXT;
 import static ru.melodin.fast.database.DatabaseHelper.ACTION_TYPE;
 import static ru.melodin.fast.database.DatabaseHelper.ACTION_USER_ID;
-import static ru.melodin.fast.database.DatabaseHelper.ADMIN_LEVER;
+import static ru.melodin.fast.database.DatabaseHelper.ADMIN_LEVEL;
 import static ru.melodin.fast.database.DatabaseHelper.ATTACHMENTS;
 import static ru.melodin.fast.database.DatabaseHelper.CONVERSATION_TYPE;
 import static ru.melodin.fast.database.DatabaseHelper.DATE;
@@ -332,21 +332,21 @@ public class CacheStorage {
     private static VKUser parseUser(Cursor cursor) {
         VKUser user = new VKUser();
 
-        user.id = getInt(cursor, USER_ID);
-        user.name = getString(cursor, FIRST_NAME);
-        user.surname = getString(cursor, LAST_NAME);
-        user.last_seen = getInt(cursor, LAST_SEEN);
-        user.screen_name = getString(cursor, SCREEN_NAME);
-        user.status = getString(cursor, STATUS);
-        user.photo_50 = getString(cursor, PHOTO_50);
-        user.photo_100 = getString(cursor, PHOTO_100);
-        user.photo_200 = getString(cursor, PHOTO_200);
+        user.setId(getInt(cursor, USER_ID));
+        user.setName(getString(cursor, FIRST_NAME));
+        user.setSurname(getString(cursor, LAST_NAME));
+        user.setLastSeen(getInt(cursor, LAST_SEEN));
+        user.setScreenName(getString(cursor, SCREEN_NAME));
+        user.setStatus(getString(cursor, STATUS));
+        user.setPhoto50(getString(cursor, PHOTO_50));
+        user.setPhoto100(getString(cursor, PHOTO_100));
+        user.setPhoto200(getString(cursor, PHOTO_200));
 
-        user.online = getInt(cursor, ONLINE) == 1;
-        user.online_mobile = getInt(cursor, ONLINE_MOBILE) == 1;
-        user.online_app = getInt(cursor, ONLINE_APP);
-        user.deactivated = getString(cursor, DEACTIVATED);
-        user.sex = getInt(cursor, SEX);
+        user.setOnline(getInt(cursor, ONLINE) == 1);
+        user.setOnlineMobile(getInt(cursor, ONLINE_MOBILE) == 1);
+        user.setOnlineApp(getInt(cursor, ONLINE_APP));
+        user.setDeactivated(getInt(cursor, DEACTIVATED) == 1);
+        user.setSex(getInt(cursor, SEX));
         return user;
     }
 
@@ -409,42 +409,42 @@ public class CacheStorage {
 
     private static VKGroup parseGroup(Cursor cursor) {
         VKGroup group = new VKGroup();
-        group.id = getInt(cursor, GROUP_ID);
-        group.name = getString(cursor, NAME);
-        group.screen_name = getString(cursor, SCREEN_NAME);
-        group.description = getString(cursor, DESCRIPTION);
-        group.status = getString(cursor, STATUS);
-        group.type = getInt(cursor, TYPE);
-        group.is_closed = getInt(cursor, IS_CLOSED);
-        group.admin_level = getInt(cursor, ADMIN_LEVER);
-        group.is_admin = getInt(cursor, IS_ADMIN) == 1;
-        group.photo_50 = getString(cursor, PHOTO_50);
-        group.photo_100 = getString(cursor, PHOTO_100);
-        group.photo_200 = getString(cursor, PHOTO_200);
-        group.members_count = getInt(cursor, MEMBERS_COUNT);
+        group.setId(getInt(cursor, GROUP_ID));
+        group.setName(getString(cursor, NAME));
+        group.setScreenName(getString(cursor, SCREEN_NAME));
+        group.setDescription(getString(cursor, DESCRIPTION));
+        group.setStatus(getString(cursor, STATUS));
+        group.setType(VKGroup.getType(getString(cursor, TYPE)));
+        group.setClosed(getInt(cursor, IS_CLOSED) == 1);
+        group.setAdminLevel(getInt(cursor, ADMIN_LEVEL));
+        group.setAdmin(getInt(cursor, IS_ADMIN) == 1);
+        group.setPhoto50(getString(cursor, PHOTO_50));
+        group.setPhoto100(getString(cursor, PHOTO_100));
+        group.setPhoto200(getString(cursor, PHOTO_200));
+        group.setMembersCount(getInt(cursor, MEMBERS_COUNT));
         return group;
     }
 
     private static void putValues(ContentValues values, VKUser user, boolean friends) {
         if (friends) {
             values.put(USER_ID, UserConfig.userId);
-            values.put(FRIEND_ID, user.id);
+            values.put(FRIEND_ID, user.getId());
             return;
         }
 
-        values.put(USER_ID, user.id);
-        values.put(FIRST_NAME, user.name);
-        values.put(LAST_NAME, user.surname);
-        values.put(SCREEN_NAME, user.screen_name);
-        values.put(LAST_SEEN, user.last_seen);
-        values.put(ONLINE, user.online);
-        values.put(ONLINE_MOBILE, user.online_mobile);
-        values.put(ONLINE_APP, user.online_app);
-        values.put(STATUS, user.status);
-        values.put(PHOTO_50, user.photo_50);
-        values.put(PHOTO_100, user.photo_100);
-        values.put(PHOTO_200, user.photo_200);
-        values.put(SEX, user.sex);
+        values.put(USER_ID, user.getId());
+        values.put(FIRST_NAME, user.getName());
+        values.put(LAST_NAME, user.getSurname());
+        values.put(SCREEN_NAME, user.getScreenName());
+        values.put(LAST_SEEN, user.getLastSeen());
+        values.put(ONLINE, user.isOnline());
+        values.put(ONLINE_MOBILE, user.isOnlineMobile());
+        values.put(ONLINE_APP, user.getOnlineApp());
+        values.put(STATUS, user.getStatus());
+        values.put(PHOTO_50, user.getPhoto50());
+        values.put(PHOTO_100, user.getPhoto100());
+        values.put(PHOTO_200, user.getPhoto200());
+        values.put(SEX, user.getSex());
     }
 
     private static void putValues(ContentValues values, VKConversation dialog) {
@@ -469,10 +469,10 @@ public class CacheStorage {
         if (TextUtils.isEmpty(dialog.getTitle())) {
             if (dialog.isGroup()) {
                 VKGroup group = getGroup(dialog.getLast().getPeerId());
-                values.put(TITLE, group == null ? "" : group.name);
+                values.put(TITLE, group == null ? "" : group.getName());
             } else {
                 VKUser user = getUser(dialog.getLast().getPeerId());
-                values.put(TITLE, user == null ? "" : user.name + " " + user.surname);
+                values.put(TITLE, user == null ? "" : user.getName() + " " + user.getSurname());
             }
         } else {
             values.put(TITLE, dialog.getTitle());
@@ -481,14 +481,14 @@ public class CacheStorage {
         if (TextUtils.isEmpty(dialog.getPhoto50()) && TextUtils.isEmpty(dialog.getPhoto100()) && TextUtils.isEmpty(dialog.getPhoto200())) {
             if (dialog.isGroup()) {
                 VKGroup group = getGroup(dialog.getLast().getPeerId());
-                values.put(PHOTO_50, group == null ? "" : group.photo_50);
-                values.put(PHOTO_100, group == null ? "" : group.photo_100);
-                values.put(PHOTO_200, group == null ? "" : group.photo_200);
+                values.put(PHOTO_50, group == null ? "" : group.getPhoto50());
+                values.put(PHOTO_100, group == null ? "" : group.getPhoto100());
+                values.put(PHOTO_200, group == null ? "" : group.getPhoto200());
             } else {
                 VKUser user = getUser(dialog.getLast().getPeerId());
-                values.put(PHOTO_50, user == null ? "" : user.photo_50);
-                values.put(PHOTO_100, user == null ? "" : user.photo_100);
-                values.put(PHOTO_200, user == null ? "" : user.photo_200);
+                values.put(PHOTO_50, user == null ? "" : user.getPhoto50());
+                values.put(PHOTO_100, user == null ? "" : user.getPhoto100());
+                values.put(PHOTO_200, user == null ? "" : user.getPhoto200());
             }
         } else {
             values.put(PHOTO_50, dialog.getPhoto50());
@@ -521,18 +521,18 @@ public class CacheStorage {
     }
 
     private static void putValues(ContentValues values, VKGroup group) {
-        values.put(GROUP_ID, group.id);
-        values.put(NAME, group.name);
-        values.put(SCREEN_NAME, group.screen_name);
-        values.put(DESCRIPTION, group.description);
-        values.put(STATUS, group.status);
-        values.put(TYPE, group.type);
-        values.put(IS_CLOSED, group.is_closed);
-        values.put(ADMIN_LEVER, group.admin_level);
-        values.put(IS_ADMIN, group.is_admin);
-        values.put(PHOTO_50, group.photo_50);
-        values.put(PHOTO_100, group.photo_100);
-        values.put(PHOTO_200, group.photo_200);
-        values.put(MEMBERS_COUNT, group.members_count);
+        values.put(GROUP_ID, group.getId());
+        values.put(NAME, group.getName());
+        values.put(SCREEN_NAME, group.getScreenName());
+        values.put(DESCRIPTION, group.getDescription());
+        values.put(STATUS, group.getStatus());
+        values.put(TYPE, VKGroup.getType(group.getType()));
+        values.put(IS_CLOSED, group.isClosed());
+        values.put(ADMIN_LEVEL, group.getAdminLevel());
+        values.put(IS_ADMIN, group.isAdmin());
+        values.put(PHOTO_50, group.getPhoto50());
+        values.put(PHOTO_100, group.getPhoto100());
+        values.put(PHOTO_200, group.getPhoto200());
+        values.put(MEMBERS_COUNT, group.getMembersCount());
     }
 }

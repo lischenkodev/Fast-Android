@@ -8,7 +8,9 @@ import java.util.ArrayList;
 
 import ru.melodin.fast.util.ArrayUtil;
 
-public class VKReplyMessage implements Serializable {
+public class VKReplyMessage extends VKModel implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     private int id;
     private int fromId;
@@ -17,9 +19,6 @@ public class VKReplyMessage implements Serializable {
     private int conversationMessageId;
     private ArrayList<VKModel> attachments;
     private String text;
-
-    public VKReplyMessage() {
-    }
 
     public VKReplyMessage(JSONObject o) {
         this.id = o.optInt("id", -1);

@@ -12,6 +12,8 @@ import ru.melodin.fast.util.ArrayUtil;
 
 public class VKMessage extends VKModel implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     public static final int UNREAD = 1;        //сообщение не прочитано
     public static final int OUTBOX = 2;        //исходящее сообщение
     public static final int REPLIED = 4;       //на сообщение был создан ответ

@@ -181,8 +181,8 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
 
         Intent intent = new Intent(getActivity(), MessagesActivity.class);
         intent.putExtra("title", user.toString());
-        intent.putExtra("photo", user.photo_200);
-        intent.putExtra("peer_id", user.id);
+        intent.putExtra("photo", user.getPhoto200());
+        intent.putExtra("peer_id", user.getId());
 
         boolean canWrite = !user.isDeactivated();
 

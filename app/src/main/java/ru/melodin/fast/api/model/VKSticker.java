@@ -1,44 +1,76 @@
 package ru.melodin.fast.api.model;
 
+import android.text.TextUtils;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import ru.melodin.fast.util.ArrayUtil;
+
 public class VKSticker extends VKModel implements Serializable {
 
-    public static final String TAG = "FVKSticker";
-    public int id;
-    public int product_id;
-    public String src_64, src_128, src_256, src_512;
-    public ArrayList<String> srcs;
+    private static final long serialVersionUID = 1L;
 
-    public VKSticker() {
-    }
-
-    public VKSticker(int peerId, int attId) {
-        this.product_id = peerId;
-        this.id = attId;
-    }
+    private int id;
+    private int productId;
+    private ArrayList<String> images = new ArrayList<>();
+    private ArrayList<String> backgroundImages = new ArrayList<>();
 
     public VKSticker(JSONObject source) {
-        tag = VKAttachments.TYPE_STICKER;
-        this.id = source.optInt("id");
-        this.product_id = source.optInt("product_id");
-        this.srcs = new ArrayList<>();
+        this.id = source.optInt("sticker_id");
+        this.productId = source.optInt("product_id");
 
         JSONArray images = source.optJSONArray("images");
-
         for (int i = 0; i < images.length(); i++) {
             JSONObject size = images.optJSONObject(i);
             String url = size.optString("url");
-            this.srcs.add(url);
+            this.images.add(url);
         }
 
-        this.src_64 = srcs.get(0);
-        this.src_128 = srcs.get(1);
-        this.src_256 = srcs.get(2);
-        this.src_512 = srcs.get(4);
+        JSONArray backgroundImages = source.optJSONArray("images_with_background");
+        for (int i = 0; i < backgroundImages.length(); i++) {
+            JSONObject size = backgroundImages.optJSONObject(i);
+            String url = size.optString("url");
+            this.backgroundImages.add(url);
+        }
+    }
+
+    public String getMaxSize() {
+        if (ArrayUtil.isEmpty(images)) return null;
+        for (int i = images.size() - 1; i >= 0; i--) {
+            String image = images.get(i);
+            if (!TextUtils.isEmpty(image)) {
+                return image;
+            }
+        }
+
+        return null;
+    }
+
+    public String getMaxBackgroundSize() {
+        if (ArrayUtil.isEmpty(backgroundImages)) return null;
+        for (int i = backgroundImages.size() - 1; i >= 0; i--) {
+            String image = backgroundImages.get(i);
+            if (!TextUtils.isEmpty(image)) {
+                return image;
+            }
+        }
+
+        return null;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public int getProductId() {
+        return productId;
+    }
+
+    public ArrayList<String> getImages() {
+        return images;
     }
 }

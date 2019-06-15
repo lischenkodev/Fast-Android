@@ -66,21 +66,21 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
 
             name.setText(user.toString());
 
-            online.setVisibility(user.online ? View.VISIBLE : View.GONE);
+            online.setVisibility(user.isOnline() ? View.VISIBLE : View.GONE);
 
-            String text = user.id == UserConfig.userId ? getString(R.string.chat_creator) : getString(R.string.invited_by, UserConfig.user.toString());
+            String text = user.getId() == UserConfig.userId ? getString(R.string.chat_creator) : getString(R.string.invited_by, UserConfig.user.toString());
             invited_by.setText(text);
 
-            if (TextUtils.isEmpty(user.photo_100)) {
+            if (TextUtils.isEmpty(user.getPhoto100())) {
                 avatar.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
             } else {
                 Picasso.get()
-                        .load(user.photo_100)
+                        .load(user.getPhoto100())
                         .placeholder(new ColorDrawable(Color.TRANSPARENT))
                         .into(avatar);
             }
 
-            remove.setVisibility(user.id == UserConfig.userId ? View.GONE : View.VISIBLE);
+            remove.setVisibility(user.getId() == UserConfig.userId ? View.GONE : View.VISIBLE);
 
             remove.setOnClickListener(new View.OnClickListener() {
 

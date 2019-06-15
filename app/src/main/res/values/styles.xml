@@ -5,6 +5,7 @@
     <style name="AppTheme.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorAccent">@color/accent</item>
         <item name="colorPrimary">@color/primary</item>
+        <item name="colorSecondary">?colorAccent</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="android:windowBackground">@color/background</item>
         <item name="alertDialogTheme">@style/AlertDialog.Theme.Light</item>
@@ -14,6 +15,7 @@
     <style name="AppTheme.Dark" parent="Theme.MaterialComponents.NoActionBar">
         <item name="colorAccent">@color/dark_accent</item>
         <item name="colorPrimary">@color/dark_primary</item>
+        <item name="colorSecondary">?colorAccent</item>
         <item name="colorPrimaryDark">@color/dark_primary_dark</item>
         <item name="android:windowBackground">@color/dark_background</item>
         <item name="alertDialogTheme">@style/AlertDialog.Theme.Dark</item>
@@ -23,6 +25,7 @@
     <style name="AppTheme.Login.Dark" parent="Theme.MaterialComponents.NoActionBar">
         <item name="colorAccent">@color/dark_accent</item>
         <item name="colorPrimary">@color/dark_accent</item>
+        <item name="colorSecondary">?colorAccent</item>
         <item name="colorPrimaryDark">@color/dark_primary_dark</item>
         <item name="android:windowBackground">@color/dark_background</item>
         <item name="alertDialogTheme">@style/AlertDialog.Theme.Dark</item>
@@ -32,6 +35,7 @@
     <style name="AppTheme.Login.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorAccent">@color/accent</item>
         <item name="colorPrimary">@color/accent</item>
+        <item name="colorSecondary">?colorAccent</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="android:windowBackground">@color/background</item>
         <item name="alertDialogTheme">@style/AlertDialog.Theme.Light</item>

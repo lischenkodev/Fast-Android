@@ -115,7 +115,7 @@ public class PhotoViewActivity extends AppCompatActivity {
         if (source != null)
             for (int i = 0; i < photos.size(); i++) {
                 VKPhoto photo = photos.get(i);
-                if (photo.id == source.id)
+                if (photo.getId() == source.getId())
                     selectedPosition = i;
             }
 

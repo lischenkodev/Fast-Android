@@ -1,5 +1,6 @@
 package ru.melodin.fast.api;
 
+import android.content.Context;
 import android.text.TextUtils;
 
 import java.io.IOException;
@@ -80,7 +81,7 @@ public class VKUtil {
         } else {
             VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(msg.getActionUserId()));
             if (group != null) {
-                action = group.name;
+                action = group.getName();
             }
         }
 
@@ -93,7 +94,7 @@ public class VKUtil {
         } else {
             VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(msg.getActionUserId()));
             if (group != null) {
-                u_name = group.name;
+                u_name = group.getName();
             }
         }
 
@@ -102,40 +103,40 @@ public class VKUtil {
 
         switch (msg.getAction()) {
             case CHAT_CREATE:
-                action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.created_chat_w : R.string.created_chat_m : R.string.created_chat_m), action, "«" + msg.getActionText() + "»");
+                action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.created_chat_w : R.string.created_chat_m : R.string.created_chat_m), action, "«" + msg.getActionText() + "»");
                 break;
             case CHAT_INVITE_USER:
                 if (msg.getActionUserId() == msg.getFromId()) {
-                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.returned_to_chat_w : R.string.returned_to_chat_m : R.string.returned_to_chat_m), action);
+                    action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.returned_to_chat_w : R.string.returned_to_chat_m : R.string.returned_to_chat_m), action);
                 } else {
-                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.invited_to_chat_w : R.string.invited_to_chat_m : R.string.invited_to_chat_m), action, u_name);
+                    action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.invited_to_chat_w : R.string.invited_to_chat_m : R.string.invited_to_chat_m), action, u_name);
                 }
 
                 break;
             case CHAT_KICK_USER:
                 if (msg.getActionUserId() == msg.getFromId()) {
-                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.left_the_chat_w : R.string.left_the_chat_m : R.string.left_the_chat_m), action);
+                    action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.left_the_chat_w : R.string.left_the_chat_m : R.string.left_the_chat_m), action);
                 } else {
-                    action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.kicked_from_chat_w : R.string.kicked_from_chat_m : R.string.kicked_from_chat_m), action, u_name);
+                    action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.kicked_from_chat_w : R.string.kicked_from_chat_m : R.string.kicked_from_chat_m), action, u_name);
                 }
                 break;
             case CHAT_PHOTO_REMOVE:
-                action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.remove_chat_photo_w : R.string.remove_chat_photo_m : R.string.remove_chat_photo_m), action);
+                action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.remove_chat_photo_w : R.string.remove_chat_photo_m : R.string.remove_chat_photo_m), action);
                 break;
             case CHAT_PHOTO_UPDATE:
-                action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.updated_chat_photo_w : R.string.updated_chat_photo_m : R.string.updated_chat_photo_m), action);
+                action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.updated_chat_photo_w : R.string.updated_chat_photo_m : R.string.updated_chat_photo_m), action);
                 break;
             case CHAT_TITLE_UPDATE:
-                action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.updated_title_w : R.string.updated_title_m : R.string.updated_title_m), action, "«" + msg.getActionText() + "»");
+                action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.updated_title_w : R.string.updated_title_m : R.string.updated_title_m), action, "«" + msg.getActionText() + "»");
                 break;
             case CHAT_INVITE_USER_BY_LINK:
-                action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.invited_by_link_w : R.string.invited_by_link_m : R.string.invited_by_link_m), action);
+                action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.invited_by_link_w : R.string.invited_by_link_m : R.string.invited_by_link_m), action);
                 break;
             case CHAT_PIN_MESSAGE:
-                action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.pinned_message_w : R.string.pinned_message_m : R.string.pinned_message_m), action);
+                action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.pinned_message_w : R.string.pinned_message_m : R.string.pinned_message_m), action);
                 break;
             case CHAT_UNPIN_MESSAGE:
-                action = String.format(getString(u != null ? u.sex == VKUser.Sex.FEMALE ? R.string.unpinned_message_w : R.string.unpinned_message_m : R.string.unpinned_message_m), action);
+                action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.unpinned_message_w : R.string.unpinned_message_m : R.string.unpinned_message_m), action);
                 break;
         }
 
@@ -161,6 +162,21 @@ public class VKUtil {
         }
 
         return s;
+    }
+
+    public static String getGroupStringType(Context context, VKGroup.Type type) {
+        if (type == null || context == null) return null;
+
+        switch (type) {
+            case EVENT:
+                return context.getString(R.string.event);
+            case PAGE:
+                return context.getString(R.string.page);
+            case GROUP:
+                return context.getString(R.string.group);
+        }
+
+        return null;
     }
 
     public static String getErrorReason(VKConversation.Reason reason) {

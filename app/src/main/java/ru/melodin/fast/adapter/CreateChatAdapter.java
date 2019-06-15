@@ -129,7 +129,7 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
 
             name.setText(user.toString());
 
-            if (user.online) {
+            if (user.isOnline()) {
                 lastSeen.setVisibility(View.GONE);
                 online.setVisibility(View.VISIBLE);
             } else {
@@ -139,9 +139,9 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
 
             selected.setChecked(user.isSelected());
 
-            String seen_text = getString(user.sex == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w);
+            String seen_text = getString(user.getSex() == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w);
 
-            String seen = String.format(seen_text, Util.dateFormatter.format(user.last_seen * 1000));
+            String seen = String.format(seen_text, Util.dateFormatter.format(user.getLastSeen() * 1000));
 
             if (lastSeen.getVisibility() == View.VISIBLE) {
                 lastSeen.setText(seen);
@@ -149,11 +149,11 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
                 lastSeen.setText("");
             }
 
-            if (TextUtils.isEmpty(user.photo_100)) {
+            if (TextUtils.isEmpty(user.getPhoto100())) {
                 avatar.setImageDrawable(placeholder);
             } else {
                 Picasso.get()
-                        .load(user.photo_100)
+                        .load(user.getPhoto100())
                         .priority(Picasso.Priority.HIGH)
                         .placeholder(placeholder)
                         .into(avatar);

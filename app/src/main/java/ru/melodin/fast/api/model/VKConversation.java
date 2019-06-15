@@ -12,6 +12,8 @@ import java.util.ArrayList;
 
 public class VKConversation extends VKModel implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     public static int count;
     public static ArrayList<VKUser> users = new ArrayList<>();
     public static ArrayList<VKGroup> groups = new ArrayList<>();
@@ -152,7 +154,7 @@ public class VKConversation extends VKModel implements Serializable {
             last = new VKMessage(msg);
 
         JSONObject peer = o.optJSONObject("peer");
-        this.type = msg != null ? getType(this.last.getPeerId()) : getType(peer.optString("type"));
+        this.type = peer == null ? Type.USER : getType(peer.optString("type"));
 
         this.readIn = o.optInt("in_read");
         this.readOut = o.optInt("out_read");

@@ -18,19 +18,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import ru.melodin.fast.CreateChatActivity;
 import ru.melodin.fast.MessagesActivity;
 import ru.melodin.fast.R;
-import ru.melodin.fast.adapter.DialogAdapter;
+import ru.melodin.fast.adapter.ConversationAdapter;
 import ru.melodin.fast.adapter.RecyclerAdapter;
-import ru.melodin.fast.api.LongPollEvents;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.model.VKConversation;
 import ru.melodin.fast.api.model.VKGroup;
@@ -54,20 +49,21 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
     private SwipeRefreshLayout refreshLayout;
     private RecyclerView list;
     private Toolbar tb;
-    private DialogAdapter adapter;
+    private ConversationAdapter adapter;
 
     private View empty;
-
-    @Override
-    public void onDestroy() {
-        EventBus.getDefault().unregister(this);
-        super.onDestroy();
-    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTitle(getString(R.string.fragment_messages));
+    }
+
+    @Override
+    public void onDestroy() {
+        if (adapter != null)
+            adapter.destroy();
+        super.onDestroy();
     }
 
     @Nullable
@@ -78,7 +74,6 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        EventBus.getDefault().register(this);
         super.onViewCreated(view, savedInstanceState);
         initViews(view);
 
@@ -150,7 +145,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
         if (ArrayUtil.isEmpty(conversations)) return;
 
         if (adapter == null) {
-            adapter = new DialogAdapter(this, conversations);
+            adapter = new ConversationAdapter(this, conversations);
             adapter.setOnItemClickListener(this);
             adapter.setOnItemLongClickListener(this);
             list.setAdapter(adapter);
@@ -164,51 +159,6 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
         adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
 
         checkCount();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void onReceive(Object[] data) {
-        if (ArrayUtil.isEmpty(data)) return;
-
-        String key = (String) data[0];
-
-        switch (key) {
-            case LongPollEvents.KEY_USER_OFFLINE:
-                adapter.setUserOnline(false, (int) data[1], (int) data[2]);
-                break;
-            case LongPollEvents.KEY_USER_ONLINE:
-                adapter.setUserOnline(true, (int) data[1], (int) data[2]);
-                break;
-            case LongPollEvents.KEY_MESSAGE_CLEAR_FLAGS:
-                adapter.handleClearFlags(data);
-                break;
-            case LongPollEvents.KEY_MESSAGE_NEW:
-                VKConversation conversation = (VKConversation) data[1];
-                adapter.addMessage(conversation);
-                break;
-            case LongPollEvents.KEY_MESSAGE_EDIT:
-                VKMessage message = (VKMessage) data[1];
-                adapter.editMessage(message);
-                break;
-            case LongPollEvents.KEY_MESSAGE_UPDATE:
-                adapter.updateMessage((VKMessage) data[1]);
-                break;
-            case FragmentSettings.KEY_MESSAGES_CLEAR_CACHE:
-                adapter.clear();
-                adapter.notifyDataSetChanged();
-                checkCount();
-                onRefresh();
-                break;
-            case LongPollEvents.KEY_NOTIFICATIONS_CHANGE:
-                adapter.changeNotifications((int) data[1], (boolean) data[2], (int) data[3]);
-                break;
-            case "update_user":
-                adapter.updateUser((int) data[1]);
-                break;
-            case "update_group":
-                adapter.updateGroup((int) data[1]);
-                break;
-        }
     }
 
     private void getCachedConversations() {
@@ -230,7 +180,7 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
                 conversations = VKApi.messages().getConversations()
                         .filter("all")
                         .extended(true)
-                        .fields(VKUser.FIELDS_DEFAULT)
+                        .fields(VKUser.FIELDS_DEFAULT + ", " + VKGroup.FIELDS_DEFAULT)
                         .count(count)
                         .offset(offset)
                         .execute(VKConversation.class);

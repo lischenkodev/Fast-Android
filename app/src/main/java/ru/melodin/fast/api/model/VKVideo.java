@@ -8,80 +8,55 @@ import java.io.Serializable;
 
 public class VKVideo extends VKModel implements Serializable {
 
-    public int id;
-    public int owner_id;
-    public int album_id;
-    public String title;
-    public String description;
-    public int duration;
-    public String link;
-    public long date;
-    public int views;
-    public String player;
-    public String photo_130;
-    public String photo_320;
-    public String photo_640;
-    public String access_key;
-    public int comments;
-    public boolean can_comment;
-    public boolean can_repost;
-    public boolean user_likes;
-    public boolean repeat;
-    public int likes;
-    public int privacy_view;
-    public int privacy_comment;
-    public String mp4_240;
-    public String mp4_360;
-    public String mp4_480;
-    public String mp4_720;
-    public String mp4_1080;
-    public String external;
+    private static final long serialVersionUID = 1L;
+
+    private int id;
+    private int owner_id;
+    private String title;
+    private String description;
+    private int duration;
+    private long date;
+
+    private String player;
+
+    private String photo130;
+    private String photo320;
+    private String photo640;
+    private String photo800;
+    private String photo1280;
+
+    private String access_key;
 
     public VKVideo() {
     }
 
-    public VKVideo(int peerId, int attId) {
-        this.owner_id = peerId;
-        this.id = attId;
-    }
-
     public VKVideo(JSONObject source) {
-        tag = VKAttachments.TYPE_VIDEO;
         this.id = source.optInt("id");
         this.owner_id = source.optInt("owner_id");
         this.title = source.optString("title");
         this.description = source.optString("description");
         this.duration = source.optInt("duration");
-        this.link = source.optString("link");
         this.date = source.optLong("date");
-        this.views = source.optInt("views");
-        this.comments = source.optInt("comments");
         this.player = source.optString("player");
         this.access_key = source.optString("access_key");
-        this.album_id = source.optInt("album_id");
 
-        this.photo_130 = source.optString("photo_130");
-        this.photo_320 = source.optString("photo_320");
-        this.photo_640 = source.optString("photo_640");
+        this.photo130 = source.optString("photo_130");
+        this.photo320 = source.optString("photo_320");
+        this.photo640 = source.optString("photo_640");
+        this.photo800 = source.optString("photo_800");
+        this.photo1280 = source.optString("photo_1280");
+    }
 
-        JSONObject likes = source.optJSONObject("likes");
-        if (likes != null) {
-            this.likes = likes.optInt("count");
-            this.user_likes = likes.optInt("user_likes") == 1;
-        }
-        this.can_comment = source.optInt("can_comment") == 1;
-        this.can_repost = source.optInt("can_repost") == 1;
-        this.repeat = source.optInt("repeat") == 1;
-
-        JSONObject files = source.optJSONObject("files");
-        if (files != null) {
-            this.mp4_240 = files.optString("mp4_240");
-            this.mp4_360 = files.optString("mp4_360");
-            this.mp4_480 = files.optString("mp4_480");
-            this.mp4_720 = files.optString("mp4_720");
-            this.mp4_1080 = files.optString("mp4_1080");
-            this.external = files.optString("external");
-        }
+    public String getMaxSize() {
+        return
+                TextUtils.isEmpty(photo1280) ?
+                        TextUtils.isEmpty(photo800) ?
+                                TextUtils.isEmpty(photo640) ?
+                                        TextUtils.isEmpty(photo320) ? photo130 :
+                                                photo320 :
+                                        photo640 :
+                                photo800 :
+                        photo1280;
     }
 
     public CharSequence toAttachmentString() {
@@ -96,5 +71,58 @@ public class VKVideo extends VKModel implements Serializable {
     @Override
     public String toString() {
         return title;
+    }
+
+
+    public int getId() {
+        return id;
+    }
+
+    public int getOwner_id() {
+        return owner_id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public long getDate() {
+        return date;
+    }
+
+    public String getPlayer() {
+        return player;
+    }
+
+    public String getPhoto130() {
+        return photo130;
+    }
+
+    public String getPhoto320() {
+        return photo320;
+    }
+
+    public String getPhoto640() {
+        return photo640;
+    }
+
+    public String getPhoto800() {
+        return photo800;
+    }
+
+    public String getPhoto1280() {
+        return photo1280;
+    }
+
+    public String getAccess_key() {
+        return access_key;
     }
 }

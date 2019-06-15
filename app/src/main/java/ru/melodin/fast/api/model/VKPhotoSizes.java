@@ -8,6 +8,8 @@ import java.util.ArrayList;
 
 public class VKPhotoSizes extends VKModel implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private ArrayList<PhotoSize> sizes;
 
     VKPhotoSizes(JSONArray array) {
@@ -28,28 +30,19 @@ public class VKPhotoSizes extends VKModel implements Serializable {
     public PhotoSize forType(String type) {
         for (PhotoSize size : sizes) {
             if (size.type.equals(type)) {
-
                 return size;
             }
         }
 
-        return PhotoSize.EMPTY;
+        return null;
     }
 
     public static class PhotoSize extends VKModel implements Serializable {
-        static PhotoSize EMPTY = new PhotoSize() {
-            public String src = "";
-            public int width = 0;
-            public int height = 0;
-            public String type = "none";
-        };
-        public String src;
-        public int width;
-        public int height;
-        public String type;
 
-        PhotoSize() {
-        }
+        private String src;
+        private int width;
+        private int height;
+        private String type;
 
         PhotoSize(JSONObject o) {
             this(o, false);
@@ -61,5 +54,25 @@ public class VKPhotoSizes extends VKModel implements Serializable {
             this.height = source.optInt("height");
             this.type = source.optString("type");
         }
+
+        public String getSrc() {
+            return src;
+        }
+
+        public int getWidth() {
+            return width;
+        }
+
+        public int getHeight() {
+            return height;
+        }
+
+        public String getType() {
+            return type;
+        }
+    }
+
+    public ArrayList<PhotoSize> getSizes() {
+        return sizes;
     }
 }

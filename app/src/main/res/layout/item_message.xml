@@ -12,83 +12,70 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <FrameLayout
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_gravity="center_vertical|top"
-            android:layout_marginStart="4dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="4dp">
-
-            <ru.melodin.fast.view.CircleImageView
-                android:id="@+id/avatar"
-                android:layout_width="@dimen/avatar_chat_size"
-                android:layout_height="@dimen/avatar_chat_size"
-                android:layout_gravity="center" />
-
-        </FrameLayout>
-
         <ru.melodin.fast.view.CircleImageView
-            android:id="@+id/read_indicator"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_gravity="center_vertical"
-            android:clickable="false"
-            android:tint="?colorAccent"
-            android:visibility="gone" />
+            android:id="@+id/avatar"
+            android:layout_width="@dimen/avatar_chat_size"
+            android:layout_height="@dimen/avatar_chat_size"
+            android:layout_gravity="center_vertical|top"
+            android:layout_margin="4dp"
+            tools:src="@drawable/user" />
 
         <LinearLayout
             android:id="@+id/bubble_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingBottom="4dp">
+            android:orientation="vertical">
 
             <ru.melodin.fast.view.BoundedLinearLayout
                 android:id="@+id/bubble"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
-                android:layout_marginTop="4dp"
-                android:layout_marginEnd="6dp"
+                android:layout_margin="4dp"
                 android:background="@drawable/msg_in_bg"
                 android:minHeight="40dp"
                 android:orientation="vertical"
-                android:padding="3dp">
+                android:padding="4dp">
 
                 <TextView
                     android:id="@+id/text"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="start|center"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginBottom="10dp"
+                    android:layout_margin="6dp"
+                    android:layout_weight="1"
                     android:autoLink="all"
                     android:gravity="start|center"
                     android:linksClickable="true"
-                    android:textSize="14sp"
                     tools:text="Body" />
 
-                <LinearLayout
-                    android:id="@+id/attachments"
+                <FrameLayout
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="vertical"
-                    android:padding="4dp" />
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:id="@+id/attachments"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="18dp"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:padding="6dp"
+                        tools:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/time"
+                        android:layout_width="match_parent"
+                        android:layout_height="14dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_marginStart="6dp"
+                        android:layout_marginEnd="6dp"
+                        android:layout_marginBottom="6dp"
+                        android:textSize="12sp"
+                        android:visibility="visible"
+                        tools:text="03:15" />
+                </FrameLayout>
 
             </ru.melodin.fast.view.BoundedLinearLayout>
-
-            <LinearLayout
-                android:id="@+id/photos"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
-                android:orientation="vertical" />
 
         </LinearLayout>
 
@@ -102,20 +89,6 @@
         android:orientation="horizontal"
         android:paddingStart="12dp"
         android:paddingEnd="12dp">
-
-        <Space
-            android:id="@+id/space"
-            android:layout_width="50dp"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:id="@+id/time"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center|end"
-            android:textSize="12sp"
-            android:visibility="visible"
-            tools:text="03:15" />
 
         <ImageView
             android:id="@+id/important"
@@ -135,7 +108,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="6dp"
+        android:padding="4dp"
         android:visibility="gone" />
 
 </LinearLayout>

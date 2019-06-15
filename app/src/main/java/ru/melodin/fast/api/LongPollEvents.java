@@ -224,9 +224,9 @@ public class LongPollEvents {
 
         VKUser user = MemoryCache.getUser(userId);
         if (user != null) {
-            user.last_seen = time;
-            user.online = false;
-            user.online_mobile = false;
+            user.setOnline(false);
+            user.setOnlineMobile(false);
+            user.setLastSeen(time);
         }
 
         EventBus.getDefault().postSticky(new Object[]{KEY_USER_OFFLINE, userId, time, timeout});
@@ -238,9 +238,9 @@ public class LongPollEvents {
 
         VKUser user = MemoryCache.getUser(userId);
         if (user != null) {
-            user.last_seen = time;
-            user.online = true;
-            user.online_mobile = true;
+            user.setOnline(true);
+            user.setOnlineMobile(false);
+            user.setLastSeen(time);
         }
 
         EventBus.getDefault().postSticky(new Object[]{KEY_USER_ONLINE, userId, time});

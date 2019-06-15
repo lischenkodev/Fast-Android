@@ -4,7 +4,6 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -28,7 +27,6 @@ import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.concurrent.TimeUnit;
 
 import ru.melodin.fast.PhotoViewActivity;
 import ru.melodin.fast.R;
@@ -49,6 +47,7 @@ import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
+import ru.melodin.fast.view.CircleImageView;
 
 public class AttachmentInflater {
 
@@ -84,7 +83,7 @@ public class AttachmentInflater {
             } else if (attachment instanceof VKPhoto) {
                 photo(item, images, (VKPhoto) attachment);
             } else if (attachment instanceof VKSticker) {
-                sticker(parent, (VKSticker) attachment);
+                sticker(images, (VKSticker) attachment, maxWidth);
             } else if (attachment instanceof VKDoc) {
                 doc(item, parent, (VKDoc) attachment, forwarded, withStyles);
             } else if (attachment instanceof VKLink) {
@@ -135,9 +134,17 @@ public class AttachmentInflater {
     }
 
     private LinearLayout.LayoutParams getParams() {
-        return new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
+        return getParams(-1);
+    }
+
+    private LinearLayout.LayoutParams getParams(int layoutWidth) {
+        return layoutWidth == -1 ?
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT) :
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        getHeight(layoutWidth));
     }
 
     private FrameLayout.LayoutParams getFrameParams(int layoutWidth) {
@@ -218,11 +225,11 @@ public class AttachmentInflater {
         parent.addView(image);
     }
 
-    public void sticker(ViewGroup parent, VKSticker source) {
+    public void sticker(ViewGroup parent, VKSticker source, int maxWidth) {
         final ImageView image = (ImageView) inflater.inflate(R.layout.activity_messages_attach_photo, parent, false);
 
-        image.setLayoutParams(getParams());
-        loadImage(image, source.src_256, null);
+        image.setLayoutParams(getParams(maxWidth));
+        loadImage(image, ThemeManager.isDark() ? source.getMaxBackgroundSize() : source.getMaxSize(), null);
 
         image.setClickable(false);
         image.setFocusable(false);
@@ -244,20 +251,18 @@ public class AttachmentInflater {
         parent.addView(text);
     }
 
-    public void video(ViewGroup parent, final VKVideo source, int width) {
+    public void video(ViewGroup parent, final VKVideo source, int maxWidth) {
         View v = inflater.inflate(R.layout.activity_messages_attach_video, parent, false);
 
         ImageView image = v.findViewById(R.id.image);
-        TextView title = v.findViewById(R.id.title);
         TextView time = v.findViewById(R.id.time);
 
-        String duration = Util.dateFormatter.format(TimeUnit.SECONDS.toMillis(source.duration));
-
-        title.setText(source.title);
+        String duration = String.format(AppGlobal.locale, "%d:%02d", source.getDuration() / 60, source.getDuration() % 60);
         time.setText(duration);
-        image.setLayoutParams(getFrameParams(width));
 
-        loadImage(image, source.photo_130, source.photo_320);
+        image.setLayoutParams(getFrameParams(maxWidth != -1 ? maxWidth : (int) (metrics.widthPixels / 1.5)));
+
+        loadImage(image, source.getMaxSize(), null);
         parent.addView(v);
     }
 
@@ -285,8 +290,7 @@ public class AttachmentInflater {
             }
         });
 
-        if (source.sizes != null)
-            loadImage(image, source.getMaxSize(), source.getMaxSize());
+        loadImage(image, source.getMaxSize(), null);
         parent.addView(image);
     }
 
@@ -305,12 +309,12 @@ public class AttachmentInflater {
             user = VKUser.EMPTY;
         }
 
-        if (TextUtils.isEmpty(user.photo_100)) {
+        if (TextUtils.isEmpty(user.getPhoto100())) {
             avatar.setVisibility(View.GONE);
         } else {
             avatar.setVisibility(View.VISIBLE);
             Picasso.get()
-                    .load(user.photo_100)
+                    .load(user.getPhoto100())
                     .priority(Picasso.Priority.HIGH)
                     .placeholder(new ColorDrawable(ColorUtil.darkenColor(ThemeManager.getPrimary())))
                     .into(avatar);
@@ -376,9 +380,9 @@ public class AttachmentInflater {
         TextView size = v.findViewById(R.id.body);
         ImageView icon = v.findViewById(R.id.icon);
 
-        title.setText(source.title);
+        title.setText(source.getTitle());
 
-        String size_ = Util.parseSize(source.size) + " • " + source.ext.toUpperCase();
+        String size_ = Util.parseSize(source.getSize()) + " • " + source.getExt().toUpperCase();
         size.setText(size_);
 
         title.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
@@ -402,30 +406,17 @@ public class AttachmentInflater {
             iconColor = titleColor;
         }
 
-        Drawable drawable = context.getResources().getDrawable(R.drawable.ic_vector_file);
-        drawable.setTint(iconColor);
-
-        icon.setImageDrawable(drawable);
+        icon.getDrawable().setTint(iconColor);
 
         title.setTextColor(titleColor);
         size.setTextColor(bodyColor);
-
-        if (source.photo_sizes != null) {
-            String src = source.photo_sizes.forType("s").src;
-
-            if (!TextUtils.isEmpty(src))
-                Picasso.get()
-                        .load(src)
-                        .placeholder(new ColorDrawable(ColorUtil.darkenColor(ThemeManager.getPrimary())))
-                        .into(icon);
-        }
 
         parent.addView(v);
         v.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View p1) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(source.url));
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(source.getUrl()));
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 context.startActivity(intent);
             }
@@ -441,7 +432,7 @@ public class AttachmentInflater {
 
         ImageButton play = v.findViewById(R.id.play);
 
-        String duration = String.format(AppGlobal.locale, "%d:%02d", source.duration / 60, source.duration % 60);
+        String duration = String.format(AppGlobal.locale, "%d:%02d", source.getDuration() / 60, source.getDuration() % 60);
         title.setText(context.getString(R.string.voice_message));
         body.setText(duration);
 
@@ -463,10 +454,7 @@ public class AttachmentInflater {
             iconColor = titleColor;
         }
 
-        Drawable drawable = context.getResources().getDrawable(R.drawable.ic_vector_play_arrow);
-        drawable.setColorFilter(iconColor, PorterDuff.Mode.MULTIPLY);
-
-        play.setImageDrawable(drawable);
+        play.getDrawable().setTint(iconColor);
 
         time.setTextColor(bodyColor);
         title.setTextColor(titleColor);
@@ -489,20 +477,18 @@ public class AttachmentInflater {
 
         ImageButton play = v.findViewById(R.id.play);
 
-        String duration = String.format(AppGlobal.locale, "%d:%02d",
-                source.duration / 60,
-                source.duration % 60);
-        title.setText(source.title);
-        body.setText(source.artist);
+        String duration = String.format(AppGlobal.locale, "%d:%02d", source.getDuration() / 60, source.getDuration() % 60);
+        title.setText(source.getTitle());
+        body.setText(source.getArtist());
         time.setText(duration);
 
         @ColorInt int titleColor, bodyColor, iconColor;
 
         if (withStyles) {
             if (item.isOut()) {
-                iconColor = ThemeManager.getAccent();
+                iconColor = Color.WHITE;
                 titleColor = Color.WHITE;
-                bodyColor = ColorUtil.darkenColor(titleColor);
+                bodyColor = ColorUtil.darkenColor(titleColor, 0.9f);
             } else {
                 iconColor = Color.WHITE;
                 titleColor = ThemeManager.getPrimaryInverse();
@@ -514,10 +500,7 @@ public class AttachmentInflater {
             iconColor = titleColor;
         }
 
-        Drawable arrow = context.getResources().getDrawable(R.drawable.ic_vector_play_arrow);
-        arrow.setTint(iconColor);
-
-        play.setImageDrawable(arrow);
+        play.getDrawable().setTint(iconColor);
 
         time.setTextColor(bodyColor);
         title.setTextColor(titleColor);
@@ -531,19 +514,42 @@ public class AttachmentInflater {
     }
 
     public void link(VKMessage item, ViewGroup parent, final VKLink source, boolean withStyles) {
-        View v = inflater.inflate(R.layout.activity_messages_attach_doc, parent, false);
+        View v = inflater.inflate(R.layout.activity_messages_attach_link, parent, false);
 
         TextView title = v.findViewById(R.id.title);
-        TextView body = v.findViewById(R.id.body);
+        TextView description = v.findViewById(R.id.description);
         ImageView icon = v.findViewById(R.id.icon);
+        CircleImageView photo = v.findViewById(R.id.photo);
 
-        title.setText(source.title);
-        body.setText(TextUtils.isEmpty(source.description) ? source.caption : source.description);
+        title.setText(source.getTitle());
+
+        String body = TextUtils.isEmpty(source.getCaption()) ? TextUtils.isEmpty(source.getDescription()) ? "" : source.getDescription() : source.getCaption();
+
+        if (body.isEmpty()) {
+            description.setVisibility(View.GONE);
+            description.setText("");
+        } else {
+            description.setVisibility(View.VISIBLE);
+            description.setText(body);
+        }
+
+        if (TextUtils.isEmpty(source.getPhoto().getMaxSize())) {
+            photo.setVisibility(View.GONE);
+            icon.setVisibility(View.VISIBLE);
+        } else {
+            photo.setVisibility(View.VISIBLE);
+            icon.setVisibility(View.GONE);
+
+            Picasso.get()
+                    .load(source.getPhoto().getMaxSize())
+                    .into(photo);
+        }
 
         title.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
-        body.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
+        description.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
 
-        @ColorInt int titleColor, bodyColor, iconColor;
+        @ColorInt
+        int titleColor, bodyColor, iconColor;
 
         if (withStyles) {
             if (item.isOut()) {
@@ -561,13 +567,9 @@ public class AttachmentInflater {
             iconColor = titleColor;
         }
 
-        Drawable arrow = context.getResources().getDrawable(R.drawable.ic_vector_link_arrow);
-        arrow.setTint(iconColor);
-
-        icon.setImageDrawable(arrow);
-
+        icon.getDrawable().setTint(iconColor);
         title.setTextColor(titleColor);
-        body.setTextColor(bodyColor);
+        description.setTextColor(bodyColor);
 
         parent.addView(v);
 
@@ -575,7 +577,7 @@ public class AttachmentInflater {
 
             @Override
             public void onClick(View p1) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(source.url));
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(source.getUrl()));
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.setPackage("com.android.chrome");
                 try {
