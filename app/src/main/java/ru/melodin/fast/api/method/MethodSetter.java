@@ -17,11 +17,6 @@ public class MethodSetter {
     private String name;
     private ArrayMap<String, String> params;
 
-    /**
-     * Creates a new Method Setter
-     *
-     * @param name the vk method name, e.g. users.get
-     */
     public MethodSetter(String name) {
         this.name = name;
         this.params = new ArrayMap<>();
@@ -110,9 +105,6 @@ public class MethodSetter {
         return null;
     }
 
-    /**
-     * User ID. By default, the current avatar_placeholder ID
-     */
     public MethodSetter userId(int value) {
         return put("user_id", value);
     }
@@ -125,9 +117,6 @@ public class MethodSetter {
         return put("user_ids", ArrayUtil.toString(ids.toArray()));
     }
 
-    /**
-     * ID of the avatar_placeholder or community, e.g. audios.get
-     */
     public MethodSetter ownerId(int value) {
         return put("owner_id", value);
     }
@@ -164,50 +153,26 @@ public class MethodSetter {
         return put("time", value);
     }
 
-    /**
-     * Order to return a list
-     */
     public MethodSetter order(String value) {
         return put("order", value);
     }
 
-    /**
-     * Offset needed to return a specific subset.
-     */
     public MethodSetter offset(int value) {
         return put("offset", value);
     }
 
-    /**
-     * Case for declension of avatar_placeholder name and surname:
-     * nom — nominative (default)
-     * gen — genitive
-     * dat — dative
-     * acc — accusative
-     * ins — instrumental
-     * abl — prepositional
-     */
     public MethodSetter nameCase(String value) {
         return put("name_case", value);
     }
 
-    /**
-     * Captcha Sid, specifies for Captcha needed error.
-     */
     public MethodSetter captchaSid(String value) {
         return put("captcha_sid", value);
     }
 
-    /**
-     * Captcha key, specifies for Captcha needed error.
-     */
     public MethodSetter captchaKey(String value) {
         return put("captcha_key", value);
     }
 
-    /**
-     * Uses a separate config for this request (Access Token)
-     */
     public MethodSetter withConfig(UserConfig config) {
         return put("access_token", UserConfig.accessToken);
     }

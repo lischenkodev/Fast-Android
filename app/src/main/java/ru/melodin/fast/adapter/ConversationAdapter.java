@@ -429,7 +429,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             @Override
             public void error(Exception e) {
                 loadingIds.remove(userId);
-                Log.e("Error load avatar", Log.getStackTraceString(e));
+                Log.e("Error load user", Log.getStackTraceString(e));
             }
         });
     }

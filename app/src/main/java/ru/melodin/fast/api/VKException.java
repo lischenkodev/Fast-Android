@@ -1,49 +1,18 @@
 package ru.melodin.fast.api;
 
+import androidx.annotation.Nullable;
+
 import java.io.IOException;
 
-
-/**
- * Thrown when server vk could not handle the request
- * see website to get description of error codes: http://vk.com/dev/errors
- * <p/>
- * Check {@link ErrorCodes} to get descriptions of error codes.
- */
 public class VKException extends IOException {
-    public String url;
-    public String message;
-    public int code;
 
-    /**
-     * Captcha ID,
-     * see http://vk.com/dev/captcha_error
-     */
-    public String captchaSid;
-    /**
-     * Link to image, you want to show the avatar_placeholder,
-     * that he typed text from this image
-     * <p/>
-     * see http://vk.com/dev/captcha_error
-     */
-    public String captchaImg;
+    private String url;
+    private String message;
+    private int code;
+    private String captchaSid;
+    private String captchaImg;
+    private String redirectUri;
 
-    /**
-     * In some cases, VK requires passing a validation procedure of the avatar_placeholder,
-     * resulting in since version 5.0 API
-     * (for older versions will be prompted captcha_error)
-     * any request to API the following error is returned
-     * <p/>
-     * see http://vk.com/dev/need_validation
-     */
-    public String redirectUri;
-
-    /**
-     * Constructs a new {@code VKException}
-     *
-     * @param url     the url of executed request
-     * @param message the detail error message for this exception
-     * @param code    the error code
-     */
     public VKException(String url, String message, int code) {
         super(message);
         this.url = url;
@@ -54,5 +23,43 @@ public class VKException extends IOException {
     @Override
     public String toString() {
         return message;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    @Nullable
+    @Override
+    public String getMessage() {
+        return message;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public String getCaptchaSid() {
+        return captchaSid;
+    }
+
+    public String getCaptchaImg() {
+        return captchaImg;
+    }
+
+    public String getRedirectUri() {
+        return redirectUri;
+    }
+
+    public void setCaptchaSid(String captchaSid) {
+        this.captchaSid = captchaSid;
+    }
+
+    public void setCaptchaImg(String captchaImg) {
+        this.captchaImg = captchaImg;
+    }
+
+    public void setRedirectUri(String redirectUri) {
+        this.redirectUri = redirectUri;
     }
 }

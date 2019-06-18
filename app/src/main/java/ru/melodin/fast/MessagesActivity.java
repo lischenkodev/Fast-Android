@@ -302,7 +302,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
             @Override
             public void error(Exception e) {
-                Log.e("Error load dialog", Log.getStackTraceString(e));
+                Log.e("Error load dialogs", Log.getStackTraceString(e));
                 Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
             }
         });
@@ -730,7 +730,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
             @Override
             public void error(Exception e) {
-                Log.e("Error load avatar_placeholder", Log.getStackTraceString(e));
+                Log.e("Error load user", Log.getStackTraceString(e));
             }
         });
     }

@@ -49,7 +49,7 @@ public class VKApi {
         try {
             checkError(json, url);
         } catch (VKException ex) {
-            if (ex.code == ErrorCodes.TOO_MANY_REQUESTS) {
+            if (ex.getCode() == ErrorCodes.TOO_MANY_REQUESTS) {
                 return execute(url, cls);
             } else throw ex;
         }
@@ -202,81 +202,40 @@ public class VKApi {
 
             VKException e = new VKException(url, message, code);
             if (code == ErrorCodes.CAPTCHA_NEEDED) {
-                e.captchaImg = error.optString("captcha_img");
-                e.captchaSid = error.optString("captcha_sid");
+                e.setCaptchaImg(error.optString("captcha_img"));
+                e.setCaptchaSid(error.optString("captcha_sid"));
             }
             if (code == ErrorCodes.VALIDATION_REQUIRED) {
-                e.redirectUri = error.optString("redirect_uri");
+                e.setRedirectUri(error.optString("redirect_uri"));
             }
             throw e;
         }
     }
 
-    /**
-     * Methods for users
-     */
     public static VKUsers users() {
         return new VKUsers();
     }
-
-    /**
-     * Methods for friends
-     */
     public static VKFriends friends() {
         return new VKFriends();
     }
-
-    /**
-     * Methods for messages
-     */
     public static VKMessages messages() {
         return new VKMessages();
     }
-
-    /**
-     * Methods for conversation_groups
-     */
     public static VKGroups groups() {
         return new VKGroups();
     }
-
-    /**
-     * Methods for apps
-     */
     public static VKApps apps() {
         return new VKApps();
     }
-
-    /**
-     * Methods for account
-     */
     public static VKAccounts account() {
         return new VKAccounts();
     }
-
     public static VKStats stats() {
         return new VKStats();
     }
 
-    /**
-     * Callback for Async execute
-     */
     public interface OnResponseListener<E> {
-        /**
-         * Called when successfully receiving the response from web
-         *
-         * @param models parsed json objects
-         */
         void onSuccess(ArrayList<E> models);
-
-        /**
-         * Called when an error occurs on the server side
-         * Visit website to get description of error codes: http://vk.com/dev/errors
-         * and {@link ErrorCodes}
-         * It is useful if the server requires you to enter a captcha
-         *
-         * @param e the information of error
-         */
         void onError(Exception e);
     }
 
@@ -318,9 +277,6 @@ public class VKApi {
 
         }
 
-        /**
-         * Returns the list of dialogs of the current avatar_placeholder
-         */
         public MessageMethodSetter getConversations() {
             return new MessageMethodSetter("getConversations");
         }
@@ -329,9 +285,6 @@ public class VKApi {
             return new MessageMethodSetter("getConversationsById");
         }
 
-        /**
-         * Returns messages by their IDs
-         */
         public MessageMethodSetter getById() {
             return new MessageMethodSetter("getById");
         }
@@ -348,227 +301,78 @@ public class VKApi {
             return new MessageMethodSetter("pin");
         }
 
-        /**
-         * Returns a list of the current avatar_placeholder's private messages,
-         * that match search criteria
-         */
         public MessageMethodSetter search() {
             return new MessageMethodSetter("search");
         }
 
-        /**
-         * Returns a list of the current avatar_placeholder's private messages,
-         * that match search criteria
-         */
         public MessageMethodSetter getHistory() {
             return new MessageMethodSetter("getHistory");
         }
 
-        /**
-         * Returns media files from the dialog or group chat
-         * <p/>
-         * Result:
-         * Returns a list of photo, video, audio or doc objects depending
-         * on media_type parameter value
-         * and additional next_from field containing new offset value
-         */
         public MessageMethodSetter getHistoryAttachments() {
             return new MessageMethodSetter("getHistoryAttachments");
         }
 
-        /**
-         * Sends a message
-         */
         public MessageMethodSetter send() {
             return new MessageMethodSetter("send");
         }
 
-        /**
-         * Sends a sticker
-         * <p/>
-         * Result:
-         * After successful execution, returns the sent message ID (id).
-         * <p/>
-         * Error codes:
-         * 900	Cannot send sticker to avatar_placeholder from blacklist
-         */
         public MessageMethodSetter sendSticker() {
             return new MessageMethodSetter("sendSticker");
         }
 
-        /**
-         * Deletes one or more messages
-         * <p/>
-         * http://vk.com/dev/messages.delete
-         */
         public MessageMethodSetter delete() {
             return new MessageMethodSetter("delete");
         }
 
-        /**
-         * Deletes all private messages in a conversation
-         * NOTE: If the number of messages exceeds the maximum,
-         * the method shall be called several times
-         */
         public MessageMethodSetter deleteConversation() {
             return new MessageMethodSetter("deleteConversation");
         }
 
-        /**
-         * Restores a deleted message
-         */
         public MessageMethodSetter restore() {
             return new MessageMethodSetter("restore");
         }
 
-        /**
-         * Marks messages as read
-         */
         public MessageMethodSetter markAsRead() {
             return new MessageMethodSetter("markAsRead");
         }
 
-        /**
-         * Marks and unmarks messages as important (starred)
-         */
         public MessageMethodSetter markAsImportant() {
             return new MessageMethodSetter("markAsImportant");
         }
 
-        /**
-         * Returns data required for connection to a Long Poll server.
-         * With Long Poll connection,
-         * you can immediately know about incoming messages and other events.
-         * <p/>
-         * Result:
-         * Returns an object with key, server, ts fields.
-         * With such data you can connect to an instant message server
-         * to immediately receive incoming messages and other events
-         */
         public MessageMethodSetter getLongPollServer() {
             return new MessageMethodSetter("getLongPollServer");
         }
 
-        /**
-         * Returns updates in avatar_placeholder's private messages.
-         * To speed up handling of private messages,
-         * it can be useful to cache previously loaded messages on
-         * a avatar_placeholder's mobile device/desktop, to prevent re-receipt at each call.
-         * With this method, you can synchronize a local copy of
-         * the message list with the actual version.
-         * <p/>
-         * Result:
-         * Returns an object that contains the following fields:
-         * 1 — history:     An array similar to updates field returned
-         * from the Long Poll server,
-         * with these exceptions:
-         * - For events with code 4 (addition of a new message),
-         * there are no fields except the first three.
-         * - There are no events with codes 8, 9 (friend goes online/offline)
-         * or with codes 61, 62 (typing during conversation/chat).
-         * <p/>
-         * 2 — messages:    An array of private message objects that were found
-         * among events with code 4 (addition of a new message)
-         * from the history field.
-         * Each object of message contains a set of fields described here.
-         * The first array element is the total number of messages
-         */
         public MessageMethodSetter getLongPollHistory() {
             return new MessageMethodSetter(("getLongPollHistory"));
         }
 
-        /**
-         * Returns information about a chat
-         * <p/>
-         * Returns a list of chat objects.
-         * If the fields parameter is set,
-         * the users field contains a list of avatar_placeholder objects with
-         * an additional invited_by field containing the ID of the avatar_placeholder who
-         * invited the current avatar_placeholder to chat.
-         * <p/>
-         * http://vk.com/dev/messages.getChat
-         */
         public MessageMethodSetter getChat() {
             return new MessageMethodSetter("getChat");
         }
 
-        /**
-         * Creates a chat with several participants
-         * <p/>
-         * Returns the ID of the created chat (chat_id).
-         * <p/>
-         * Errors:
-         * 9	Flood control
-         * http://vk.com/dev/messages.createChat
-         */
         public MessageMethodSetter createChat() {
             return new MessageMethodSetter("createChat");
         }
 
-        /**
-         * Edits the title of a chat
-         * <p/>
-         * Result:
-         * Returns 1
-         * <p/>
-         * http://vk.com/dev/messages.editChat
-         */
         public MessageMethodSetter editChat() {
             return new MessageMethodSetter("editChat");
         }
 
-        /**
-         * Returns a list of IDs of users participating in a chat
-         * <p/>
-         * Result:
-         * Returns a list of IDs of chat participants.
-         * <p/>
-         * If fields is set, the avatar_placeholder fields contains a list of avatar_placeholder objects
-         * with an additional invited_by field containing the ID
-         * of the avatar_placeholder who invited the current avatar_placeholder to chat.
-         * <p/>
-         * http://vk.com/dev/messages.getChatUsers
-         */
         public MessageMethodSetter getChatUsers() {
             return new MessageMethodSetter("getChatUsers");
         }
 
-        /**
-         * Changes the status of a avatar_placeholder as typing in a conversation
-         * <p/>
-         * Result:
-         * Returns 1.
-         * "User N is typing..." is shown for 10 seconds
-         * after the method is called, or until the message is sent.
-         * <p/>
-         * http://vk.com/dev/messages.setActivity
-         */
         public MessageMethodSetter setActivity() {
             return new MessageMethodSetter("setActivity").type(true);
         }
 
-        /**
-         * Adds a new avatar_placeholder to a chat.
-         * <p/>
-         * Result:
-         * Returns 1.
-         * <p/>
-         * Errors:
-         * 103	Out of limits
-         * <p/>
-         * See https://vk.com/dev/messages.addChatUser
-         */
         public MessageMethodSetter addChatUser() {
             return new MessageMethodSetter("addChatUser");
         }
 
-        /**
-         * Allows the current avatar_placeholder to leave a chat or, if the current avatar_placeholder started the chat,
-         * allows the avatar_placeholder to remove another avatar_placeholder from the chat.
-         * <p/>
-         * Result:
-         * Returns 1
-         */
         public MessageMethodSetter removeChatUser() {
             return new MessageMethodSetter("removeChatUser");
         }
@@ -585,9 +389,6 @@ public class VKApi {
     }
 
     public static class VKApps {
-        /**
-         * Returns information about applications on platform vk
-         */
         public AppMethodSetter get() {
             return new AppMethodSetter("apps.get");
         }

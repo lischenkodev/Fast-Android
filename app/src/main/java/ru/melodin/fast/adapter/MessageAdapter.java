@@ -672,22 +672,32 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 avatar_link = group.getPhoto100();
             }
 
-            if (TextUtils.isEmpty(avatar_link)) {
-                avatar.setImageDrawable(placeholder);
-            } else {
-                Picasso.get()
-                        .load(avatar_link)
-                        .priority(Picasso.Priority.HIGH)
-                        .placeholder(placeholder)
-                        .into(avatar);
+            avatar.setVisibility(item.isOut() ? View.GONE : View.VISIBLE);
+
+            if (avatar.getVisibility() == View.VISIBLE)
+                if (TextUtils.isEmpty(avatar_link)) {
+                    avatar.setImageDrawable(placeholder);
+                } else {
+                    Picasso.get()
+                            .load(avatar_link)
+                            .priority(Picasso.Priority.HIGH)
+                            .placeholder(placeholder)
+                            .into(avatar);
+                }
+            else {
+                avatar.setImageDrawable(null);
             }
 
             avatar.setOnLongClickListener(new View.OnLongClickListener() {
 
                 @Override
                 public boolean onLongClick(View p1) {
-                    onAvatarLongClick(position);
-                    return true;
+                    if (item.isChat()) {
+                        onAvatarLongClick(position);
+                        return true;
+                    } else {
+                        return false;
+                    }
                 }
             });
 
@@ -761,9 +771,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             } else if (item.getReply() != null) {
                 attacher.showForwardedMessages(item, attachments, true, true);
             }
-
-            avatar.setVisibility(item.isOut() ? View.GONE : View.VISIBLE);
-            //((FrameLayout) attachments.getParent()).setLayoutParams(new BoundedLinearLayout.LayoutParams(bubble.getMaxWidth(), ViewGroup.LayoutParams.WRAP_CONTENT));
         }
     }
 

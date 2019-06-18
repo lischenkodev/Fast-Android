@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void error(Exception e) {
-                Log.e("Error get avatar_placeholder", Log.getStackTraceString(e));
+                Log.e("Error get user", Log.getStackTraceString(e));
             }
         });
     }
