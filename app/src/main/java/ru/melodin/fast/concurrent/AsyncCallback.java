@@ -4,6 +4,8 @@ import android.app.Activity;
 
 import java.lang.ref.WeakReference;
 
+import ru.melodin.fast.api.VKApi;
+
 public abstract class AsyncCallback implements Runnable {
     private WeakReference<Activity> ref;
 
@@ -29,6 +31,7 @@ public abstract class AsyncCallback implements Runnable {
                     @Override
                     public void run() {
                         error(e);
+                        VKApi.checkError(ref.get(), e);
                     }
                 });
             }

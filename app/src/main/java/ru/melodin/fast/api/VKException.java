@@ -6,9 +6,10 @@ import java.io.IOException;
 
 public class VKException extends IOException {
 
+    private int code;
+
     private String url;
     private String message;
-    private int code;
     private String captchaSid;
     private String captchaImg;
     private String redirectUri;

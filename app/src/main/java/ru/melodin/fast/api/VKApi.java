@@ -1,5 +1,7 @@
 package ru.melodin.fast.api;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.util.Log;
 
 import org.json.JSONArray;
@@ -8,6 +10,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import ru.melodin.fast.BuildConfig;
+import ru.melodin.fast.LoginActivity;
 import ru.melodin.fast.api.method.AppMethodSetter;
 import ru.melodin.fast.api.method.MessageMethodSetter;
 import ru.melodin.fast.api.method.MethodSetter;
@@ -193,6 +196,15 @@ public class VKApi {
         return null;
     }
 
+    public static void checkError(Activity activity, Exception e) {
+        if (!(e instanceof VKException)) return;
+        VKException exception = (VKException) e;
+        if (exception.getCode() == ErrorCodes.USER_AUTHORIZATION_FAILED) {
+            activity.finishAffinity();
+            activity.startActivity(new Intent(activity, LoginActivity.class));
+        }
+    }
+
     private static void checkError(JSONObject json, String url) throws VKException {
         if (json.has("error")) {
             JSONObject error = json.optJSONObject("error");
@@ -215,27 +227,34 @@ public class VKApi {
     public static VKUsers users() {
         return new VKUsers();
     }
+
     public static VKFriends friends() {
         return new VKFriends();
     }
+
     public static VKMessages messages() {
         return new VKMessages();
     }
+
     public static VKGroups groups() {
         return new VKGroups();
     }
+
     public static VKApps apps() {
         return new VKApps();
     }
+
     public static VKAccounts account() {
         return new VKAccounts();
     }
+
     public static VKStats stats() {
         return new VKStats();
     }
 
     public interface OnResponseListener<E> {
         void onSuccess(ArrayList<E> models);
+
         void onError(Exception e);
     }
 

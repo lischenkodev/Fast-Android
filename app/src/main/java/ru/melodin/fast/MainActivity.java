@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void ready() throws Exception {
-                user = VKApi.users().get().userId(UserConfig.userId).fields(VKUser.FIELDS_DEFAULT).execute(VKUser.class).get(0);
+                user = VKApi.users().get().fields(VKUser.FIELDS_DEFAULT).execute(VKUser.class).get(0);
             }
 
             @Override
