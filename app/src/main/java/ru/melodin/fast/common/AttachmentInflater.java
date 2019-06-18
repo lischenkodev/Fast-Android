@@ -59,8 +59,7 @@ public class AttachmentInflater {
 
     public static final String KEY_PLAY_AUDIO = "play_audio";
     public static final String KEY_PAUSE_AUDIO = "pause_audio";
-
-    private boolean playing;
+    public static final String KEY_STOP_AUDIO = "stop_audio";
 
     public synchronized static AttachmentInflater getInstance(Context context) {
         return new AttachmentInflater(context);
@@ -435,7 +434,7 @@ public class AttachmentInflater {
         });
     }
 
-    public View voice(VKMessage item, ViewGroup parent, final VKVoice source, boolean forwarded, boolean withStyles) {
+    public View voice(final VKMessage item, ViewGroup parent, final VKVoice source, boolean forwarded, boolean withStyles) {
         View v = inflater.inflate(R.layout.activity_messages_attach_audio, parent, false);
 
         TextView title = v.findViewById(R.id.title);
@@ -472,15 +471,17 @@ public class AttachmentInflater {
         start.setTint(iconColor);
         stop.setTint(iconColor);
 
-        play.getDrawable().setTint(iconColor);
+        final boolean playing = item.isPlaying();
+        play.setImageDrawable(playing ? stop : start);
 
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                play.setImageDrawable(playing ? start : stop);
-
-                EventBus.getDefault().postSticky(new Object[]{playing ? KEY_PAUSE_AUDIO : KEY_PLAY_AUDIO, source.getLinkMp3()});
-                playing = !playing;
+                if (playing) {
+                    EventBus.getDefault().postSticky(new Object[]{KEY_PAUSE_AUDIO, item.getId()});
+                } else {
+                    EventBus.getDefault().postSticky(new Object[]{KEY_PLAY_AUDIO, item.getId(), source.getLinkMp3()});
+                }
             }
         });
 

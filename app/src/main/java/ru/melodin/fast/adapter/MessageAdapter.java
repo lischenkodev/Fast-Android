@@ -72,6 +72,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     private static final int TYPE_FOOTER = 10;
 
     private MediaPlayer mediaPlayer;
+    private int playingId = -1;
 
     private int peerId;
     private AttachmentInflater attacher;
@@ -112,41 +113,34 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void onReceive(Object[] data) {
+    public void onReceive(final Object[] data) {
         String key = (String) data[0];
 
         switch (key) {
             case AttachmentInflater.KEY_PLAY_AUDIO:
+                final int messageId = (int) data[1];
+
                 if (mediaPlayer == null) {
                     releaseMediaPlayer();
-
-                    mediaPlayer = new MediaPlayer();
-
-                    try {
-                        mediaPlayer.setDataSource((String) data[1]);
-                        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                            @Override
-                            public void onCompletion(MediaPlayer mediaPlayer) {
-                                releaseMediaPlayer();
-                            }
-                        });
-                        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                            @Override
-                            public void onPrepared(MediaPlayer mediaPlayer) {
-                                mediaPlayer.start();
-                            }
-                        });
-                        mediaPlayer.prepareAsync();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    initMediaPlayer((int) data[1], (String) data[2]);
                 } else {
-                    mediaPlayer.start();
+                    if (mediaPlayer.isPlaying()) {
+                        releaseMediaPlayer();
+                        setPlaying(playingId, false);
+                        playingId = -1;
+                        initMediaPlayer((int) data[1], (String) data[2]);
+                    } else {
+                        mediaPlayer.start();
+                        setPlaying(messageId, true);
+                    }
                 }
                 break;
             case AttachmentInflater.KEY_PAUSE_AUDIO:
                 if (mediaPlayer != null) {
                     mediaPlayer.pause();
+
+                    final int mId = (int) data[1];
+                    setPlaying(mId, false);
                 }
                 break;
             case LongPollEvents.KEY_USER_OFFLINE:
@@ -190,6 +184,50 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         }
     }
 
+    private void initMediaPlayer(final int messageId, String url) {
+        try {
+            mediaPlayer = new MediaPlayer();
+            mediaPlayer.setDataSource(url);
+            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mediaPlayer) {
+                    releaseMediaPlayer();
+                    EventBus.getDefault().postSticky(new Object[]{AttachmentInflater.KEY_STOP_AUDIO});
+                    setPlaying(messageId, false);
+                }
+            });
+            mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+                    playingId = -1;
+                    releaseMediaPlayer();
+                    setPlaying(messageId, false);
+                    return false;
+                }
+            });
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mediaPlayer) {
+                    mediaPlayer.start();
+                    playingId = messageId;
+                    setPlaying(messageId, true);
+                }
+            });
+            mediaPlayer.prepareAsync();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void setPlaying(int messageId, boolean playing) {
+        int position = findPosition(messageId);
+        if (position == -1) return;
+
+        VKMessage message = getItem(position);
+        message.setPlaying(playing);
+        notifyItemChanged(position, -1);
+    }
+
     public boolean isSelected() {
         return getSelectedCount() > 0;
     }
@@ -203,6 +241,16 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         } else {
             selectedItems.remove(position);
         }
+    }
+
+    private int findPosition(int mId) {
+        for (int i = 0; i < getValues().size(); i++) {
+            VKMessage message = getItem(i);
+            if (message.getId() == mId)
+                return i;
+        }
+
+        return -1;
     }
 
     public void clearSelected() {
@@ -455,7 +503,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             @Override
             public void error(Exception e) {
                 loadingIds.remove(userId);
-                Log.e("Error load use", Log.getStackTraceString(e));
+                Log.e("Error load user", Log.getStackTraceString(e));
             }
         });
     }

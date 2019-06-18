@@ -54,6 +54,7 @@ public class VKMessage extends VKModel implements Serializable {
     private boolean added;
     private Status status = Status.SENT;
     private boolean needUpdate;
+    private boolean playing;
 
     public enum Action {
         CHAT_CREATE, CHAT_INVITE_USER, CHAT_KICK_USER, CHAT_TITLE_UPDATE, CHAT_PHOTO_UPDATE, CHAT_PHOTO_REMOVE, CHAT_PIN_MESSAGE, CHAT_UNPIN_MESSAGE, CHAT_INVITE_USER_BY_LINK
@@ -222,6 +223,13 @@ public class VKMessage extends VKModel implements Serializable {
         return !isFromGroup();
     }
 
+    public boolean isPlaying() {
+        return playing;
+    }
+
+    public void setPlaying(boolean playing) {
+        this.playing = playing;
+    }
 
     public boolean isNeedUpdate() {
         return needUpdate;
