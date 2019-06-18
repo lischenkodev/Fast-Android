@@ -17,7 +17,7 @@ public class ThemeManager {
     @IntegerRes
     private static int currentTheme, popupTheme, loginTheme;
     @ColorInt
-    private static int primary, primaryInverse, primaryDark, accent, main, secondary, background, bodyTextColor;
+    private static int primary, primaryInverse, primaryDark, accent, main, secondary, background;
 
     public static void switchTheme(boolean dark) {
         AppGlobal.preferences.edit().putBoolean(FragmentSettings.KEY_DARK_STYLE, dark).apply();
@@ -43,11 +43,6 @@ public class ThemeManager {
         background = getColor(isDark() ? R.color.dark_background : R.color.background);
         main = isDark() ? Color.WHITE : Color.BLACK;
         secondary = isDark() ? Color.LTGRAY : Color.DKGRAY;
-        bodyTextColor = isDark() ? 0x90ffffff : 0x90000000;
-    }
-
-    public static int getBodyTextColor() {
-        return bodyTextColor;
     }
 
     public static boolean isDark() {
@@ -96,6 +91,6 @@ public class ThemeManager {
 
     @ColorInt
     private static int getColor(int i) {
-        return AppGlobal.context().getResources().getColor(i);
+        return AppGlobal.getContext().getResources().getColor(i);
     }
 }

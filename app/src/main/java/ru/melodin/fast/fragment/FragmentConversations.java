@@ -42,7 +42,7 @@ import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
 
-public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener {
+public class FragmentConversations extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener {
 
     private final int CONVERSATIONS_COUNT = 30;
 
@@ -176,43 +176,55 @@ public class FragmentDialogs extends BaseFragment implements SwipeRefreshLayout.
             private ArrayList<VKConversation> conversations;
 
             @Override
-            public void ready() throws Exception {
-                conversations = VKApi.messages().getConversations()
+            public void ready() {
+                VKApi.messages().getConversations()
                         .filter("all")
                         .extended(true)
                         .fields(VKUser.FIELDS_DEFAULT + ", " + VKGroup.FIELDS_DEFAULT)
                         .count(count)
                         .offset(offset)
-                        .execute(VKConversation.class);
+                        .execute(VKConversation.class, new VKApi.OnResponseListener<VKConversation>() {
+                            @Override
+                            public void onSuccess(ArrayList<VKConversation> models) {
+                                if (!ArrayUtil.isEmpty(models)) {
+                                    conversations = models;
+                                    CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE);
+                                    CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, conversations);
 
-                CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE);
-                CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, conversations);
+                                    ArrayList<VKUser> users = VKConversation.users;
+                                    ArrayList<VKGroup> groups = VKConversation.groups;
+                                    ArrayList<VKMessage> messages = new ArrayList<>();
 
-                ArrayList<VKUser> users = VKConversation.users;
-                ArrayList<VKGroup> groups = VKConversation.groups;
-                ArrayList<VKMessage> messages = new ArrayList<>();
+                                    for (VKConversation conversation : conversations)
+                                        messages.add(conversation.getLast());
 
-                for (VKConversation conversation : conversations)
-                    messages.add(conversation.getLast());
+                                    CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
+                                    CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, groups);
+                                    CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, messages);
 
-                CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
-                CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, groups);
-                CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, messages);
+                                    createAdapter(conversations);
+                                    refreshLayout.setRefreshing(false);
+
+                                    tb.setTitle(getTitle());
+                                }
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                Log.e("Error load dialogs", Log.getStackTraceString(e));
+                            }
+                        });
             }
 
             @Override
             public void done() {
-                createAdapter(conversations);
-                refreshLayout.setRefreshing(false);
-
-                tb.setTitle(getTitle());
             }
 
             @Override
             public void error(Exception e) {
                 refreshLayout.setRefreshing(false);
                 Toast.makeText(getActivity(), getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show();
-                Log.e("Load conversations", Log.getStackTraceString(e));
+
             }
         });
     }

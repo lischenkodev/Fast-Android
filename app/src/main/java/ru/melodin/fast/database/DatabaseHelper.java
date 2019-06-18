@@ -59,14 +59,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String USERS = "users";
     private static final String GROUPS = "groups";
     private static final String _ID = "_id";
-    static final String CONVERSATION_TYPE = "type";
     public static final String USER_ID = "user_id";
     static final String ACTION_TYPE = "action_type";
     static final String ACTION_USER_ID = "action_user_id";
     static final String ACTION_TEXT = "action_text";
     static final String STATE = "state";
 
-    private static final int DATABASE_VERSION = 31;
+    private static final int DATABASE_VERSION = 35;
     private static final String DATABASE_NAME = "cache.db";
 
     private static final String SQL_CREATE_TABLE_USERS = "CREATE TABLE " + USERS_TABLE +
@@ -98,7 +97,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String SQL_CREATE_TABLE_DIALOGS = "CREATE TABLE " + DIALOGS_TABLE +
             " (" + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
             " [" + PEER_ID + "] INTEGER UNIQUE ON CONFLICT REPLACE, " +
-            " [" + CONVERSATION_TYPE + "] VARCHAR(5), " +
+            " [" + TYPE + "] VARCHAR(255), " +
             " [" + TITLE + "] VARCHAR(255), " +
             " [" + READ_STATE + "] INTEGER, " +
             " [" + USERS_COUNT + "] INTEGER, " +
@@ -162,7 +161,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static DatabaseHelper instance;
 
     private DatabaseHelper() {
-        super(AppGlobal.context(), DATABASE_NAME, null, DATABASE_VERSION);
+        super(AppGlobal.getContext(), DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     public synchronized static DatabaseHelper getInstance() {

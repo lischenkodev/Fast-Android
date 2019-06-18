@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root"
     android:layout_width="match_parent"
@@ -28,17 +27,15 @@
                 android:layout_width="60dp"
                 android:layout_height="60dp"
                 android:layout_gravity="bottom|end"
-                android:src="?colorAccent" />
+                tools:src="@drawable/avatar_placeholder" />
 
-            <ru.melodin.fast.view.CircleImageView
+            <ImageView
                 android:id="@+id/online"
                 android:layout_width="14dp"
                 android:layout_height="14dp"
                 android:layout_gravity="bottom|end"
                 android:layout_margin="3dp"
-                android:src="?colorAccent"
-                app:border_color="?android:windowBackground"
-                app:border_width="2dp" />
+                tools:src="@drawable/ic_online" />
 
         </FrameLayout>
 

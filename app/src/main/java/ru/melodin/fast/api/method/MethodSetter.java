@@ -111,7 +111,7 @@ public class MethodSetter {
     }
 
     /**
-     * User ID. By default, the current user ID
+     * User ID. By default, the current avatar_placeholder ID
      */
     public MethodSetter userId(int value) {
         return put("user_id", value);
@@ -126,7 +126,7 @@ public class MethodSetter {
     }
 
     /**
-     * ID of the user or community, e.g. audios.get
+     * ID of the avatar_placeholder or community, e.g. audios.get
      */
     public MethodSetter ownerId(int value) {
         return put("owner_id", value);
@@ -179,7 +179,7 @@ public class MethodSetter {
     }
 
     /**
-     * Case for declension of user name and surname:
+     * Case for declension of avatar_placeholder name and surname:
      * nom — nominative (default)
      * gen — genitive
      * dat — dative

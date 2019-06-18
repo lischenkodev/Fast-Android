@@ -189,14 +189,14 @@ public class LongPollEvents {
                 case 5: //edit message
                     editMessageEvent(item);
                     break;
-                case 8: //user online
+                case 8: //avatar_placeholder online
                     userOnline(item);
                     break;
-                case 9: //user offline
+                case 9: //avatar_placeholder offline
                     userOffline(item);
                     break;
-                case 61: //user types in dialog
-                case 62: //user types in chat
+                case 61: //avatar_placeholder types in dialog
+                case 62: //avatar_placeholder types in chat
                     break;
                 case 114: //notifications changes
                     changeNotifications(item);

@@ -51,7 +51,7 @@ public class UserMethodSetter extends MethodSetter {
     /** Setters for users.getNearby */
 
     /**
-     * Geographic latitude of the place a user is located,
+     * Geographic latitude of the place a avatar_placeholder is located,
      * in degrees (from -90 to 90)
      */
     public UserMethodSetter latitude(float latitude) {
@@ -60,7 +60,7 @@ public class UserMethodSetter extends MethodSetter {
     }
 
     /**
-     * Geographic longitude of the place a user is located,
+     * Geographic longitude of the place a avatar_placeholder is located,
      * in degrees (from -90 to 90)
      */
     public UserMethodSetter longitude(float longitude) {
@@ -77,7 +77,7 @@ public class UserMethodSetter extends MethodSetter {
     }
 
     /**
-     * Time when a user disappears from location search results, in seconds
+     * Time when a avatar_placeholder disappears from location search results, in seconds
      * Default 7 200
      */
     public UserMethodSetter timeout(int timeout) {

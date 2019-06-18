@@ -18,6 +18,8 @@ public class VKConversation extends VKModel implements Serializable {
     public static ArrayList<VKUser> users = new ArrayList<>();
     public static ArrayList<VKGroup> groups = new ArrayList<>();
 
+    private int peerId;
+    private int localId;
     private int readIn;
     private int readOut;
     private int lastMessageId;
@@ -150,11 +152,16 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public VKConversation(JSONObject o, JSONObject msg) throws JSONException {
+
         if (msg != null)
             last = new VKMessage(msg);
 
         JSONObject peer = o.optJSONObject("peer");
-        this.type = peer == null ? Type.USER : getType(peer.optString("type"));
+        this.peerId = peer.optInt("id", -1);
+        this.localId = peer.optInt("local_id", -1);
+
+        String type = peer.optString("type");
+        this.type = getType(type);
 
         this.readIn = o.optInt("in_read");
         this.readOut = o.optInt("out_read");
@@ -215,17 +222,18 @@ public class VKConversation extends VKModel implements Serializable {
         this.groupChannel = groupChannel;
     }
 
+    public Type getType() {
+        return type;
+    }
+
     public static Type getType(int peerId) {
         if (VKConversation.isChatId(peerId)) return Type.CHAT;
         if (VKGroup.isGroupId(peerId)) return Type.GROUP;
         return Type.USER;
     }
 
-    public Type getType() {
-        return type;
-    }
-
     public static Type getType(String type) {
+        if (TextUtils.isEmpty(type)) return null;
         switch (type) {
             case "user":
                 return Type.USER;
@@ -239,6 +247,7 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public static String getType(Type type) {
+        if (type == null) return null;
         switch (type) {
             case USER:
                 return "user";
@@ -256,7 +265,7 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public boolean isChat() {
-        return isChatId(this.last.getPeerId());
+        return getType() == Type.CHAT && !isGroupChannel();
     }
 
     public boolean isFromGroup() {
@@ -264,7 +273,7 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     public boolean isGroup() {
-        return this.last != null && VKGroup.isGroupId(this.last.getPeerId());
+        return getType() == Type.GROUP && !isGroupChannel();
     }
 
     public boolean isUser() {
@@ -277,6 +286,23 @@ public class VKConversation extends VKModel implements Serializable {
 
     public boolean isNotificationsDisabled() {
         return this.disabledForever || this.disabledUntil > 0 || this.noSound;
+    }
+
+
+    public int getPeerId() {
+        return peerId;
+    }
+
+    public int getLocalId() {
+        return localId;
+    }
+
+    public void setPeerId(int peerId) {
+        this.peerId = peerId;
+    }
+
+    public void setLocalId(int localId) {
+        this.localId = localId;
     }
 
     public int getReadIn() {

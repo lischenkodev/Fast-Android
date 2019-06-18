@@ -23,7 +23,6 @@ import static ru.melodin.fast.database.DatabaseHelper.ACTION_TYPE;
 import static ru.melodin.fast.database.DatabaseHelper.ACTION_USER_ID;
 import static ru.melodin.fast.database.DatabaseHelper.ADMIN_LEVEL;
 import static ru.melodin.fast.database.DatabaseHelper.ATTACHMENTS;
-import static ru.melodin.fast.database.DatabaseHelper.CONVERSATION_TYPE;
 import static ru.melodin.fast.database.DatabaseHelper.DATE;
 import static ru.melodin.fast.database.DatabaseHelper.DEACTIVATED;
 import static ru.melodin.fast.database.DatabaseHelper.DESCRIPTION;
@@ -182,7 +181,7 @@ public class CacheStorage {
     public static VKConversation getConversation(int peerId) {
         Cursor cursor = selectCursor(DIALOGS_TABLE, PEER_ID, peerId);
         if (cursor.moveToFirst()) {
-            return parseDialog(cursor);
+            return parseConversation(cursor);
         }
 
         return null;
@@ -196,7 +195,7 @@ public class CacheStorage {
 
         ArrayList<VKConversation> dialogs = new ArrayList<>(cursor.getCount());
         while (cursor.moveToNext()) {
-            dialogs.add(parseDialog(cursor));
+            dialogs.add(parseConversation(cursor));
         }
 
         cursor.close();
@@ -351,7 +350,7 @@ public class CacheStorage {
     }
 
     @SuppressWarnings("unchecked")
-    private static VKConversation parseDialog(Cursor cursor) {
+    private static VKConversation parseConversation(Cursor cursor) {
         VKConversation dialog = new VKConversation();
 
         dialog.setRead(getInt(cursor, READ_STATE) == 1);
@@ -364,7 +363,7 @@ public class CacheStorage {
         dialog.setDisabledForever(getInt(cursor, DISABLED_FOREVER) == 1);
         dialog.setDisabledUntil(getInt(cursor, DISABLED_UNTIL));
 
-        dialog.setType(VKConversation.getType(getString(cursor, CONVERSATION_TYPE)));
+        dialog.setType(VKConversation.getType(getString(cursor, TYPE)));
 
         dialog.setPhoto50(getString(cursor, PHOTO_50));
         dialog.setPhoto100(getString(cursor, PHOTO_100));
@@ -448,11 +447,11 @@ public class CacheStorage {
     }
 
     private static void putValues(ContentValues values, VKConversation dialog) {
-        values.put(PEER_ID, dialog.getLast().getPeerId());
+        values.put(PEER_ID, dialog.getPeerId());
         values.put(UNREAD_COUNT, dialog.getUnread());
         values.put(READ_STATE, dialog.isRead());
         values.put(USERS_COUNT, dialog.getMembersCount());
-        values.put(CONVERSATION_TYPE, VKConversation.getType(dialog.getType()));
+        values.put(TYPE, VKConversation.getType(dialog.getType()));
         values.put(DISABLED_FOREVER, dialog.isDisabledForever());
         values.put(DISABLED_UNTIL, dialog.getDisabledUntil());
         values.put(NO_SOUND, dialog.isNoSound());

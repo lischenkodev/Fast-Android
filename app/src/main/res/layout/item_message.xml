@@ -19,7 +19,7 @@
             android:layout_height="@dimen/avatar_chat_size"
             android:layout_gravity="center_vertical|top"
             android:layout_margin="4dp"
-            tools:src="@drawable/user" />
+            tools:src="@drawable/avatar_placeholder" />
 
         <LinearLayout
             android:id="@+id/bubble_container"

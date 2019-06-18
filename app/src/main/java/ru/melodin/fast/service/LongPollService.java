@@ -124,9 +124,9 @@ public class LongPollService extends Service {
             params.put("act", "a_check");
             params.put("key", server.key);
             params.put("ts", String.valueOf(server.ts));
-            params.put("wait", "10");
+            params.put("wait", "25");
             params.put("mode", "490");
-            params.put("version", "6");
+            params.put("version", "7");
 
             String url = "https://" + server.server;
 

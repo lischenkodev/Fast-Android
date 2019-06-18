@@ -36,8 +36,6 @@ public class WebViewLoginActivity extends AppCompatActivity {
     private WebView webView;
     private ProgressBar bar;
 
-    private AlertDialog dialog;
-
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,16 +64,7 @@ public class WebViewLoginActivity extends AppCompatActivity {
         manager.flush();
         manager.setAcceptCookie(true);
 
-        webView.loadUrl(Auth.getUrl(UserConfig.VK_DESKTOP_ID, Scopes.allInt()));
-        showWarningDialog();
-    }
-
-    private void showWarningDialog() {
-        dialog = new AlertDialog.Builder(this)
-                .setTitle(R.string.warning)
-                .setMessage(R.string.auth_vkdesktop_text)
-                .setCancelable(false)
-                .show();
+        webView.loadUrl(Auth.getUrl(UserConfig.FAST_ID, Scopes.allInt()));
     }
 
     @Override
@@ -196,10 +185,6 @@ public class WebViewLoginActivity extends AppCompatActivity {
 
         @Override
         public void onPageFinished(WebView view, String url) {
-            if (dialog != null) {
-                dialog.dismiss();
-                dialog = null;
-            }
             bar.setVisibility(View.GONE);
             webView.setVisibility(View.VISIBLE);
         }

@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
@@ -161,8 +162,8 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
         return context.getString(res, args);
     }
 
-    public Drawable getDrawable(int res) {
-        return context.getDrawable(res);
+    Drawable getDrawable(int res) {
+        return ContextCompat.getDrawable(context, res);
     }
 
     public boolean isEmpty() {

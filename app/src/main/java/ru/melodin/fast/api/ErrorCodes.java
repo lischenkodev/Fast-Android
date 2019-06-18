@@ -56,7 +56,7 @@ public class ErrorCodes {
     public static final int INTERNAL_SERVER_ERROR = 10;
 
     /**
-     * In test mode application should be disabled or user should be authorized.
+     * In test mode application should be disabled or avatar_placeholder should be authorized.
      */
     public static final int IN_TEST_MODE = 11;
 
@@ -126,12 +126,12 @@ public class ErrorCodes {
     public static final int INCORRECT_APP_ID = 101;
 
     /**
-     * For add chat user. Out of limits.
+     * For add chat avatar_placeholder. Out of limits.
      */
     public static final int OUT_OF_LIMITS = 103;
 
     /**
-     * Invalid user id. Make sure that you use a correct id.
+     * Invalid avatar_placeholder id. Make sure that you use a correct id.
      */
     public static final int INCORRECT_USER_ID = 113;
 

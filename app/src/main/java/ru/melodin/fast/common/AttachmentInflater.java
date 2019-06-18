@@ -21,9 +21,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
+import androidx.core.content.ContextCompat;
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 
@@ -53,6 +56,11 @@ public class AttachmentInflater {
     private Context context;
     private LayoutInflater inflater;
     private DisplayMetrics metrics;
+
+    public static final String KEY_PLAY_AUDIO = "play_audio";
+    public static final String KEY_PAUSE_AUDIO = "pause_audio";
+
+    private boolean playing;
 
     public synchronized static AttachmentInflater getInstance(Context context) {
         return new AttachmentInflater(context);
@@ -427,20 +435,20 @@ public class AttachmentInflater {
         });
     }
 
-    public View voice(VKMessage item, ViewGroup parent, VKVoice source, boolean forwarded, boolean withStyles) {
+    public View voice(VKMessage item, ViewGroup parent, final VKVoice source, boolean forwarded, boolean withStyles) {
         View v = inflater.inflate(R.layout.activity_messages_attach_audio, parent, false);
 
         TextView title = v.findViewById(R.id.title);
         TextView body = v.findViewById(R.id.body);
         TextView time = v.findViewById(R.id.duration);
 
-        ImageButton play = v.findViewById(R.id.play);
+        final ImageButton play = v.findViewById(R.id.play);
 
         String duration = String.format(AppGlobal.locale, "%d:%02d", source.getDuration() / 60, source.getDuration() % 60);
         title.setText(context.getString(R.string.voice_message));
         body.setText(duration);
 
-        @ColorInt int titleColor, bodyColor, iconColor;
+        @ColorInt final int titleColor, bodyColor, iconColor;
 
         if (withStyles) {
             if (item.isOut() || forwarded) {
@@ -458,7 +466,23 @@ public class AttachmentInflater {
             iconColor = titleColor;
         }
 
+        final Drawable start = ContextCompat.getDrawable(context, R.drawable.ic_play_circle_filled_black_24dp);
+        final Drawable stop = ContextCompat.getDrawable(context, R.drawable.ic_pause_circle_filled_black_24dp);
+
+        start.setTint(iconColor);
+        stop.setTint(iconColor);
+
         play.getDrawable().setTint(iconColor);
+
+        play.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                play.setImageDrawable(playing ? start : stop);
+
+                EventBus.getDefault().postSticky(new Object[]{playing ? KEY_PAUSE_AUDIO : KEY_PLAY_AUDIO, source.getLinkMp3()});
+                playing = !playing;
+            }
+        });
 
         time.setTextColor(bodyColor);
         title.setTextColor(titleColor);

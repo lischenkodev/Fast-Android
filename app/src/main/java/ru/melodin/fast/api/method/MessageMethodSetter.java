@@ -404,7 +404,7 @@ public class MessageMethodSetter extends MethodSetter {
     /** Setters for messages.setActivity */
 
     /**
-     * typing — user has started to type
+     * typing — avatar_placeholder has started to type
      */
     public final MessageMethodSetter type(boolean typing) {
         if (typing) {

@@ -29,11 +29,6 @@ class CrashManager {
     private static void report(Throwable ex) {
         String s = "Fast \nVersion: " + AppGlobal.app_version_name + "\nBuild: " + AppGlobal.app_version_code + "\n\n";
 
-        String path = Environment.getExternalStorageDirectory() + "/Fast/crash_logs"; // AppGlobal.context.getFilesDir();
-
-        File file = new File(path);
-        if (!file.exists()) file.mkdirs();
-
         String text = s +
                 "Android SDK: " + Build.VERSION.SDK_INT +
                 "\n" +
@@ -50,19 +45,24 @@ class CrashManager {
                 "\n" + "Log below:" + "\n" + "\n" +
                 Log.getStackTraceString(ex);
 
+        AppGlobal.preferences.edit().putBoolean("isCrashed", true).putString("crashLog", text).apply();
+
+        String path = Environment.getExternalStorageDirectory() + "/Fast/crash_logs";
+
+        File file = new File(path);
+        if (!file.exists()) file.mkdirs();
+
+
         String name = "log_" + System.currentTimeMillis() + ".txt";
         createFile(file, name, text);
 
-        AppGlobal.preferences.edit().putBoolean("isCrashed", true).putString("crashLog", text).apply();
     }
 
     private static void createFile(File path, String name, String trace) {
         File file = new File(path, name);
         try {
             FileStreams.write(trace, file);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException ignored) {}
     }
 
     static void init() {

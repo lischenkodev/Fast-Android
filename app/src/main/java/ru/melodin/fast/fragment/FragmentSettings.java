@@ -1,28 +1,17 @@
 package ru.melodin.fast.fragment;
 
 import android.content.DialogInterface;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.squareup.picasso.Picasso;
-
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 
@@ -36,7 +25,6 @@ import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
-import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
 
@@ -53,51 +41,6 @@ public class FragmentSettings extends PreferenceFragmentCompat implements Prefer
     private static final String KEY_SHOW_CACHED_USERS = "show_cached_users";
     private static final String KEY_SHOW_CACHED_GROUPS = "show_cached_groups";
     public static final String KEY_HIDE_KEYBOARD_ON_SCROLL = "hide_keyboard_on_scroll";
-
-    private ImageView avatar;
-    private TextView name;
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        avatar = view.findViewById(R.id.user_avatar);
-        name = view.findViewById(R.id.user_name);
-
-        getUser();
-        EventBus.getDefault().register(this);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void onReceive(Object[] data) {
-        String key = (String) data[0];
-
-        if (key.equals("update_user")) {
-            int userId = (int) data[1];
-            if (userId != UserConfig.userId) return;
-            getUser();
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        if (EventBus.getDefault().isRegistered(this))
-            EventBus.getDefault().unregister(this);
-        super.onDestroy();
-    }
-
-    private void getUser() {
-        VKUser user = MemoryCache.getUser(UserConfig.userId);
-        if (user == null) user = VKUser.EMPTY;
-
-        name.setText(user.toString());
-
-        if (TextUtils.isEmpty(user.getPhoto200())) {
-            avatar.setImageDrawable(null);
-        } else {
-            Picasso.get().load(user.getPhoto200()).priority(Picasso.Priority.HIGH).placeholder(new ColorDrawable(Color.TRANSPARENT)).into(avatar);
-        }
-    }
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {

@@ -1,16 +1,17 @@
 package ru.melodin.fast.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
@@ -91,7 +92,7 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
     class ViewHolder extends RecyclerView.ViewHolder {
 
         CircleImageView avatar;
-        CircleImageView online;
+        ImageView online;
 
         TextView name;
         TextView lastSeen;
@@ -105,7 +106,7 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
         ViewHolder(View v) {
             super(v);
 
-            placeholder = new ColorDrawable(Color.TRANSPARENT);
+            placeholder = getDrawable(R.drawable.avatar_placeholder);
 
             avatar = v.findViewById(R.id.avatar);
             online = v.findViewById(R.id.online);
@@ -143,6 +144,8 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
 
             name.setText(user.toString());
 
+            online.setImageDrawable(getOnlineIndicator(user));
+
             if (user.isOnline()) {
                 lastSeen.setVisibility(View.GONE);
                 online.setVisibility(View.VISIBLE);
@@ -168,6 +171,11 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
                         .placeholder(placeholder)
                         .into(avatar);
             }
+        }
+
+        @Nullable
+        private Drawable getOnlineIndicator(@NonNull VKUser user) {
+            return !user.isOnline() ? null : getDrawable(user.isOnlineMobile() ? R.drawable.ic_online_mobile : R.drawable.ic_online);
         }
     }
 }

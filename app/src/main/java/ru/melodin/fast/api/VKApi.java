@@ -29,7 +29,7 @@ public class VKApi {
     private static final String TAG = "Fast.VKApi";
 
     public static final String BASE_URL = "https://api.vk.com/method/";
-    public static final String API_VERSION = "5.95";
+    public static final String API_VERSION = "5.103";
 
     public static UserConfig config;
     public static String lang = AppGlobal.locale.getLanguage();
@@ -319,7 +319,7 @@ public class VKApi {
         }
 
         /**
-         * Returns the list of dialogs of the current user
+         * Returns the list of dialogs of the current avatar_placeholder
          */
         public MessageMethodSetter getConversations() {
             return new MessageMethodSetter("getConversations");
@@ -349,7 +349,7 @@ public class VKApi {
         }
 
         /**
-         * Returns a list of the current user's private messages,
+         * Returns a list of the current avatar_placeholder's private messages,
          * that match search criteria
          */
         public MessageMethodSetter search() {
@@ -357,7 +357,7 @@ public class VKApi {
         }
 
         /**
-         * Returns a list of the current user's private messages,
+         * Returns a list of the current avatar_placeholder's private messages,
          * that match search criteria
          */
         public MessageMethodSetter getHistory() {
@@ -390,7 +390,7 @@ public class VKApi {
          * After successful execution, returns the sent message ID (id).
          * <p/>
          * Error codes:
-         * 900	Cannot send sticker to user from blacklist
+         * 900	Cannot send sticker to avatar_placeholder from blacklist
          */
         public MessageMethodSetter sendSticker() {
             return new MessageMethodSetter("sendSticker");
@@ -450,10 +450,10 @@ public class VKApi {
         }
 
         /**
-         * Returns updates in user's private messages.
+         * Returns updates in avatar_placeholder's private messages.
          * To speed up handling of private messages,
          * it can be useful to cache previously loaded messages on
-         * a user's mobile device/desktop, to prevent re-receipt at each call.
+         * a avatar_placeholder's mobile device/desktop, to prevent re-receipt at each call.
          * With this method, you can synchronize a local copy of
          * the message list with the actual version.
          * <p/>
@@ -482,9 +482,9 @@ public class VKApi {
          * <p/>
          * Returns a list of chat objects.
          * If the fields parameter is set,
-         * the users field contains a list of user objects with
-         * an additional invited_by field containing the ID of the user who
-         * invited the current user to chat.
+         * the users field contains a list of avatar_placeholder objects with
+         * an additional invited_by field containing the ID of the avatar_placeholder who
+         * invited the current avatar_placeholder to chat.
          * <p/>
          * http://vk.com/dev/messages.getChat
          */
@@ -523,9 +523,9 @@ public class VKApi {
          * Result:
          * Returns a list of IDs of chat participants.
          * <p/>
-         * If fields is set, the user fields contains a list of user objects
+         * If fields is set, the avatar_placeholder fields contains a list of avatar_placeholder objects
          * with an additional invited_by field containing the ID
-         * of the user who invited the current user to chat.
+         * of the avatar_placeholder who invited the current avatar_placeholder to chat.
          * <p/>
          * http://vk.com/dev/messages.getChatUsers
          */
@@ -534,7 +534,7 @@ public class VKApi {
         }
 
         /**
-         * Changes the status of a user as typing in a conversation
+         * Changes the status of a avatar_placeholder as typing in a conversation
          * <p/>
          * Result:
          * Returns 1.
@@ -548,7 +548,7 @@ public class VKApi {
         }
 
         /**
-         * Adds a new user to a chat.
+         * Adds a new avatar_placeholder to a chat.
          * <p/>
          * Result:
          * Returns 1.
@@ -563,8 +563,8 @@ public class VKApi {
         }
 
         /**
-         * Allows the current user to leave a chat or, if the current user started the chat,
-         * allows the user to remove another user from the chat.
+         * Allows the current avatar_placeholder to leave a chat or, if the current avatar_placeholder started the chat,
+         * allows the avatar_placeholder to remove another avatar_placeholder from the chat.
          * <p/>
          * Result:
          * Returns 1

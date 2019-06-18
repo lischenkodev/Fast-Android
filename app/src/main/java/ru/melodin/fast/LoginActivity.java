@@ -85,7 +85,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         webLogin = findViewById(R.id.web_login);
-
+        webLogin.setVisibility(View.GONE);
         webLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

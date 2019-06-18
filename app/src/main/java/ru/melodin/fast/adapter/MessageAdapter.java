@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.MediaPlayer;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -28,6 +29,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import ru.melodin.fast.MessagesActivity;
@@ -69,6 +71,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     private static final int TYPE_NORMAL = 0;
     private static final int TYPE_FOOTER = 10;
 
+    private MediaPlayer mediaPlayer;
+
     private int peerId;
     private AttachmentInflater attacher;
     private DisplayMetrics metrics;
@@ -91,10 +95,19 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         this.metrics = context.getResources().getDisplayMetrics();
 
         layoutManager = (LinearLayoutManager) ((MessagesActivity) context).getRecyclerView().getLayoutManager();
+
         EventBus.getDefault().register(this);
     }
 
+    private void releaseMediaPlayer() {
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+    }
+
     public void destroy() {
+        releaseMediaPlayer();
         EventBus.getDefault().unregister(this);
     }
 
@@ -103,6 +116,39 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         String key = (String) data[0];
 
         switch (key) {
+            case AttachmentInflater.KEY_PLAY_AUDIO:
+                if (mediaPlayer == null) {
+                    releaseMediaPlayer();
+
+                    mediaPlayer = new MediaPlayer();
+
+                    try {
+                        mediaPlayer.setDataSource((String) data[1]);
+                        mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                            @Override
+                            public void onCompletion(MediaPlayer mediaPlayer) {
+                                releaseMediaPlayer();
+                            }
+                        });
+                        mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                            @Override
+                            public void onPrepared(MediaPlayer mediaPlayer) {
+                                mediaPlayer.start();
+                            }
+                        });
+                        mediaPlayer.prepareAsync();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    mediaPlayer.start();
+                }
+                break;
+            case AttachmentInflater.KEY_PAUSE_AUDIO:
+                if (mediaPlayer != null) {
+                    mediaPlayer.pause();
+                }
+                break;
             case LongPollEvents.KEY_USER_OFFLINE:
             case LongPollEvents.KEY_USER_ONLINE:
                 activity.setUserOnline((int) data[1]);
@@ -409,7 +455,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             @Override
             public void error(Exception e) {
                 loadingIds.remove(userId);
-                Log.e("Error load user", Log.getStackTraceString(e));
+                Log.e("Error load use", Log.getStackTraceString(e));
             }
         });
     }
@@ -510,6 +556,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         LinearLayout bubbleContainer;
 
         Drawable circle, sending, placeholder;
+
         @ColorInt
         int alphaAccentColor;
 
@@ -531,7 +578,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             text = v.findViewById(R.id.text);
 
-            placeholder = new ColorDrawable(Color.TRANSPARENT);
+            placeholder = getDrawable(R.drawable.avatar_placeholder);
 
             avatar = v.findViewById(R.id.avatar);
             important = v.findViewById(R.id.important);

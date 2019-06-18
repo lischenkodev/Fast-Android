@@ -1,8 +1,7 @@
 package ru.melodin.fast.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,8 +49,13 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
         TextView name;
         TextView invited_by;
 
+        Drawable placeholder;
+
         ViewHolder(View v) {
             super(v);
+
+            placeholder = getDrawable(R.drawable.avatar_placeholder);
+
             remove = v.findViewById(R.id.remove);
 
             avatar = v.findViewById(R.id.avatar);
@@ -71,12 +75,12 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
             String text = user.getId() == UserConfig.userId ? getString(R.string.chat_creator) : getString(R.string.invited_by, UserConfig.user.toString());
             invited_by.setText(text);
 
-            if (TextUtils.isEmpty(user.getPhoto100())) {
-                avatar.setImageDrawable(new ColorDrawable(Color.TRANSPARENT));
+            if (TextUtils.isEmpty(user.getPhoto200())) {
+                avatar.setImageDrawable(placeholder);
             } else {
                 Picasso.get()
-                        .load(user.getPhoto100())
-                        .placeholder(new ColorDrawable(Color.TRANSPARENT))
+                        .load(user.getPhoto200())
+                        .placeholder(placeholder)
                         .into(avatar);
             }
 

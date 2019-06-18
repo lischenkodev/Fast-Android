@@ -39,7 +39,7 @@ public abstract class BaseFragment extends Fragment {
 
     public void scrollToTop() {
         if (recyclerView != null)
-            recyclerView.scrollToPosition(0);
+            recyclerView.smoothScrollToPosition(0);
 
         if (toolbar != null)
             expandToolbar();

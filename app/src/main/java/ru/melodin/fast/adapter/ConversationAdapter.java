@@ -1,7 +1,6 @@
 package ru.melodin.fast.adapter;
 
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.text.Spannable;
@@ -45,7 +44,7 @@ import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.database.MemoryCache;
-import ru.melodin.fast.fragment.FragmentDialogs;
+import ru.melodin.fast.fragment.FragmentConversations;
 import ru.melodin.fast.fragment.FragmentSettings;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
@@ -54,12 +53,12 @@ import ru.melodin.fast.util.Util;
 public class ConversationAdapter extends RecyclerAdapter<VKConversation, ConversationAdapter.ViewHolder> {
 
     private LinearLayoutManager manager;
-    private FragmentDialogs fragment;
+    private FragmentConversations fragment;
 
     private ArrayList<Integer> loadingIds = new ArrayList<>();
     private int lastUpdateId;
 
-    public ConversationAdapter(FragmentDialogs fragment, ArrayList<VKConversation> values) {
+    public ConversationAdapter(FragmentConversations fragment, ArrayList<VKConversation> values) {
         super(fragment.getContext(), values);
         this.fragment = fragment;
         manager = (LinearLayoutManager) fragment.getRecyclerView().getLayoutManager();
@@ -430,7 +429,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             @Override
             public void error(Exception e) {
                 loadingIds.remove(userId);
-                Log.e("Error load user", Log.getStackTraceString(e));
+                Log.e("Error load avatar", Log.getStackTraceString(e));
             }
         });
     }
@@ -485,21 +484,33 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        ImageView avatar, avatarSmall, online, out, muted;
-        TextView title, body, time, counter;
+        ImageView avatar;
+        ImageView avatarSmall;
+        ImageView online;
+        ImageView out;
+        ImageView muted;
+
+        TextView title;
+        TextView body;
+        TextView time;
+        TextView counter;
+
         LinearLayout container;
         FrameLayout counterContainer;
 
+        Drawable placeholder;
+
         @ColorInt
-        int pushesEnabled, pushesDisabled, bodyColor, accentColor;
+        int pushesEnabled, pushesDisabled, accentColor;
 
         ViewHolder(@NonNull View v) {
             super(v);
 
+            placeholder = getDrawable(R.drawable.avatar_placeholder);
+
             accentColor = ThemeManager.getAccent();
             pushesEnabled = accentColor;
             pushesDisabled = ThemeManager.isDark() ? ColorUtil.lightenColor(ThemeManager.getPrimary(), 2) : Color.GRAY;
-            bodyColor = ThemeManager.getBodyTextColor();
 
             avatar = v.findViewById(R.id.avatar);
             avatarSmall = v.findViewById(R.id.avatar_small);
@@ -520,13 +531,11 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             background.setCornerRadius(200f);
 
             counter.setBackground(background);
-
-            body.setTextColor(ThemeManager.getBodyTextColor());
-            muted.getDrawable().setTint(ThemeManager.getBodyTextColor());
         }
 
         void bind(int position) {
             VKConversation item = getItem(position);
+
             VKMessage last = item.getLast();
 
             muted.setVisibility(item.isNotificationsDisabled() ? View.VISIBLE : View.GONE);
@@ -569,17 +578,11 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
 
             counter.getBackground().setTint(item.isNotificationsDisabled() ? pushesDisabled : pushesEnabled);
 
-            if (last.isOut()) {
-                avatarSmall.setVisibility(View.VISIBLE);
-            } else if (item.isChat()) {
-                avatarSmall.setVisibility(View.VISIBLE);
-            } else if (item.isGroupChannel()) {
+            if (item.isChat() || last.isOut()) {
                 avatarSmall.setVisibility(View.VISIBLE);
             } else {
                 avatarSmall.setVisibility(View.GONE);
             }
-
-            Drawable placeholder = new ColorDrawable(Color.TRANSPARENT);
 
             if (!TextUtils.isEmpty(peerAvatar)) {
                 Picasso.get()
@@ -602,7 +605,6 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
                     avatarSmall.setImageDrawable(placeholder);
                 }
 
-
             if (last.getAction() == null) {
                 if ((last.getAttachments() != null || !ArrayUtil.isEmpty(last.getFwdMessages())) && TextUtils.isEmpty(last.getText())) {
                     String body_ = VKUtil.getAttachmentBody(item.getLast().getAttachments(), item.getLast().getFwdMessages());
@@ -623,8 +625,17 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             counter.setVisibility(TextUtils.isEmpty(counter.getText().toString()) ? View.GONE : View.VISIBLE);
 
             out.setVisibility(last.isOut() && !item.isRead() ? View.VISIBLE : View.GONE);
+
+            online.setImageDrawable(getOnlineIndicator(peerUser));
             online.setVisibility(peerUser == null ? View.GONE : peerUser.isOnline() ? View.VISIBLE : View.GONE);
+
+
             counterContainer.setVisibility(item.isRead() ? View.GONE : View.VISIBLE);
+        }
+
+        @Nullable
+        private Drawable getOnlineIndicator(VKUser user) {
+            return user == null || !user.isOnline() ? null : getDrawable(user.isOnlineMobile() ? R.drawable.ic_online_mobile : R.drawable.ic_online);
         }
     }
 }

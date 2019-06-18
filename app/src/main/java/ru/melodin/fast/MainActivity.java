@@ -37,7 +37,7 @@ import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.current.BaseFragment;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
-import ru.melodin.fast.fragment.FragmentDialogs;
+import ru.melodin.fast.fragment.FragmentConversations;
 import ru.melodin.fast.fragment.FragmentFriends;
 import ru.melodin.fast.fragment.FragmentNavDrawer;
 import ru.melodin.fast.fragment.FragmentSettings;
@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
 
     private GradientDrawable background;
 
-    private FragmentDialogs fd = new FragmentDialogs();
+    private FragmentConversations fd = new FragmentConversations();
     private FragmentFriends ff = new FragmentFriends();
 
     private int selectedId = -1;
@@ -139,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void error(Exception e) {
-                Log.e("Error get user", Log.getStackTraceString(e));
+                Log.e("Error get avatar_placeholder", Log.getStackTraceString(e));
             }
         });
     }

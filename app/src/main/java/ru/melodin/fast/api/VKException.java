@@ -20,7 +20,7 @@ public class VKException extends IOException {
      */
     public String captchaSid;
     /**
-     * Link to image, you want to show the user,
+     * Link to image, you want to show the avatar_placeholder,
      * that he typed text from this image
      * <p/>
      * see http://vk.com/dev/captcha_error
@@ -28,7 +28,7 @@ public class VKException extends IOException {
     public String captchaImg;
 
     /**
-     * In some cases, VK requires passing a validation procedure of the user,
+     * In some cases, VK requires passing a validation procedure of the avatar_placeholder,
      * resulting in since version 5.0 API
      * (for older versions will be prompted captcha_error)
      * any request to API the following error is returned

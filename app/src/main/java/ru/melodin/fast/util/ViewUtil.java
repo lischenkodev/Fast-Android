@@ -14,8 +14,7 @@ import ru.melodin.fast.common.ThemeManager;
 
 public class ViewUtil {
 
-    private static final InputMethodManager keyboard = (InputMethodManager)
-            AppGlobal.context().getSystemService(Context.INPUT_METHOD_SERVICE);
+    private static final InputMethodManager keyboard = (InputMethodManager) AppGlobal.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
 
     public static void fadeView(View v, long duration, boolean show, Runnable startAction, Runnable endAction) {
         v.setAlpha(show ? 0 : 1);

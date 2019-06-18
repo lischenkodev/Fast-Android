@@ -45,7 +45,7 @@ public class AppGlobal extends Application {
         ThemeManager.init();
     }
 
-    public static synchronized AppGlobal context() {
+    public static synchronized AppGlobal getContext() {
         return instance;
     }
 }

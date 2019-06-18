@@ -197,6 +197,6 @@ public class VKUtil {
     }
 
     private static String getString(int res) {
-        return AppGlobal.context().getString(res);
+        return AppGlobal.getContext().getString(res);
     }
 }

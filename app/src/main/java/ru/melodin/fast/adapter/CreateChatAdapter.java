@@ -1,17 +1,17 @@
 package ru.melodin.fast.adapter;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -98,7 +98,7 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
     class ViewHolder extends RecyclerView.ViewHolder {
 
         CircleImageView avatar;
-        CircleImageView online;
+        ImageView online;
 
         TextView name;
         TextView lastSeen;
@@ -114,7 +114,7 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
             super(v);
 
             selected = v.findViewById(R.id.selected);
-            placeholder = new ColorDrawable(Color.TRANSPARENT);
+            placeholder = getDrawable(R.drawable.avatar_placeholder);
             root = v.findViewById(R.id.root);
 
             avatar = v.findViewById(R.id.avatar);
@@ -137,6 +137,8 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
                 online.setVisibility(View.GONE);
             }
 
+            online.setImageDrawable(getOnlineIndicator(user));
+
             selected.setChecked(user.isSelected());
 
             String seen_text = getString(user.getSex() == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w);
@@ -149,15 +151,20 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
                 lastSeen.setText("");
             }
 
-            if (TextUtils.isEmpty(user.getPhoto100())) {
+            if (TextUtils.isEmpty(user.getPhoto200())) {
                 avatar.setImageDrawable(placeholder);
             } else {
                 Picasso.get()
-                        .load(user.getPhoto100())
+                        .load(user.getPhoto200())
                         .priority(Picasso.Priority.HIGH)
                         .placeholder(placeholder)
                         .into(avatar);
             }
+        }
+
+        @Nullable
+        private Drawable getOnlineIndicator(@NonNull VKUser user) {
+            return !user.isOnline() ? null : getDrawable(user.isOnlineMobile() ? R.drawable.ic_online_mobile : R.drawable.ic_online);
         }
     }
 }
