@@ -334,7 +334,7 @@ public class AttachmentInflater {
                     .into(avatar);
         }
 
-        line.setBackgroundColor(ThemeManager.getMain());
+        line.setBackgroundColor(withStyles ? ThemeManager.getAccent() : Color.TRANSPARENT);
 
         @ColorInt int nameColor, messageColor, lineColor;
 

@@ -650,9 +650,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             itemView.setBackgroundColor(item.isSelected() ? alphaAccentColor : 0);
 
-            String s = item.getUpdateTime() > 0 ? getString(R.string.edited) + ", " : "";
-            String time_ = s + Util.dateFormatter.format(item.isAdded() ? item.getDate() : item.getDate() * 1000L);
-
+            String time_ = item.getUpdateTime() > 0 ? getString(R.string.edited) + ", " : "" + Util.dateFormatter.format(item.isAdded() ? item.getDate() : item.getDate() * 1000L);
             text.setTimeText(time_);
 
             int gravity = item.isOut() ? Gravity.END : Gravity.START;
@@ -661,8 +659,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             bubbleContainer.setGravity(gravity);
 
             important.setVisibility(item.isImportant() ? View.VISIBLE : View.GONE);
-
-            bubble.setVisibility(View.VISIBLE);
 
             String avatar_link = item.isFromGroup() ? group.getPhoto100() : user.getPhoto100();
 
@@ -674,7 +670,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             avatar.setVisibility(item.isOut() ? View.GONE : View.VISIBLE);
 
-            if (avatar.getVisibility() == View.VISIBLE)
+            if (avatar.getVisibility() == View.VISIBLE) {
                 if (TextUtils.isEmpty(avatar_link)) {
                     avatar.setImageDrawable(placeholder);
                 } else {
@@ -684,7 +680,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                             .placeholder(placeholder)
                             .into(avatar);
                 }
-            else {
+            } else {
                 avatar.setImageDrawable(null);
             }
 
@@ -714,19 +710,13 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             int textColor, bgColor, linkColor;
 
-            if (item.isOut()) {
-                textColor = Color.WHITE;
-                bgColor = ThemeManager.getAccent();
-                linkColor = Color.WHITE;
+            linkColor = ThemeManager.getAccent();
+            if (ThemeManager.isDark()) {
+                textColor = 0xffeeeeee;
+                bgColor = 0xff404040;
             } else {
-                linkColor = ThemeManager.getAccent();
-                if (ThemeManager.isDark()) {
-                    textColor = 0xffeeeeee;
-                    bgColor = 0xff404040;
-                } else {
-                    textColor = 0xff1d1d1d;
-                    bgColor = Color.WHITE;
-                }
+                textColor = 0xff1d1d1d;
+                bgColor = Color.WHITE;
             }
 
             text.setTextColor(textColor);
@@ -738,16 +728,14 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             Drawable bg = context.getResources().getDrawable(R.drawable.msg_in_bg);
 
             if (item.getAction() != null) {
-                avatar.setVisibility(View.GONE);
                 messageContainer.setVisibility(View.GONE);
                 serviceContainer.setVisibility(View.VISIBLE);
 
                 serviceContainer.removeAllViews();
                 attacher.service(item, serviceContainer);
 
-                bg.setTint(Color.TRANSPARENT);
+                bg = new ColorDrawable(Color.TRANSPARENT);
             } else {
-                avatar.setVisibility(View.VISIBLE);
                 messageContainer.setVisibility(View.VISIBLE);
                 serviceContainer.setVisibility(View.GONE);
                 bg.setColorFilter(bgColor, PorterDuff.Mode.MULTIPLY);
