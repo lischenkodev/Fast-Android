@@ -5,6 +5,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.media.MediaPlayer;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -590,6 +591,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     class ViewHolder extends RecyclerView.ViewHolder {
 
         CircleImageView avatar;
+        ImageView indicator;
         ImageView important;
 
         TimeTextView text;
@@ -603,7 +605,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         LinearLayout timeContainer;
         LinearLayout bubbleContainer;
 
-        Drawable circle, sending, placeholder;
+        Drawable sending, error, placeholder;
+        GradientDrawable circle;
 
         @ColorInt
         int alphaAccentColor;
@@ -631,8 +634,15 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             avatar = v.findViewById(R.id.avatar);
             important = v.findViewById(R.id.important);
 
-            circle = new ColorDrawable(ThemeManager.getAccent());
-            sending = getDrawable(R.drawable.ic_vector_access_time);
+            circle = null;//new GradientDrawable();
+            //circle.setColor(ThemeManager.getAccent());
+            //circle.setCornerRadius(200f);
+
+            error = getDrawable(R.drawable.ic_error_black_24dp);
+            sending = getDrawable(R.drawable.ic_access_time_black_24dp);
+
+            sending.setTint(ThemeManager.getAccent());
+            error.setTint(Color.RED);
 
             bubbleContainer = v.findViewById(R.id.bubble_container);
             messageContainer = v.findViewById(R.id.message_container);
@@ -641,6 +651,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             bubble = v.findViewById(R.id.bubble);
             attachments = v.findViewById(R.id.attachments);
             timeContainer = v.findViewById(R.id.time_container);
+
+            indicator = v.findViewById(R.id.message_state);
         }
 
         void bind(final int position) {
@@ -659,6 +671,19 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             bubbleContainer.setGravity(gravity);
 
             important.setVisibility(item.isImportant() ? View.VISIBLE : View.GONE);
+            indicator.setVisibility(!item.isOut() ? View.GONE : View.VISIBLE);
+
+            if (indicator.getVisibility() == View.VISIBLE) {
+                if (item.getStatus() == VKMessage.Status.SENT && !item.isRead()) {
+                    indicator.setImageDrawable(circle);
+                } else if (item.getStatus() == VKMessage.Status.ERROR) {
+                    indicator.setImageDrawable(error);
+                } else if (item.getStatus() == VKMessage.Status.SENDING) {
+                    indicator.setImageDrawable(sending);
+                } else {
+                    indicator.setImageDrawable(null);
+                }
+            }
 
             String avatar_link = item.isFromGroup() ? group.getPhoto100() : user.getPhoto100();
 
@@ -668,7 +693,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 avatar_link = group.getPhoto100();
             }
 
-            avatar.setVisibility(item.isOut() ? View.GONE : View.VISIBLE);
+            avatar.setVisibility(item.isOut() || !item.isChat() ? View.GONE : View.VISIBLE);
 
             if (avatar.getVisibility() == View.VISIBLE) {
                 if (TextUtils.isEmpty(avatar_link)) {
@@ -779,7 +804,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 attacher.photo(item, parent, (VKPhoto) attachment, forwarded ? maxWidth : -1);
             } else if (attachment instanceof VKSticker) {
                 bubble.setBackgroundColor(Color.TRANSPARENT);
-                attacher.sticker(parent, (VKSticker) attachment, forwarded ? maxWidth : -1);
+                attacher.sticker(parent, (VKSticker) attachment);
             } else if (attachment instanceof VKDoc) {
                 attacher.doc(item, parent, (VKDoc) attachment, forwarded, withStyles);
             } else if (attachment instanceof VKLink) {

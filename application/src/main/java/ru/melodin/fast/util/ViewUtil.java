@@ -49,28 +49,24 @@ public class ViewUtil {
         applyWindowStyles(window, ThemeManager.getPrimary());
     }
 
-    private static void applyWindowStyles(Window window, @ColorInt int color) {
+    public static void applyWindowStyles(Window window, @ColorInt int color) {
         boolean light = ColorUtil.isLight(color);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             int light_sb = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                window.getDecorView().setSystemUiVisibility(light ? light_sb : 0);
-                window.setStatusBarColor(color);
-                window.setNavigationBarColor(light ? ColorUtil.darkenColor(color) : color);
-            } else {
-                int light_nb = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
-                window.getDecorView().setSystemUiVisibility(light ? (light_sb | light_nb) : 0);
-                window.setStatusBarColor(color);
-                window.setNavigationBarColor(color);
-            }
-
-            return;
+            window.getDecorView().setSystemUiVisibility(light ? light_sb : 0);
+            window.setStatusBarColor(color);
+            window.setNavigationBarColor(light ? ColorUtil.darkenColor(color) : color);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            int light_sb = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            int light_nb = View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            window.getDecorView().setSystemUiVisibility(light ? (light_sb | light_nb) : 0);
+            window.setStatusBarColor(color);
+            window.setNavigationBarColor(color);
+        } else {
+            window.getDecorView().setSystemUiVisibility(0);
+            window.setStatusBarColor(light ? ColorUtil.darkenColor(color) : color);
+            window.setNavigationBarColor(window.getStatusBarColor());
         }
-
-        window.getDecorView().setSystemUiVisibility(0);
-        window.setStatusBarColor(light ? ColorUtil.darkenColor(color) : color);
-        window.setNavigationBarColor(window.getStatusBarColor());
     }
 }

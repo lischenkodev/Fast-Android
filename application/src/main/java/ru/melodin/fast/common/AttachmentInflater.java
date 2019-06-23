@@ -89,7 +89,7 @@ public class AttachmentInflater {
             } else if (attachment instanceof VKPhoto) {
                 photo(item, images, (VKPhoto) attachment, forwarded ? maxWidth : -1);
             } else if (attachment instanceof VKSticker) {
-                sticker(images, (VKSticker) attachment, forwarded ? maxWidth : -1);
+                sticker(images, (VKSticker) attachment);
             } else if (attachment instanceof VKDoc) {
                 doc(item, parent, (VKDoc) attachment, forwarded, withStyles);
             } else if (attachment instanceof VKLink) {
@@ -109,12 +109,16 @@ public class AttachmentInflater {
     }
 
     public void loadImage(final ImageView image, final String smallSrc, final String normalSrc) {
+        loadImage(image, smallSrc, normalSrc, null);
+    }
+
+    public void loadImage(final ImageView image, final String smallSrc, final String normalSrc, Drawable placeholder) {
         if (TextUtils.isEmpty(smallSrc)) return;
         try {
             Picasso.get()
                     .load(smallSrc)
                     .priority(Picasso.Priority.HIGH)
-                    .placeholder(new ColorDrawable(Color.GRAY))
+                    .placeholder(placeholder == null ? new ColorDrawable(Color.TRANSPARENT) : placeholder)
                     .into(image, new Callback.EmptyCallback() {
                         @Override
                         public void onSuccess() {
@@ -239,10 +243,10 @@ public class AttachmentInflater {
         parent.addView(image);
     }
 
-    public void sticker(ViewGroup parent, VKSticker source, int maxWidth) {
+    public void sticker(ViewGroup parent, VKSticker source) {
         final ImageView image = (ImageView) inflater.inflate(R.layout.activity_messages_attach_photo, parent, false);
 
-        image.setLayoutParams(maxWidth == -1 ? getParams(source.getMaxWidth(), source.getMaxHeight()) : getParams(maxWidth));
+        image.setLayoutParams(getParams(400, 400));
         loadImage(image, ThemeManager.isDark() ? source.getMaxBackgroundSize() : source.getMaxSize(), null);
 
         image.setClickable(false);

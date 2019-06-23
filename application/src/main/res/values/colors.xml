@@ -6,7 +6,7 @@
     <color name="background">@android:color/white</color>
 
     <color name="dark_primary">#202020</color>
-    <color name="dark_primary_dark">#121212</color>
+    <color name="dark_primary_dark">#202020</color>
     <color name="dark_accent">#1565c0</color>
     <color name="dark_background">#222222</color>
 

@@ -3,7 +3,9 @@ package ru.melodin.fast.common;
 import android.graphics.Color;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.ColorRes;
 import androidx.annotation.IntegerRes;
+import androidx.core.content.ContextCompat;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -90,7 +92,7 @@ public class ThemeManager {
     }
 
     @ColorInt
-    private static int getColor(int i) {
-        return AppGlobal.getContext().getResources().getColor(i);
+    private static int getColor(@ColorRes int resId) {
+        return ContextCompat.getColor(AppGlobal.getContext(), resId);
     }
 }

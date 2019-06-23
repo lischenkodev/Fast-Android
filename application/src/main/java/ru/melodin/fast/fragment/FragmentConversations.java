@@ -3,6 +3,7 @@ package ru.melodin.fast.fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -13,10 +14,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.widget.Toolbar;
+
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +29,7 @@ import ru.melodin.fast.MessagesActivity;
 import ru.melodin.fast.R;
 import ru.melodin.fast.adapter.ConversationAdapter;
 import ru.melodin.fast.adapter.RecyclerAdapter;
+import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.model.VKConversation;
 import ru.melodin.fast.api.model.VKGroup;
@@ -41,6 +45,7 @@ import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
+import ru.melodin.fast.view.Toolbar;
 
 public class FragmentConversations extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener {
 
@@ -79,6 +84,8 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
 
         setToolbar(tb);
         setRecyclerView(list);
+
+        loadUserAvatar();
 
         refreshLayout.setColorSchemeColors(ThemeManager.getAccent());
         refreshLayout.setOnRefreshListener(this);
@@ -128,6 +135,15 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
         getCachedConversations();
         if (Util.hasConnection())
             getConversations(CONVERSATIONS_COUNT, 0);
+    }
+
+    private void loadUserAvatar() {
+        VKUser user = UserConfig.getUser();
+        if (!TextUtils.isEmpty(user.getPhoto200())) {
+            Picasso.get()
+                    .load(user.getPhoto200())
+                    .into(tb.getAvatar());
+        }
     }
 
     private void initViews(View v) {

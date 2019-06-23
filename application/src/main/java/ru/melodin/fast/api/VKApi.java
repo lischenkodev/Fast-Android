@@ -25,7 +25,9 @@ import ru.melodin.fast.api.model.VKModel;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.concurrent.ThreadExecutor;
+import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.net.HttpRequest;
+import ru.melodin.fast.service.LongPollService;
 import ru.melodin.fast.util.ArrayUtil;
 
 public class VKApi {
@@ -202,6 +204,10 @@ public class VKApi {
         if (exception.getCode() == ErrorCodes.USER_AUTHORIZATION_FAILED) {
             activity.finishAffinity();
             activity.startActivity(new Intent(activity, LoginActivity.class));
+            activity.stopService(new Intent(activity, LongPollService.class));
+            UserConfig.clear();
+            DatabaseHelper.getInstance().dropTables(AppGlobal.database);
+            DatabaseHelper.getInstance().onCreate(AppGlobal.database);
         }
     }
 

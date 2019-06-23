@@ -43,6 +43,27 @@ public class VKSticker extends VKModel implements Serializable {
         maxBackgroundSize = findMaxBackgroundSize();
     }
 
+    public String size(int width) {
+        if (ArrayUtil.isEmpty(images)) return null;
+        for (Size size : images) {
+            if (size.getWidth() == width)
+                return size.getUrl();
+        }
+
+        return null;
+    }
+
+    public String backgroundSize(int width) {
+        if (ArrayUtil.isEmpty(backgroundImages)) return null;
+        for (Size size : backgroundImages) {
+            if (size.getWidth() == width)
+                return size.getUrl();
+        }
+
+        return null;
+
+    }
+
     private String findMaxSize() {
         if (ArrayUtil.isEmpty(images)) return null;
         for (int i = images.size() - 1; i >= 0; i--) {

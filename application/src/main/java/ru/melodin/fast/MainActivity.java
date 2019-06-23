@@ -98,8 +98,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         PermissionManager.setActivity(this);
+        ViewUtil.applyWindowStyles(getWindow(), ThemeManager.getPrimaryDark());
         setTheme(ThemeManager.getCurrentTheme());
-        ViewUtil.applyWindowStyles(getWindow());
         VKApi.config = UserConfig.restore();
         super.onCreate(savedInstanceState);
 
@@ -305,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
                 transaction.add(FRAGMENT_CONTAINER, fragment, fragment.getClass().getSimpleName());
             }
         }
-        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE).commit();
+        transaction.commit();
     }
 
     private void showExitDialog() {

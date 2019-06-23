@@ -162,11 +162,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         });
         initListScrollListener();
 
-        if (ThemeManager.isDark())
-            if (chatPanel.getBackground() != null) {
-                chatPanel.getBackground().setColorFilter(ColorUtil.lightenColor(ThemeManager.getBackground()), PorterDuff.Mode.MULTIPLY);
-            }
-
         layoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
         layoutManager.setStackFromEnd(true);
 
@@ -537,10 +532,14 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         msg.setDate(Calendar.getInstance().getTimeInMillis());
         msg.setOut(true);
         msg.setRandomId(random.nextInt());
+        msg.setStatus(VKMessage.Status.SENDING);
 
-        adapter.addMessage(msg, true);
+        adapter.addMessage(msg, false);
+        adapter.notifyDataSetChanged();
 
         final int position = adapter.getItemCount() - 1;
+
+        list.scrollToPosition(position);
 
         final int size = adapter.getItemCount();
 
@@ -561,10 +560,13 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                         timer.cancel();
                 }
 
-                adapter.getItem(position).setId(id);
+                msg.setId(id);
+
+                int i = adapter.searchPosition(id);
+                adapter.getItem(i).setStatus(VKMessage.Status.SENT);
+                adapter.notifyItemChanged(i, -1);
 
                 if (adapter.getItemCount() > size) {
-                    int i = adapter.searchPosition(id);
                     adapter.remove(i);
                     adapter.add(msg);
                     adapter.notifyItemMoved(i, adapter.getItemCount() - 1);
@@ -576,7 +578,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             public void error(Exception e) {
                 Log.e("Error send message", Log.getStackTraceString(e));
                 Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
-                //adapter.notifyItemChanged(position, -1);
+
+                adapter.getItem(position).setStatus(VKMessage.Status.ERROR);
+                adapter.notifyDataSetChanged();
             }
         });
     }
@@ -929,7 +933,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
             @Override
             public void ready() throws Exception {
-                VKApi.messages().delete().messageIds(mIds).every(forAll).execute();
+                if (messages.get(0).getStatus() != VKMessage.Status.ERROR)
+                    VKApi.messages().delete().messageIds(mIds).every(forAll).execute();
             }
 
             @Override
@@ -966,12 +971,17 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         ArrayList<String> list = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.message_functions)));
         ArrayList<String> remove = new ArrayList<>();
 
-        if (!conversation.isCanChangePin()) {
+        if (item.getStatus() == VKMessage.Status.ERROR) {
             remove.add(getString(R.string.pin_message));
-        }
-
-        if (conversation.getLast().getDate() * 1000L < System.currentTimeMillis() - AlarmManager.INTERVAL_DAY || !item.isOut()) {
             remove.add(getString(R.string.edit));
+        } else {
+            if (!conversation.isCanChangePin()) {
+                remove.add(getString(R.string.pin_message));
+            }
+
+            if (conversation.getLast().getDate() * 1000L < System.currentTimeMillis() - AlarmManager.INTERVAL_DAY || !item.isOut()) {
+                remove.add(getString(R.string.edit));
+            }
         }
 
         list.removeAll(remove);
@@ -1045,7 +1055,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         edited.setText(message.getText().toString().trim());
         if (edited.getText().trim().isEmpty() && ArrayUtil.isEmpty(edited.getAttachments()) && ArrayUtil.isEmpty(edited.getFwdMessages())) {
             showConfirmDeleteMessages(new ArrayList<>(Collections.singletonList(edited)));
-        } else
+        } else {
+            adapter.getItem(editingPosition).setStatus(VKMessage.Status.SENDING);
+            adapter.notifyItemChanged(editingPosition, -1);
             ThreadExecutor.execute(new AsyncCallback(this) {
                 int response;
 
@@ -1072,6 +1084,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
                     VKMessage message = adapter.getItem(editingPosition);
                     message.setText(edited.getText());
+                    message.setStatus(VKMessage.Status.SENT);
                     message.setUpdateTime(System.currentTimeMillis());
 
                     adapter.notifyItemChanged(editingPosition, -1);
@@ -1080,9 +1093,12 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
                 @Override
                 public void error(Exception e) {
+                    adapter.getItem(editingPosition).setStatus(VKMessage.Status.ERROR);
+                    adapter.notifyItemChanged(editingPosition, -1);
                     Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
                 }
             });
+        }
     }
 
     private void showConfirmPinDialog(final VKMessage message) {
@@ -1189,8 +1205,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             invalidateOptionsMenu();
             getSupportActionBar().setSubtitle(getSubtitle());
             adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
-        } else
+        } else {
             super.onBackPressed();
+        }
     }
 
     @Override
