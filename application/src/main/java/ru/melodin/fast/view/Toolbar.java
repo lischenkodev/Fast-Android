@@ -1,5 +1,6 @@
 package ru.melodin.fast.view;
 
+import android.animation.LayoutTransition;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
@@ -10,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -23,7 +25,7 @@ import androidx.annotation.Nullable;
 
 import ru.melodin.fast.R;
 
-public class Toolbar extends LinearLayout {
+public class Toolbar extends FrameLayout {
 
     private TextView title;
     private TextView subtitle;

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/groups"
+            android:enabled="false"
+            android:icon="@drawable/md_groups"
+            android:title="@string/groups"
+            android:visible="false" />
+
+        <item
+            android:id="@+id/friends"
+            android:icon="@drawable/md_people"
+            android:title="@string/fragment_friends" />
+
+        <item
+            android:id="@+id/conversations"
+            android:icon="@drawable/md_mail"
+            android:title="@string/fragment_messages" />
+
+        <item
+            android:id="@+id/menu"
+            android:icon="@drawable/md_burger"
+            android:title="@string/settings" />
+    </group>
+
+</menu>

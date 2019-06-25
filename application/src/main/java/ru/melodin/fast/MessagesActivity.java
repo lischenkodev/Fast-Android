@@ -1121,7 +1121,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             else
                 setSendStyle();
         } else {
-            if (s.toString().trim().isEmpty()) {
+            if (s.toString().trim().isEmpty() && ArrayUtil.isEmpty(edited.getAttachments())) {
                 setTrashStyle();
                 send.setOnClickListener(new View.OnClickListener() {
                     @Override

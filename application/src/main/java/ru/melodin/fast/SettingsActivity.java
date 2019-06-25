@@ -1,7 +1,6 @@
 package ru.melodin.fast;
 
 import android.os.Bundle;
-import android.view.MenuItem;
 import android.view.View;
 
 import androidx.annotation.Nullable;
@@ -22,6 +21,7 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
 
         Toolbar tb = findViewById(R.id.tb);
+        tb.setTitle(R.string.settings);
         tb.setBackVisible(true);
         tb.setOnBackClickListener(new View.OnClickListener() {
             @Override

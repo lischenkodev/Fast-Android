@@ -3,21 +3,19 @@ package ru.melodin.fast;
 import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageButton;
-import android.widget.LinearLayout;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -39,61 +37,25 @@ import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.fragment.FragmentConversations;
 import ru.melodin.fast.fragment.FragmentFriends;
-import ru.melodin.fast.fragment.FragmentNavDrawer;
+import ru.melodin.fast.fragment.FragmentItems;
 import ru.melodin.fast.fragment.FragmentSettings;
 import ru.melodin.fast.service.LongPollService;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.util.ViewUtil;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener {
 
-    private View bottom_toolbar;
-    private ImageButton conversations;
-    private ImageButton friends;
+    private FragmentConversations fragmentConversations = new FragmentConversations();
+    private FragmentFriends fragmentFriends = new FragmentFriends();
+    private FragmentItems fragmentItems = new FragmentItems();
 
-    private GradientDrawable background;
-
-    private FragmentConversations fd = new FragmentConversations();
-    private FragmentFriends ff = new FragmentFriends();
+    private BottomNavigationView navigationView;
 
     private int selectedId = -1;
     private BaseFragment selectedFragment;
 
     private Intent longPollIntent;
-
-    private View.OnClickListener click = new View.OnClickListener() {
-
-        @Override
-        public void onClick(View v) {
-            switch (v.getId()) {
-                case R.id.tb_messages:
-                    if (selectedFragment == fd) {
-                        selectedFragment.scrollToTop();
-                        return;
-                    }
-                    selectedFragment = fd;
-                    conversations.setBackground(background);
-                    conversations.getDrawable().setTint(Color.WHITE);
-                    friends.getDrawable().setTint(ThemeManager.getAccent());
-                    friends.setBackgroundColor(Color.TRANSPARENT);
-                    break;
-                case R.id.tb_friends:
-                    if (selectedFragment == ff) {
-                        selectedFragment.scrollToTop();
-                        return;
-                    }
-                    selectedFragment = ff;
-                    friends.setBackground(background);
-                    friends.getDrawable().setTint(Color.WHITE);
-                    conversations.getDrawable().setTint(ThemeManager.getAccent());
-                    conversations.setBackgroundColor(Color.TRANSPARENT);
-                    break;
-            }
-
-            replaceFragment(selectedFragment);
-        }
-    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -105,9 +67,11 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        bottom_toolbar = findViewById(R.id.toolbar);
+        navigationView = findViewById(R.id.bottom_navigation_view);
+        navigationView.setSelectedItemId(R.id.conversations);
+        navigationView.setOnNavigationItemSelectedListener(this);
+        navigationView.setOnNavigationItemReselectedListener(this);
 
-        initToolbar();
         checkLogin();
         checkCrash();
 
@@ -166,8 +130,8 @@ public class MainActivity extends AppCompatActivity {
             loadUser();
             longPollIntent = new Intent(this, LongPollService.class);
             startService(longPollIntent);
-            selectedFragment = fd;
-            replaceFragment(fd);
+            selectedFragment = fragmentConversations;
+            replaceFragment(fragmentConversations);
         }
     }
 
@@ -228,46 +192,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    private void initToolbar() {
-        ImageButton filter = bottom_toolbar.findViewById(R.id.tb_filter);
-        ImageButton menu = bottom_toolbar.findViewById(R.id.tb_menu);
-
-        findViewById(R.id.toolbar).setBackgroundColor(ThemeManager.getPrimary());
-
-        filter.setEnabled(false);
-        filter.getDrawable().setTint(Color.GRAY);
-
-        menu.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FragmentNavDrawer.display(getSupportFragmentManager(), selectedId);
-            }
-        });
-
-        background = new GradientDrawable();
-        background.setColor(ThemeManager.getAccent());
-        background.setCornerRadius(200f);
-
-        conversations = bottom_toolbar.findViewById(R.id.tb_messages);
-        friends = bottom_toolbar.findViewById(R.id.tb_friends);
-
-        conversations.setBackground(background);
-        friends.setBackgroundColor(Color.TRANSPARENT);
-
-        friends.setOnClickListener(click);
-        conversations.setOnClickListener(click);
-
-        LinearLayout tb_btn_switch = bottom_toolbar.findViewById(R.id.tb_icons_switcher);
-        tb_btn_switch.setBackgroundResource(ThemeManager.isDark() ? R.drawable.tb_switcher_bg_dark : R.drawable.tb_switcher_bg);
-    }
-
     public void itemClick(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.groups:
                 selectedId = R.id.groups;
                 break;
-            case R.id.settings:
+            case R.id.menu:
                 startActivity(new Intent(this, SettingsActivity.class));
                 break;
             case R.id.left:
@@ -330,5 +260,30 @@ public class MainActivity extends AppCompatActivity {
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        selectedId = item.getItemId();
+        switch (item.getItemId()) {
+            case R.id.conversations:
+                selectedFragment = fragmentConversations;
+                break;
+            case R.id.friends:
+                selectedFragment = fragmentFriends;
+                break;
+            case R.id.menu:
+                selectedFragment = fragmentItems;
+                break;
+        }
+
+        replaceFragment(selectedFragment);
+        return true;
+    }
+
+    @Override
+    public void onNavigationItemReselected(@NonNull MenuItem item) {
+        if (selectedFragment != null)
+            selectedFragment.scrollToTop();
     }
 }

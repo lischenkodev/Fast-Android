@@ -1,101 +1,94 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="80dp"
+    android:layout_marginStart="6dp"
+    android:layout_marginEnd="2dp"
+    android:baselineAligned="false"
     android:gravity="center_vertical"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:padding="6dp">
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="0">
+
+        <ru.melodin.fast.view.CircleImageView
+            android:id="@+id/abc_tb_avatar"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_gravity="bottom|end"
+            tools:src="@drawable/avatar_placeholder" />
+
+        <ImageView
+            android:id="@+id/online"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="3dp"
+            tools:src="@drawable/ic_online" />
+
+    </FrameLayout>
 
     <LinearLayout
-        android:id="@+id/container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="6dp"
-        android:layout_marginEnd="2dp"
-        android:baselineAligned="false"
-        android:padding="6dp">
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginStart="10dp"
+        android:layout_weight="1.0"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:padding="4dp">
 
-        <FrameLayout
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="4dp"
+            android:fontFamily="@font/ps_regular"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textColor="?android:textColorPrimary"
+            android:textSize="18sp"
+            tools:text="User name" />
+
+        <TextView
+            android:id="@+id/last_seen"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="0">
+            android:textColor="?android:textColorSecondary"
+            tools:text="Last seen at 4:20" />
 
-            <ru.melodin.fast.view.CircleImageView
-                android:id="@+id/abc_tb_avatar"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                android:layout_gravity="bottom|end"
-                tools:src="@drawable/avatar_placeholder" />
+    </LinearLayout>
 
-            <ImageView
-                android:id="@+id/online"
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="3dp"
-                tools:src="@drawable/ic_online" />
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginStart="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-        </FrameLayout>
-
-        <LinearLayout
+        <ImageButton
+            android:id="@+id/message"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginStart="10dp"
-            android:layout_weight="1.0"
-            android:gravity="center_vertical"
-            android:orientation="vertical"
-            android:padding="4dp">
+            android:layout_height="wrap_content"
+            android:background="?selectableItemBackgroundBorderless"
+            android:padding="10dp"
+            android:src="@drawable/md_mail"
+            android:tint="?colorAccent" />
 
-            <TextView
-                android:id="@+id/name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
-                android:fontFamily="@font/ps_regular"
-                android:maxLines="1"
-                android:singleLine="true"
-                android:textColor="?android:textColorPrimary"
-                android:textSize="18sp"
-                tools:text="User name" />
-
-            <TextView
-                android:id="@+id/last_seen"
-                android:textColor="?android:textColorSecondary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                tools:text="Last seen at 4:20" />
-
-        </LinearLayout>
-
-        <LinearLayout
+        <ImageButton
+            android:id="@+id/functions"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginStart="10dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <ImageButton
-                android:id="@+id/message"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="?selectableItemBackgroundBorderless"
-                android:padding="10dp"
-                android:src="@drawable/md_mail"
-                android:tint="?colorAccent" />
-
-            <ImageButton
-                android:id="@+id/functions"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="-6dp"
-                android:background="?selectableItemBackgroundBorderless"
-                android:padding="10dp"
-                android:src="@drawable/md_arrow_up"
-                android:tint="?android:textColorPrimary" />
-
-        </LinearLayout>
+            android:layout_height="wrap_content"
+            android:layout_marginStart="-6dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:padding="10dp"
+            android:src="@drawable/md_arrow_up"
+            android:tint="?android:textColorPrimary" />
 
     </LinearLayout>
 
 </LinearLayout>
-
