@@ -1,11 +1,12 @@
 package ru.melodin.fast.current;
 
-import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
+
+import ru.melodin.fast.view.Toolbar;
 
 public abstract class BaseFragment extends Fragment {
 

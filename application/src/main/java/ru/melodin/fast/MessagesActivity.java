@@ -31,7 +31,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageButton;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -69,6 +68,7 @@ import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.util.ViewUtil;
+import ru.melodin.fast.view.Toolbar;
 
 public class MessagesActivity extends AppCompatActivity implements RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener, TextWatcher {
 
@@ -89,7 +89,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private AppCompatEditText message;
     private LinearLayout chatPanel;
     private FrameLayout pinnedContainer;
-    private View pinnedShadow, tbShadow;
     private TextView pName, pDate, pText;
 
     private MessageAdapter adapter;
@@ -171,10 +170,14 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         list.setLayoutManager(layoutManager);
 
-        setSupportActionBar(tb);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setTitle(title);
+        tb.setTitle(title);
+        tb.setBackVisible(true);
+        tb.setOnBackClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
 
         updateToolbar();
 
@@ -208,7 +211,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private void initListScrollListener() {
         list.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            private boolean animating;
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -219,36 +221,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 } else {
                     fab.hide();
                 }
-                if (dy > 0) {
-
-                    if (animating || pinned == null) return;
-                    animating = true;
-                    pinnedContainer.animate().alpha(1).setDuration(150).withStartAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            tbShadow.setVisibility(View.GONE);
-                            pinnedContainer.setVisibility(View.VISIBLE);
-                        }
-                    }).withEndAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            animating = false;
-                        }
-                    }).start();
-                } else if (dy < 0) {
+                if (dy < 0) {
                     if (message.isFocused() && AppGlobal.preferences.getBoolean(FragmentSettings.KEY_HIDE_KEYBOARD_ON_SCROLL, true))
                         ViewUtil.hideKeyboard(message);
-
-                    if (animating || pinned == null) return;
-                    animating = true;
-                    pinnedContainer.animate().alpha(0).setDuration(150).withEndAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            animating = false;
-                            tbShadow.setVisibility(View.VISIBLE);
-                            pinnedContainer.setVisibility(View.GONE);
-                        }
-                    }).start();
                 }
             }
 
@@ -321,7 +296,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     public void setUserOnline(int userId) {
         if (peerId == userId)
-            getSupportActionBar().setSubtitle(getSubtitle());
+            updateToolbar();
     }
 
     private void initViews() {
@@ -331,11 +306,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         list = findViewById(R.id.list);
         send = findViewById(R.id.send);
         message = findViewById(R.id.message_edit_text);
-        tbShadow = findViewById(R.id.tb_shadow);
         fab = findViewById(R.id.scroll_to_bottom);
 
         pinnedContainer = findViewById(R.id.pinned_msg_container);
-        pinnedShadow = findViewById(R.id.pinned_shadow);
         pName = pinnedContainer.findViewById(R.id.name);
         pDate = pinnedContainer.findViewById(R.id.date);
         pText = pinnedContainer.findViewById(R.id.message);
@@ -375,14 +348,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private void showPinned(final VKMessage pinned) {
         if (pinned == null) {
             pinnedContainer.setVisibility(View.GONE);
-            pinnedShadow.setVisibility(View.GONE);
-            tbShadow.setVisibility(View.VISIBLE);
             return;
         }
 
-        tbShadow.setVisibility(View.GONE);
         pinnedContainer.setVisibility(View.VISIBLE);
-        pinnedShadow.setVisibility(View.VISIBLE);
 
         pinnedContainer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -629,7 +598,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (!Util.hasConnection()) return;
         loading = true;
 
-        getSupportActionBar().setSubtitle(getString(R.string.loading));
+        tb.setSubtitle(getString(R.string.loading));
 
         ThreadExecutor.execute(new AsyncCallback(this) {
 
@@ -669,13 +638,13 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             public void done() {
                 createAdapter(messages, offset);
 
-                getSupportActionBar().setSubtitle(getSubtitle());
+                updateToolbar();
             }
 
             @Override
             public void error(Exception e) {
                 loading = false;
-                getSupportActionBar().setSubtitle(getSubtitle());
+                updateToolbar();
                 Toast.makeText(MessagesActivity.this, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show();
             }
         });
@@ -683,7 +652,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private void updateToolbar() {
         invalidateOptionsMenu();
-        getSupportActionBar().setSubtitle(getSubtitle());
+        tb.setSubtitle(getSubtitle());
     }
 
     private String getSubtitle() {
@@ -729,7 +698,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             @Override
             public void done() {
                 CacheStorage.insert(DatabaseHelper.USERS_TABLE, user);
-                getSupportActionBar().setSubtitle(getSubtitle());
+                updateToolbar();
             }
 
             @Override
@@ -755,9 +724,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                break;
             case R.id.delete:
                 showConfirmDeleteMessages(adapter.getSelectedMessages());
                 break;
@@ -819,8 +785,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 if (response == 1) {
                     conversation.setState(leave ? VKConversation.State.LEFT : VKConversation.State.IN);
                     CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
-                    invalidateOptionsMenu();
-                    getSupportActionBar().setSubtitle(getSubtitle());
+                    updateToolbar();
                 }
             }
 
@@ -943,8 +908,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 adapter.clearSelected();
                 adapter.notifyDataSetChanged();
 
-                invalidateOptionsMenu();
-                getSupportActionBar().setSubtitle(getSubtitle());
+                updateToolbar();
 
                 for (VKMessage message : messages) {
                     CacheStorage.delete(DatabaseHelper.MESSAGES_TABLE, DatabaseHelper.MESSAGE_ID, message.getId());
@@ -1047,7 +1011,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             messageText = null;
         }
 
-        getSupportActionBar().setSubtitle(getSubtitle());
+        updateToolbar();
         message.setSelection(message.getText().length());
     }
 
@@ -1202,8 +1166,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             updateStyles();
         } else if (adapter != null && adapter.isSelected()) {
             adapter.clearSelected();
-            invalidateOptionsMenu();
-            getSupportActionBar().setSubtitle(getSubtitle());
+            updateToolbar();
             adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
         } else {
             super.onBackPressed();
@@ -1219,8 +1182,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (adapter.isSelected()) {
             adapter.toggleSelected(position);
             adapter.notifyItemChanged(position, -1);
-            getSupportActionBar().setSubtitle(getSubtitle());
-            invalidateOptionsMenu();
+            updateToolbar();
         } else
             showAlert(position);
     }
@@ -1238,8 +1200,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             adapter.notifyItemChanged(position, -1);
         }
 
-        getSupportActionBar().setSubtitle(getSubtitle());
-        invalidateOptionsMenu();
+        updateToolbar();
     }
 
     private void showConfirmDeleteConversation() {

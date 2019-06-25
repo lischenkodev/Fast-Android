@@ -58,7 +58,7 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
 
             remove = v.findViewById(R.id.remove);
 
-            avatar = v.findViewById(R.id.avatar);
+            avatar = v.findViewById(R.id.abc_tb_avatar);
             online = v.findViewById(R.id.online);
 
             name = v.findViewById(R.id.name);

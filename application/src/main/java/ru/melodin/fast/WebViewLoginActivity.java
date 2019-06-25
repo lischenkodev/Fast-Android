@@ -86,7 +86,7 @@ public class WebViewLoginActivity extends AppCompatActivity {
             case R.id.refresh:
                 webView.reload();
                 break;
-            case R.id.back:
+            case R.id.abc_tb_back:
                 if (webView.canGoBack()) webView.goBack();
                 break;
 

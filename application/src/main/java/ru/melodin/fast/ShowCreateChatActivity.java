@@ -7,14 +7,13 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+import androidx.appcompat.widget.AppCompatEditText;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -26,14 +25,14 @@ import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
 import ru.melodin.fast.concurrent.ThreadExecutor;
-import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.ViewUtil;
+import ru.melodin.fast.view.Toolbar;
 
 public class ShowCreateChatActivity extends AppCompatActivity {
 
     private ShowCreateAdapter adapter;
 
-    private EditText title;
+    private AppCompatEditText title;
     private Toolbar tb;
     private RecyclerView list;
 
@@ -52,13 +51,24 @@ public class ShowCreateChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_show_create);
         initViews();
 
-        setSupportActionBar(tb);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.md_clear);
+        tb.inflateMenu(R.menu.activity_create_chat);
+        tb.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public void onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.create && adapter != null)
+                    createChat();
+            }
+        });
+        tb.setBackIcon(ContextCompat.getDrawable(this, R.drawable.md_clear));
+        tb.setBackVisible(true);
+        tb.setOnBackClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
 
-        getSupportActionBar().setTitle(R.string.create_chat);
-
-        tb.getNavigationIcon().setTint(ThemeManager.getMain());
+        tb.setTitle(R.string.create_chat);
 
         findViewById(R.id.refresh).setEnabled(false);
 
@@ -109,20 +119,6 @@ public class ShowCreateChatActivity extends AppCompatActivity {
         });
 
         checkCount();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                break;
-            case R.id.create:
-                if (adapter != null)
-                    createChat();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private void checkCount() {
@@ -184,17 +180,5 @@ public class ShowCreateChatActivity extends AppCompatActivity {
                 Toast.makeText(ShowCreateChatActivity.this, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_create_chat, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.create).getIcon().setTint(ColorUtil.alphaColor(ThemeManager.getMain()));
-        return super.onPrepareOptionsMenu(menu);
     }
 }

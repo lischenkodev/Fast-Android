@@ -3,7 +3,6 @@ package ru.melodin.fast.fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -14,12 +13,9 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
-import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +25,6 @@ import ru.melodin.fast.MessagesActivity;
 import ru.melodin.fast.R;
 import ru.melodin.fast.adapter.ConversationAdapter;
 import ru.melodin.fast.adapter.RecyclerAdapter;
-import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.model.VKConversation;
 import ru.melodin.fast.api.model.VKGroup;
@@ -53,9 +48,9 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
 
     private SwipeRefreshLayout refreshLayout;
     private RecyclerView list;
-    private Toolbar tb;
     private ConversationAdapter adapter;
 
+    private Toolbar tb;
     private View empty;
 
     @Override
@@ -85,43 +80,22 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
         setToolbar(tb);
         setRecyclerView(list);
 
-        loadUserAvatar();
+        tb.setTitle(getTitle());
+
+        tb.inflateMenu(R.menu.fragment_dialogs_menu);
+        tb.setItemVisible(0, false);
+        tb.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public void onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.create_chat) {
+                    startActivity(new Intent(getActivity(), CreateChatActivity.class));
+                }
+            }
+        });
 
         refreshLayout.setColorSchemeColors(ThemeManager.getAccent());
         refreshLayout.setOnRefreshListener(this);
         refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.getBackground());
-
-        tb.setTitle(getTitle());
-        tb.inflateMenu(R.menu.fragment_dialogs_menu);
-
-        for (int i = 0; i < tb.getMenu().size(); i++) {
-            MenuItem item = tb.getMenu().getItem(i);
-            item.getIcon().setTint(ThemeManager.getMain());
-        }
-
-        tb.getMenu().getItem(0).setVisible(false);
-
-        tb.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.create_chat:
-                        startActivity(new Intent(getActivity(), CreateChatActivity.class));
-                        break;
-                    case R.id.clear_messages_cache:
-                        DatabaseHelper.getInstance().dropMessagesTable(AppGlobal.database);
-
-                        if (adapter != null) {
-                            adapter.clear();
-                            adapter.notifyDataSetChanged();
-                        }
-                        checkCount();
-                        getConversations(CONVERSATIONS_COUNT, 0);
-                        break;
-                }
-                return true;
-            }
-        });
 
         LinearLayoutManager manager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
         list.setHasFixedSize(true);
@@ -137,19 +111,10 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
             getConversations(CONVERSATIONS_COUNT, 0);
     }
 
-    private void loadUserAvatar() {
-        VKUser user = UserConfig.getUser();
-        if (!TextUtils.isEmpty(user.getPhoto200())) {
-            Picasso.get()
-                    .load(user.getPhoto200())
-                    .into(tb.getAvatar());
-        }
-    }
-
     private void initViews(View v) {
+        tb = v.findViewById(R.id.tb);
         list = v.findViewById(R.id.list);
         empty = v.findViewById(R.id.no_items_layout);
-        tb = v.findViewById(R.id.tb);
         refreshLayout = v.findViewById(R.id.refresh);
     }
 
@@ -221,7 +186,7 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
                                     createAdapter(conversations);
                                     refreshLayout.setRefreshing(false);
 
-                                    tb.setTitle(getTitle());
+                                    //tb.setTitle(getTitle());
                                 }
                             }
 

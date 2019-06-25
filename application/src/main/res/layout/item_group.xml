@@ -10,7 +10,7 @@
     android:padding="6dp">
 
     <ru.melodin.fast.view.CircleImageView
-        android:id="@+id/avatar"
+        android:id="@+id/abc_tb_avatar"
         android:layout_width="60dp"
         android:layout_height="60dp"
         tools:src="@drawable/avatar_placeholder" />

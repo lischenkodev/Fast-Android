@@ -192,7 +192,7 @@ public class AttachmentInflater {
     public void wall(VKMessage item, ViewGroup parent, final VKWall source, boolean withStyles) {
         View v = inflater.inflate(R.layout.activity_messages_attach_doc, parent, false);
 
-        TextView title = v.findViewById(R.id.title);
+        TextView title = v.findViewById(R.id.abc_tb_title);
         TextView body = v.findViewById(R.id.body);
         ImageView icon = v.findViewById(R.id.icon);
 
@@ -391,7 +391,7 @@ public class AttachmentInflater {
     public void doc(VKMessage item, ViewGroup parent, final VKDoc source, boolean forwarded, boolean withStyles) {
         View v = inflater.inflate(R.layout.activity_messages_attach_doc, parent, false);
 
-        TextView title = v.findViewById(R.id.title);
+        TextView title = v.findViewById(R.id.abc_tb_title);
         TextView size = v.findViewById(R.id.body);
         ImageView icon = v.findViewById(R.id.icon);
 
@@ -441,7 +441,7 @@ public class AttachmentInflater {
     public View voice(final VKMessage item, ViewGroup parent, final VKVoice source, boolean forwarded, boolean withStyles) {
         View v = inflater.inflate(R.layout.activity_messages_attach_audio, parent, false);
 
-        TextView title = v.findViewById(R.id.title);
+        TextView title = v.findViewById(R.id.abc_tb_title);
         TextView body = v.findViewById(R.id.body);
         TextView time = v.findViewById(R.id.duration);
 
@@ -504,7 +504,7 @@ public class AttachmentInflater {
     public void audio(VKMessage item, ViewGroup parent, VKAudio source, boolean withStyles) {
         View v = inflater.inflate(R.layout.activity_messages_attach_audio, parent, false);
 
-        TextView title = v.findViewById(R.id.title);
+        TextView title = v.findViewById(R.id.abc_tb_title);
         TextView body = v.findViewById(R.id.body);
         TextView time = v.findViewById(R.id.duration);
 
@@ -549,7 +549,7 @@ public class AttachmentInflater {
     public void link(VKMessage item, ViewGroup parent, final VKLink source, boolean withStyles) {
         View v = inflater.inflate(R.layout.activity_messages_attach_link, parent, false);
 
-        TextView title = v.findViewById(R.id.title);
+        TextView title = v.findViewById(R.id.abc_tb_title);
         TextView description = v.findViewById(R.id.description);
         ImageView icon = v.findViewById(R.id.icon);
         CircleImageView photo = v.findViewById(R.id.photo);
@@ -566,17 +566,18 @@ public class AttachmentInflater {
             description.setText(body);
         }
 
-        if (TextUtils.isEmpty(source.getPhoto().getMaxSize())) {
-            photo.setVisibility(View.GONE);
-            icon.setVisibility(View.VISIBLE);
-        } else {
-            photo.setVisibility(View.VISIBLE);
-            icon.setVisibility(View.GONE);
+        if (source != null)
+            if (TextUtils.isEmpty(source.getPhoto().getMaxSize())) {
+                photo.setVisibility(View.GONE);
+                icon.setVisibility(View.VISIBLE);
+            } else {
+                photo.setVisibility(View.VISIBLE);
+                icon.setVisibility(View.GONE);
 
-            Picasso.get()
-                    .load(source.getPhoto().getMaxSize())
-                    .into(photo);
-        }
+                Picasso.get()
+                        .load(source.getPhoto().getMaxSize())
+                        .into(photo);
+            }
 
         title.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
         description.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));

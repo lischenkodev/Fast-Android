@@ -2,13 +2,15 @@ package ru.melodin.fast;
 
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
+
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.fragment.FragmentSettings;
 import ru.melodin.fast.util.ViewUtil;
+import ru.melodin.fast.view.Toolbar;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -20,16 +22,14 @@ public class SettingsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_settings);
 
         Toolbar tb = findViewById(R.id.tb);
-        setSupportActionBar(tb);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        tb.setBackVisible(true);
+        tb.setOnBackClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
 
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, new FragmentSettings()).commit();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home)
-            onBackPressed();
-        return super.onOptionsItemSelected(item);
     }
 }

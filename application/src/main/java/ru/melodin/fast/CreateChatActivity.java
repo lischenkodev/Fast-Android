@@ -12,7 +12,6 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -34,6 +33,7 @@ import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Requests;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.util.ViewUtil;
+import ru.melodin.fast.view.Toolbar;
 
 public class CreateChatActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemClickListener {
 
@@ -46,7 +46,6 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
     private CreateChatAdapter adapter;
 
     private boolean selecting;
-
 
     @Override
     public void onRefresh() {
@@ -68,12 +67,26 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
         ViewUtil.applyWindowStyles(getWindow());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_chat);
+
         initViews();
 
         setTitle();
 
-        setSupportActionBar(tb);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        tb.setBackVisible(true);
+        tb.setOnBackClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                onBackPressed();
+            }
+        });
+        tb.inflateMenu(R.menu.activity_create_chat);
+        tb.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+            @Override
+            public void onMenuItemClick(MenuItem item) {
+                if (item.getItemId() == R.id.create)
+                    getUsers();
+            }
+        });
 
         refreshLayout.setOnRefreshListener(this);
         refreshLayout.setColorSchemeColors(ThemeManager.getAccent());
@@ -189,19 +202,6 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
         list = findViewById(R.id.list);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                break;
-            case R.id.create:
-                getUsers();
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     private void getUsers() {
         SparseArray<VKUser> items = adapter.getSelectedPositions();
 
@@ -272,17 +272,5 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_create_chat, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.findItem(R.id.create).getIcon().setTint(ThemeManager.getMain());
-        return super.onPrepareOptionsMenu(menu);
     }
 }

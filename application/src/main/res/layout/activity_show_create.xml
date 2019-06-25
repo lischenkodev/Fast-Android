@@ -7,7 +7,7 @@
 
     <include layout="@layout/toolbar" />
 
-    <EditText
+    <androidx.appcompat.widget.AppCompatEditText
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
