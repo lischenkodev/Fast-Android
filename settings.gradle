@@ -1,2 +1,2 @@
-include ':application'
+include ':app'
 rootProject.name='Fast'
