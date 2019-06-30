@@ -9,12 +9,10 @@
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="56dp"
         tools:visibility="gone" />
 
-    <ru.melodin.fast.view.Toolbar
-        android:id="@+id/tb"
-        android:layout_width="match_parent"
-        android:layout_height="56dp" />
+    <include layout="@layout/toolbar" />
 
     <FrameLayout
         android:id="@+id/pinned_msg_container"

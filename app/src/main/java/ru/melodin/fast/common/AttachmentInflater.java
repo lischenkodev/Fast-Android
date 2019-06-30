@@ -553,18 +553,17 @@ public class AttachmentInflater {
             description.setText(body);
         }
 
-        if (source != null)
-            if (TextUtils.isEmpty(source.getPhoto().getMaxSize())) {
-                photo.setVisibility(View.GONE);
-                icon.setVisibility(View.VISIBLE);
-            } else {
-                photo.setVisibility(View.VISIBLE);
-                icon.setVisibility(View.GONE);
+        if (source.getPhoto() == null || TextUtils.isEmpty(source.getPhoto().getMaxSize())) {
+            photo.setVisibility(View.GONE);
+            icon.setVisibility(View.VISIBLE);
+        } else {
+            photo.setVisibility(View.VISIBLE);
+            icon.setVisibility(View.GONE);
 
-                Picasso.get()
-                        .load(source.getPhoto().getMaxSize())
-                        .into(photo);
-            }
+            Picasso.get()
+                    .load(source.getPhoto().getMaxSize())
+                    .into(photo);
+        }
 
         title.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
         description.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));

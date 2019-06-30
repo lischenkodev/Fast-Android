@@ -1,6 +1,5 @@
 package ru.melodin.fast.fragment;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -292,14 +291,11 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
         for (int i = 0; i < list.size(); i++)
             items[i] = list.get(i);
 
-        adb.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                String title = items[i];
+        adb.setItems(items, (dialogInterface, i) -> {
+            String title = items[i];
 
-                if (title.equals(getString(R.string.clear))) {
-                    showConfirmDeleteConversation(position);
-                }
+            if (title.equals(getString(R.string.clear_messages_history))) {
+                showConfirmDeleteConversation(position);
             }
         });
         adb.show();
@@ -309,12 +305,7 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
         AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
         adb.setTitle(R.string.confirmation);
         adb.setMessage(R.string.are_you_sure);
-        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                deleteConversation(position);
-            }
-        });
+        adb.setPositiveButton(R.string.yes, (dialogInterface, i) -> deleteConversation(position));
         adb.setNegativeButton(R.string.no, null);
         adb.show();
     }

@@ -32,6 +32,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -153,6 +154,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         recyclerView.setLayoutManager(layoutManager);
 
+        AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) tb.getLayoutParams();
+        params.setScrollFlags(0);
+
         tb.setTitle(title);
         tb.setBackVisible(true);
         tb.setOnBackClickListener(view -> onBackPressed());
@@ -188,7 +192,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 if (dy > 0) {
                     if (adapter != null && layoutManager.findLastVisibleItemPosition() < adapter.getItemCount() - 10 && !fab.isShown())
                         fab.show();
