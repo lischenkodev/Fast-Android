@@ -143,4 +143,5 @@
     <string name="page">Page</string>
     <string name="hide_keyboard_on_scroll_title">Hide keyboard on scroll top</string>
     <string name="exit">Exit</string>
+    <string name="open_profile">Open profile</string>
 </resources>

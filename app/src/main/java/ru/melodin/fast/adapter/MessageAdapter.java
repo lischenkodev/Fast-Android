@@ -164,7 +164,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 int lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
 
                 if (lastVisibleItem >= getItemCount() - 4) {
-                    activity.getRecyclerView().scrollToPosition(getItemCount() - 1);
+                    activity.getRecyclerView().smoothScrollToPosition(getItemCount() - 1);
                 }
 
                 if (!conversation.getLast().isOut() && conversation.getLast().getPeerId() == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
@@ -189,30 +189,21 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         try {
             mediaPlayer = new MediaPlayer();
             mediaPlayer.setDataSource(url);
-            mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mediaPlayer) {
-                    releaseMediaPlayer();
-                    EventBus.getDefault().postSticky(new Object[]{AttachmentInflater.KEY_STOP_AUDIO});
-                    setPlaying(messageId, false);
-                }
+            mediaPlayer.setOnCompletionListener(mediaPlayer -> {
+                releaseMediaPlayer();
+                EventBus.getDefault().postSticky(new Object[]{AttachmentInflater.KEY_STOP_AUDIO});
+                setPlaying(messageId, false);
             });
-            mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-                @Override
-                public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
-                    playingId = -1;
-                    releaseMediaPlayer();
-                    setPlaying(messageId, false);
-                    return false;
-                }
+            mediaPlayer.setOnErrorListener((mediaPlayer, i, i1) -> {
+                playingId = -1;
+                releaseMediaPlayer();
+                setPlaying(messageId, false);
+                return false;
             });
-            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mediaPlayer) {
-                    mediaPlayer.start();
-                    playingId = messageId;
-                    setPlaying(messageId, true);
-                }
+            mediaPlayer.setOnPreparedListener(mediaPlayer -> {
+                mediaPlayer.start();
+                playingId = messageId;
+                setPlaying(messageId, true);
             });
             mediaPlayer.prepareAsync();
         } catch (IOException e) {
@@ -320,7 +311,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         });
     }
 
-    public void handleClearFlags(Object[] data) {
+    private void handleClearFlags(Object[] data) {
         int mId = (int) data[1];
         int flags = (int) data[2];
         int peerId = (int) data[3];
@@ -334,7 +325,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             readMessage(mId);
     }
 
-    public void handleSetFlags(Object[] data) {
+    private void handleSetFlags(Object[] data) {
         int mId = (int) data[1];
         int flags = (int) data[2];
         int peerId = (int) data[3];
@@ -362,7 +353,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         notifyItemChanged(position, -1);
     }
 
-    public void updateMessage(VKMessage msg) {
+    private void updateMessage(VKMessage msg) {
         int position = searchPosition(msg.getId());
         if (position == -1) return;
 
@@ -371,7 +362,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         notifyItemChanged(position, -1);
     }
 
-    public void editMessage(VKMessage edited) {
+    private void editMessage(VKMessage edited) {
         int position = searchPosition(edited.getId());
         if (position == -1) return;
 
@@ -575,7 +566,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         return footer;
     }
 
-    private void inflateAttachments(VKMessage item, ViewGroup parent, BoundedLinearLayout bubble, int maxWidth, boolean forwarded, boolean withStyles) {
+    private void inflateAttachments(VKMessage item, ViewGroup parent, BoundedLinearLayout bubble) {
         final Drawable background = bubble.getBackground();
         ArrayList<VKModel> attachments = item.getAttachments();
         for (int i = 0; i < attachments.size(); i++) {
@@ -584,31 +575,31 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             parent.setVisibility(View.VISIBLE);
             VKModel attachment = attachments.get(i);
             if (attachment instanceof VKAudio) {
-                attacher.audio(item, parent, (VKAudio) attachment, withStyles);
+                attacher.audio(item, parent, (VKAudio) attachment, true);
             } else if (attachment instanceof VKPhoto) {
                 if (TextUtils.isEmpty(item.getText()))
                     bubble.setBackgroundColor(Color.TRANSPARENT);
 
-                attacher.photo(item, parent, (VKPhoto) attachment, forwarded ? maxWidth : -1);
+                attacher.photo(item, parent, (VKPhoto) attachment, -1);
             } else if (attachment instanceof VKSticker) {
                 bubble.setBackgroundColor(Color.TRANSPARENT);
                 attacher.sticker(parent, (VKSticker) attachment);
             } else if (attachment instanceof VKDoc) {
-                attacher.doc(item, parent, (VKDoc) attachment, forwarded, withStyles);
+                attacher.doc(item, parent, (VKDoc) attachment, false, true);
             } else if (attachment instanceof VKLink) {
-                attacher.link(item, parent, (VKLink) attachment, withStyles);
+                attacher.link(item, parent, (VKLink) attachment, true);
             } else if (attachment instanceof VKVideo) {
                 if (TextUtils.isEmpty(item.getText()))
                     bubble.setBackgroundColor(Color.TRANSPARENT);
 
-                attacher.video(parent, (VKVideo) attachment, forwarded ? maxWidth : -1);
+                attacher.video(parent, (VKVideo) attachment, -1);
             } else if (attachment instanceof VKGraffiti) {
                 bubble.setBackgroundColor(Color.TRANSPARENT);
                 attacher.graffiti(parent, (VKGraffiti) attachment);
             } else if (attachment instanceof VKVoice) {
-                attacher.voice(item, parent, (VKVoice) attachment, forwarded, withStyles);
+                attacher.voice(item, parent, (VKVoice) attachment, false, true);
             } else if (attachment instanceof VKWall) {
-                attacher.wall(item, parent, (VKWall) attachment, withStyles);
+                attacher.wall(item, parent, (VKWall) attachment, true);
             } else {
                 attacher.empty(parent, context.getString(R.string.unknown));
             }
@@ -749,16 +740,12 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 avatar.setImageDrawable(null);
             }
 
-            avatar.setOnLongClickListener(new View.OnLongClickListener() {
-
-                @Override
-                public boolean onLongClick(View p1) {
-                    if (item.isChat()) {
-                        onAvatarLongClick(position);
-                        return true;
-                    } else {
-                        return false;
-                    }
+            avatar.setOnLongClickListener(p1 -> {
+                if (item.isChat()) {
+                    onAvatarLongClick(position);
+                    return true;
+                } else {
+                    return false;
                 }
             });
 
@@ -816,7 +803,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             }
 
             if (!ArrayUtil.isEmpty(item.getAttachments())) {
-                inflateAttachments(item, attachments, bubble, bubble.getMaxWidth(), false, true);
+                inflateAttachments(item, attachments, bubble);
             }
 
             if (!ArrayUtil.isEmpty(item.getFwdMessages())) {

@@ -40,6 +40,7 @@ import ru.melodin.fast.fragment.FragmentItems;
 import ru.melodin.fast.fragment.FragmentSettings;
 import ru.melodin.fast.service.LongPollService;
 import ru.melodin.fast.util.ArrayUtil;
+import ru.melodin.fast.util.Keys;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.util.ViewUtil;
 
@@ -69,7 +70,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         navigationView.setOnNavigationItemSelectedListener(this);
         navigationView.setOnNavigationItemReselectedListener(this);
 
-        checkLogin();
+        checkLogin(savedInstanceState);
         checkCrash();
 
         if (UserConfig.isLoggedIn()) {
@@ -89,24 +90,14 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         super.onSaveInstanceState(outState);
     }
 
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        int selectedId = savedInstanceState.getInt("selected_id", -1);
-        this.selectedId = selectedId;
-
-        navigationView.setSelectedItemId(selectedId);
-        selectedFragment = getFragmentById(selectedId);
-    }
-
     private BaseFragment getFragmentById(int id) {
         switch (id) {
             case R.id.conversations:
-                return fragmentConversations == null ? new FragmentConversations() : fragmentConversations;
+                return fragmentConversations;
             case R.id.items:
-                return fragmentItems == null ? new FragmentItems() : fragmentItems;
+                return fragmentItems;
             case R.id.friends:
-                return fragmentFriends == null ? new FragmentFriends() : fragmentFriends;
+                return fragmentFriends;
             default:
                 return null;
         }
@@ -124,7 +115,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
             @Override
             public void done() {
                 CacheStorage.insert(DatabaseHelper.USERS_TABLE, user);
-                EventBus.getDefault().postSticky(new Object[]{"update_user", UserConfig.userId});
+                EventBus.getDefault().postSticky(new Object[]{Keys.KEY_UPDATE_USER, UserConfig.userId});
             }
 
             @Override
@@ -149,7 +140,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         finish();
     }
 
-    private void checkLogin() {
+    private void checkLogin(Bundle savedInstanceState) {
         UserConfig.restore();
         if (!UserConfig.isLoggedIn()) {
             startLoginActivity();
@@ -157,9 +148,14 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
             loadUser();
             startService(new Intent(this, LongPollService.class));
 
-            if (selectedFragment == null) {
+            if (savedInstanceState == null) {
                 selectedFragment = fragmentConversations;
                 selectedId = R.id.conversations;
+            } else {
+                this.selectedId = savedInstanceState.getInt("selected_id", -1);
+
+                navigationView.setSelectedItemId(selectedId);
+                selectedFragment = getFragmentById(selectedId);
             }
 
             replaceFragment(selectedFragment);

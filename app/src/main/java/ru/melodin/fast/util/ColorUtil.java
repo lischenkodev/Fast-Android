@@ -1,7 +1,11 @@
 package ru.melodin.fast.util;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Color;
+import android.util.TypedValue;
 
+import androidx.annotation.AttrRes;
 import androidx.annotation.ColorInt;
 import androidx.annotation.FloatRange;
 import androidx.annotation.IntRange;
@@ -390,5 +394,13 @@ public class ColorUtil {
 
     static boolean isLight(int color) {
         return calculateLuminance(color) >= 0.5;
+    }
+
+    @ColorInt
+    public static int getAttrColor(@NonNull Context context, @AttrRes int resId) {
+        TypedValue typedValue = new TypedValue();
+        Resources.Theme theme = context.getTheme();
+        theme.resolveAttribute(resId, typedValue, true);
+        return typedValue.data;
     }
 }

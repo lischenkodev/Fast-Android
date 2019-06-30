@@ -1,11 +1,9 @@
 package ru.melodin.fast.fragment;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -144,8 +142,6 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
     }
 
     private void getFriends(final int count, final int offset) {
-        refreshLayout.setRefreshing(true);
-
         ThreadExecutor.execute(new AsyncCallback(getActivity()) {
 
             private ArrayList<VKUser> users;
@@ -198,12 +194,9 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
     public void showDialog(final int position, View v) {
         PopupMenu menu = new PopupMenu(getActivity(), v);
         menu.inflate(R.menu.fragment_friends_funcs);
-        menu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                showConfirmDeleteFriend(position);
-                return true;
-            }
+        menu.setOnMenuItemClickListener(item -> {
+            showConfirmDeleteFriend(position);
+            return true;
         });
         menu.show();
     }
@@ -212,12 +205,7 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
         AlertDialog.Builder adb = new AlertDialog.Builder(getActivity());
         adb.setTitle(R.string.confirmation);
         adb.setMessage(R.string.confirm_delete_friend);
-        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                deleteFriend(position);
-            }
-        });
+        adb.setPositiveButton(R.string.yes, (dialog, which) -> deleteFriend(position));
         adb.setNegativeButton(R.string.no, null);
         adb.create().show();
     }
@@ -258,5 +246,4 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
             }
         });
     }
-
 }

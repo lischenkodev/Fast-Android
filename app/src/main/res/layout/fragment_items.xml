@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?android:windowBackground">
 
     <include layout="@layout/toolbar" />
 
@@ -75,7 +76,8 @@
                         android:id="@+id/last_seen"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Open profile"
+                        android:text="@string/open_profile"
+                        android:visibility="gone"
                         android:textColor="?android:textColorSecondary" />
 
                 </LinearLayout>

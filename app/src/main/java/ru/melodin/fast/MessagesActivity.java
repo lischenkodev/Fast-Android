@@ -1,7 +1,6 @@
 package ru.melodin.fast;
 
 import android.app.AlarmManager;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -78,7 +77,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private Drawable iconDone;
     private Drawable iconTrash;
     private Toolbar tb;
-    private RecyclerView list;
+    private RecyclerView recyclerView;
     private FloatingActionButton fab;
     private AppCompatImageButton smiles, send, unpin;
     private AppCompatEditText message;
@@ -137,50 +136,40 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         getConversation(peerId);
         checkCanWrite();
 
-        fab.hide();
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (adapter != null)
-                    list.smoothScrollToPosition(adapter.getItemCount() - 1);
-            }
+        fab.setOnClickListener(view -> {
+            fab.hide();
+            if (adapter != null)
+                recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
         });
+
         initListScrollListener();
 
         layoutManager = new LinearLayoutManager(this, RecyclerView.VERTICAL, false);
         layoutManager.setStackFromEnd(true);
 
-        list.setItemViewCacheSize(20);
-        list.setDrawingCacheEnabled(true);
-        list.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
+        recyclerView.setItemViewCacheSize(20);
+        recyclerView.setDrawingCacheEnabled(true);
+        recyclerView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_HIGH);
 
-        list.setLayoutManager(layoutManager);
+        recyclerView.setLayoutManager(layoutManager);
 
         tb.setTitle(title);
         tb.setBackVisible(true);
-        tb.setOnBackClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onBackPressed();
-            }
-        });
+        tb.setOnBackClickListener(view -> onBackPressed());
 
         updateToolbar();
 
         message.addTextChangedListener(this);
 
-        smiles.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                String template = AppGlobal.preferences.getString(FragmentSettings.KEY_MESSAGE_TEMPLATE, FragmentSettings.DEFAULT_TEMPLATE_VALUE);
-                if (message.getText().toString().trim().isEmpty()) {
-                    message.setText(template);
-                } else {
-                    message.append(template);
-                }
-                message.setSelection(message.getText().length());
-                return true;
+        smiles.setOnLongClickListener(v -> {
+            String template = AppGlobal.preferences.getString(FragmentSettings.KEY_MESSAGE_TEMPLATE, FragmentSettings.DEFAULT_TEMPLATE_VALUE);
+            if (message.getText().toString().trim().isEmpty()) {
+                message.setText(template);
+            } else {
+                message.append(template);
             }
+            message.setSelection(message.getText().length());
+            return true;
         });
 
         GradientDrawable gd = new GradientDrawable();
@@ -196,7 +185,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     }
 
     private void initListScrollListener() {
-        list.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -289,7 +278,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         chatPanel = findViewById(R.id.chat_panel);
         smiles = findViewById(R.id.smiles);
         tb = findViewById(R.id.tb);
-        list = findViewById(R.id.list);
+        recyclerView = findViewById(R.id.list);
         send = findViewById(R.id.send);
         message = findViewById(R.id.message_edit_text);
         fab = findViewById(R.id.scroll_to_bottom);
@@ -339,31 +328,27 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         pinnedContainer.setVisibility(View.VISIBLE);
 
-        pinnedContainer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (adapter == null) return;
-                if (adapter.contains(pinned.getId())) {
-                    final int position = adapter.searchPosition(pinned.getId());
-                    list.smoothScrollToPosition(position);
-                    adapter.setSelected(position, true);
-                    adapter.notifyItemChanged(position);
+        pinnedContainer.setOnClickListener(v -> {
+            if (adapter == null) return;
+            if (adapter.contains(pinned.getId())) {
+                final int position = adapter.searchPosition(pinned.getId());
 
-                    new Timer().schedule(new TimerTask() {
-                        @Override
-                        public void run() {
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    adapter.setSelected(position, false);
-                                    adapter.notifyItemChanged(position, -1);
-                                }
-                            });
-                        }
-                    }, 3500);
-                } else {
-                    showPinnedAlert(pinned);
-                }
+                recyclerView.smoothScrollToPosition(position);
+
+                adapter.setSelected(position, true);
+                adapter.notifyItemChanged(position);
+
+                new Timer().schedule(new TimerTask() {
+                    @Override
+                    public void run() {
+                        runOnUiThread(() -> {
+                            adapter.setSelected(position, false);
+                            adapter.notifyItemChanged(position, -1);
+                        });
+                    }
+                }, 3500);
+            } else {
+                showPinnedAlert(pinned);
             }
         });
 
@@ -376,12 +361,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         pText.setText(pinned.getText());
 
         unpin.setVisibility(conversation.isCanChangePin() ? View.VISIBLE : View.GONE);
-        unpin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showConfirmUnpinMessage();
-            }
-        });
+        unpin.setOnClickListener(v -> showConfirmUnpinMessage());
 
         if ((pinned.getAttachments() != null || !ArrayUtil.isEmpty(pinned.getFwdMessages())) && TextUtils.isEmpty(pinned.getText())) {
 
@@ -408,12 +388,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
         adb.setTitle(R.string.confirmation);
         adb.setMessage(R.string.are_you_sure);
-        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                unpinMessage();
-            }
-        });
+        adb.setPositiveButton(R.string.yes, (dialogInterface, i) -> unpinMessage());
         adb.setNegativeButton(R.string.no, null);
         adb.show();
     }
@@ -450,28 +425,22 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (AppGlobal.preferences.getBoolean(FragmentSettings.KEY_HIDE_TYPING, false)) return;
 
         typing = true;
-        new LowThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    VKApi.messages().setActivity().peerId(peerId).execute();
-                    runOnUiThread(new Runnable() {
+        new LowThread(() -> {
+            try {
+                VKApi.messages().setActivity().peerId(peerId).execute();
+                runOnUiThread(() -> {
+                    timer = new Timer();
+                    timer.schedule(new TimerTask() {
+
                         @Override
                         public void run() {
-                            timer = new Timer();
-                            timer.schedule(new TimerTask() {
-
-                                @Override
-                                public void run() {
-                                    typing = false;
-                                }
-
-
-                            }, 10000);
+                            typing = false;
                         }
-                    });
-                } catch (Exception ignored) {
-                }
+
+
+                    }, 10000);
+                });
+            } catch (Exception ignored) {
             }
         }).start();
     }
@@ -494,7 +463,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         final int position = adapter.getItemCount() - 1;
 
-        list.scrollToPosition(position);
+        recyclerView.smoothScrollToPosition(position);
 
         final int size = adapter.getItemCount();
 
@@ -541,7 +510,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     }
 
     public RecyclerView getRecyclerView() {
-        return list;
+        return recyclerView;
     }
 
     private void createAdapter(ArrayList<VKMessage> messages, int offset) {
@@ -553,10 +522,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             adapter = new MessageAdapter(this, messages, peerId);
             adapter.setOnItemClickListener(this);
             adapter.setOnItemLongClickListener(this);
-            list.setAdapter(adapter);
+            recyclerView.setAdapter(adapter);
 
-            if (adapter.getItemCount() > 0 && !list.isComputingLayout())
-                list.scrollToPosition(adapter.getItemCount() - 1);
+            if (adapter.getItemCount() > 0 && !recyclerView.isComputingLayout())
+                recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
             return;
         }
 
@@ -569,8 +538,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         adapter.changeItems(messages);
         adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
 
-        if (adapter.getItemCount() > 0 && !list.isComputingLayout())
-            list.scrollToPosition(adapter.getItemCount() - 1);
+        if (adapter.getItemCount() > 0 && !recyclerView.isComputingLayout()) {
+            recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
+        }
     }
 
     private void getCachedHistory() {
@@ -733,13 +703,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
         adb.setTitle(R.string.confirmation);
         adb.setMessage(R.string.are_you_sure);
-        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                boolean leave = conversation.getState() == VKConversation.State.IN;
-                int chatId = conversation.getLast().getPeerId() - 2_000_000_000;
-                setChatState(chatId, leave);
-            }
+        adb.setPositiveButton(R.string.yes, (dialogInterface, i) -> {
+            boolean leave = conversation.getState() == VKConversation.State.IN;
+            int chatId = conversation.getLast().getPeerId() - 2_000_000_000;
+            setChatState(chatId, leave);
         });
         adb.setNegativeButton(R.string.no, null);
         adb.show();
@@ -859,21 +826,18 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         final Boolean forAll = self ? checkBox.isEnabled() ? checkBox.isChecked() : null : null;
 
-        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int which) {
-                if (editing) {
-                    editing = false;
-                    updateStyles();
+        adb.setPositiveButton(R.string.yes, (dialogInterface, which) -> {
+            if (editing) {
+                editing = false;
+                updateStyles();
 
-                    editingPosition = -1;
+                editingPosition = -1;
 
-                    adapter.clearSelected();
-                    adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
-                }
-
-                deleteMessages(items, forAll, mIds);
+                adapter.clearSelected();
+                adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
             }
+
+            deleteMessages(items, forAll, mIds);
         });
         adb.setNegativeButton(R.string.no, null);
         adb.show();
@@ -942,25 +906,22 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
 
-        adb.setItems(items, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                String title = items[i];
+        adb.setItems(items, (dialogInterface, i) -> {
+            String title = items[i];
 
-                if (title.equals(getString(R.string.delete))) {
-                    showConfirmDeleteMessages(new ArrayList<>(Collections.singletonList(item)));
-                } else if (title.equals(getString(R.string.pin_message))) {
-                    showConfirmPinDialog(item);
-                } else if (title.equals(getString(R.string.edit))) {
-                    edited = item;
+            if (title.equals(getString(R.string.delete))) {
+                showConfirmDeleteMessages(new ArrayList<>(Collections.singletonList(item)));
+            } else if (title.equals(getString(R.string.pin_message))) {
+                showConfirmPinDialog(item);
+            } else if (title.equals(getString(R.string.edit))) {
+                edited = item;
 
-                    adapter.setSelected(position, true);
-                    adapter.notifyItemChanged(position, -1);
+                adapter.setSelected(position, true);
+                adapter.notifyItemChanged(position, -1);
 
-                    editingPosition = position;
+                editingPosition = position;
 
-                    showEdit();
-                }
+                showEdit();
             }
         });
         adb.show();
@@ -1055,12 +1016,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
         adb.setTitle(R.string.confirmation);
         adb.setMessage(R.string.are_you_sure);
-        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                pinMessage(message);
-            }
-        });
+        adb.setPositiveButton(R.string.yes, (dialogInterface, i) -> pinMessage(message));
         adb.setNegativeButton(R.string.no, null);
         adb.show();
     }
@@ -1109,12 +1065,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         } else {
             if (s.toString().trim().isEmpty() && ArrayUtil.isEmpty(edited.getAttachments())) {
                 setTrashStyle();
-                send.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        showConfirmDeleteMessages(new ArrayList<>(Collections.singletonList(edited)));
-                    }
-                });
+                send.setOnClickListener(view -> showConfirmDeleteMessages(new ArrayList<>(Collections.singletonList(edited))));
             } else {
                 setDoneStyle();
             }
@@ -1193,12 +1144,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         AlertDialog.Builder adb = new AlertDialog.Builder(this);
         adb.setTitle(R.string.confirmation);
         adb.setMessage(R.string.are_you_sure);
-        adb.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                deleteConversation();
-            }
-        });
+        adb.setPositiveButton(R.string.yes, (dialogInterface, i) -> deleteConversation());
         adb.setNegativeButton(R.string.no, null);
         adb.show();
     }

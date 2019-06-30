@@ -45,6 +45,7 @@ public class ThemeManager {
         background = getColor(isDark() ? R.color.dark_background : R.color.background);
         main = isDark() ? Color.WHITE : Color.BLACK;
         secondary = isDark() ? Color.LTGRAY : Color.DKGRAY;
+
     }
 
     public static boolean isDark() {

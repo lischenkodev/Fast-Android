@@ -10,7 +10,6 @@ import android.net.Uri;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -255,16 +254,9 @@ public class AttachmentInflater {
     }
 
     public void service(VKMessage item, ViewGroup parent) {
-        TextView text = new TextView(context);
-        text.setTextColor(ThemeManager.getAccent());
+        TextView text = (TextView) inflater.inflate(R.layout.activity_messages_service, parent, false);
 
-        text.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-
-        text.setGravity(Gravity.CENTER);
         text.setText(Html.fromHtml(VKUtil.getActionBody(item, false)));
-
-        text.setClickable(false);
-        text.setFocusable(false);
         parent.addView(text);
     }
 
@@ -287,24 +279,20 @@ public class AttachmentInflater {
         ImageView image = (ImageView) inflater.inflate(R.layout.activity_messages_attach_photo, parent, false);
 
         image.setLayoutParams(maxWidth == -1 ? getParams(source.getMaxWidth(), source.getMaxHeight()) : getParams(maxWidth));
-        image.setOnClickListener(new View.OnClickListener() {
+        image.setOnClickListener(v -> {
+            Intent intent = new Intent(context, PhotoViewActivity.class);
 
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, PhotoViewActivity.class);
+            ArrayList<VKPhoto> photos = new ArrayList<>();
 
-                ArrayList<VKPhoto> photos = new ArrayList<>();
-
-                for (VKModel m : item.getAttachments()) {
-                    if (m instanceof VKPhoto) {
-                        photos.add((VKPhoto) m);
-                    }
+            for (VKModel m : item.getAttachments()) {
+                if (m instanceof VKPhoto) {
+                    photos.add((VKPhoto) m);
                 }
-
-                intent.putExtra("selected", source);
-                intent.putExtra("photo", photos);
-                context.startActivity(intent);
             }
+
+            intent.putExtra("selected", source);
+            intent.putExtra("photo", photos);
+            context.startActivity(intent);
         });
 
         loadImage(image, source.getMaxSize(), null);
