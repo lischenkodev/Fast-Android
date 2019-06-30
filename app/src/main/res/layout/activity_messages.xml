@@ -12,10 +12,6 @@
         android:layout_marginTop="56dp"
         tools:visibility="gone" />
 
-    <include layout="@layout/toolbar" />
-
-    <include layout="@layout/toolbar_action" />
-
     <FrameLayout
         android:id="@+id/pinned_msg_container"
         android:layout_width="match_parent"
@@ -99,6 +95,13 @@
             android:layout_marginTop="56dp"
             android:background="@drawable/abc_toolbar_shadow" />
     </FrameLayout>
+
+    <ru.melodin.fast.view.FastToolbar
+        android:id="@+id/tb"
+        android:layout_width="match_parent"
+        android:layout_height="56dp" />
+
+    <include layout="@layout/toolbar_action" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/scroll_to_bottom"

@@ -34,7 +34,6 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.checkbox.MaterialCheckBox;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -99,9 +98,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private VKConversation conversation;
     private LinearLayoutManager layoutManager;
 
-    private AppBarLayout appBar;
-
     private Toolbar actionTb;
+
+    private final int DURATION_DEFAULT = 200;
 
     private View.OnClickListener sendClick = new View.OnClickListener() {
         @Override
@@ -163,9 +162,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         recyclerView.setLayoutManager(layoutManager);
 
-        AppBarLayout.LayoutParams params = (AppBarLayout.LayoutParams) tb.getLayoutParams();
-        params.setScrollFlags(0);
-
         tb.setTitle(title);
         tb.setBackVisible(true);
         tb.setOnBackClickListener(view -> onBackPressed());
@@ -205,9 +201,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 if (dy > 0) {
                     if (adapter != null && layoutManager.findLastVisibleItemPosition() < adapter.getItemCount() - 10 && !fab.isShown())
                         fab.show();
-                    if (animating) return;
-                    animating = true;
-                    pinnedContainer.animate().translationY(0).setDuration(200).setInterpolator(new DecelerateInterpolator()).withEndAction(() -> animating = false).start();
+
+                    if (pinned == null) return;
+                    showPinned(DURATION_DEFAULT);
                 } else {
                     fab.hide();
                 }
@@ -215,10 +211,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 if (dy < 0) {
                     if (message.isFocused() && AppGlobal.preferences.getBoolean(FragmentSettings.KEY_HIDE_KEYBOARD_ON_SCROLL, true))
                         ViewUtil.hideKeyboard(message);
-
-                    if (animating) return;
-                    animating = true;
-                    pinnedContainer.animate().translationY(Util.px(56) * -1).setDuration(200).setInterpolator(new DecelerateInterpolator()).withEndAction(() -> animating = false).start();
+                    
+                    if (pinned == null) return;
+                    hidePinned(DURATION_DEFAULT);
                 }
             }
 
@@ -311,7 +306,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private void initViews() {
         actionTb = findViewById(R.id.action_tb);
-        appBar = findViewById(R.id.app_bar);
         chatPanel = findViewById(R.id.chat_panel);
         smiles = findViewById(R.id.smiles);
         tb = findViewById(R.id.tb);
@@ -357,13 +351,25 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         }
     }
 
+    private void showPinned(int duration) {
+        if (animating) return;
+        animating = true;
+        pinnedContainer.animate().translationY(0).setDuration(duration).setInterpolator(new DecelerateInterpolator()).withEndAction(() -> animating = false).start();
+    }
+
+    private void hidePinned(int duration) {
+        if (animating) return;
+        animating = true;
+        pinnedContainer.animate().translationY(Util.px(56) * -1).setDuration(duration).setInterpolator(new DecelerateInterpolator()).withEndAction(() -> animating = false).start();
+    }
+
     public void showPinned(final VKMessage pinned) {
         if (pinned == null) {
-            pinnedContainer.setVisibility(View.GONE);
+            hidePinned(0);
             return;
         }
 
-        pinnedContainer.setVisibility(View.VISIBLE);
+        showPinned(0);
 
         pinnedContainer.setOnClickListener(v -> {
             if (adapter == null) return;
