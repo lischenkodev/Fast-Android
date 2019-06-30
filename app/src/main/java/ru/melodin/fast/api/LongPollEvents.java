@@ -67,7 +67,7 @@ public class LongPollEvents {
             int actionId = fromActions.optInt("source_mid", -1);
 
             if (actionId != -1) {
-                last.setActionUserId(actionId);
+                last.setActionId(actionId);
                 last.setAction(VKMessage.getAction(actionType));
                 last.setActionText(actionText);
             }

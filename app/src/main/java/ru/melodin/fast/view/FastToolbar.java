@@ -24,7 +24,7 @@ import androidx.annotation.Nullable;
 
 import ru.melodin.fast.R;
 
-public class Toolbar extends FrameLayout {
+public class FastToolbar extends FrameLayout {
 
     private TextView title;
     private TextView subtitle;
@@ -42,17 +42,17 @@ public class Toolbar extends FrameLayout {
     @ColorInt
     private int colorPrimary;
 
-    public Toolbar(Context context) {
+    public FastToolbar(Context context) {
         super(context);
         init();
     }
 
-    public Toolbar(Context context, @Nullable AttributeSet attrs) {
+    public FastToolbar(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public Toolbar(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public FastToolbar(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }

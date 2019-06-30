@@ -8,7 +8,7 @@ import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.current.BaseActivity;
 import ru.melodin.fast.fragment.FragmentSettings;
 import ru.melodin.fast.util.ViewUtil;
-import ru.melodin.fast.view.Toolbar;
+import ru.melodin.fast.view.FastToolbar;
 
 public class SettingsActivity extends BaseActivity {
 
@@ -19,7 +19,7 @@ public class SettingsActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        Toolbar tb = findViewById(R.id.tb);
+        FastToolbar tb = findViewById(R.id.tb);
         tb.setTitle(R.string.settings);
         tb.setBackVisible(true);
         tb.setOnBackClickListener(view -> onBackPressed());

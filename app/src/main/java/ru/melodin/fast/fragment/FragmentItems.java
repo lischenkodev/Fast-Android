@@ -22,11 +22,11 @@ import ru.melodin.fast.SettingsActivity;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.current.BaseFragment;
-import ru.melodin.fast.view.Toolbar;
+import ru.melodin.fast.view.FastToolbar;
 
 public class FragmentItems extends BaseFragment {
 
-    private Toolbar tb;
+    private FastToolbar tb;
     private TextView userName;
     private ImageView userAvatar;
     private ImageView userOnline;
@@ -61,7 +61,7 @@ public class FragmentItems extends BaseFragment {
         userOnline.setImageDrawable(getOnlineIndicator(user));
 
         tb.inflateMenu(R.menu.fragment_items);
-        tb.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+        tb.setOnMenuItemClickListener(new FastToolbar.OnMenuItemClickListener() {
             @Override
             public void onMenuItemClick(MenuItem item) {
                 if (item.getItemId() == R.id.menu) {

@@ -30,7 +30,7 @@ public class VKMessage extends VKModel implements Serializable {
     public static ArrayList<VKGroup> groups;
 
     private Action action;
-    private int actionUserId;
+    private int actionId;
     private int id;
     private int peerId;
     private int fromId;
@@ -71,7 +71,7 @@ public class VKMessage extends VKModel implements Serializable {
 
         JSONObject action = o.optJSONObject("action");
         if (action != null) {
-            this.actionUserId = action.optInt("member_id", -1);
+            this.actionId = action.optInt("member_id", -1);
             this.action = getAction(action.optString("type"));
             this.actionText = action.optString("text");
         }
@@ -124,23 +124,23 @@ public class VKMessage extends VKModel implements Serializable {
     public static Action getAction(String action) {
         switch (action) {
             case "chat_create":
-                return Action.CHAT_CREATE;
+                return Action.CREATE;
             case "chat_invite_user":
-                return Action.CHAT_INVITE_USER;
+                return Action.INVITE_USER;
             case "chat_kick_user":
-                return Action.CHAT_KICK_USER;
+                return Action.KICK_USER;
             case "chat_title_update":
-                return Action.CHAT_TITLE_UPDATE;
+                return Action.TITLE_UPDATE;
             case "chat_photo_update":
-                return Action.CHAT_PHOTO_UPDATE;
+                return Action.PHOTO_UPDATE;
             case "chat_photo_remove":
-                return Action.CHAT_PHOTO_REMOVE;
+                return Action.PHOTO_REMOVE;
             case "chat_pin_message":
-                return Action.CHAT_PIN_MESSAGE;
+                return Action.PIN_MESSAGE;
             case "chat_unpin_message":
-                return Action.CHAT_UNPIN_MESSAGE;
+                return Action.UNPIN_MESSAGE;
             case "chat_invite_user_by_link":
-                return Action.CHAT_INVITE_USER_BY_LINK;
+                return Action.INVITE_USER_BY_LINK;
         }
         return null;
     }
@@ -148,23 +148,23 @@ public class VKMessage extends VKModel implements Serializable {
     public static String getAction(Action action) {
         if (action == null) return "";
         switch (action) {
-            case CHAT_CREATE:
+            case CREATE:
                 return "chat_create";
-            case CHAT_INVITE_USER:
+            case INVITE_USER:
                 return "chat_invite_user";
-            case CHAT_KICK_USER:
+            case KICK_USER:
                 return "chat_kick_user";
-            case CHAT_TITLE_UPDATE:
+            case TITLE_UPDATE:
                 return "chat_title_update";
-            case CHAT_PHOTO_UPDATE:
+            case PHOTO_UPDATE:
                 return "chat_photo_update";
-            case CHAT_PHOTO_REMOVE:
+            case PHOTO_REMOVE:
                 return "chat_photo_remove";
-            case CHAT_PIN_MESSAGE:
+            case PIN_MESSAGE:
                 return "chat_pin_message";
-            case CHAT_UNPIN_MESSAGE:
+            case UNPIN_MESSAGE:
                 return "chat_unpin_message";
-            case CHAT_INVITE_USER_BY_LINK:
+            case INVITE_USER_BY_LINK:
                 return "chat_invite_user_by_link";
         }
 
@@ -245,12 +245,12 @@ public class VKMessage extends VKModel implements Serializable {
         this.action = action;
     }
 
-    public int getActionUserId() {
-        return actionUserId;
+    public int getActionId() {
+        return actionId;
     }
 
-    public void setActionUserId(int actionUserId) {
-        this.actionUserId = actionUserId;
+    public void setActionId(int actionId) {
+        this.actionId = actionId;
     }
 
     public int getId() {
@@ -406,7 +406,7 @@ public class VKMessage extends VKModel implements Serializable {
     }
 
     public enum Action {
-        CHAT_CREATE, CHAT_INVITE_USER, CHAT_KICK_USER, CHAT_TITLE_UPDATE, CHAT_PHOTO_UPDATE, CHAT_PHOTO_REMOVE, CHAT_PIN_MESSAGE, CHAT_UNPIN_MESSAGE, CHAT_INVITE_USER_BY_LINK
+        CREATE, INVITE_USER, KICK_USER, TITLE_UPDATE, PHOTO_UPDATE, PHOTO_REMOVE, PIN_MESSAGE, UNPIN_MESSAGE, INVITE_USER_BY_LINK
     }
 
     public enum Status {

@@ -33,13 +33,13 @@ import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
-import ru.melodin.fast.view.Toolbar;
+import ru.melodin.fast.view.FastToolbar;
 
 public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener {
 
     private static final int FRIENDS_COUNT = 30;
 
-    private Toolbar tb;
+    private FastToolbar tb;
     private View empty;
     private RecyclerView list;
     private SwipeRefreshLayout refreshLayout;

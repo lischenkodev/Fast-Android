@@ -13,7 +13,6 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -62,6 +61,7 @@ import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.fragment.FragmentSettings;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
+import ru.melodin.fast.util.Keys;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.view.BoundedLinearLayout;
 import ru.melodin.fast.view.CircleImageView;
@@ -159,7 +159,18 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
                 if (peerId != conversation.getLast().getPeerId()) return;
 
-                addMessage(conversation.getLast(), true);
+                VKMessage last = conversation.getLast();
+
+                if (last.getAction() == VKMessage.Action.PIN_MESSAGE) {
+                    int position = findPosition(last.getActionId());
+                    Log.d("ActionId", last.getActionId() + "");
+                    if (position != -1)
+                        activity.showPinned(getItem(position));
+                } else if (last.getAction() == VKMessage.Action.UNPIN_MESSAGE) {
+                    activity.showPinned(null);
+                }
+
+                addMessage(last, true);
 
                 int lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition();
 
@@ -167,11 +178,11 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                     activity.getRecyclerView().smoothScrollToPosition(getItemCount() - 1);
                 }
 
-                if (!conversation.getLast().isOut() && conversation.getLast().getPeerId() == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
+                if (!last.isOut() && last.getPeerId() == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
                     if (!activity.resumed) {
-                        activity.notRead = conversation.getLast();
+                        activity.notRead = last;
                     } else {
-                        readNewMessage(conversation.getLast());
+                        readNewMessage(last);
                     }
                 }
 
@@ -489,7 +500,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             public void done() {
                 CacheStorage.insert(DatabaseHelper.USERS_TABLE, user);
                 updateUser(userId);
-                EventBus.getDefault().postSticky(new Object[]{"update_user", userId});
+                EventBus.getDefault().postSticky(new Object[]{Keys.KEY_UPDATE_USER, userId});
             }
 
             @Override
@@ -515,7 +526,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             public void done() {
                 CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, group);
                 updateGroup(groupId);
-                EventBus.getDefault().postSticky(new Object[]{"update_group", groupId});
+                EventBus.getDefault().postSticky(new Object[]{Keys.KEY_UPDATE_GROUP, groupId});
             }
 
             @Override
@@ -645,13 +656,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         ViewHolder(View v) {
             super(v);
 
-            final int px = (int) Util.px(6);
-            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-            params.bottomMargin = px;
-            params.topMargin = px;
-            params.setMarginEnd(px);
-            params.setMarginStart(px);
-
             alphaAccentColor = ColorUtil.alphaColor(ThemeManager.getAccent(), 0.3f);
 
             text = v.findViewById(R.id.text);
@@ -661,9 +665,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             avatar = v.findViewById(R.id.abc_tb_avatar);
             important = v.findViewById(R.id.important);
 
-            circle = null;//new GradientDrawable();
-            //circle.setColor(ThemeManager.getAccent());
-            //circle.setCornerRadius(200f);
+            circle = null;
 
             error = getDrawable(R.drawable.ic_error_black_24dp);
             sending = getDrawable(R.drawable.ic_access_time_black_24dp);

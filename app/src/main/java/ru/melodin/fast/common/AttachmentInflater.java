@@ -203,15 +203,9 @@ public class AttachmentInflater {
         @ColorInt int titleColor, bodyColor, iconColor;
 
         if (withStyles) {
-            if (item.isOut()) {
-                iconColor = Color.WHITE;
-                titleColor = Color.WHITE;
-                bodyColor = ColorUtil.darkenColor(titleColor);
-            } else {
-                iconColor = ThemeManager.getAccent();
-                titleColor = ThemeManager.getPrimaryInverse();
-                bodyColor = ThemeManager.isDark() ? ColorUtil.darkenColor(titleColor) : ColorUtil.lightenColor(titleColor);
-            }
+            iconColor = ThemeManager.getAccent();
+            titleColor = ThemeManager.getPrimaryInverse();
+            bodyColor = ThemeManager.isDark() ? ColorUtil.darkenColor(titleColor) : ColorUtil.lightenColor(titleColor);
         } else {
             titleColor = ThemeManager.getMain();
             bodyColor = ThemeManager.getSecondary();
@@ -330,15 +324,9 @@ public class AttachmentInflater {
         @ColorInt int nameColor, messageColor, lineColor;
 
         if (item != null) {
-            if (item.isOut()) {
-                lineColor = Color.WHITE;
-                nameColor = Color.WHITE;
-                messageColor = ColorUtil.darkenColor(nameColor);
-            } else {
-                lineColor = ThemeManager.getAccent();
-                nameColor = ThemeManager.isDark() ? Color.WHITE : Color.DKGRAY;
-                messageColor = ThemeManager.isDark() ? ColorUtil.lightenColor(nameColor) : ColorUtil.darkenColor(nameColor);
-            }
+            lineColor = ThemeManager.getAccent();
+            nameColor = ThemeManager.isDark() ? Color.WHITE : Color.DKGRAY;
+            messageColor = ThemeManager.isDark() ? ColorUtil.lightenColor(nameColor) : ColorUtil.darkenColor(nameColor);
 
             line.setBackgroundColor(lineColor);
         } else {
@@ -393,7 +381,7 @@ public class AttachmentInflater {
         @ColorInt int titleColor, bodyColor, iconColor;
 
         if (withStyles) {
-            if (item.isOut() || forwarded) {
+            if (forwarded) {
                 iconColor = Color.WHITE;
                 titleColor = Color.WHITE;
                 bodyColor = ColorUtil.darkenColor(titleColor, 0.9f);
@@ -414,14 +402,10 @@ public class AttachmentInflater {
         size.setTextColor(bodyColor);
 
         parent.addView(v);
-        v.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View p1) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(source.getUrl()));
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                context.startActivity(intent);
-            }
+        v.setOnClickListener(p1 -> {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(source.getUrl()));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
         });
     }
 
@@ -441,7 +425,7 @@ public class AttachmentInflater {
         @ColorInt final int titleColor, bodyColor, iconColor;
 
         if (withStyles) {
-            if (item.isOut() || forwarded) {
+            if (forwarded) {
                 iconColor = Color.WHITE;
                 titleColor = Color.WHITE;
                 bodyColor = ColorUtil.darkenColor(titleColor, 0.9f);
@@ -465,14 +449,11 @@ public class AttachmentInflater {
         final boolean playing = item.isPlaying();
         play.setImageDrawable(playing ? stop : start);
 
-        play.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (playing) {
-                    EventBus.getDefault().postSticky(new Object[]{KEY_PAUSE_AUDIO, item.getId()});
-                } else {
-                    EventBus.getDefault().postSticky(new Object[]{KEY_PLAY_AUDIO, item.getId(), source.getLinkMp3()});
-                }
+        play.setOnClickListener(view -> {
+            if (playing) {
+                EventBus.getDefault().postSticky(new Object[]{KEY_PAUSE_AUDIO, item.getId()});
+            } else {
+                EventBus.getDefault().postSticky(new Object[]{KEY_PLAY_AUDIO, item.getId(), source.getLinkMp3()});
             }
         });
 
@@ -505,15 +486,9 @@ public class AttachmentInflater {
         @ColorInt int titleColor, bodyColor, iconColor;
 
         if (withStyles) {
-            if (item.isOut()) {
-                iconColor = Color.WHITE;
-                titleColor = Color.WHITE;
-                bodyColor = ColorUtil.darkenColor(titleColor, 0.9f);
-            } else {
-                iconColor = Color.WHITE;
-                titleColor = ThemeManager.getPrimaryInverse();
-                bodyColor = ThemeManager.isDark() ? ColorUtil.darkenColor(titleColor) : ColorUtil.lightenColor(titleColor);
-            }
+            iconColor = ThemeManager.isDark() ? Color.WHITE : ThemeManager.getAccent();
+            titleColor = ThemeManager.getPrimaryInverse();
+            bodyColor = ThemeManager.isDark() ? ColorUtil.darkenColor(titleColor) : ColorUtil.lightenColor(titleColor);
         } else {
             titleColor = ThemeManager.getMain();
             bodyColor = ThemeManager.getSecondary();
@@ -572,15 +547,9 @@ public class AttachmentInflater {
         int titleColor, bodyColor, iconColor;
 
         if (withStyles) {
-            if (item.isOut()) {
-                iconColor = Color.WHITE;
-                titleColor = Color.WHITE;
-                bodyColor = ColorUtil.darkenColor(titleColor, 0.9f);
-            } else {
-                iconColor = ThemeManager.getAccent();
-                titleColor = ThemeManager.getPrimaryInverse();
-                bodyColor = ThemeManager.isDark() ? ColorUtil.darkenColor(titleColor) : ColorUtil.lightenColor(titleColor);
-            }
+            iconColor = ThemeManager.getAccent();
+            titleColor = ThemeManager.getPrimaryInverse();
+            bodyColor = ThemeManager.isDark() ? ColorUtil.darkenColor(titleColor) : ColorUtil.lightenColor(titleColor);
         } else {
             titleColor = ThemeManager.getMain();
             bodyColor = ThemeManager.getSecondary();
@@ -593,19 +562,15 @@ public class AttachmentInflater {
 
         parent.addView(v);
 
-        v.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View p1) {
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(source.getUrl()));
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.setPackage("com.android.chrome");
-                try {
-                    context.startActivity(intent);
-                } catch (ActivityNotFoundException ex) {
-                    intent.setPackage(null);
-                    context.startActivity(intent);
-                }
+        v.setOnClickListener(p1 -> {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(source.getUrl()));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.setPackage("com.android.chrome");
+            try {
+                context.startActivity(intent);
+            } catch (ActivityNotFoundException ex) {
+                intent.setPackage(null);
+                context.startActivity(intent);
             }
         });
     }

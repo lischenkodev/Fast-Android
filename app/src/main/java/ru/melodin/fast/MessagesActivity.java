@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -28,6 +29,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -65,7 +67,7 @@ import ru.melodin.fast.fragment.FragmentSettings;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.util.ViewUtil;
-import ru.melodin.fast.view.Toolbar;
+import ru.melodin.fast.view.FastToolbar;
 
 public class MessagesActivity extends AppCompatActivity implements RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener, TextWatcher {
 
@@ -77,7 +79,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private Drawable iconMic;
     private Drawable iconDone;
     private Drawable iconTrash;
-    private Toolbar tb;
+    private FastToolbar tb;
     private RecyclerView recyclerView;
     private FloatingActionButton fab;
     private AppCompatImageButton smiles, send, unpin;
@@ -86,7 +88,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private FrameLayout pinnedContainer;
     private TextView pName, pDate, pText;
     private MessageAdapter adapter;
-    private boolean canWrite, typing;
+    private boolean canWrite, typing, animating;
     private int cantWriteReason = -1, peerId, membersCount;
     private VKConversation.Reason reason;
     private String messageText;
@@ -96,6 +98,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private int editingPosition;
     private VKConversation conversation;
     private LinearLayoutManager layoutManager;
+
+    private AppBarLayout appBar;
+
+    private Toolbar actionTb;
 
     private View.OnClickListener sendClick = new View.OnClickListener() {
         @Override
@@ -136,6 +142,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         showPinned(pinned);
         getConversation(peerId);
         checkCanWrite();
+
+        setSupportActionBar(actionTb);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         fab.setOnClickListener(view -> {
             fab.hide();
@@ -196,13 +205,20 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 if (dy > 0) {
                     if (adapter != null && layoutManager.findLastVisibleItemPosition() < adapter.getItemCount() - 10 && !fab.isShown())
                         fab.show();
-
+                    if (animating) return;
+                    animating = true;
+                    pinnedContainer.animate().translationY(0).setDuration(200).setInterpolator(new DecelerateInterpolator()).withEndAction(() -> animating = false).start();
                 } else {
                     fab.hide();
                 }
+
                 if (dy < 0) {
                     if (message.isFocused() && AppGlobal.preferences.getBoolean(FragmentSettings.KEY_HIDE_KEYBOARD_ON_SCROLL, true))
                         ViewUtil.hideKeyboard(message);
+
+                    if (animating) return;
+                    animating = true;
+                    pinnedContainer.animate().translationY(Util.px(56) * -1).setDuration(200).setInterpolator(new DecelerateInterpolator()).withEndAction(() -> animating = false).start();
                 }
             }
 
@@ -221,25 +237,40 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             VKMessage last;
 
             @Override
-            public void ready() throws Exception {
-                conversation =
-                        VKApi.messages()
-                                .getConversationsById()
-                                .peerIds(peerId)
-                                .extended(true)
-                                .fields(VKUser.FIELDS_DEFAULT)
-                                .execute(VKConversation.class)
-                                .get(0);
-                if (conversation.getLastMessageId() != 0)
-                    last =
-                            VKApi.messages()
-                                    .getById()
-                                    .messageIds(conversation.getLastMessageId())
-                                    .extended(false)
-                                    .execute(VKMessage.class)
-                                    .get(0);
+            public void ready() {
+                VKApi.messages()
+                        .getConversationsById()
+                        .peerIds(peerId)
+                        .extended(true)
+                        .fields(VKUser.FIELDS_DEFAULT)
+                        .execute(VKConversation.class, new VKApi.OnResponseListener<VKConversation>() {
+                            @Override
+                            public void onSuccess(ArrayList<VKConversation> models) {
+                                conversation = models.get(0);
+                                if (conversation.getLastMessageId() != 0)
+                                    VKApi.messages()
+                                            .getById()
+                                            .messageIds(conversation.getLastMessageId())
+                                            .extended(false)
+                                            .execute(VKMessage.class, new VKApi.OnResponseListener<VKMessage>() {
+                                                @Override
+                                                public void onSuccess(ArrayList<VKMessage> models) {
+                                                    last = models.get(0);
+                                                    conversation.setLast(last);
+                                                }
 
-                conversation.setLast(last);
+                                                @Override
+                                                public void onError(Exception e) {
+                                                    Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
+                                                }
+                                            });
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
+                            }
+                        });
             }
 
             @Override
@@ -279,6 +310,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     }
 
     private void initViews() {
+        actionTb = findViewById(R.id.action_tb);
+        appBar = findViewById(R.id.app_bar);
         chatPanel = findViewById(R.id.chat_panel);
         smiles = findViewById(R.id.smiles);
         tb = findViewById(R.id.tb);
@@ -324,7 +357,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         }
     }
 
-    private void showPinned(final VKMessage pinned) {
+    public void showPinned(final VKMessage pinned) {
         if (pinned == null) {
             pinnedContainer.setVisibility(View.GONE);
             return;
@@ -684,6 +717,11 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case android.R.id.home:
+                adapter.clearSelected();
+                adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
+                updateToolbar();
+                break;
             case R.id.delete:
                 showConfirmDeleteMessages(adapter.getSelectedMessages());
                 break;
@@ -1107,8 +1145,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             updateStyles();
         } else if (adapter != null && adapter.isSelected()) {
             adapter.clearSelected();
-            updateToolbar();
             adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
+            updateToolbar();
         } else {
             super.onBackPressed();
         }
@@ -1192,10 +1230,13 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         boolean selecting = adapter != null && adapter.isSelected();
 
+        tb.setVisibility(selecting ? View.GONE : View.VISIBLE);
+        actionTb.setVisibility(selecting ? View.VISIBLE : View.GONE);
+
         delete.setVisible(selecting);
-        leave.setVisible(!selecting);
-        clear.setVisible(!selecting);
-        notifications.setVisible(!selecting);
+        leave.setVisible(false);
+        clear.setVisible(false);
+        notifications.setVisible(false);
 
         if (conversation != null) {
             if (conversation.getType() != VKConversation.Type.CHAT)

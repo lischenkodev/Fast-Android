@@ -32,13 +32,13 @@ import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Requests;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.util.ViewUtil;
-import ru.melodin.fast.view.Toolbar;
+import ru.melodin.fast.view.FastToolbar;
 
 public class CreateChatActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemClickListener {
 
     private View empty;
 
-    private Toolbar tb;
+    private FastToolbar tb;
     private RecyclerView list;
     private SwipeRefreshLayout refreshLayout;
 
@@ -79,7 +79,7 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
             }
         });
         tb.inflateMenu(R.menu.activity_create_chat);
-        tb.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+        tb.setOnMenuItemClickListener(new FastToolbar.OnMenuItemClickListener() {
             @Override
             public void onMenuItemClick(MenuItem item) {
                 if (item.getItemId() == R.id.create)

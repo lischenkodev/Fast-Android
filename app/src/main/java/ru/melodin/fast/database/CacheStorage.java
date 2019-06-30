@@ -394,7 +394,7 @@ public class CacheStorage {
         message.setUpdateTime(getLong(cursor, UPDATE_TIME));
         message.setAction(VKMessage.getAction(getString(cursor, ACTION_TYPE)));
         message.setActionText(getString(cursor, ACTION_TEXT));
-        message.setActionUserId(getInt(cursor, ACTION_USER_ID));
+        message.setActionId(getInt(cursor, ACTION_USER_ID));
 
         byte[] attachments = getBlob(cursor, ATTACHMENTS);
         byte[] forwarded = getBlob(cursor, FWD_MESSAGES);
@@ -507,7 +507,7 @@ public class CacheStorage {
         values.put(UPDATE_TIME, message.getUpdateTime());
         values.put(ACTION_TEXT, message.getActionText());
         values.put(ACTION_TYPE, VKMessage.getAction(message.getAction()));
-        values.put(ACTION_USER_ID, message.getActionUserId());
+        values.put(ACTION_USER_ID, message.getActionId());
         values.put(IMPORTANT, message.isImportant());
 
         if (!ArrayUtil.isEmpty(message.getAttachments())) {

@@ -39,7 +39,7 @@ import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
-import ru.melodin.fast.view.Toolbar;
+import ru.melodin.fast.view.FastToolbar;
 
 public class FragmentConversations extends BaseFragment implements SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener {
 
@@ -49,7 +49,7 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
     private RecyclerView list;
     private ConversationAdapter adapter;
 
-    private Toolbar tb;
+    private FastToolbar tb;
     private View empty;
 
     @Override
@@ -83,7 +83,7 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
 
         tb.inflateMenu(R.menu.fragment_dialogs_menu);
         tb.setItemVisible(0, false);
-        tb.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+        tb.setOnMenuItemClickListener(new FastToolbar.OnMenuItemClickListener() {
             @Override
             public void onMenuItemClick(MenuItem item) {
                 if (item.getItemId() == R.id.create_chat) {
@@ -311,34 +311,38 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
     }
 
     private void deleteConversation(final int position) {
-        if (!Util.hasConnection()) {
+        VKConversation conversation = adapter.getItem(position);
+        final int peerId = conversation.getLast().getPeerId();
+
+        if (!Util.hasConnection() || (peerId == -1 || peerId == 0)) {
             refreshLayout.setRefreshing(false);
             return;
         }
 
         refreshLayout.setRefreshing(true);
 
-        VKConversation conversation = adapter.getItem(position);
-        final int peerId = conversation.getLast().getPeerId();
-
         ThreadExecutor.execute(new AsyncCallback(getActivity()) {
             int response;
 
             @Override
             public void ready() throws Exception {
-                response = VKApi.messages().deleteConversation().peerId(peerId).offset(0).execute(Integer.class).get(0);
+                response = VKApi.messages().deleteConversation().peerId(peerId).execute(Integer.class).get(0);
             }
 
             @Override
             public void done() {
-                CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE, DatabaseHelper.PEER_ID, peerId);
-                adapter.remove(position);
-                adapter.notifyItemRemoved(position);
-                adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
+                if (response == 1) {
+                    CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE, DatabaseHelper.PEER_ID, peerId);
+                    adapter.remove(position);
+                    adapter.notifyItemRemoved(position);
+                    adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
+                }
+                refreshLayout.setRefreshing(false);
             }
 
             @Override
             public void error(Exception e) {
+                refreshLayout.setRefreshing(false);
                 Log.e("Error delete dialog", Log.getStackTraceString(e));
                 Toast.makeText(getActivity(), R.string.error, Toast.LENGTH_SHORT).show();
             }

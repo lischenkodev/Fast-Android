@@ -2,13 +2,13 @@
 <com.google.android.material.appbar.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:id="@+id/app_bar"
     android:layout_height="wrap_content">
 
-    <ru.melodin.fast.view.FastToolbar
-        android:id="@+id/tb"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/action_tb"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        app:layout_scrollFlags="scroll|enterAlways" />
+        app:navigationIcon="@drawable/ic_arrow_back_black_24dp"
+        app:title="@null" />
 
 </com.google.android.material.appbar.AppBarLayout>

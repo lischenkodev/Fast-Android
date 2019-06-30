@@ -6,19 +6,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
 
-import ru.melodin.fast.view.Toolbar;
+import ru.melodin.fast.view.FastToolbar;
 
 public abstract class BaseFragment extends Fragment {
 
     private CharSequence title;
     private RecyclerView recyclerView;
-    private Toolbar toolbar;
+    private FastToolbar toolbar;
 
-    public Toolbar getToolbar() {
+    public FastToolbar getToolbar() {
         return toolbar;
     }
 
-    public void setToolbar(Toolbar toolbar) {
+    public void setToolbar(FastToolbar toolbar) {
         this.toolbar = toolbar;
     }
 

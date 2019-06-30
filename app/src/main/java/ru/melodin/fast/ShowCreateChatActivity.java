@@ -26,14 +26,14 @@ import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
 import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.util.ViewUtil;
-import ru.melodin.fast.view.Toolbar;
+import ru.melodin.fast.view.FastToolbar;
 
 public class ShowCreateChatActivity extends AppCompatActivity {
 
     private ShowCreateAdapter adapter;
 
     private AppCompatEditText title;
-    private Toolbar tb;
+    private FastToolbar tb;
     private RecyclerView list;
 
     private ArrayList<VKUser> users;
@@ -52,7 +52,7 @@ public class ShowCreateChatActivity extends AppCompatActivity {
         initViews();
 
         tb.inflateMenu(R.menu.activity_create_chat);
-        tb.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+        tb.setOnMenuItemClickListener(new FastToolbar.OnMenuItemClickListener() {
             @Override
             public void onMenuItemClick(MenuItem item) {
                 if (item.getItemId() == R.id.create && adapter != null)

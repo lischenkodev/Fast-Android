@@ -79,20 +79,20 @@ public class VKUtil {
         if (u != null) {
             action += u.toString();
         } else {
-            VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(msg.getActionUserId()));
+            VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(msg.getActionId()));
             if (group != null) {
                 action = group.getName();
             }
         }
 
-        VKUser action_user = MemoryCache.getUser(msg.getActionUserId());
+        VKUser action_user = MemoryCache.getUser(msg.getActionId());
 
         String u_name = null;
 
         if (action_user != null) {
             u_name = action_user.toString();
         } else {
-            VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(msg.getActionUserId()));
+            VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(msg.getActionId()));
             if (group != null) {
                 u_name = group.getName();
             }
@@ -102,40 +102,40 @@ public class VKUtil {
             action = "";
 
         switch (msg.getAction()) {
-            case CHAT_CREATE:
+            case CREATE:
                 action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.created_chat_w : R.string.created_chat_m : R.string.created_chat_m), action, "«" + msg.getActionText() + "»");
                 break;
-            case CHAT_INVITE_USER:
-                if (msg.getActionUserId() == msg.getFromId()) {
+            case INVITE_USER:
+                if (msg.getActionId() == msg.getFromId()) {
                     action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.returned_to_chat_w : R.string.returned_to_chat_m : R.string.returned_to_chat_m), action);
                 } else {
                     action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.invited_to_chat_w : R.string.invited_to_chat_m : R.string.invited_to_chat_m), action, u_name);
                 }
 
                 break;
-            case CHAT_KICK_USER:
-                if (msg.getActionUserId() == msg.getFromId()) {
+            case KICK_USER:
+                if (msg.getActionId() == msg.getFromId()) {
                     action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.left_the_chat_w : R.string.left_the_chat_m : R.string.left_the_chat_m), action);
                 } else {
                     action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.kicked_from_chat_w : R.string.kicked_from_chat_m : R.string.kicked_from_chat_m), action, u_name);
                 }
                 break;
-            case CHAT_PHOTO_REMOVE:
+            case PHOTO_REMOVE:
                 action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.remove_chat_photo_w : R.string.remove_chat_photo_m : R.string.remove_chat_photo_m), action);
                 break;
-            case CHAT_PHOTO_UPDATE:
+            case PHOTO_UPDATE:
                 action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.updated_chat_photo_w : R.string.updated_chat_photo_m : R.string.updated_chat_photo_m), action);
                 break;
-            case CHAT_TITLE_UPDATE:
+            case TITLE_UPDATE:
                 action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.updated_title_w : R.string.updated_title_m : R.string.updated_title_m), action, "«" + msg.getActionText() + "»");
                 break;
-            case CHAT_INVITE_USER_BY_LINK:
+            case INVITE_USER_BY_LINK:
                 action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.invited_by_link_w : R.string.invited_by_link_m : R.string.invited_by_link_m), action);
                 break;
-            case CHAT_PIN_MESSAGE:
+            case PIN_MESSAGE:
                 action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.pinned_message_w : R.string.pinned_message_m : R.string.pinned_message_m), action);
                 break;
-            case CHAT_UNPIN_MESSAGE:
+            case UNPIN_MESSAGE:
                 action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.unpinned_message_w : R.string.unpinned_message_m : R.string.unpinned_message_m), action);
                 break;
         }

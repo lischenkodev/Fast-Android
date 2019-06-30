@@ -16,7 +16,8 @@
             android:id="@+id/photo"
             android:layout_width="56dp"
             android:layout_height="56dp"
-            android:scaleType="centerCrop" />
+            android:scaleType="centerCrop"
+            tools:src="@drawable/avatar_placeholder" />
 
         <ImageView
             android:id="@+id/icon"
