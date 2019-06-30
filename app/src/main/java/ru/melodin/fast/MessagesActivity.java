@@ -211,7 +211,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 if (dy < 0) {
                     if (message.isFocused() && AppGlobal.preferences.getBoolean(FragmentSettings.KEY_HIDE_KEYBOARD_ON_SCROLL, true))
                         ViewUtil.hideKeyboard(message);
-                    
+
                     if (pinned == null) return;
                     hidePinned(DURATION_DEFAULT);
                 }

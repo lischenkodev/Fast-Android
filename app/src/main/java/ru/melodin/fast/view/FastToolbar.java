@@ -67,7 +67,7 @@ public class FastToolbar extends FrameLayout {
 
         title = findViewById(R.id.abc_tb_title);
         subtitle = findViewById(R.id.abc_tb_subtitle);
-        avatar = findViewById(R.id.abc_tb_avatar);
+        avatar = findViewById(R.id.user_avatar);
         back = findViewById(R.id.abc_tb_back);
         menuLayout = findViewById(R.id.abc_tb_menu);
 

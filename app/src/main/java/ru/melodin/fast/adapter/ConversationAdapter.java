@@ -512,7 +512,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             pushesEnabled = accentColor;
             pushesDisabled = ThemeManager.isDark() ? ColorUtil.lightenColor(ThemeManager.getPrimary(), 2) : Color.GRAY;
 
-            avatar = v.findViewById(R.id.abc_tb_avatar);
+            avatar = v.findViewById(R.id.user_avatar);
             avatarSmall = v.findViewById(R.id.avatar_small);
             online = v.findViewById(R.id.online);
             out = v.findViewById(R.id.icon_out_message);

@@ -117,7 +117,7 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
             placeholder = getDrawable(R.drawable.avatar_placeholder);
             root = v.findViewById(R.id.root);
 
-            avatar = v.findViewById(R.id.abc_tb_avatar);
+            avatar = v.findViewById(R.id.user_avatar);
             online = v.findViewById(R.id.online);
 
             name = v.findViewById(R.id.name);

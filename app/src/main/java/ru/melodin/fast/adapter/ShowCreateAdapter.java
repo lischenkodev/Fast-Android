@@ -6,9 +6,11 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
@@ -42,12 +44,12 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
     class ViewHolder extends RecyclerView.ViewHolder {
 
         CircleImageView avatar;
-        CircleImageView online;
+        ImageView online;
 
         ImageButton remove;
 
         TextView name;
-        TextView invited_by;
+        TextView invitedBy;
 
         Drawable placeholder;
 
@@ -58,11 +60,11 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
 
             remove = v.findViewById(R.id.remove);
 
-            avatar = v.findViewById(R.id.abc_tb_avatar);
+            avatar = v.findViewById(R.id.user_avatar);
             online = v.findViewById(R.id.online);
 
             name = v.findViewById(R.id.name);
-            invited_by = v.findViewById(R.id.last_seen);
+            invitedBy = v.findViewById(R.id.last_seen);
         }
 
         void bind(final int position) {
@@ -71,9 +73,10 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
             name.setText(user.toString());
 
             online.setVisibility(user.isOnline() ? View.VISIBLE : View.GONE);
+            online.setImageDrawable(getOnlineIndicator(user));
 
             String text = user.getId() == UserConfig.userId ? getString(R.string.chat_creator) : getString(R.string.invited_by, UserConfig.user.toString());
-            invited_by.setText(text);
+            invitedBy.setText(text);
 
             if (TextUtils.isEmpty(user.getPhoto200())) {
                 avatar.setImageDrawable(placeholder);
@@ -86,20 +89,20 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
 
             remove.setVisibility(user.getId() == UserConfig.userId ? View.GONE : View.VISIBLE);
 
-            remove.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View p1) {
-                    if (getValues().size() >= 2) {
-                        remove(position);
-                        notifyItemRemoved(position);
-                        notifyItemRangeChanged(0, getItemCount(), getItem(getItemCount() - 1));
-                    } else {
-                        ((ShowCreateChatActivity) context).finish();
-                    }
+            remove.setOnClickListener(p1 -> {
+                if (getValues().size() >= 2) {
+                    remove(position);
+                    notifyItemRemoved(position);
+                    notifyItemRangeChanged(0, getItemCount(), getItem(getItemCount() - 1));
+                } else {
+                    ((ShowCreateChatActivity) context).finish();
                 }
-
             });
+        }
+
+        @Nullable
+        private Drawable getOnlineIndicator(@NonNull VKUser user) {
+            return !user.isOnline() ? null : getDrawable(user.isOnlineMobile() ? R.drawable.ic_online_mobile : R.drawable.ic_online);
         }
     }
 }

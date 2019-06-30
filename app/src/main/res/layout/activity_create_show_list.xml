@@ -23,21 +23,19 @@
             android:layout_height="wrap_content">
 
             <ru.melodin.fast.view.CircleImageView
-                android:id="@+id/abc_tb_avatar"
+                android:id="@+id/user_avatar"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_gravity="bottom|end"
-                android:src="?colorAccent" />
+                tools:src="@drawable/avatar_placeholder" />
 
-            <ru.melodin.fast.view.CircleImageView
+            <ImageView
                 android:id="@+id/online"
                 android:layout_width="14dp"
                 android:layout_height="14dp"
                 android:layout_gravity="bottom|end"
                 android:layout_margin="3dp"
-                android:src="?colorAccent"
-                app:border_color="?android:windowBackground"
-                app:border_width="2dp" />
+                tools:src="@drawable/ic_online" />
 
         </FrameLayout>
 

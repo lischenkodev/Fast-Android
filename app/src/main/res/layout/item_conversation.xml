@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="80dp"
+    android:layout_height="70dp"
     android:background="?selectableItemBackground"
     android:gravity="center_vertical"
     android:orientation="horizontal">
@@ -23,9 +23,9 @@
             android:layout_weight="0">
 
             <ru.melodin.fast.view.CircleImageView
-                android:id="@+id/abc_tb_avatar"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
+                android:id="@+id/user_avatar"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
                 android:layout_gravity="bottom|end"
                 tools:src="@drawable/avatar_placeholder" />
 
