@@ -150,6 +150,10 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
     }
 
     private void getConversations(final int count, final int offset) {
+        if (!Util.hasConnection()) {
+            refreshLayout.setRefreshing(false);
+            return;
+        }
         refreshLayout.setRefreshing(true);
         ThreadExecutor.execute(new AsyncCallback(getActivity()) {
 
@@ -184,8 +188,6 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
 
                                     createAdapter(conversations);
                                     refreshLayout.setRefreshing(false);
-
-                                    //tb.setTitle(getTitle());
                                 }
                             }
 
@@ -232,6 +234,7 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
     }
 
     private void readMessage(final int position) {
+        if (!Util.hasConnection()) return;
         ThreadExecutor.execute(new AsyncCallback(getActivity()) {
             @Override
             public void ready() throws Exception {

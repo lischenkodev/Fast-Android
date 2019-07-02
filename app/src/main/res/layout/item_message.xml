@@ -15,7 +15,7 @@
         tools:gravity="end">
 
         <ru.melodin.fast.view.CircleImageView
-            android:id="@+id/user_avatar"
+            android:id="@+id/userAvatar"
             android:layout_width="@dimen/avatar_chat_size"
             android:layout_height="@dimen/avatar_chat_size"
             android:layout_gravity="center_vertical|top"

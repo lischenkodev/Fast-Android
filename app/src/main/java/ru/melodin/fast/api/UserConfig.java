@@ -37,7 +37,7 @@ public class UserConfig {
     }
 
     public static boolean isLoggedIn() {
-        return (userId > 0 && !TextUtils.isEmpty(accessToken.trim()));
+        return userId > 0 && !TextUtils.isEmpty(accessToken.trim());
     }
 
     public static VKUser getUser() {

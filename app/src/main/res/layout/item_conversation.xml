@@ -23,9 +23,9 @@
             android:layout_weight="0">
 
             <ru.melodin.fast.view.CircleImageView
-                android:id="@+id/user_avatar"
-                android:layout_width="55dp"
-                android:layout_height="55dp"
+                android:id="@+id/userAvatar"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
                 android:layout_gravity="bottom|end"
                 tools:src="@drawable/avatar_placeholder" />
 

@@ -108,10 +108,10 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
 
             placeholder = getDrawable(R.drawable.avatar_placeholder);
 
-            avatar = v.findViewById(R.id.user_avatar);
+            avatar = v.findViewById(R.id.userAvatar);
             online = v.findViewById(R.id.online);
 
-            lastSeen = v.findViewById(R.id.last_seen);
+            lastSeen = v.findViewById(R.id.lastSeen);
             name = v.findViewById(R.id.name);
 
             message = v.findViewById(R.id.message);

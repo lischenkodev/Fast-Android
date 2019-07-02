@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
@@ -42,10 +41,8 @@ public class ValidationActivity extends AppCompatActivity {
     }
 
     private void parseUrl(String url) {
-        Log.d("WebView url", url);
         try {
             if (url.startsWith("https://oauth.vk.com/blank.html#success=1")) {
-                Log.d("Success WebView", "");
                 if (!url.contains("error=")) {
                     String[] auth = Auth.parseRedirectUrl(url);
                     Intent intent = new Intent();

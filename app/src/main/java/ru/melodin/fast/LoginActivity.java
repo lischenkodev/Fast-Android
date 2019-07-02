@@ -22,6 +22,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -42,6 +43,7 @@ import ru.melodin.fast.current.BaseActivity;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.util.Requests;
+import ru.melodin.fast.util.ViewUtil;
 
 public class LoginActivity extends BaseActivity {
 
@@ -65,9 +67,18 @@ public class LoginActivity extends BaseActivity {
         login = findViewById(R.id.login);
         password = findViewById(R.id.password);
 
-        sign.setOnClickListener(view -> login());
+        sign.setOnClickListener(view -> login(false));
 
         findViewById(R.id.logo_text).setOnClickListener(view -> toggleTheme());
+
+        MaterialCardView cardView = findViewById(R.id.card);
+        cardView.animate().translationY(200).setDuration(0).withEndAction(() -> cardView.animate().translationY(0).setDuration(500).start()).start();
+
+        password.getEditText().setOnEditorActionListener((textView, i, keyEvent) -> {
+            login(true);
+            ViewUtil.hideKeyboard(password.getEditText());
+            return true;
+        });
 
         webLogin = findViewById(R.id.web_login);
         webLogin.setVisibility(View.GONE);
@@ -77,12 +88,13 @@ public class LoginActivity extends BaseActivity {
         });
     }
 
-    private void login() {
+    private void login(boolean fromKeyboard) {
         String login = this.login.getEditText().getText().toString().trim();
         String password = this.password.getEditText().getText().toString().trim();
 
         if (login.isEmpty() || password.isEmpty()) {
-            Snackbar.make(sign, R.string.all_necessary_data, Snackbar.LENGTH_SHORT).show();
+            if (!fromKeyboard)
+                Snackbar.make(sign, R.string.all_necessary_data, Snackbar.LENGTH_SHORT).show();
             return;
         }
 
@@ -94,6 +106,7 @@ public class LoginActivity extends BaseActivity {
         login(login_, password_, "");
     }
 
+    @NonNull
     private AlertDialog createProcessDialog() {
         return new AlertDialog.Builder(this)
                 .setMessage(R.string.loading)
@@ -140,13 +153,10 @@ public class LoginActivity extends BaseActivity {
             try {
                 JSONObject response = new JSONObject(jsonObject);
                 if (response.has("error")) {
-                    // final String error_description = response.optString("error_description");
                     final String error = response.optString("error");
 
                     switch (error) {
                         case "need_validation":
-                            //startWebLogin();
-
                             final String redirect_uri = response.optString("redirect_uri");
                             runOnUiThread(() -> {
                                 Intent intent = new Intent(LoginActivity.this, ValidationActivity.class);

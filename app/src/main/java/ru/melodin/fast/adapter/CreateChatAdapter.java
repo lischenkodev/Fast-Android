@@ -117,11 +117,11 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
             placeholder = getDrawable(R.drawable.avatar_placeholder);
             root = v.findViewById(R.id.root);
 
-            avatar = v.findViewById(R.id.user_avatar);
+            avatar = v.findViewById(R.id.userAvatar);
             online = v.findViewById(R.id.online);
 
             name = v.findViewById(R.id.name);
-            lastSeen = v.findViewById(R.id.last_seen);
+            lastSeen = v.findViewById(R.id.lastSeen);
         }
 
         void bind(int position) {

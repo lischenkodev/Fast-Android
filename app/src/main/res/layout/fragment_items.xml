@@ -35,14 +35,14 @@
                     android:layout_weight="0">
 
                     <ru.melodin.fast.view.CircleImageView
-                        android:id="@+id/user_avatar"
+                        android:id="@+id/userAvatar"
                         android:layout_width="60dp"
                         android:layout_height="60dp"
                         android:layout_gravity="bottom|end"
                         tools:src="@drawable/avatar_placeholder" />
 
                     <ImageView
-                        android:id="@+id/user_online"
+                        android:id="@+id/userOnline"
                         android:layout_width="14dp"
                         android:layout_height="14dp"
                         android:layout_gravity="bottom|end"
@@ -61,7 +61,7 @@
                     android:padding="4dp">
 
                     <TextView
-                        android:id="@+id/user_name"
+                        android:id="@+id/userName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="4dp"
@@ -73,7 +73,7 @@
                         tools:text="User name" />
 
                     <TextView
-                        android:id="@+id/last_seen"
+                        android:id="@+id/lastSeen"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/open_profile"
@@ -92,6 +92,7 @@
                         android:layout_height="wrap_content"
                         android:stateListAnimator="@null"
                         android:text="@string/exit"
+                        android:id="@+id/logout"
                         android:textColor="?colorAccent"
                         app:backgroundTint="?colorPrimary"
                         app:rippleColor="?colorAccent" />

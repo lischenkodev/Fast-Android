@@ -142,6 +142,10 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
     }
 
     private void getFriends(final int count, final int offset) {
+        if (!Util.hasConnection()) {
+            refreshLayout.setRefreshing(false);
+            return;
+        }
         ThreadExecutor.execute(new AsyncCallback(getActivity()) {
 
             private ArrayList<VKUser> users;

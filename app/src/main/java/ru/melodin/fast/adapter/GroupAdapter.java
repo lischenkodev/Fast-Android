@@ -47,7 +47,7 @@ public class GroupAdapter extends RecyclerAdapter<VKGroup, GroupAdapter.ViewHold
         ViewHolder(@NonNull View v) {
             super(v);
 
-            avatar = v.findViewById(R.id.user_avatar);
+            avatar = v.findViewById(R.id.userAvatar);
             name = v.findViewById(R.id.name);
             description = v.findViewById(R.id.description);
         }

@@ -25,7 +25,7 @@
             tools:visibility="visible" />
 
         <ru.melodin.fast.view.CircleImageView
-            android:id="@+id/user_avatar"
+            android:id="@+id/userAvatar"
             android:layout_width="45dp"
             android:layout_height="45dp"
             android:layout_gravity="start|center_vertical"

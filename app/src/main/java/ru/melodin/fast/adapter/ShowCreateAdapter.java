@@ -60,11 +60,11 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
 
             remove = v.findViewById(R.id.remove);
 
-            avatar = v.findViewById(R.id.user_avatar);
+            avatar = v.findViewById(R.id.userAvatar);
             online = v.findViewById(R.id.online);
 
             name = v.findViewById(R.id.name);
-            invitedBy = v.findViewById(R.id.last_seen);
+            invitedBy = v.findViewById(R.id.lastSeen);
         }
 
         void bind(final int position) {

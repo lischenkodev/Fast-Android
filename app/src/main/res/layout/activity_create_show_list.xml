@@ -23,7 +23,7 @@
             android:layout_height="wrap_content">
 
             <ru.melodin.fast.view.CircleImageView
-                android:id="@+id/user_avatar"
+                android:id="@+id/userAvatar"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:layout_gravity="bottom|end"
@@ -58,7 +58,7 @@
                 tools:text="Имя Фамилия" />
 
             <TextView
-                android:id="@+id/last_seen"
+                android:id="@+id/lastSeen"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content" />
 

@@ -67,7 +67,7 @@ public class FastToolbar extends FrameLayout {
 
         title = findViewById(R.id.abc_tb_title);
         subtitle = findViewById(R.id.abc_tb_subtitle);
-        avatar = findViewById(R.id.user_avatar);
+        avatar = findViewById(R.id.userAvatar);
         back = findViewById(R.id.abc_tb_back);
         menuLayout = findViewById(R.id.abc_tb_menu);
 
@@ -167,6 +167,7 @@ public class FastToolbar extends FrameLayout {
     }
 
     public void setSubtitle(CharSequence title) {
+        if (title == null || title.toString().trim().isEmpty()) return;
         this.subtitle.setText(title.toString().trim());
         validateVisibility();
     }
@@ -182,6 +183,7 @@ public class FastToolbar extends FrameLayout {
     }
 
     public void setTitle(CharSequence title) {
+        if (title == null || title.toString().trim().isEmpty()) return;
         this.title.setText(title.toString().trim());
         validateVisibility();
     }

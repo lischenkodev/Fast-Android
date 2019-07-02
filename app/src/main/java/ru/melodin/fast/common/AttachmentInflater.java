@@ -298,9 +298,9 @@ public class AttachmentInflater {
         v.setClickable(false);
         v.setFocusable(false);
 
-        TextView name = v.findViewById(R.id.user_name);
+        TextView name = v.findViewById(R.id.userName);
         TextView message = v.findViewById(R.id.user_message);
-        ImageView avatar = v.findViewById(R.id.user_avatar);
+        ImageView avatar = v.findViewById(R.id.userAvatar);
         View line = v.findViewById(R.id.message_line);
 
         VKUser user = MemoryCache.getUser(source.getFromId());

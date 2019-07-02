@@ -662,7 +662,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             placeholder = getDrawable(R.drawable.avatar_placeholder);
 
-            avatar = v.findViewById(R.id.user_avatar);
+            avatar = v.findViewById(R.id.userAvatar);
             important = v.findViewById(R.id.important);
 
             circle = null;

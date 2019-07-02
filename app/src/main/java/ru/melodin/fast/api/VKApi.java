@@ -163,20 +163,17 @@ public class VKApi {
 
     public static <E> void execute(final String url, final Class<E> cls,
                                    final OnResponseListener<E> listener) {
-        ThreadExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    ArrayList<E> models = execute(url, cls);
-                    if (listener != null) {
-                        AppGlobal.handler.post(new SuccessCallback<>(listener, models));
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+        ThreadExecutor.execute(() -> {
+            try {
+                ArrayList<E> models = execute(url, cls);
+                if (listener != null) {
+                    AppGlobal.handler.post(new SuccessCallback<>(listener, models));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
 
-                    if (listener != null) {
-                        AppGlobal.handler.post(new ErrorCallback(listener, e));
-                    }
+                if (listener != null) {
+                    AppGlobal.handler.post(new ErrorCallback(listener, e));
                 }
             }
         });
@@ -454,7 +451,7 @@ public class VKApi {
         private OnResponseListener listener;
         private Exception ex;
 
-        public ErrorCallback(OnResponseListener listener, Exception ex) {
+        ErrorCallback(OnResponseListener listener, Exception ex) {
             this.listener = listener;
             this.ex = ex;
         }

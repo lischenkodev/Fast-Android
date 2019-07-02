@@ -24,7 +24,6 @@ import java.util.List;
 
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
-import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.common.PermissionManager;
 import ru.melodin.fast.common.ThemeManager;
@@ -32,15 +31,12 @@ import ru.melodin.fast.concurrent.AsyncCallback;
 import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.current.BaseActivity;
 import ru.melodin.fast.current.BaseFragment;
-import ru.melodin.fast.database.CacheStorage;
-import ru.melodin.fast.database.DatabaseHelper;
 import ru.melodin.fast.fragment.FragmentConversations;
 import ru.melodin.fast.fragment.FragmentFriends;
 import ru.melodin.fast.fragment.FragmentItems;
 import ru.melodin.fast.fragment.FragmentSettings;
 import ru.melodin.fast.service.LongPollService;
 import ru.melodin.fast.util.ArrayUtil;
-import ru.melodin.fast.util.Keys;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.util.ViewUtil;
 
@@ -103,28 +99,6 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         }
     }
 
-    private void loadUser() {
-        ThreadExecutor.execute(new AsyncCallback(this) {
-            VKUser user;
-
-            @Override
-            public void ready() throws Exception {
-                user = VKApi.users().get().fields(VKUser.FIELDS_DEFAULT).execute(VKUser.class).get(0);
-            }
-
-            @Override
-            public void done() {
-                CacheStorage.insert(DatabaseHelper.USERS_TABLE, user);
-                EventBus.getDefault().postSticky(new Object[]{Keys.KEY_UPDATE_USER, UserConfig.userId});
-            }
-
-            @Override
-            public void error(Exception e) {
-                Log.e("Error get user", Log.getStackTraceString(e));
-            }
-        });
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onReceive(Object[] data) {
         if (ArrayUtil.isEmpty(data)) return;
@@ -145,7 +119,6 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         if (!UserConfig.isLoggedIn()) {
             startLoginActivity();
         } else {
-            loadUser();
             startService(new Intent(this, LongPollService.class));
 
             if (savedInstanceState == null) {
@@ -211,20 +184,6 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         }
     }
 
-    public void itemClick(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.groups:
-
-                break;
-            case R.id.menu:
-                startActivity(new Intent(this, SettingsActivity.class));
-                break;
-            case R.id.left:
-                showExitDialog();
-                break;
-        }
-    }
-
     private void replaceFragment(Fragment fragment) {
         if (fragment == null) return;
 
@@ -255,21 +214,6 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
             }
         }
         transaction.commit();
-    }
-
-    private void showExitDialog() {
-        AlertDialog.Builder adb = new AlertDialog.Builder(this);
-        adb.setTitle(R.string.warning);
-        adb.setMessage(R.string.exit_message);
-        adb.setPositiveButton(R.string.yes, (dialog, which) -> {
-            startLoginActivity();
-            stopService(new Intent(this, LongPollService.class));
-            UserConfig.clear();
-            DatabaseHelper.getInstance().dropTables(AppGlobal.database);
-            DatabaseHelper.getInstance().onCreate(AppGlobal.database);
-        });
-        adb.setNegativeButton(R.string.no, null);
-        adb.create().show();
     }
 
     @Override

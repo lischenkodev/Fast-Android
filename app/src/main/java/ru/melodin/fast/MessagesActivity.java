@@ -199,13 +199,13 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 if (dy > 0) {
-                    if (adapter != null && layoutManager.findLastVisibleItemPosition() < adapter.getItemCount() - 10 && !fab.isShown())
-                        fab.show();
+                    fab.hide();
 
                     if (pinned == null) return;
                     showPinned(DURATION_DEFAULT);
                 } else {
-                    fab.hide();
+                    if (adapter != null && layoutManager.findLastVisibleItemPosition() < adapter.getItemCount() - 10 && !fab.isShown())
+                        fab.show();
                 }
 
                 if (dy < 0) {
@@ -228,56 +228,55 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     }
 
     private void getConversation(final int peerId) {
+        if (!Util.hasConnection()) return;
         ThreadExecutor.execute(new AsyncCallback(this) {
-            VKMessage last;
 
             @Override
-            public void ready() {
-                VKApi.messages()
+            public void ready() throws Exception {
+                conversation = VKApi.messages()
                         .getConversationsById()
                         .peerIds(peerId)
                         .extended(true)
                         .fields(VKUser.FIELDS_DEFAULT)
-                        .execute(VKConversation.class, new VKApi.OnResponseListener<VKConversation>() {
-                            @Override
-                            public void onSuccess(ArrayList<VKConversation> models) {
-                                conversation = models.get(0);
-                                if (conversation.getLastMessageId() != 0)
-                                    VKApi.messages()
-                                            .getById()
-                                            .messageIds(conversation.getLastMessageId())
-                                            .extended(false)
-                                            .execute(VKMessage.class, new VKApi.OnResponseListener<VKMessage>() {
-                                                @Override
-                                                public void onSuccess(ArrayList<VKMessage> models) {
-                                                    last = models.get(0);
-                                                    conversation.setLast(last);
-                                                }
-
-                                                @Override
-                                                public void onError(Exception e) {
-                                                    Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
-                                                }
-                                            });
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        .execute(VKConversation.class).get(0);
             }
 
             @Override
             public void done() {
                 invalidateOptionsMenu();
-                if (conversation.getLastMessageId() != 0)
-                    CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
+                getMessage(conversation.getLastMessageId());
             }
 
             @Override
             public void error(Exception e) {
                 Log.e("Error load dialogs", Log.getStackTraceString(e));
+                Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void getMessage(final int messageId) {
+        if (messageId == 0) return;
+        ThreadExecutor.execute(new AsyncCallback(this) {
+            VKMessage message;
+
+            @Override
+            public void ready() throws Exception {
+                message = VKApi.messages()
+                        .getById()
+                        .messageIds(messageId)
+                        .extended(false)
+                        .execute(VKMessage.class).get(0);
+            }
+
+            @Override
+            public void done() {
+                conversation.setLast(message);
+                CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
+            }
+
+            @Override
+            public void error(Exception e) {
                 Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
             }
         });
