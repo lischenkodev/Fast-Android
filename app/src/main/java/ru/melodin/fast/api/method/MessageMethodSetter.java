@@ -238,9 +238,7 @@ public class MessageMethodSetter extends MethodSetter {
     }
 
     public final MessageMethodSetter type(boolean typing) {
-        if (typing) {
-            put("type", "typing");
-        }
+        put("type", typing ? "type" : "audiomessage");
         return this;
     }
 

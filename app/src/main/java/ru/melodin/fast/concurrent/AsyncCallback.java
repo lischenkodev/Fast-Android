@@ -27,24 +27,16 @@ public abstract class AsyncCallback implements Runnable {
             e.printStackTrace();
 
             if (ref != null && ref.get() != null) {
-                ref.get().runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        error(e);
-                        VKApi.checkError(ref.get(), e);
-                    }
+                ref.get().runOnUiThread(() -> {
+                    error(e);
+                    VKApi.checkError(ref.get(), e);
                 });
             }
             return;
         }
 
         if (ref != null && ref.get() != null) {
-            ref.get().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    done();
-                }
-            });
+            ref.get().runOnUiThread(this::done);
         }
     }
 }

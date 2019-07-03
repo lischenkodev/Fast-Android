@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -83,12 +82,9 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
 
         tb.inflateMenu(R.menu.fragment_dialogs_menu);
         tb.setItemVisible(0, false);
-        tb.setOnMenuItemClickListener(new FastToolbar.OnMenuItemClickListener() {
-            @Override
-            public void onMenuItemClick(MenuItem item) {
-                if (item.getItemId() == R.id.create_chat) {
-                    startActivity(new Intent(getActivity(), CreateChatActivity.class));
-                }
+        tb.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.create_chat) {
+                startActivity(new Intent(getActivity(), CreateChatActivity.class));
             }
         });
 
@@ -106,11 +102,11 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
         list.setLayoutManager(manager);
 
         getCachedConversations();
-        if (Util.hasConnection())
+        if (Util.hasConnection() && savedInstanceState == null)
             getConversations(CONVERSATIONS_COUNT, 0);
     }
 
-    private void initViews(View v) {
+    private void initViews(@NonNull View v) {
         tb = v.findViewById(R.id.tb);
         list = v.findViewById(R.id.list);
         empty = v.findViewById(R.id.no_items_layout);
@@ -233,12 +229,14 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
         startActivity(intent);
     }
 
-    private void readMessage(final int position) {
+    private void readConversation(final int peerId) {
         if (!Util.hasConnection()) return;
         ThreadExecutor.execute(new AsyncCallback(getActivity()) {
+            int response;
+
             @Override
             public void ready() throws Exception {
-                VKApi.messages().markAsRead().peerId(adapter.getItem(position).getLast().getPeerId()).execute();
+                response = VKApi.messages().markAsRead().peerId(peerId).execute(Integer.class).get(0);
             }
 
             @Override
@@ -265,7 +263,7 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
         VKConversation conversation = adapter.getItem(position);
 
         if (!conversation.isRead() && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
-            readMessage(position);
+            readConversation(conversation.getPeerId());
         }
     }
 
@@ -279,7 +277,7 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
 
         VKConversation conversation = adapter.getItem(position);
 
-        int peerId = conversation.getLast().getPeerId();
+        int peerId = conversation.getLastMessageId() == -1 || conversation.getLast() == null ? conversation.getPeerId() : conversation.getLast().getPeerId();
 
         VKUser user = MemoryCache.getUser(peerId);
         VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(peerId));
@@ -287,7 +285,12 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
         adb.setTitle(adapter.getTitle(conversation, user, group));
 
         ArrayList<String> list = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.conversation_functions)));
-        ArrayList<String> remove = new ArrayList<>();
+        ArrayList<String> remove = new ArrayList<>(list.size());
+
+        if (conversation.getLast() == null || conversation.getLastMessageId() == -1 || conversation.getLast().isOut() || conversation.isRead() || conversation.getLast().isRead()) {
+            remove.add(getString(R.string.read));
+        }
+
         list.removeAll(remove);
 
         final String[] items = new String[list.size()];
@@ -299,6 +302,8 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
 
             if (title.equals(getString(R.string.clear_messages_history))) {
                 showConfirmDeleteConversation(position);
+            } else if (title.equals(getString(R.string.read))) {
+                readConversation(peerId);
             }
         });
         adb.show();

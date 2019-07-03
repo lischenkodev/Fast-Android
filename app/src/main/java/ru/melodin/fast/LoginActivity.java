@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
@@ -75,13 +74,12 @@ public class LoginActivity extends BaseActivity {
         cardView.animate().translationY(200).setDuration(0).withEndAction(() -> cardView.animate().translationY(0).setDuration(500).start()).start();
 
         password.getEditText().setOnEditorActionListener((textView, i, keyEvent) -> {
-            login(true);
             ViewUtil.hideKeyboard(password.getEditText());
+            login(true);
             return true;
         });
 
         webLogin = findViewById(R.id.web_login);
-        webLogin.setVisibility(View.GONE);
         webLogin.setOnClickListener(view -> {
             webLogin.setEnabled(false);
             startWebLogin();

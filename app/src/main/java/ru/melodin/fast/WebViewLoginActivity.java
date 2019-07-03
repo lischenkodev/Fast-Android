@@ -2,38 +2,33 @@ package ru.melodin.fast;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.EditText;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import ru.melodin.fast.api.Auth;
 import ru.melodin.fast.api.Scopes;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.common.ThemeManager;
-import ru.melodin.fast.concurrent.AsyncCallback;
-import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.util.ViewUtil;
+import ru.melodin.fast.view.FastToolbar;
 
 public class WebViewLoginActivity extends AppCompatActivity {
 
     private WebView webView;
     private ProgressBar bar;
+    private FastToolbar tb;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -45,10 +40,11 @@ public class WebViewLoginActivity extends AppCompatActivity {
 
         bar = findViewById(R.id.progress);
         webView = findViewById(R.id.web);
+        tb = findViewById(R.id.tb);
 
-        setSupportActionBar(findViewById(R.id.tb));
-
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        tb.setBackVisible(true);
+        tb.setOnBackClickListener((view) -> onBackPressed());
+        tb.inflateMenu(R.menu.activity_login);
 
         webView.setVisibility(View.GONE);
 
@@ -75,69 +71,10 @@ public class WebViewLoginActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                break;
-            case R.id.token_login:
-                showTokenLoginDialog();
-                break;
-            case R.id.refresh:
-                webView.reload();
-                break;
-            case R.id.abc_tb_back:
-                if (webView.canGoBack()) webView.goBack();
-                break;
-
+        if (item.getItemId() == R.id.refresh) {
+            webView.reload();
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void showTokenLoginDialog() {
-        final AlertDialog.Builder adb = new AlertDialog.Builder(this);
-
-        View v = LayoutInflater.from(this).inflate(R.layout.token_login, null, false);
-        adb.setView(v);
-        adb.setMessage(R.string.token_login_message);
-
-        final EditText etToken = v.findViewById(R.id.token);
-        final EditText etUserId = v.findViewById(R.id.user_id);
-
-        adb.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                final String token = etToken.getText().toString();
-                final String uId = etUserId.getText().toString();
-
-                if (!token.trim().isEmpty() && !uId.trim().isEmpty()) {
-                    ThreadExecutor.execute(new AsyncCallback(WebViewLoginActivity.this) {
-
-                        int id;
-
-                        @Override
-                        public void ready() {
-                            id = Integer.parseInt(uId);
-                        }
-
-                        @Override
-                        public void done() {
-                            Intent intent = new Intent();
-                            intent.putExtra("token", token);
-                            intent.putExtra("id", id);
-                            setResult(Activity.RESULT_OK, intent);
-                            finish();
-                        }
-
-                        @Override
-                        public void error(Exception e) {
-                            Toast.makeText(WebViewLoginActivity.this, R.string.error, Toast.LENGTH_LONG).show();
-                        }
-                    });
-                }
-            }
-        });
-        adb.setNegativeButton(android.R.string.cancel, null);
-        adb.create().show();
     }
 
     @Override
@@ -148,7 +85,6 @@ public class WebViewLoginActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
-
 
     private void parseUrl(String url) {
         if (TextUtils.isEmpty(url)) return;

@@ -58,7 +58,6 @@ import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.common.AttachmentInflater;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
-import ru.melodin.fast.concurrent.LowThread;
 import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
@@ -467,24 +466,33 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         if (AppGlobal.preferences.getBoolean(FragmentSettings.KEY_HIDE_TYPING, false)) return;
 
         typing = true;
-        new LowThread(() -> {
-            try {
-                VKApi.messages().setActivity().peerId(peerId).execute();
-                runOnUiThread(() -> {
-                    timer = new Timer();
-                    timer.schedule(new TimerTask() {
+        ThreadExecutor.execute(new AsyncCallback(this) {
+            int response;
 
-                        @Override
-                        public void run() {
-                            typing = false;
-                        }
-
-
-                    }, 10000);
-                });
-            } catch (Exception ignored) {
+            @Override
+            public void ready() throws Exception {
+                response = VKApi.messages().setActivity().type(true).peerId(peerId).execute(Integer.class).get(0);
             }
-        }).start();
+
+            @Override
+            public void done() {
+                if (response != 1) return;
+
+                timer = new Timer();
+                timer.schedule(new TimerTask() {
+
+                    @Override
+                    public void run() {
+                        typing = false;
+                    }
+                }, 10000);
+            }
+
+            @Override
+            public void error(Exception e) {
+                Log.e("Error type", Log.getStackTraceString(e));
+            }
+        });
     }
 
     private void sendMessage() {
@@ -653,6 +661,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         tb.setSubtitle(getSubtitle());
     }
 
+    @Nullable
     private String getSubtitle() {
         if (conversation == null) return null;
 
@@ -708,7 +717,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private String getUserSubtitle(VKUser user) {
         if (user == null) return "";
-        if (user.isOnline()) return getString(R.string.online);
+        if (user.isOnline())
+            return getString(user.isOnlineMobile() ? R.string.online_mobile : R.string.online);
 
         return getString(user.getSex() == VKUser.Sex.MALE ? R.string.last_seen_m : R.string.last_seen_w, Util.dateFormatter.format(user.getLastSeen() * 1000));
     }

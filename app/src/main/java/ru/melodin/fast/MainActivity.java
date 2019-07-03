@@ -69,7 +69,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
         checkLogin(savedInstanceState);
         checkCrash();
 
-        if (UserConfig.isLoggedIn()) {
+        if (UserConfig.isLoggedIn() && savedInstanceState == null) {
             trackVisitor();
         }
 
@@ -124,12 +124,7 @@ public class MainActivity extends BaseActivity implements BottomNavigationView.O
             if (savedInstanceState == null) {
                 selectedFragment = fragmentConversations;
                 selectedId = R.id.conversations;
-            } else {
-                this.selectedId = savedInstanceState.getInt("selected_id", -1);
-
-                navigationView.setSelectedItemId(selectedId);
-                selectedFragment = getFragmentById(selectedId);
-            }
+            } else return;
 
             replaceFragment(selectedFragment);
         }

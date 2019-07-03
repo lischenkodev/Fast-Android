@@ -21,4 +21,10 @@ class SettingsActivity : BaseActivity() {
 
         supportFragmentManager.beginTransaction().add(R.id.fragment_container, FragmentSettings()).commit()
     }
+
+    override fun applyStyles() {
+        finish()
+        startActivity(intent)
+        overridePendingTransition(R.anim.abc_fade_in, R.anim.abc_fade_out)
+    }
 }

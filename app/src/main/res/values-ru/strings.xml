@@ -135,4 +135,8 @@
     <string name="event">Событие</string>
     <string name="page">Публичная страница</string>
     <string name="hide_keyboard_on_scroll_title">Скрывать клавиатуру при скролле вверх</string>
+    <string name="exit">Выход</string>
+    <string name="online_mobile">В сети с телефона</string>
+    <string name="open_profile">Открыть профиль</string>
+    <string name="read">Прочитать</string>
 </resources>

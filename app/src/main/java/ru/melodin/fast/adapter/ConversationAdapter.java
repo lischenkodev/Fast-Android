@@ -48,6 +48,7 @@ import ru.melodin.fast.fragment.FragmentConversations;
 import ru.melodin.fast.fragment.FragmentSettings;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
+import ru.melodin.fast.util.Keys;
 import ru.melodin.fast.util.Util;
 
 public class ConversationAdapter extends RecyclerAdapter<VKConversation, ConversationAdapter.ViewHolder> {
@@ -106,10 +107,10 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             case LongPollEvents.KEY_NOTIFICATIONS_CHANGE:
                 changeNotifications((int) data[1], (boolean) data[2], (int) data[3]);
                 break;
-            case "update_user":
+            case Keys.KEY_UPDATE_USER:
                 updateUser((int) data[1]);
                 break;
-            case "update_group":
+            case Keys.KEY_UPDATE_GROUP:
                 updateGroup((int) data[1]);
                 break;
         }

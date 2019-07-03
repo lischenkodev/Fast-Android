@@ -4,6 +4,7 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -65,7 +66,7 @@ public class VKConversation extends VKModel implements Serializable {
 
         this.readIn = o.optInt("in_read");
         this.readOut = o.optInt("out_read");
-        this.lastMessageId = o.optInt("last_message_id");
+        this.lastMessageId = o.optInt("last_message_id", -1);
         this.unread = o.optInt("unread_count");
 
         this.read = this.last == null || (this.last.isOut() && this.readOut == this.lastMessageId || !this.last.isOut() && this.readIn == this.lastMessageId);
@@ -114,6 +115,7 @@ public class VKConversation extends VKModel implements Serializable {
         }
     }
 
+    @Nullable
     public static State getState(String state) {
         if (TextUtils.isEmpty(state)) return null;
         switch (state) {
