@@ -161,7 +161,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
                 if (last.getAction() == VKMessage.Action.PIN_MESSAGE) {
                     int position = findPosition(last.getActionId());
-                    Log.d("ActionId", last.getActionId() + "");
                     if (position != -1)
                         activity.showPinned(getItem(position));
                 } else if (last.getAction() == VKMessage.Action.UNPIN_MESSAGE) {
@@ -190,6 +189,13 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 break;
             case LongPollEvents.KEY_MESSAGE_UPDATE:
                 updateMessage((VKMessage) data[1]);
+                break;
+            case Keys.KEY_CONNECTED:
+                if (activity.isLoading()) {
+                    activity.setLoading(false);
+                }
+
+                activity.updateHistory();
                 break;
         }
     }

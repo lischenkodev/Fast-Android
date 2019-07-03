@@ -114,6 +114,12 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             case Keys.KEY_UPDATE_GROUP:
                 updateGroup((int) data[1]);
                 break;
+            case Keys.KEY_CONNECTED:
+                if (fragment.isLoading())
+                    fragment.setLoading(false);
+
+                fragment.onRefresh();
+                break;
         }
     }
 
@@ -128,7 +134,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
 
         notifyItemChanged(position, -1);
 
-        CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
+        CacheStorage.update(DatabaseHelper.CONVERSATIONS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
     }
 
     private void handleClearFlags(@NonNull Object[] data) {
@@ -235,7 +241,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
                 notifyItemChanged(0, -1);
             }
 
-            CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, conversation.getLast().getPeerId());
+            CacheStorage.update(DatabaseHelper.CONVERSATIONS_TABLE, conversation, DatabaseHelper.PEER_ID, conversation.getLast().getPeerId());
             CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, conversation.getLast(), DatabaseHelper.MESSAGE_ID, conversation.getLast().getId());
         } else {
             if (!conversation.getLast().isOut())
@@ -247,7 +253,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             if (firstVisiblePosition <= 1)
                 manager.scrollToPosition(0);
 
-            CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, conversation);
+            CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation);
             CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.getLast());
         }
 
@@ -350,13 +356,13 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
     protected boolean onQueryItem(VKConversation item, String lowerQuery) {
         if (item == null) return false;
 
-        if (item.isUser()) {
+        if (item.getType() == VKConversation.Type.USER) {
             VKUser user = CacheStorage.getUser(item.getLast().getPeerId());
             if (user == null) return false;
             if (user.toString().toLowerCase().contains(lowerQuery)) return true;
         }
 
-        if (item.isGroup()) {
+        if (item.getType() == VKConversation.Type.GROUP) {
             VKGroup group = CacheStorage.getGroup(item.getLast().getPeerId());
             if (group == null) return false;
             if (group.getName().toLowerCase().contains(lowerQuery)) return true;
@@ -427,7 +433,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             public void done() {
                 CacheStorage.insert(DatabaseHelper.USERS_TABLE, user);
                 updateUser(userId);
-                EventBus.getDefault().postSticky(new Object[]{"update_user", userId});
+                EventBus.getDefault().postSticky(new Object[]{Keys.KEY_UPDATE_USER, userId});
             }
 
             @Override
@@ -464,7 +470,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             public void done() {
                 CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, group);
                 updateGroup(groupId);
-                EventBus.getDefault().postSticky(new Object[]{"update_group", groupId});
+                EventBus.getDefault().postSticky(new Object[]{Keys.KEY_UPDATE_GROUP, groupId});
             }
 
             @Override

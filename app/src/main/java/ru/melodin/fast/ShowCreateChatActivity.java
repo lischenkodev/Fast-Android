@@ -7,7 +7,6 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
@@ -52,21 +51,13 @@ public class ShowCreateChatActivity extends AppCompatActivity {
         initViews();
 
         tb.inflateMenu(R.menu.activity_create_chat);
-        tb.setOnMenuItemClickListener(new FastToolbar.OnMenuItemClickListener() {
-            @Override
-            public void onMenuItemClick(MenuItem item) {
-                if (item.getItemId() == R.id.create && adapter != null)
-                    createChat();
-            }
+        tb.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.create && adapter != null)
+                createChat();
         });
         tb.setBackIcon(ContextCompat.getDrawable(this, R.drawable.md_clear));
         tb.setBackVisible(true);
-        tb.setOnBackClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onBackPressed();
-            }
-        });
+        tb.setOnBackClickListener(view -> onBackPressed());
 
         tb.setTitle(R.string.create_chat);
 
@@ -111,12 +102,7 @@ public class ShowCreateChatActivity extends AppCompatActivity {
         adapter = new ShowCreateAdapter(this, users);
         list.setAdapter(adapter);
 
-        tb.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                list.scrollToPosition(0);
-            }
-        });
+        tb.setOnClickListener(v -> list.smoothScrollToPosition(0));
 
         checkCount();
     }
@@ -129,10 +115,11 @@ public class ShowCreateChatActivity extends AppCompatActivity {
         ThreadExecutor.execute(new AsyncCallback(this) {
 
             int peerId;
+
             StringBuilder title_;
 
             @Override
-            public void ready() {
+            public void ready() throws Exception {
                 ArrayList<Integer> ids = new ArrayList<>();
                 for (VKUser user : adapter.getValues()) {
                     ids.add(user.getId());
@@ -150,28 +137,16 @@ public class ShowCreateChatActivity extends AppCompatActivity {
                         }
                 }
 
-                VKApi.messages().createChat().title(title_.toString()).userIds(ids).execute(Integer.class, new VKApi.OnResponseListener<Integer>() {
-                    @Override
-                    public void onSuccess(ArrayList<Integer> models) {
-                        peerId = 2000000000 + models.get(0);
-
-                        Intent intent = new Intent();
-                        intent.putExtra("title", title_.toString());
-                        intent.putExtra("peer_id", peerId);
-                        setResult(Activity.RESULT_OK, intent);
-                        finish();
-                    }
-
-                    @Override
-                    public void onError(Exception exception) {
-                        Log.e("Error create chat", Log.getStackTraceString(exception));
-                    }
-                });
+                peerId = 2_000_000_000 + VKApi.messages().createChat().title(title_.toString()).userIds(ids).execute(Integer.class).get(0);
             }
 
             @Override
             public void done() {
-
+                Intent intent = new Intent();
+                intent.putExtra("title", title_.toString());
+                intent.putExtra("peer_id", peerId);
+                setResult(Activity.RESULT_OK, intent);
+                finish();
             }
 
             @Override

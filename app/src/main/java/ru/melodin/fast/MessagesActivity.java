@@ -115,6 +115,15 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     private final int DURATION_DEFAULT = 200;
 
+
+    public boolean isLoading() {
+        return loading;
+    }
+
+    public void setLoading(boolean loading) {
+        this.loading = loading;
+    }
+
     private View.OnClickListener sendClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -201,9 +210,12 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         send.setBackground(gd);
 
         getCachedHistory();
-
-        if (Util.hasConnection())
+        if (savedInstanceState == null)
             getHistory(0, MESSAGES_COUNT);
+    }
+
+    public void updateHistory() {
+        getHistory(0, MESSAGES_COUNT);
     }
 
     private void toggleProgress() {
@@ -295,7 +307,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             @Override
             public void done() {
                 conversation.setLast(message);
-                CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
+                CacheStorage.update(DatabaseHelper.CONVERSATIONS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
             }
 
             @Override
@@ -475,7 +487,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                     conversation.setPinned(null);
                     showPinned(null);
 
-                    CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
+                    CacheStorage.update(DatabaseHelper.CONVERSATIONS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
                 }
             }
 
@@ -837,7 +849,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             public void done() {
                 if (response == 1) {
                     conversation.setState(leave ? VKConversation.State.LEFT : VKConversation.State.IN);
-                    CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
+                    CacheStorage.update(DatabaseHelper.CONVERSATIONS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
                     updateToolbar();
                 }
             }
@@ -884,7 +896,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 conversation.setDisabledUntil(on ? 0 : -1);
                 conversation.setNoSound(!on);
 
-                CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
+                CacheStorage.update(DatabaseHelper.CONVERSATIONS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
             }
 
             @Override
@@ -1149,7 +1161,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
                 conversation.setPinned(pinned);
 
-                CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
+                CacheStorage.update(DatabaseHelper.CONVERSATIONS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
             }
 
             @Override
@@ -1280,7 +1292,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
             @Override
             public void done() {
-                CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE, DatabaseHelper.PEER_ID, peerId);
+                CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE, DatabaseHelper.PEER_ID, peerId);
                 adapter.getValues().clear();
                 adapter.notifyDataSetChanged();
             }

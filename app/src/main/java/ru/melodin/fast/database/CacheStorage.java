@@ -24,13 +24,13 @@ import ru.melodin.fast.util.Util;
 import static ru.melodin.fast.common.AppGlobal.database;
 import static ru.melodin.fast.database.DatabaseHelper.ACTION_TEXT;
 import static ru.melodin.fast.database.DatabaseHelper.ACTION_TYPE;
-import static ru.melodin.fast.database.DatabaseHelper.ACTION_USER_ID;
+import static ru.melodin.fast.database.DatabaseHelper.ACTION_ID;
 import static ru.melodin.fast.database.DatabaseHelper.ADMIN_LEVEL;
 import static ru.melodin.fast.database.DatabaseHelper.ATTACHMENTS;
 import static ru.melodin.fast.database.DatabaseHelper.DATE;
 import static ru.melodin.fast.database.DatabaseHelper.DEACTIVATED;
 import static ru.melodin.fast.database.DatabaseHelper.DESCRIPTION;
-import static ru.melodin.fast.database.DatabaseHelper.DIALOGS_TABLE;
+import static ru.melodin.fast.database.DatabaseHelper.CONVERSATIONS_TABLE;
 import static ru.melodin.fast.database.DatabaseHelper.DISABLED_FOREVER;
 import static ru.melodin.fast.database.DatabaseHelper.DISABLED_UNTIL;
 import static ru.melodin.fast.database.DatabaseHelper.FIRST_NAME;
@@ -116,11 +116,10 @@ public class CacheStorage {
     public static VKUser getUser(int id) {
         Cursor cursor = selectCursor(USERS_TABLE, USER_ID, id);
         if (cursor.moveToFirst()) {
-            VKUser user = parseUser(cursor);
-            return user == null ? VKUser.EMPTY : user;
+            return parseUser(cursor);
         }
         cursor.close();
-        return VKUser.EMPTY;
+        return null;
     }
 
     @Nullable
@@ -182,7 +181,7 @@ public class CacheStorage {
 
     @Nullable
     public static VKConversation getConversation(int peerId) {
-        Cursor cursor = selectCursor(DIALOGS_TABLE, PEER_ID, peerId);
+        Cursor cursor = selectCursor(CONVERSATIONS_TABLE, PEER_ID, peerId);
         if (cursor.moveToFirst()) {
             return parseConversation(cursor);
         }
@@ -192,7 +191,7 @@ public class CacheStorage {
 
     @Nullable
     public static ArrayList<VKConversation> getConversations() {
-        Cursor cursor = selectCursor(DIALOGS_TABLE);
+        Cursor cursor = selectCursor(CONVERSATIONS_TABLE);
         if (cursor.getCount() <= 0) {
             return null;
         }
@@ -266,7 +265,7 @@ public class CacheStorage {
                 case FRIENDS_TABLE:
                     putValues(cv, (VKUser) item, true);
                     break;
-                case DIALOGS_TABLE:
+                case CONVERSATIONS_TABLE:
                     putValues(cv, (VKConversation) item);
                     break;
                 case MESSAGES_TABLE:
@@ -304,7 +303,7 @@ public class CacheStorage {
                 case FRIENDS_TABLE:
                     putValues(cv, (VKUser) item, true);
                     break;
-                case DIALOGS_TABLE:
+                case CONVERSATIONS_TABLE:
                     putValues(cv, (VKConversation) item);
                     break;
                 case MESSAGES_TABLE:
@@ -401,7 +400,7 @@ public class CacheStorage {
         message.setUpdateTime(getLong(cursor, UPDATE_TIME));
         message.setAction(VKMessage.getAction(getString(cursor, ACTION_TYPE)));
         message.setActionText(getString(cursor, ACTION_TEXT));
-        message.setActionId(getInt(cursor, ACTION_USER_ID));
+        message.setActionId(getInt(cursor, ACTION_ID));
 
         byte[] attachments = getBlob(cursor, ATTACHMENTS);
         byte[] forwarded = getBlob(cursor, FWD_MESSAGES);
@@ -514,7 +513,7 @@ public class CacheStorage {
         values.put(UPDATE_TIME, message.getUpdateTime());
         values.put(ACTION_TEXT, message.getActionText());
         values.put(ACTION_TYPE, VKMessage.getAction(message.getAction()));
-        values.put(ACTION_USER_ID, message.getActionId());
+        values.put(ACTION_ID, message.getActionId());
         values.put(IMPORTANT, message.isImportant());
 
         if (!ArrayUtil.isEmpty(message.getAttachments())) {

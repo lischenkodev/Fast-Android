@@ -29,6 +29,7 @@ import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.fragment.FragmentFriends;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.ColorUtil;
+import ru.melodin.fast.util.Keys;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.view.CircleImageView;
 
@@ -36,7 +37,7 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
 
     private FragmentFriends fragment;
 
-    public UserAdapter(FragmentFriends context, ArrayList<VKUser> friends) {
+    public UserAdapter(@NonNull FragmentFriends context, ArrayList<VKUser> friends) {
         super(context.getContext(), friends);
         this.fragment = context;
         EventBus.getDefault().register(this);
@@ -74,6 +75,12 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
                 break;
             case LongPollEvents.KEY_USER_ONLINE:
                 setUserOnline(true, (int) data[1], (int) data[2]);
+                break;
+            case Keys.KEY_CONNECTED:
+                if (fragment == null) return;
+                if (fragment.isLoading())
+                    fragment.setLoading(false);
+                fragment.onRefresh();
                 break;
         }
     }

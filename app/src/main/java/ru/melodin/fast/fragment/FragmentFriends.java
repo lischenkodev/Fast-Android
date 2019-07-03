@@ -46,6 +46,16 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
 
     private UserAdapter adapter;
 
+    private boolean loading;
+
+    public boolean isLoading() {
+        return loading;
+    }
+
+    public void setLoading(boolean loading) {
+        this.loading = loading;
+    }
+
     @Override
     public void onRefresh() {
         getFriends(FRIENDS_COUNT, 0);
@@ -92,7 +102,7 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
         list.setLayoutManager(manager);
 
         getCachedFriends();
-        if (Util.hasConnection() && savedInstanceState == null)
+        if (savedInstanceState == null)
             getFriends(FRIENDS_COUNT, 0);
     }
 
@@ -142,10 +152,16 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
     }
 
     private void getFriends(final int count, final int offset) {
+        if (loading) return;
         if (!Util.hasConnection()) {
             refreshLayout.setRefreshing(false);
+            Toast.makeText(getActivity(), R.string.connect_to_the_internet, Toast.LENGTH_SHORT).show();
             return;
         }
+
+        loading = true;
+
+        refreshLayout.setRefreshing(true);
         ThreadExecutor.execute(new AsyncCallback(getActivity()) {
 
             private ArrayList<VKUser> users;
@@ -165,6 +181,7 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
             @Override
             public void done() {
                 createAdapter(users, offset);
+                loading = true;
                 refreshLayout.setRefreshing(false);
             }
 

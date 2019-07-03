@@ -5,8 +5,11 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.collection.ArrayMap;
 
+import org.greenrobot.eventbus.EventBus;
+import org.jetbrains.annotations.Contract;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -16,12 +19,17 @@ import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.model.VKLongPollServer;
 import ru.melodin.fast.concurrent.LowThread;
 import ru.melodin.fast.net.HttpRequest;
+import ru.melodin.fast.util.ArrayUtil;
+import ru.melodin.fast.util.Keys;
 import ru.melodin.fast.util.Util;
 
 public class LongPollService extends Service {
 
     public static final String TAG = "FastVK LongPoll";
+
     public boolean isRunning;
+
+    private boolean needRefresh;
 
     public LongPollService() {
     }
@@ -68,15 +76,21 @@ public class LongPollService extends Service {
             }
             while (isRunning) {
                 if (!Util.hasConnection()) {
+                    needRefresh = true;
                     Log.e(TAG, "no connection");
                     sleep();
                     continue;
                 }
 
                 if (!UserConfig.isLoggedIn()) {
+                    needRefresh = false;
                     sleep();
                     continue;
                 }
+
+                EventBus.getDefault().postSticky(new Object[]{Keys.KEY_CONNECTED});
+                needRefresh = false;
+
                 try {
                     if (server == null) {
                         server = VKApi.messages().getLongPollServer()
@@ -84,8 +98,7 @@ public class LongPollService extends Service {
                     }
 
                     JSONObject response = getResponse(server);
-                    if (response == null || response.has("failed")) {
-                        // failed get response, try again
+                    if (response.has("failed")) {
                         Log.w(TAG, "Failed get response from");
                         Thread.sleep(1_000);
                         server = null;
@@ -97,7 +110,7 @@ public class LongPollService extends Service {
                     Log.i(TAG, "updates: " + updates);
 
                     server.ts = tsResponse;
-                    if (updates.length() != 0) {
+                    if ((!ArrayUtil.isEmpty(updates) ? updates.length() : 0) != 0) {
                         LongPollEvents.getInstance().process(updates);
                     }
                 } catch (Exception e) {
@@ -111,15 +124,16 @@ public class LongPollService extends Service {
         }
 
         private void sleep() {
-            long time = 5_000;
             try {
-                Thread.sleep(time);
+                Thread.sleep(5_000);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
-        JSONObject getResponse(VKLongPollServer server) throws Exception {
+        @NonNull
+        @Contract("_ -> new")
+        private JSONObject getResponse(@NonNull VKLongPollServer server) throws Exception {
             ArrayMap<String, String> params = new ArrayMap<>();
             params.put("act", "a_check");
             params.put("key", server.key);

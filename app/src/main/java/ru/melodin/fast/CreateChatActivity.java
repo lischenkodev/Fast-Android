@@ -3,12 +3,11 @@ package ru.melodin.fast;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.util.SparseArray;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,7 +20,6 @@ import ru.melodin.fast.adapter.CreateChatAdapter;
 import ru.melodin.fast.adapter.RecyclerAdapter;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
-import ru.melodin.fast.api.model.VKConversation;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
@@ -72,19 +70,11 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
         setTitle();
 
         tb.setBackVisible(true);
-        tb.setOnBackClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onBackPressed();
-            }
-        });
+        tb.setOnBackClickListener(view -> onBackPressed());
         tb.inflateMenu(R.menu.activity_create_chat);
-        tb.setOnMenuItemClickListener(new FastToolbar.OnMenuItemClickListener() {
-            @Override
-            public void onMenuItemClick(MenuItem item) {
-                if (item.getItemId() == R.id.create)
-                    getUsers();
-            }
+        tb.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.create)
+                getUsers();
         });
 
         refreshLayout.setOnRefreshListener(this);
@@ -212,7 +202,7 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
         createChat(users);
     }
 
-    private void createChat(ArrayList<VKUser> users) {
+    private void createChat(@NonNull ArrayList<VKUser> users) {
         VKUser user = UserConfig.getUser();
         users.add(0, user);
 
@@ -226,33 +216,10 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
         setTitle();
     }
 
-    private void loadChat(final String title, final int peerId) {
-        ThreadExecutor.execute(new AsyncCallback(this) {
-            VKConversation conversation;
-
-            @Override
-            public void ready() throws Exception {
-                conversation = VKApi.messages().getConversationsById().peerIds(peerId).extended(true).fields(VKUser.FIELDS_DEFAULT).execute(VKConversation.class).get(0);
-            }
-
-            @Override
-            public void done() {
-                openChat(title, peerId, conversation);
-            }
-
-            @Override
-            public void error(Exception e) {
-                Log.e("Error load chat", Log.getStackTraceString(e));
-                Toast.makeText(CreateChatActivity.this, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-
-    private void openChat(String title, int peerId, VKConversation conversation) {
+    private void openChat(String title, int peerId) {
         Intent intent = new Intent(this, MessagesActivity.class);
 
         intent.putExtra("title", title);
-        intent.putExtra("conversation", conversation);
         intent.putExtra("peer_id", peerId);
         intent.putExtra("can_write", true);
 
@@ -267,7 +234,7 @@ public class CreateChatActivity extends AppCompatActivity implements SwipeRefres
                 String title = data.getStringExtra("title");
                 int peerId = data.getIntExtra("peer_id", -1);
 
-                loadChat(title, peerId);
+                openChat(title, peerId);
             }
         }
         super.onActivityResult(requestCode, resultCode, data);

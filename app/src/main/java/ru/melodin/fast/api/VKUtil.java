@@ -3,6 +3,8 @@ package ru.melodin.fast.api;
 import android.content.Context;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -72,75 +74,61 @@ public class VKUtil {
         return m.group(2);
     }
 
-    public static String getActionBody(VKMessage msg, boolean fromDialogs) {
-        String action = "";
+    public static String getActionBody(@NonNull VKMessage msg, boolean fromDialogs) {
+        String name;
 
-        VKUser u = CacheStorage.getUser(msg.getFromId());
-        if (u != null) {
-            action += u.toString();
+        if (fromDialogs) {
+            name = "";
         } else {
-            VKGroup group = CacheStorage.getGroup(VKGroup.toGroupId(msg.getActionId()));
-            if (group != null) {
-                action = group.getName();
+            if (msg.isFromGroup()) {
+                VKGroup group = CacheStorage.getGroup(VKGroup.toGroupId(msg.getFromId()));
+                name = group != null ? group.getName() : null;
+            } else {
+                VKUser u = CacheStorage.getUser(msg.getFromId());
+                name = u != null ? u.toString() : null;
             }
         }
 
-        VKUser action_user = CacheStorage.getUser(msg.getActionId());
+        String actionName;
 
-        String u_name = null;
-
-        if (action_user != null) {
-            u_name = action_user.toString();
-        } else {
+        if (VKGroup.isGroupId(msg.getActionId())) {
             VKGroup group = CacheStorage.getGroup(VKGroup.toGroupId(msg.getActionId()));
-            if (group != null) {
-                u_name = group.getName();
-            }
+            actionName = group != null ? group.getName() : null;
+        } else {
+            VKUser actionUser = CacheStorage.getUser(msg.getActionId());
+            actionName = actionUser != null ? actionUser.toString() : null;
         }
-
-        if (fromDialogs)
-            action = "";
 
         switch (msg.getAction()) {
             case CREATE:
-                action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.created_chat_w : R.string.created_chat_m : R.string.created_chat_m), action, "«" + msg.getActionText() + "»");
-                break;
+                return String.format(getString(R.string.created_chat_m), name, "«" + msg.getActionText() + "»");
             case INVITE_USER:
                 if (msg.getActionId() == msg.getFromId()) {
-                    action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.returned_to_chat_w : R.string.returned_to_chat_m : R.string.returned_to_chat_m), action);
+                    return String.format(getString(R.string.returned_to_chat_m), name);
                 } else {
-                    action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.invited_to_chat_w : R.string.invited_to_chat_m : R.string.invited_to_chat_m), action, u_name);
+                    return String.format(getString(R.string.invited_to_chat_m), name, actionName);
                 }
-
-                break;
             case KICK_USER:
                 if (msg.getActionId() == msg.getFromId()) {
-                    action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.left_the_chat_w : R.string.left_the_chat_m : R.string.left_the_chat_m), action);
+                    return String.format(getString(R.string.left_the_chat_m), name);
                 } else {
-                    action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.kicked_from_chat_w : R.string.kicked_from_chat_m : R.string.kicked_from_chat_m), action, u_name);
+                    return String.format(getString(R.string.kicked_from_chat_m), name, actionName);
                 }
-                break;
             case PHOTO_REMOVE:
-                action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.remove_chat_photo_w : R.string.remove_chat_photo_m : R.string.remove_chat_photo_m), action);
-                break;
+                return String.format(getString(R.string.remove_chat_photo_m), name);
             case PHOTO_UPDATE:
-                action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.updated_chat_photo_w : R.string.updated_chat_photo_m : R.string.updated_chat_photo_m), action);
-                break;
+                return String.format(getString(R.string.updated_chat_photo_m), name);
             case TITLE_UPDATE:
-                action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.updated_title_w : R.string.updated_title_m : R.string.updated_title_m), action, "«" + msg.getActionText() + "»");
-                break;
+                return String.format(getString(R.string.updated_title_m), name, "«" + msg.getActionText() + "»");
             case INVITE_USER_BY_LINK:
-                action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.invited_by_link_w : R.string.invited_by_link_m : R.string.invited_by_link_m), action);
-                break;
+                return String.format(getString(R.string.invited_by_link_m), name);
             case PIN_MESSAGE:
-                action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.pinned_message_w : R.string.pinned_message_m : R.string.pinned_message_m), action);
-                break;
+                return String.format(getString(R.string.pinned_message_m), name);
             case UNPIN_MESSAGE:
-                action = String.format(getString(u != null ? u.getSex() == VKUser.Sex.FEMALE ? R.string.unpinned_message_w : R.string.unpinned_message_m : R.string.unpinned_message_m), action);
-                break;
+                return String.format(getString(R.string.unpinned_message_m), name);
         }
 
-        return action;
+        return null;
     }
 
     public static String getAttachmentBody(ArrayList<VKModel> attachments, ArrayList<VKMessage> forwards) {

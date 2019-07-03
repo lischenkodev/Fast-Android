@@ -51,6 +51,16 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
     private FastToolbar tb;
     private View empty;
 
+    private boolean loading;
+
+    public boolean isLoading() {
+        return loading;
+    }
+
+    public void setLoading(boolean loading) {
+        this.loading = loading;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -102,7 +112,7 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
         list.setLayoutManager(manager);
 
         getCachedConversations();
-        if (Util.hasConnection() && savedInstanceState == null)
+        if (savedInstanceState == null)
             getConversations(CONVERSATIONS_COUNT, 0);
     }
 
@@ -146,60 +156,56 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
     }
 
     private void getConversations(final int count, final int offset) {
+        if (loading) return;
+
         if (!Util.hasConnection()) {
             refreshLayout.setRefreshing(false);
+            Toast.makeText(getActivity(), R.string.connect_to_the_internet, Toast.LENGTH_SHORT).show();
             return;
         }
+
+        loading = true;
         refreshLayout.setRefreshing(true);
         ThreadExecutor.execute(new AsyncCallback(getActivity()) {
 
             private ArrayList<VKConversation> conversations;
 
             @Override
-            public void ready() {
-                VKApi.messages().getConversations()
+            public void ready() throws Exception {
+                conversations = VKApi.messages().getConversations()
                         .filter("all")
                         .extended(true)
                         .fields(VKUser.FIELDS_DEFAULT + ", " + VKGroup.FIELDS_DEFAULT)
                         .count(count)
                         .offset(offset)
-                        .execute(VKConversation.class, new VKApi.OnResponseListener<VKConversation>() {
-                            @Override
-                            public void onSuccess(ArrayList<VKConversation> models) {
-                                if (!ArrayUtil.isEmpty(models)) {
-                                    conversations = models;
-                                    CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE);
-                                    CacheStorage.insert(DatabaseHelper.DIALOGS_TABLE, conversations);
-
-                                    ArrayList<VKUser> users = VKConversation.users;
-                                    ArrayList<VKGroup> groups = VKConversation.groups;
-                                    ArrayList<VKMessage> messages = new ArrayList<>();
-
-                                    for (VKConversation conversation : conversations)
-                                        messages.add(conversation.getLast());
-
-                                    CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
-                                    CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, groups);
-                                    CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, messages);
-
-                                    createAdapter(conversations);
-                                    refreshLayout.setRefreshing(false);
-                                }
-                            }
-
-                            @Override
-                            public void onError(Exception e) {
-                                Log.e("Error load dialogs", Log.getStackTraceString(e));
-                            }
-                        });
+                        .execute(VKConversation.class);
             }
 
             @Override
             public void done() {
+                CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE);
+                CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversations);
+
+                ArrayList<VKUser> users = VKConversation.users;
+                ArrayList<VKGroup> groups = VKConversation.groups;
+                ArrayList<VKMessage> messages = new ArrayList<>();
+
+                for (VKConversation conversation : conversations)
+                    messages.add(conversation.getLast());
+
+                CacheStorage.insert(DatabaseHelper.USERS_TABLE, users);
+                CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, groups);
+                CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, messages);
+
+                createAdapter(conversations);
+                refreshLayout.setRefreshing(false);
+
+                loading = false;
             }
 
             @Override
             public void error(Exception e) {
+                loading = false;
                 refreshLayout.setRefreshing(false);
                 Toast.makeText(getActivity(), getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show();
 
@@ -340,7 +346,7 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
             @Override
             public void done() {
                 if (response == 1) {
-                    CacheStorage.delete(DatabaseHelper.DIALOGS_TABLE, DatabaseHelper.PEER_ID, peerId);
+                    CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE, DatabaseHelper.PEER_ID, peerId);
                     adapter.remove(position);
                     adapter.notifyItemRemoved(position);
                     adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
