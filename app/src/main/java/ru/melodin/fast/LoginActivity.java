@@ -63,6 +63,8 @@ public class LoginActivity extends BaseActivity {
 
     private ProgressBar progressBar;
 
+    private Timer timer;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -124,7 +126,8 @@ public class LoginActivity extends BaseActivity {
     }
 
     private void startTick() {
-        new Timer().schedule(new TimerTask() {
+        timer = new Timer();
+        timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 runOnUiThread(() -> {
@@ -132,7 +135,7 @@ public class LoginActivity extends BaseActivity {
                     ViewUtil.snackbar(sign, R.string.error).show();
                 });
             }
-        }, 30000);
+        }, 15000);
     }
 
     private void login(boolean fromKeyboard) {
@@ -205,6 +208,11 @@ public class LoginActivity extends BaseActivity {
             public void done() {
                 toggleButton();
 
+                if (timer != null) {
+                    timer.cancel();
+                    timer = null;
+                }
+
                 if (response.has("error")) {
                     final String errorDescription = response.optString("error_description");
                     final String error = response.optString("error", getString(R.string.error));
@@ -216,7 +224,6 @@ public class LoginActivity extends BaseActivity {
                             intent.putExtra("url", redirect_uri);
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                             startActivityForResult(intent, Requests.VALIDATE_LOGIN);
-
                             break;
                         case "need_captcha":
                             String captcha_img = response.optString("captcha_img");

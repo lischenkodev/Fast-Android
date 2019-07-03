@@ -97,7 +97,7 @@
     <string name="chat_creator">Создатель чата</string>
     <string name="save">Сохранить</string>
     <string name="copy_link">Скопировать ссылку</string>
-    <string name="photo_of_photo">%1$s из %2$s</string>
+    <string name="photo_of_photo">%1$d из %2$d</string>
     <string name="url_copied_text">Ссылка скопирована</string>
     <string name="photo_permission_title">Fast требует разрешение для сохранения фотографий</string>
     <string name="clear_cache_title">Очистить кэш</string>
@@ -139,4 +139,7 @@
     <string name="online_mobile">В сети с телефона</string>
     <string name="open_profile">Открыть профиль</string>
     <string name="read">Прочитать</string>
+    <string name="connect_to_the_internet">Подключитесь к Интернету</string>
+    <string name="input_text_from_picture">Введите изображение с картинки:</string>
+    <string name="saved_into">Сохранено в %s</string>
 </resources>

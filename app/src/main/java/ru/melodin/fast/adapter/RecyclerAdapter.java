@@ -170,6 +170,10 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
         return getItemCount() == 0;
     }
 
+    public int getLastPosition() {
+        return getItemCount() - 1;
+    }
+
     public interface OnItemClickListener {
         void onItemClick(View v, int position);
     }

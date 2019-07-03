@@ -20,6 +20,7 @@ import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -84,6 +85,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private FastToolbar tb;
     private Toolbar actionTb;
     private RecyclerView recyclerView;
+    private ProgressBar progressBar;
     private FloatingActionButton fab;
     private FloatingActionButton send;
     private AppCompatImageButton smiles, unpin;
@@ -159,7 +161,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         fab.setOnClickListener(view -> {
             fab.hide();
             if (adapter != null)
-                recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
+                recyclerView.smoothScrollToPosition(adapter.getLastPosition());
         });
 
         initListScrollListener();
@@ -204,6 +206,16 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             getHistory(0, MESSAGES_COUNT);
     }
 
+    private void toggleProgress() {
+        if (progressBar.getVisibility() == View.VISIBLE) {
+            progressBar.setVisibility(View.GONE);
+            recyclerView.setVisibility(View.VISIBLE);
+        } else {
+            progressBar.setVisibility(View.VISIBLE);
+            recyclerView.setVisibility(View.GONE);
+        }
+    }
+
     private void initListScrollListener() {
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
@@ -231,7 +243,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                if (newState != RecyclerView.SCROLL_STATE_SETTLING && layoutManager.findLastVisibleItemPosition() >= adapter.getItemCount() - 10) {
+                if (adapter != null && newState != RecyclerView.SCROLL_STATE_SETTLING && layoutManager.findLastVisibleItemPosition() >= adapter.getItemCount() - 10) {
                     fab.hide();
                 }
             }
@@ -320,6 +332,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         smiles = findViewById(R.id.smiles);
         tb = findViewById(R.id.tb);
         recyclerView = findViewById(R.id.list);
+        progressBar = findViewById(R.id.progress);
         send = findViewById(R.id.send);
         message = findViewById(R.id.message_edit_text);
         fab = findViewById(R.id.scroll_to_bottom);
@@ -475,7 +488,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     }
 
     private void setTyping() {
-        if (AppGlobal.preferences.getBoolean(FragmentSettings.KEY_HIDE_TYPING, false)) return;
+        if (typing || AppGlobal.preferences.getBoolean(FragmentSettings.KEY_HIDE_TYPING, false))
+            return;
 
         typing = true;
         ThreadExecutor.execute(new AsyncCallback(this) {
@@ -523,7 +537,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         adapter.addMessage(msg, false);
         adapter.notifyDataSetChanged();
 
-        final int position = adapter.getItemCount() - 1;
+        final int position = adapter.getLastPosition();
 
         recyclerView.smoothScrollToPosition(position);
 
@@ -555,7 +569,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 if (adapter.getItemCount() > size) {
                     adapter.remove(i);
                     adapter.add(msg);
-                    adapter.notifyItemMoved(i, adapter.getItemCount() - 1);
+                    adapter.notifyItemMoved(i, adapter.getLastPosition());
                     adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
                 }
             }
@@ -586,8 +600,11 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             adapter.setOnItemLongClickListener(this);
             recyclerView.setAdapter(adapter);
 
-            if (adapter.getItemCount() > 0 && !recyclerView.isComputingLayout())
-                recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
+            if (adapter.getItemCount() > 0 && !recyclerView.isComputingLayout()) {
+                recyclerView.scrollToPosition(adapter.getLastPosition());
+                recyclerView.smoothScrollToPosition(adapter.getLastPosition());
+            }
+
             return;
         }
 
@@ -601,22 +618,29 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
 
         if (adapter.getItemCount() > 0 && !recyclerView.isComputingLayout()) {
-            recyclerView.smoothScrollToPosition(adapter.getItemCount() - 1);
+            recyclerView.scrollToPosition(adapter.getLastPosition());
+            recyclerView.smoothScrollToPosition(adapter.getLastPosition());
         }
     }
 
     private void getCachedHistory() {
         ArrayList<VKMessage> messages = CacheStorage.getMessages(peerId);
+        createAdapter(messages, 0);
+
         if (!ArrayUtil.isEmpty(messages)) {
-            createAdapter(messages, 0);
+            toggleProgress();
         }
     }
 
     private void getHistory(final int offset, final int count) {
-        if (!Util.hasConnection()) return;
-        loading = true;
+        if (loading) return;
+        if (!Util.hasConnection()) {
+            Toast.makeText(this, R.string.connect_to_the_internet, Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        tb.setSubtitle(getString(R.string.loading));
+        loading = true;
+        tb.setSubtitle(R.string.loading);
 
         ThreadExecutor.execute(new AsyncCallback(this) {
 
@@ -655,7 +679,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             @Override
             public void done() {
                 createAdapter(messages, offset);
+                if (progressBar.getVisibility() == View.VISIBLE)
+                    toggleProgress();
 
+                loading = false;
                 updateToolbar();
             }
 
@@ -1139,15 +1166,14 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {
-        if (!typing) {
-            setTyping();
-        }
+        setTyping();
 
         if (!editing) {
-            if (s.toString().trim().isEmpty())
+            if (s.toString().trim().isEmpty()) {
                 setMicStyle();
-            else
+            } else {
                 setSendStyle();
+            }
         } else {
             if (s.toString().trim().isEmpty() && ArrayUtil.isEmpty(edited.getAttachments())) {
                 setTrashStyle();
@@ -1156,6 +1182,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 setDoneStyle();
             }
         }
+
     }
 
     @Override
@@ -1276,7 +1303,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         delete.getIcon().setTint(ThemeManager.getMain());
 
         boolean selecting = adapter != null && adapter.isSelected();
-        
+
         tb.setVisibility(selecting ? View.GONE : View.VISIBLE);
         actionTb.setVisibility(selecting ? View.VISIBLE : View.GONE);
 

@@ -183,19 +183,21 @@ public class PhotoViewActivity extends AppCompatActivity {
 
     private void savePhoto() {
         ThreadExecutor.execute(new AsyncCallback(this) {
+            String path;
+
             @Override
             public void ready() throws Exception {
-                Util.saveFileByUrl(getUrl());
+                path = Util.saveFileByUrl(getUrl());
             }
 
             @Override
             public void done() {
-
+                Toast.makeText(PhotoViewActivity.this, getString(R.string.saved_into, path), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void error(Exception e) {
-
+                Toast.makeText(PhotoViewActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
             }
 
         });

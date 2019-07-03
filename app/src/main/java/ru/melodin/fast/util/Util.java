@@ -8,11 +8,6 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Environment;
-import android.view.View;
-
-import androidx.annotation.NonNull;
-
-import com.google.android.material.snackbar.Snackbar;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -118,7 +113,7 @@ public class Util {
         return info.isConnected();
     }
 
-    public static void saveFileByUrl(String link) throws Exception {
+    public static String saveFileByUrl(String link) throws Exception {
         URL url = new URL(link);
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setRequestMethod("GET");
@@ -159,5 +154,7 @@ public class Util {
             fileOutput.write(buffer, 0, bufferLength);
         }
         fileOutput.close();
+
+        return directory.getAbsolutePath();
     }
 }
