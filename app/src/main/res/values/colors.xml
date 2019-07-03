@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">@android:color/white</color>
-    <color name="primary_dark">@android:color/white</color>
-    <color name="accent">#4284F4</color>
-    <color name="background">@android:color/white</color>
+    <color name="primary">#FAFAFA</color>
+    <color name="primary_dark">@color/primary</color>
+    <color name="accent">#1E78E5</color>
+    <color name="background">#FFFFFF</color>
 
-    <color name="dark_primary">#202020</color>
-    <color name="dark_primary_dark">#202020</color>
-    <color name="dark_accent">#1565c0</color>
-    <color name="dark_background">#222222</color>
+    <color name="dark_primary">#232323</color>
+    <color name="dark_primary_dark">@color/dark_primary</color>
+    <color name="dark_accent">#42A5F5</color>
+    <color name="dark_background">#0E0E0E</color>
 
     <color name="online">#7BB865</color>
 

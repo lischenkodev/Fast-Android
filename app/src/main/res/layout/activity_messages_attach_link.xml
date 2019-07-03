@@ -26,6 +26,7 @@
             android:layout_gravity="center"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_vector_link_arrow"
+            android:tint="?android:textColorPrimary"
             tools:tint="?colorAccent" />
 
     </FrameLayout>

@@ -90,7 +90,7 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
 
         refreshLayout.setColorSchemeColors(ThemeManager.getAccent());
         refreshLayout.setOnRefreshListener(this);
-        refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.getBackground());
+        refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.getPrimary());
 
         LinearLayoutManager manager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
         list.setHasFixedSize(true);

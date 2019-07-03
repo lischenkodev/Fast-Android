@@ -112,9 +112,8 @@
         android:layout_marginBottom="76dp"
         android:src="@drawable/ic_keyboard_arrow_down_black_24dp"
         android:visibility="gone"
-        app:backgroundTint="?android:windowBackground"
+        app:backgroundTint="?colorPrimary"
         app:fabSize="mini"
-        app:layout_behavior="com.google.android.material.floatingactionbutton.FloatingActionButton$Behavior"
         app:tint="?android:textColorPrimary" />
 
     <View
@@ -122,6 +121,7 @@
         android:layout_height="3dp"
         android:layout_gravity="bottom"
         android:layout_marginBottom="60dp"
+        android:alpha="0.6"
         android:background="@drawable/message_drop_shadow_dark" />
 
     <LinearLayout
@@ -129,7 +129,7 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_gravity="bottom"
-        android:background="?android:windowBackground"
+        android:background="?colorPrimary"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
@@ -145,7 +145,7 @@
             android:inputType="textCapSentences|textMultiLine"
             android:maxLines="6"
             android:padding="10dp"
-            android:textColorHint="#C4C4C4" />
+            android:textColorHint="?android:textColorSecondary" />
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/smiles"
@@ -158,21 +158,23 @@
             android:background="?selectableItemBackgroundBorderless"
             android:src="@drawable/md_online_status"
             app:backgroundTint="@android:color/transparent"
-            app:tint="#cccccc" />
+            app:tint="?android:textColorSecondary" />
 
-        <androidx.appcompat.widget.AppCompatImageButton
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/send"
-            android:layout_width="45dp"
-            android:layout_height="45dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:layout_marginStart="6dp"
             android:layout_marginEnd="6dp"
             android:layout_marginBottom="8dp"
             android:layout_weight="0"
-            android:background="?selectableItemBackgroundBorderless"
+            android:elevation="0dp"
             android:src="@drawable/md_mic"
             app:backgroundTint="?colorAccent"
-            app:tint="#ffffff" />
+            app:elevation="0dp"
+            app:fabSize="mini"
+            app:tint="?colorPrimary" />
 
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

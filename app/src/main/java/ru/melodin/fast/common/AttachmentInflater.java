@@ -20,12 +20,14 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
+import org.jetbrains.annotations.Contract;
 
 import java.util.ArrayList;
 
@@ -46,7 +48,6 @@ import ru.melodin.fast.api.model.VKVoice;
 import ru.melodin.fast.api.model.VKWall;
 import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.util.ArrayUtil;
-import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.view.CircleImageView;
 
@@ -78,28 +79,28 @@ public class AttachmentInflater {
             }
     }
 
-    public void inflateAttachments(VKMessage item, ViewGroup parent, ViewGroup images, int maxWidth, boolean forwarded, boolean withStyles) {
+    public void inflateAttachments(VKMessage item, ViewGroup parent, ViewGroup images, int maxWidth, boolean forwarded) {
         ArrayList<VKModel> attachments = item.getAttachments();
         for (int i = 0; i < attachments.size(); i++) {
             VKModel attachment = attachments.get(i);
             if (attachment instanceof VKAudio) {
-                audio(item, parent, (VKAudio) attachment, withStyles);
+                audio(item, parent, (VKAudio) attachment);
             } else if (attachment instanceof VKPhoto) {
                 photo(item, images, (VKPhoto) attachment, forwarded ? maxWidth : -1);
             } else if (attachment instanceof VKSticker) {
                 sticker(images, (VKSticker) attachment);
             } else if (attachment instanceof VKDoc) {
-                doc(item, parent, (VKDoc) attachment, forwarded, withStyles);
+                doc(item, parent, (VKDoc) attachment);
             } else if (attachment instanceof VKLink) {
-                link(item, parent, (VKLink) attachment, withStyles);
+                link(item, parent, (VKLink) attachment);
             } else if (attachment instanceof VKVideo) {
                 video(parent, (VKVideo) attachment, forwarded ? maxWidth : -1);
             } else if (attachment instanceof VKGraffiti) {
                 graffiti(parent, (VKGraffiti) attachment);
             } else if (attachment instanceof VKVoice) {
-                voice(item, parent, (VKVoice) attachment, forwarded, withStyles);
+                voice(item, parent, (VKVoice) attachment);
             } else if (attachment instanceof VKWall) {
-                wall(item, parent, (VKWall) attachment, withStyles);
+                wall(item, parent, (VKWall) attachment);
             } else {
                 empty(parent, context.getString(R.string.unknown));
             }
@@ -141,14 +142,18 @@ public class AttachmentInflater {
         return Math.round((float) 320.0 < layoutMaxWidth ? (float) 240.0 * scale : (float) 240.0 / scale);
     }
 
+    @NonNull
     private LinearLayout.LayoutParams getParams() {
         return getParams(-1);
     }
 
+    @NonNull
+    @Contract("_, _ -> new")
     private LinearLayout.LayoutParams getParams(int width, int height) {
         return new LinearLayout.LayoutParams(width, height);
     }
 
+    @NonNull
     private LinearLayout.LayoutParams getParams(int layoutWidth) {
         return layoutWidth == -1 ?
                 new LinearLayout.LayoutParams(
@@ -159,10 +164,14 @@ public class AttachmentInflater {
                         getHeight(layoutWidth));
     }
 
+    @NonNull
+    @Contract("_, _ -> new")
     private FrameLayout.LayoutParams getFrameParams(int width, int height) {
         return new FrameLayout.LayoutParams(width, height);
     }
 
+    @NonNull
+    @Contract("_ -> new")
     private FrameLayout.LayoutParams getFrameParams(int layoutWidth) {
         if (layoutWidth == -1) {
             return new FrameLayout.LayoutParams(
@@ -175,7 +184,7 @@ public class AttachmentInflater {
         );
     }
 
-    public void empty(ViewGroup parent, String s) {
+    public void empty(@NonNull ViewGroup parent, String s) {
         final TextView body = new TextView(context);
 
         String string = "[" + s + "]";
@@ -187,7 +196,7 @@ public class AttachmentInflater {
         parent.addView(body);
     }
 
-    public void wall(VKMessage item, ViewGroup parent, final VKWall source, boolean withStyles) {
+    public void wall(VKMessage item, ViewGroup parent, final VKWall source) {
         View v = inflater.inflate(R.layout.activity_messages_attach_doc, parent, false);
 
         TextView title = v.findViewById(R.id.abc_tb_title);
@@ -200,30 +209,13 @@ public class AttachmentInflater {
         title.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
         body.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
 
-        @ColorInt int titleColor, bodyColor, iconColor;
-
-        if (withStyles) {
-            iconColor = ThemeManager.getAccent();
-            titleColor = ThemeManager.getPrimaryInverse();
-            bodyColor = ThemeManager.isDark() ? ColorUtil.darkenColor(titleColor) : ColorUtil.lightenColor(titleColor);
-        } else {
-            titleColor = ThemeManager.getMain();
-            bodyColor = ThemeManager.getSecondary();
-            iconColor = titleColor;
-        }
-
         Drawable arrow = context.getResources().getDrawable(R.drawable.ic_assignment_black_24dp);
-        arrow.setTint(iconColor);
-
         icon.setImageDrawable(arrow);
-
-        title.setTextColor(titleColor);
-        body.setTextColor(bodyColor);
 
         parent.addView(v);
     }
 
-    public void graffiti(ViewGroup parent, VKGraffiti source) {
+    public void graffiti(ViewGroup parent, @NonNull VKGraffiti source) {
         final ImageView image = (ImageView) inflater.inflate(R.layout.activity_messages_attach_photo, parent, false);
 
         image.setLayoutParams(getParams());
@@ -254,7 +246,7 @@ public class AttachmentInflater {
         parent.addView(text);
     }
 
-    public void video(ViewGroup parent, final VKVideo source, int maxWidth) {
+    public void video(ViewGroup parent, @NonNull final VKVideo source, int maxWidth) {
         View v = inflater.inflate(R.layout.activity_messages_attach_video, parent, false);
 
         ImageView image = v.findViewById(R.id.image);
@@ -269,7 +261,7 @@ public class AttachmentInflater {
         parent.addView(v);
     }
 
-    public void photo(final VKMessage item, ViewGroup parent, final VKPhoto source, int maxWidth) {
+    public void photo(final VKMessage item, ViewGroup parent, @NonNull final VKPhoto source, int maxWidth) {
         ImageView image = (ImageView) inflater.inflate(R.layout.activity_messages_attach_photo, parent, false);
 
         image.setLayoutParams(maxWidth == -1 ? getParams(source.getMaxWidth(), source.getMaxHeight()) : getParams(maxWidth));
@@ -293,7 +285,7 @@ public class AttachmentInflater {
         parent.addView(image);
     }
 
-    public View message(VKMessage item, ViewGroup parent, VKMessage source, boolean reply, boolean withStyles) {
+    public View message(VKMessage item, ViewGroup parent, @NonNull VKMessage source, boolean reply, boolean withStyles) {
         View v = inflater.inflate(R.layout.activity_messages_attach_message, parent, false);
         v.setClickable(false);
         v.setFocusable(false);
@@ -315,27 +307,14 @@ public class AttachmentInflater {
             Picasso.get()
                     .load(user.getPhoto100())
                     .priority(Picasso.Priority.HIGH)
-                    .placeholder(new ColorDrawable(ColorUtil.darkenColor(ThemeManager.getPrimary())))
+                    .placeholder(R.drawable.avatar_placeholder)
                     .into(avatar);
         }
 
         line.setBackgroundColor(withStyles ? ThemeManager.getAccent() : Color.TRANSPARENT);
 
-        @ColorInt int nameColor, messageColor, lineColor;
-
-        if (item != null) {
-            lineColor = ThemeManager.getAccent();
-            nameColor = ThemeManager.isDark() ? Color.WHITE : Color.DKGRAY;
-            messageColor = ThemeManager.isDark() ? ColorUtil.lightenColor(nameColor) : ColorUtil.darkenColor(nameColor);
-
-            line.setBackgroundColor(lineColor);
-        } else {
-            nameColor = ThemeManager.isDark() ? Color.WHITE : Color.DKGRAY;
-            messageColor = ThemeManager.isDark() ? ColorUtil.lightenColor(nameColor) : ColorUtil.darkenColor(nameColor);
-        }
-
-        name.setTextColor(nameColor);
-        message.setTextColor(messageColor);
+        @ColorInt int lineColor = item != null ? ThemeManager.getAccent() : Color.TRANSPARENT;
+        line.setBackgroundColor(lineColor);
 
         name.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 3));
         message.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 3));
@@ -350,7 +329,7 @@ public class AttachmentInflater {
 
         if (!ArrayUtil.isEmpty(source.getAttachments())) {
             LinearLayout container = v.findViewById(R.id.attachments);
-            inflateAttachments(source, container, container, -1, true, withStyles);
+            inflateAttachments(source, container, container, -1, true);
         }
 
         if (!ArrayUtil.isEmpty(source.getFwdMessages())) {
@@ -363,12 +342,11 @@ public class AttachmentInflater {
         return v;
     }
 
-    public void doc(VKMessage item, ViewGroup parent, final VKDoc source, boolean forwarded, boolean withStyles) {
+    public void doc(VKMessage item, ViewGroup parent, @NonNull final VKDoc source) {
         View v = inflater.inflate(R.layout.activity_messages_attach_doc, parent, false);
 
         TextView title = v.findViewById(R.id.abc_tb_title);
         TextView size = v.findViewById(R.id.body);
-        ImageView icon = v.findViewById(R.id.icon);
 
         title.setText(source.getTitle());
 
@@ -378,29 +356,6 @@ public class AttachmentInflater {
         title.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
         size.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
 
-        @ColorInt int titleColor, bodyColor, iconColor;
-
-        if (withStyles) {
-            if (forwarded) {
-                iconColor = Color.WHITE;
-                titleColor = Color.WHITE;
-                bodyColor = ColorUtil.darkenColor(titleColor, 0.9f);
-            } else {
-                iconColor = ThemeManager.getAccent();
-                titleColor = ThemeManager.getPrimaryInverse();
-                bodyColor = ThemeManager.isDark() ? ColorUtil.darkenColor(titleColor) : ColorUtil.lightenColor(titleColor);
-            }
-        } else {
-            titleColor = ThemeManager.getMain();
-            bodyColor = ThemeManager.getSecondary();
-            iconColor = titleColor;
-        }
-
-        icon.getDrawable().setTint(iconColor);
-
-        title.setTextColor(titleColor);
-        size.setTextColor(bodyColor);
-
         parent.addView(v);
         v.setOnClickListener(p1 -> {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(source.getUrl()));
@@ -409,7 +364,7 @@ public class AttachmentInflater {
         });
     }
 
-    public View voice(final VKMessage item, ViewGroup parent, final VKVoice source, boolean forwarded, boolean withStyles) {
+    public void voice(@NonNull final VKMessage item, ViewGroup parent, @NonNull final VKVoice source) {
         View v = inflater.inflate(R.layout.activity_messages_attach_audio, parent, false);
 
         TextView title = v.findViewById(R.id.abc_tb_title);
@@ -422,29 +377,8 @@ public class AttachmentInflater {
         title.setText(context.getString(R.string.voice_message));
         body.setText(duration);
 
-        @ColorInt final int titleColor, bodyColor, iconColor;
-
-        if (withStyles) {
-            if (forwarded) {
-                iconColor = Color.WHITE;
-                titleColor = Color.WHITE;
-                bodyColor = ColorUtil.darkenColor(titleColor, 0.9f);
-            } else {
-                iconColor = ThemeManager.getAccent();
-                titleColor = ThemeManager.getPrimaryInverse();
-                bodyColor = ThemeManager.isDark() ? ColorUtil.darkenColor(titleColor) : ColorUtil.lightenColor(titleColor);
-            }
-        } else {
-            titleColor = ThemeManager.getMain();
-            bodyColor = ThemeManager.getSecondary();
-            iconColor = titleColor;
-        }
-
         final Drawable start = ContextCompat.getDrawable(context, R.drawable.ic_play_circle_filled_black_24dp);
         final Drawable stop = ContextCompat.getDrawable(context, R.drawable.ic_pause_circle_filled_black_24dp);
-
-        start.setTint(iconColor);
-        stop.setTint(iconColor);
 
         final boolean playing = item.isPlaying();
         play.setImageDrawable(playing ? stop : start);
@@ -457,19 +391,14 @@ public class AttachmentInflater {
             }
         });
 
-        time.setTextColor(bodyColor);
-        title.setTextColor(titleColor);
-        body.setTextColor(bodyColor);
-
         title.setMaxWidth(metrics.widthPixels / 2);
         body.setMaxWidth(metrics.widthPixels / 2);
         time.setMaxWidth(metrics.widthPixels / 2);
 
         parent.addView(v);
-        return v;
     }
 
-    public void audio(VKMessage item, ViewGroup parent, VKAudio source, boolean withStyles) {
+    public void audio(@NonNull VKMessage item, ViewGroup parent, @NonNull VKAudio source) {
         View v = inflater.inflate(R.layout.activity_messages_attach_audio, parent, false);
 
         TextView title = v.findViewById(R.id.abc_tb_title);
@@ -477,29 +406,24 @@ public class AttachmentInflater {
         TextView time = v.findViewById(R.id.duration);
 
         ImageButton play = v.findViewById(R.id.play);
+        final Drawable start = ContextCompat.getDrawable(context, R.drawable.ic_play_circle_filled_black_24dp);
+        final Drawable stop = ContextCompat.getDrawable(context, R.drawable.ic_pause_circle_filled_black_24dp);
+
+        final boolean playing = item.isPlaying();
+        play.setImageDrawable(playing ? stop : start);
+
+        play.setOnClickListener(view -> {
+            if (playing) {
+                EventBus.getDefault().postSticky(new Object[]{KEY_PAUSE_AUDIO, item.getId()});
+            } else {
+                EventBus.getDefault().postSticky(new Object[]{KEY_PLAY_AUDIO, item.getId(), source.getUrl()});
+            }
+        });
 
         String duration = String.format(AppGlobal.locale, "%d:%02d", source.getDuration() / 60, source.getDuration() % 60);
         title.setText(source.getTitle());
         body.setText(source.getArtist());
         time.setText(duration);
-
-        @ColorInt int titleColor, bodyColor, iconColor;
-
-        if (withStyles) {
-            iconColor = ThemeManager.isDark() ? Color.WHITE : ThemeManager.getAccent();
-            titleColor = ThemeManager.getPrimaryInverse();
-            bodyColor = ThemeManager.isDark() ? ColorUtil.darkenColor(titleColor) : ColorUtil.lightenColor(titleColor);
-        } else {
-            titleColor = ThemeManager.getMain();
-            bodyColor = ThemeManager.getSecondary();
-            iconColor = titleColor;
-        }
-
-        play.getDrawable().setTint(iconColor);
-
-        time.setTextColor(bodyColor);
-        title.setTextColor(titleColor);
-        body.setTextColor(bodyColor);
 
         title.setMaxWidth(metrics.widthPixels / 2);
         body.setMaxWidth(metrics.widthPixels / 2);
@@ -508,7 +432,7 @@ public class AttachmentInflater {
         parent.addView(v);
     }
 
-    public void link(VKMessage item, ViewGroup parent, final VKLink source, boolean withStyles) {
+    public void link(VKMessage item, ViewGroup parent, @NonNull final VKLink source) {
         View v = inflater.inflate(R.layout.activity_messages_attach_link, parent, false);
 
         TextView title = v.findViewById(R.id.abc_tb_title);
@@ -542,23 +466,6 @@ public class AttachmentInflater {
 
         title.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
         description.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
-
-        @ColorInt
-        int titleColor, bodyColor, iconColor;
-
-        if (withStyles) {
-            iconColor = ThemeManager.getAccent();
-            titleColor = ThemeManager.getPrimaryInverse();
-            bodyColor = ThemeManager.isDark() ? ColorUtil.darkenColor(titleColor) : ColorUtil.lightenColor(titleColor);
-        } else {
-            titleColor = ThemeManager.getMain();
-            bodyColor = ThemeManager.getSecondary();
-            iconColor = titleColor;
-        }
-
-        icon.getDrawable().setTint(iconColor);
-        title.setTextColor(titleColor);
-        description.setTextColor(bodyColor);
 
         parent.addView(v);
 

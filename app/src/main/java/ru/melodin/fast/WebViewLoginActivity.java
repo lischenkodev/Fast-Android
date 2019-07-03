@@ -17,9 +17,9 @@ import android.widget.ProgressBar;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import ru.melodin.fast.api.AppIds;
 import ru.melodin.fast.api.Auth;
 import ru.melodin.fast.api.Scopes;
-import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.util.ViewUtil;
 import ru.melodin.fast.view.FastToolbar;
@@ -59,7 +59,7 @@ public class WebViewLoginActivity extends AppCompatActivity {
         manager.flush();
         manager.setAcceptCookie(true);
 
-        webView.loadUrl(Auth.getUrl(UserConfig.FAST_ID, Scopes.allInt()));
+        webView.loadUrl(Auth.getUrl(AppIds.FAST_ID, Scopes.allInt()));
     }
 
     @Override

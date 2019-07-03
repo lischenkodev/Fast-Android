@@ -4,6 +4,10 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Locale;
@@ -71,13 +75,8 @@ import static ru.melodin.fast.database.DatabaseHelper.USERS_TABLE;
 import static ru.melodin.fast.database.DatabaseHelper.USER_ID;
 
 public class CacheStorage {
-    public static void checkOpen() {
-        if (!database.isOpen()) {
-            database = DatabaseHelper.getInstance().getWritableDatabase();
-        }
-    }
 
-    private static Cursor selectCursor(String table, String column, Object value) {
+    private static Cursor selectCursor(String table, @NonNull String column, Object value) {
         return QueryBuilder.query()
                 .select("*").from(table)
                 .where(column.concat(" = ").concat(String.valueOf(value)))
@@ -91,37 +90,40 @@ public class CacheStorage {
     }
 
     private static Cursor selectCursor(String table) {
-        checkOpen();
         return QueryBuilder.query()
                 .select("*").from(table)
                 .asCursor(database);
     }
 
-    private static int getInt(Cursor cursor, String columnName) {
+    private static int getInt(@NonNull Cursor cursor, String columnName) {
         return cursor.getInt(cursor.getColumnIndex(columnName));
     }
 
-    private static String getString(Cursor cursor, String columnName) {
+    private static String getString(@NonNull Cursor cursor, String columnName) {
         return cursor.getString(cursor.getColumnIndex(columnName));
     }
 
-    private static Long getLong(Cursor cursor, String columnName) {
+    @NonNull
+    private static Long getLong(@NonNull Cursor cursor, String columnName) {
         return cursor.getLong(cursor.getColumnIndex(columnName));
     }
 
-    private static byte[] getBlob(Cursor cursor, String columnName) {
+    private static byte[] getBlob(@NonNull Cursor cursor, String columnName) {
         return cursor.getBlob(cursor.getColumnIndex(columnName));
     }
 
+    @Nullable
     public static VKUser getUser(int id) {
         Cursor cursor = selectCursor(USERS_TABLE, USER_ID, id);
         if (cursor.moveToFirst()) {
-            return parseUser(cursor);
+            VKUser user = parseUser(cursor);
+            return user == null ? VKUser.EMPTY : user;
         }
         cursor.close();
-        return null;
+        return VKUser.EMPTY;
     }
 
+    @Nullable
     public static VKGroup getGroup(int id) {
         Cursor cursor = selectCursor(GROUPS_TABLE, GROUP_ID, id);
         if (cursor.moveToFirst()) {
@@ -178,6 +180,7 @@ public class CacheStorage {
         return users;
     }
 
+    @Nullable
     public static VKConversation getConversation(int peerId) {
         Cursor cursor = selectCursor(DIALOGS_TABLE, PEER_ID, peerId);
         if (cursor.moveToFirst()) {
@@ -187,6 +190,7 @@ public class CacheStorage {
         return null;
     }
 
+    @Nullable
     public static ArrayList<VKConversation> getConversations() {
         Cursor cursor = selectCursor(DIALOGS_TABLE);
         if (cursor.getCount() <= 0) {
@@ -202,6 +206,7 @@ public class CacheStorage {
         return dialogs;
     }
 
+    @Nullable
     public static ArrayList<VKGroup> getGroups() {
         Cursor cursor = selectCursor(GROUPS_TABLE);
         if (cursor.getCount() <= 0) {
@@ -228,6 +233,7 @@ public class CacheStorage {
         return messages;
     }
 
+    @Nullable
     public static VKMessage getMessage(int mId) {
         Cursor cursor = selectCursor(MESSAGES_TABLE, String.format(AppGlobal.locale, "%s = %d", MESSAGE_ID, mId));
 
@@ -237,6 +243,7 @@ public class CacheStorage {
         return null;
     }
 
+    @NonNull
     private static String dialogWhere(int peerId) {
         return String.format(Locale.US, "%s = %d", PEER_ID, peerId);
     }
@@ -446,7 +453,7 @@ public class CacheStorage {
         values.put(SEX, user.getSex());
     }
 
-    private static void putValues(ContentValues values, VKConversation dialog) {
+    private static void putValues(@NonNull ContentValues values, @NonNull VKConversation dialog) {
         values.put(PEER_ID, dialog.getPeerId());
         values.put(UNREAD_COUNT, dialog.getUnread());
         values.put(READ_STATE, dialog.isRead());
@@ -496,7 +503,7 @@ public class CacheStorage {
         }
     }
 
-    private static void putValues(ContentValues values, VKMessage message) {
+    private static void putValues(@NonNull ContentValues values, @NonNull VKMessage message) {
         values.put(MESSAGE_ID, message.getId());
         values.put(PEER_ID, message.getPeerId());
         values.put(TEXT, message.getText());
@@ -519,7 +526,7 @@ public class CacheStorage {
         }
     }
 
-    private static void putValues(ContentValues values, VKGroup group) {
+    private static void putValues(@NonNull ContentValues values, @NonNull VKGroup group) {
         values.put(GROUP_ID, group.getId());
         values.put(NAME, group.getName());
         values.put(SCREEN_NAME, group.getScreenName());

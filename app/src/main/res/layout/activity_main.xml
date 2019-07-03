@@ -23,6 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_gravity="bottom"
+        android:background="?colorPrimary"
         app:itemIconTint="@drawable/activity_main_bottom_icons"
         app:labelVisibilityMode="unlabeled"
         app:menu="@menu/activity_main_bottom" />

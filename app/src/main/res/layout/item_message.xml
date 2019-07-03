@@ -42,19 +42,22 @@
 
             <ru.melodin.fast.view.BoundedLinearLayout
                 android:id="@+id/bubble"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="4dp"
-                android:background="@drawable/msg_in_bg"
+                android:background="@drawable/msg_bg"
+                android:backgroundTint="?colorPrimary"
+                android:backgroundTintMode="multiply"
                 android:minHeight="40dp"
                 android:orientation="vertical"
                 android:padding="4dp">
 
-                <FrameLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content">
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
 
-                    <ru.melodin.fast.view.TimeTextView
+                    <androidx.appcompat.widget.AppCompatTextView
                         android:id="@+id/text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -66,20 +69,19 @@
                         android:autoLink="all"
                         android:gravity="fill"
                         android:linksClickable="true"
-                        app:timeSize="10sp"
-                        tools:text="Boyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy       " />
+                        tools:text="Boyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy" />
 
                     <LinearLayout
                         android:id="@+id/attachments"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:layout_marginTop="26dp"
+                        android:layout_below="@+id/text"
+                        android:layout_margin="6dp"
                         android:gravity="center_vertical"
                         android:orientation="vertical"
                         tools:visibility="visible" />
 
-                </FrameLayout>
+                </RelativeLayout>
 
             </ru.melodin.fast.view.BoundedLinearLayout>
 
@@ -94,7 +96,8 @@
         android:layout_marginBottom="4dp"
         android:orientation="horizontal"
         android:paddingStart="12dp"
-        android:paddingEnd="12dp">
+        android:paddingEnd="12dp"
+        android:visibility="gone">
 
         <ImageView
             android:id="@+id/important"

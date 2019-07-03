@@ -1,5 +1,9 @@
 package ru.melodin.fast.api;
 
+import androidx.annotation.NonNull;
+
+import org.jetbrains.annotations.Contract;
+
 import java.util.ArrayList;
 
 public class Scopes {
@@ -44,6 +48,8 @@ public class Scopes {
         return res;
     }
 
+    @NonNull
+    @Contract(pure = true)
     public static String all() {
         return NOTIFY + ',' + FRIENDS
                 + ',' + PHOTOS + ',' + AUDIO
@@ -57,6 +63,7 @@ public class Scopes {
                 + STATS;
     }
 
+    @NonNull
     public static String allInt() {
         return String.valueOf(136297695);
     }

@@ -96,7 +96,7 @@
     <string name="chat_creator">Creator of the chat</string>
     <string name="save">Save</string>
     <string name="copy_link">Copy link</string>
-    <string name="photo_of_photo">%1$s of %2$s</string>
+    <string name="photo_of_photo">%1$d of %2$d</string>
     <string name="url_copied_text">Url copied to clipboard</string>
     <string name="photo_permission_title">Fast requires permission for save photo</string>
     <string name="clear_cache_title">Clear cache</string>

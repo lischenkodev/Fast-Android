@@ -38,8 +38,7 @@
                         android:id="@+id/userAvatar"
                         android:layout_width="60dp"
                         android:layout_height="60dp"
-                        android:layout_gravity="bottom|end"
-                        tools:src="@drawable/avatar_placeholder" />
+                        android:src="@drawable/avatar_placeholder" />
 
                     <ImageView
                         android:id="@+id/userOnline"
@@ -77,8 +76,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/open_profile"
-                        android:visibility="gone"
-                        android:textColor="?android:textColorSecondary" />
+                        android:textColor="?android:textColorSecondary"
+                        android:visibility="gone" />
 
                 </LinearLayout>
 
@@ -88,11 +87,11 @@
                     android:gravity="center">
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/logout"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:stateListAnimator="@null"
                         android:text="@string/exit"
-                        android:id="@+id/logout"
                         android:textColor="?colorAccent"
                         app:backgroundTint="?colorPrimary"
                         app:rippleColor="?colorAccent" />

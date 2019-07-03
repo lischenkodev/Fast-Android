@@ -70,34 +70,46 @@ import ru.melodin.fast.view.FastToolbar;
 public class MessagesActivity extends AppCompatActivity implements RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener, TextWatcher {
 
     private static final int MESSAGES_COUNT = 30;
-    public boolean loading, resumed, editing;
+
+    public boolean loading, resumed, editing, canWrite, typing, animating;
     public VKMessage notRead;
+
     private Random random = new Random();
+
     private Drawable iconSend;
     private Drawable iconMic;
     private Drawable iconDone;
     private Drawable iconTrash;
+
     private FastToolbar tb;
+    private Toolbar actionTb;
     private RecyclerView recyclerView;
     private FloatingActionButton fab;
-    private AppCompatImageButton smiles, send, unpin;
+    private FloatingActionButton send;
+    private AppCompatImageButton smiles, unpin;
     private AppCompatEditText message;
     private LinearLayout chatPanel;
     private FrameLayout pinnedContainer;
     private TextView pName, pDate, pText;
+
     private MessageAdapter adapter;
-    private boolean canWrite, typing, animating;
+
     private int cantWriteReason = -1, peerId, membersCount;
+
     private VKConversation.Reason reason;
+
     private String messageText;
     private String title;
-    private Timer timer;
-    private VKMessage pinned, edited;
-    private int editingPosition;
-    private VKConversation conversation;
-    private LinearLayoutManager layoutManager;
 
-    private Toolbar actionTb;
+    private Timer timer;
+
+    private VKMessage pinned, edited;
+
+    private int editingPosition;
+
+    private VKConversation conversation;
+
+    private LinearLayoutManager layoutManager;
 
     private final int DURATION_DEFAULT = 200;
 
@@ -659,6 +671,9 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     private void updateToolbar() {
         invalidateOptionsMenu();
         tb.setSubtitle(getSubtitle());
+
+        if (!editing && adapter != null && !adapter.isSelected() && pinned != null)
+            showPinned(DURATION_DEFAULT);
     }
 
     @Nullable
@@ -715,6 +730,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         });
     }
 
+    @NonNull
     private String getUserSubtitle(VKUser user) {
         if (user == null) return "";
         if (user.isOnline())
@@ -730,7 +746,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
                 adapter.clearSelected();
@@ -851,7 +867,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         });
     }
 
-    private void showConfirmDeleteMessages(final ArrayList<VKMessage> items) {
+    private void showConfirmDeleteMessages(@NonNull final ArrayList<VKMessage> items) {
         final int[] mIds = new int[items.size()];
 
         boolean self = true;
@@ -937,6 +953,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
     }
 
     private void showAlert(final int position) {
+        if (conversation == null) return;
         final VKMessage item = adapter.getItem(position);
 
         ArrayList<String> list = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.message_functions)));
@@ -953,6 +970,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             if (conversation.getLast().getDate() * 1000L < System.currentTimeMillis() - AlarmManager.INTERVAL_DAY || !item.isOut()) {
                 remove.add(getString(R.string.edit));
             }
+        }
+
+        if (pinned != null && pinned.getId() == item.getId()) {
+            remove.add(getString(R.string.pin_message));
         }
 
         list.removeAll(remove);
@@ -973,8 +994,12 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             } else if (title.equals(getString(R.string.edit))) {
                 edited = item;
 
+                if (editing)
+                    message.setText("");
+
+                adapter.clearSelected();
                 adapter.setSelected(position, true);
-                adapter.notifyItemChanged(position, -1);
+                adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
 
                 editingPosition = position;
 
@@ -1019,13 +1044,21 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         message.setSelection(message.getText().length());
     }
 
-    private void editMessage(final VKMessage edited) {
+    private void editMessage(@NonNull final VKMessage edited) {
         edited.setText(message.getText().toString().trim());
         if (edited.getText().trim().isEmpty() && ArrayUtil.isEmpty(edited.getAttachments()) && ArrayUtil.isEmpty(edited.getFwdMessages())) {
             showConfirmDeleteMessages(new ArrayList<>(Collections.singletonList(edited)));
         } else {
-            adapter.getItem(editingPosition).setStatus(VKMessage.Status.SENDING);
+            VKMessage message = adapter.getItem(editingPosition);
+            message.setStatus(VKMessage.Status.SENDING);
+            message.setSelected(false);
             adapter.notifyItemChanged(editingPosition, -1);
+
+            editing = false;
+            this.edited = null;
+
+            updateStyles();
+
             ThreadExecutor.execute(new AsyncCallback(this) {
                 int response;
 
@@ -1045,10 +1078,6 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
                 @Override
                 public void done() {
                     if (response != 1) return;
-
-                    MessagesActivity.this.edited = null;
-                    editing = false;
-                    updateStyles();
 
                     VKMessage message = adapter.getItem(editingPosition);
                     message.setText(edited.getText());
@@ -1159,9 +1188,10 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             editing = false;
             updateStyles();
         } else if (adapter != null && adapter.isSelected()) {
+            adapter.selectedItems.clear();
+            updateToolbar();
             adapter.clearSelected();
             adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
-            updateToolbar();
         } else {
             super.onBackPressed();
         }
@@ -1173,7 +1203,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
 
         if (item.getAction() != null) return;
 
-        if (adapter.isSelected()) {
+        if (adapter.isSelected() && !editing) {
             adapter.toggleSelected(position);
             adapter.notifyItemChanged(position, -1);
             updateToolbar();
@@ -1190,6 +1220,8 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
             adapter.clearSelected();
             adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
         } else {
+            if (pinned != null)
+                hidePinned(DURATION_DEFAULT);
             adapter.setSelected(position, true);
             adapter.notifyItemChanged(position, -1);
         }
@@ -1244,7 +1276,7 @@ public class MessagesActivity extends AppCompatActivity implements RecyclerAdapt
         delete.getIcon().setTint(ThemeManager.getMain());
 
         boolean selecting = adapter != null && adapter.isSelected();
-
+        
         tb.setVisibility(selecting ? View.GONE : View.VISIBLE);
         actionTb.setVisibility(selecting ? View.VISIBLE : View.GONE);
 

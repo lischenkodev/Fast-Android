@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
-import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_items.*
 import kotlinx.android.synthetic.main.toolbar.*
@@ -25,14 +24,6 @@ import ru.melodin.fast.service.LongPollService
 
 class FragmentItems : BaseFragment() {
 
-    private lateinit var user: VKUser
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        user = UserConfig.getUser()
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return inflater.inflate(R.layout.fragment_items, container, false)
     }
@@ -40,9 +31,15 @@ class FragmentItems : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val user = UserConfig.getUser()
+
         userName.text = user.toString()
 
-        Picasso.get().load(user.photo200).into(userAvatar, Callback.EmptyCallback())
+        Picasso.get()
+                .load(user.photo200)
+                .priority(Picasso.Priority.HIGH)
+                .placeholder(R.drawable.avatar_placeholder)
+                .into(userAvatar)
 
         userOnline.visibility = View.VISIBLE
         userOnline.setImageDrawable(getOnlineIndicator(user))

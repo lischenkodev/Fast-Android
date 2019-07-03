@@ -2,8 +2,6 @@ package ru.melodin.fast.adapter;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.media.MediaPlayer;
@@ -15,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.ColorInt;
@@ -65,7 +64,6 @@ import ru.melodin.fast.util.Keys;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.view.BoundedLinearLayout;
 import ru.melodin.fast.view.CircleImageView;
-import ru.melodin.fast.view.TimeTextView;
 
 public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.ViewHolder> {
 
@@ -85,7 +83,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
     private ArrayList<Integer> loadingIds = new ArrayList<>();
 
-    private SparseArrayCompat<VKMessage> selectedItems = new SparseArrayCompat<>();
+    public SparseArrayCompat<VKMessage> selectedItems = new SparseArrayCompat<>();
 
     public MessageAdapter(Context context, ArrayList<VKMessage> messages, int peerId) {
         super(context, messages);
@@ -114,7 +112,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void onReceive(final Object[] data) {
+    public void onReceive(@NonNull final Object[] data) {
         String key = (String) data[0];
 
         switch (key) {
@@ -298,7 +296,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         return selectedItems;
     }
 
-    public void readNewMessage(final VKMessage message) {
+    public void readNewMessage(@NonNull final VKMessage message) {
         if (message.isOut() || layoutManager.findLastCompletelyVisibleItemPosition() < searchPosition(message.getId()))
             return;
         ThreadExecutor.execute(new AsyncCallback(((MessagesActivity) context)) {
@@ -322,7 +320,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         });
     }
 
-    private void handleClearFlags(Object[] data) {
+    private void handleClearFlags(@NonNull Object[] data) {
         int mId = (int) data[1];
         int flags = (int) data[2];
         int peerId = (int) data[3];
@@ -336,7 +334,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             readMessage(mId);
     }
 
-    private void handleSetFlags(Object[] data) {
+    private void handleSetFlags(@NonNull Object[] data) {
         int mId = (int) data[1];
         int flags = (int) data[2];
         int peerId = (int) data[3];
@@ -364,7 +362,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         notifyItemChanged(position, -1);
     }
 
-    private void updateMessage(VKMessage msg) {
+    private void updateMessage(@NonNull VKMessage msg) {
         int position = searchPosition(msg.getId());
         if (position == -1) return;
 
@@ -373,7 +371,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         notifyItemChanged(position, -1);
     }
 
-    private void editMessage(VKMessage edited) {
+    private void editMessage(@NonNull VKMessage edited) {
         int position = searchPosition(edited.getId());
         if (position == -1) return;
 
@@ -382,8 +380,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         notifyItemChanged(position, -1);
     }
 
-    public void addMessage(VKMessage msg, boolean anim) {
-        if (msg.getRandomId() != 0 && containsRandom(msg.getRandomId()))
+    public void addMessage(@NonNull VKMessage msg, boolean anim) {
+        if (msg.getRandomId() != 0 && containsRandom(msg.getRandomId()) || contains(msg.getId()))
             return;
 
         add(msg);
@@ -586,7 +584,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             parent.setVisibility(View.VISIBLE);
             VKModel attachment = attachments.get(i);
             if (attachment instanceof VKAudio) {
-                attacher.audio(item, parent, (VKAudio) attachment, true);
+                attacher.audio(item, parent, (VKAudio) attachment);
             } else if (attachment instanceof VKPhoto) {
                 if (TextUtils.isEmpty(item.getText()))
                     bubble.setBackgroundColor(Color.TRANSPARENT);
@@ -596,9 +594,9 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 bubble.setBackgroundColor(Color.TRANSPARENT);
                 attacher.sticker(parent, (VKSticker) attachment);
             } else if (attachment instanceof VKDoc) {
-                attacher.doc(item, parent, (VKDoc) attachment, false, true);
+                attacher.doc(item, parent, (VKDoc) attachment);
             } else if (attachment instanceof VKLink) {
-                attacher.link(item, parent, (VKLink) attachment, true);
+                attacher.link(item, parent, (VKLink) attachment);
             } else if (attachment instanceof VKVideo) {
                 if (TextUtils.isEmpty(item.getText()))
                     bubble.setBackgroundColor(Color.TRANSPARENT);
@@ -608,9 +606,9 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 bubble.setBackgroundColor(Color.TRANSPARENT);
                 attacher.graffiti(parent, (VKGraffiti) attachment);
             } else if (attachment instanceof VKVoice) {
-                attacher.voice(item, parent, (VKVoice) attachment, false, true);
+                attacher.voice(item, parent, (VKVoice) attachment);
             } else if (attachment instanceof VKWall) {
-                attacher.wall(item, parent, (VKWall) attachment, true);
+                attacher.wall(item, parent, (VKWall) attachment);
             } else {
                 attacher.empty(parent, context.getString(R.string.unknown));
             }
@@ -636,7 +634,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         ImageView indicator;
         ImageView important;
 
-        TimeTextView text;
+        TextView text;
 
         LinearLayout mainContainer;
 
@@ -647,7 +645,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
         LinearLayout timeContainer;
         LinearLayout bubbleContainer;
 
-        Drawable sending, error, placeholder;
+        Drawable sending, error, placeholder, defaultBg;
         GradientDrawable circle;
 
         @ColorInt
@@ -666,7 +664,7 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
             important = v.findViewById(R.id.important);
 
             circle = null;
-
+            defaultBg = getDrawable(R.drawable.msg_bg);
             error = getDrawable(R.drawable.ic_error_black_24dp);
             sending = getDrawable(R.drawable.ic_access_time_black_24dp);
 
@@ -695,8 +693,8 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
             itemView.setBackgroundColor(item.isSelected() ? alphaAccentColor : 0);
 
-            String time_ = item.getUpdateTime() > 0 ? getString(R.string.edited) + ", " : "" + Util.dateFormatter.format(item.isAdded() ? item.getDate() : item.getDate() * 1000L);
-            text.setTimeText(time_);
+            //String time_ = item.getUpdateTime() > 0 ? getString(R.string.edited) + ", " : "" + Util.dateFormatter.format(item.isAdded() ? item.getDate() : item.getDate() * 1000L);
+            //.setTimeText(time_);
 
             int gravity = item.isOut() ? Gravity.END : Gravity.START;
 
@@ -762,24 +760,20 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 this.text.setText(text);
             }
 
-            int textColor, bgColor, linkColor;
+            int textColor, linkColor;
 
             linkColor = ThemeManager.getAccent();
             if (ThemeManager.isDark()) {
                 textColor = 0xffeeeeee;
-                bgColor = 0xff404040;
             } else {
                 textColor = 0xff1d1d1d;
-                bgColor = Color.WHITE;
             }
 
             text.setTextColor(textColor);
             text.setLinkTextColor(linkColor);
-            text.setTimeTextColor(textColor);
+            //text.setTimeTextColor(textColor);
 
             bubble.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 3));
-
-            Drawable bg = context.getResources().getDrawable(R.drawable.msg_in_bg);
 
             if (item.getAction() != null) {
                 messageContainer.setVisibility(View.GONE);
@@ -787,15 +781,12 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
 
                 serviceContainer.removeAllViews();
                 attacher.service(item, serviceContainer);
-
-                bg = new ColorDrawable(Color.TRANSPARENT);
+                bubble.setBackground(null);
             } else {
                 messageContainer.setVisibility(View.VISIBLE);
                 serviceContainer.setVisibility(View.GONE);
-                bg.setColorFilter(bgColor, PorterDuff.Mode.MULTIPLY);
+                bubble.setBackground(defaultBg);
             }
-
-            bubble.setBackground(bg);
 
             if (!ArrayUtil.isEmpty(item.getFwdMessages()) || !ArrayUtil.isEmpty(item.getAttachments())) {
                 attachments.setVisibility(View.VISIBLE);

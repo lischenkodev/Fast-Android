@@ -26,6 +26,7 @@ import com.squareup.picasso.Picasso;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.jetbrains.annotations.Contract;
 
 import java.util.ArrayList;
 
@@ -59,7 +60,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
     private ArrayList<Integer> loadingIds = new ArrayList<>();
     private int lastUpdateId;
 
-    public ConversationAdapter(FragmentConversations fragment, ArrayList<VKConversation> values) {
+    public ConversationAdapter(@NonNull FragmentConversations fragment, @NonNull ArrayList<VKConversation> values) {
         super(fragment.getContext(), values);
         this.fragment = fragment;
         manager = (LinearLayoutManager) fragment.getRecyclerView().getLayoutManager();
@@ -79,10 +80,10 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
 
         switch (key) {
             case LongPollEvents.KEY_USER_OFFLINE:
-                setUserOnline(false, (int) data[1], (int) data[2]);
+                setUserOnline(false, false, (int) data[1], (long) data[2]);
                 break;
             case LongPollEvents.KEY_USER_ONLINE:
-                setUserOnline(true, (int) data[1], (int) data[2]);
+                setUserOnline(true, (boolean) data[3], (int) data[1], (long) data[2]);
                 break;
             case LongPollEvents.KEY_MESSAGE_CLEAR_FLAGS:
                 handleClearFlags(data);
@@ -130,7 +131,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
         CacheStorage.update(DatabaseHelper.DIALOGS_TABLE, conversation, DatabaseHelper.PEER_ID, peerId);
     }
 
-    private void handleClearFlags(Object[] data) {
+    private void handleClearFlags(@NonNull Object[] data) {
         int mId = (int) data[1];
         int flags = (int) data[2];
 
@@ -138,7 +139,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             readMessage(mId);
     }
 
-    private void updateMessage(VKMessage message) {
+    private void updateMessage(@NonNull VKMessage message) {
         if (message.getId() == lastUpdateId) return;
         lastUpdateId = message.getId();
         for (int i = 0; i < getItemCount(); i++) {
@@ -188,7 +189,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
         }
     }
 
-    private void addMessage(VKConversation conversation) {
+    private void addMessage(@NonNull VKConversation conversation) {
         int firstVisiblePosition = manager.findFirstVisibleItemPosition();
 
         int index = findConversationPosition(conversation.getLast().getPeerId());
@@ -292,7 +293,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
         notifyItemChanged(position, -1);
     }
 
-    private void editMessage(VKMessage edited) {
+    private void editMessage(@NonNull VKMessage edited) {
         int position = searchMessagePosition(edited.getId());
         if (position == -1) return;
 
@@ -306,13 +307,15 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
         notifyItemChanged(position, -1);
     }
 
-    private void setUserOnline(boolean online, int userId, int time) {
+    private void setUserOnline(boolean online, boolean mobile, int userId, long time) {
         for (int i = 0; i < getItemCount(); i++) {
             VKConversation conversation = getItem(i);
-            if (conversation.isUser()) {
-                VKUser user = MemoryCache.getUser(userId);
+            if (conversation.getType() == VKConversation.Type.USER) {
+                VKUser user = CacheStorage.getUser(userId);
                 if (user == null) break;
                 user.setOnline(online);
+                if (mobile)
+                    user.setOnlineMobile(mobile);
                 user.setLastSeen(time);
                 notifyItemChanged(i, -1);
                 break;
@@ -366,7 +369,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
         return false;
     }
 
-    public String getTitle(VKConversation item, VKUser user, VKGroup group) {
+    public String getTitle(@NonNull VKConversation item, VKUser user, VKGroup group) {
         int peerId = item.getLast().getPeerId();
 
         if (peerId > 2_000_000_000) {
@@ -378,7 +381,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
         }
     }
 
-    public String getPhoto(VKConversation item, VKUser user, VKGroup group) {
+    public String getPhoto(@NonNull VKConversation item, VKUser user, VKGroup group) {
         int peerId = item.getLast().getPeerId();
 
         if (peerId > 2_000_000_000) {
@@ -390,7 +393,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
         }
     }
 
-    private String getFromPhoto(VKConversation item, VKUser user, VKGroup group) {
+    private String getFromPhoto(@NonNull VKConversation item, VKUser user, VKGroup group) {
         int fromId = item.getLast().getFromId();
 
         if (fromId < 0) {
@@ -634,6 +637,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             counterContainer.setVisibility(item.isRead() ? View.GONE : View.VISIBLE);
         }
 
+        @Contract("null -> null")
         @Nullable
         private Drawable getOnlineIndicator(VKUser user) {
             return user == null || !user.isOnline() ? null : getDrawable(user.isOnlineMobile() ? R.drawable.ic_online_mobile : R.drawable.ic_online);

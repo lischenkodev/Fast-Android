@@ -1,5 +1,7 @@
 package ru.melodin.fast.api.model;
 
+import androidx.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -10,6 +12,7 @@ public class VKUser extends VKModel implements Serializable {
 
     public static final String FIELDS_DEFAULT = "photo_50,photo_100,photo_200,status,screen_name,online,online_mobile,last_seen,verified,sex";
     public static final VKUser EMPTY = new VKUser() {
+        @NonNull
         @Override
         public String toString() {
             return "User";
@@ -40,7 +43,7 @@ public class VKUser extends VKModel implements Serializable {
         this.surname = "";
     }
 
-    public VKUser(JSONObject source) {
+    public VKUser(@NonNull JSONObject source) {
 
         this.id = source.optInt("id");
         this.name = source.optString("first_name", "...");
@@ -72,7 +75,7 @@ public class VKUser extends VKModel implements Serializable {
         }
     }
 
-    public static ArrayList<VKUser> parse(JSONArray array) {
+    public static ArrayList<VKUser> parse(@NonNull JSONArray array) {
         ArrayList<VKUser> users = new ArrayList<>(array.length());
         for (int i = 0; i < array.length(); i++) {
             users.add(new VKUser((JSONObject) array.opt(i)));
@@ -81,6 +84,7 @@ public class VKUser extends VKModel implements Serializable {
         return users;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return name + " " + surname;

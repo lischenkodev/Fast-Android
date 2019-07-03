@@ -108,6 +108,10 @@ public class PhotoViewActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         ArrayList<VKPhoto> photos = (ArrayList<VKPhoto>) getIntent().getSerializableExtra("photo");
+        if (ArrayUtil.isEmpty(photos)) {
+            finish();
+            return;
+        }
         source = (VKPhoto) getIntent().getSerializableExtra("selected");
 
         int selectedPosition = 0;
@@ -119,8 +123,6 @@ public class PhotoViewActivity extends AppCompatActivity {
                     selectedPosition = i;
             }
 
-        //getSupportActionBar().setTitle(getString(R.string.photo_of_photo, source == null ? "1" : selectedPosition, String.valueOf(photos.size())));
-
         if (!ArrayUtil.isEmpty(photos) && Util.hasConnection()) {
             createAdapter(photos);
         }
@@ -128,12 +130,11 @@ public class PhotoViewActivity extends AppCompatActivity {
         if (selectedPosition > 0)
             pager.setCurrentItem(selectedPosition);
 
-        like.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                like.getDrawable().setTint(likeState == LikeState.UNLIKED ? Color.RED : Color.WHITE);
-                likeState = likeState == LikeState.UNLIKED ? LikeState.LIKED : LikeState.UNLIKED;
-            }
+        setTitle(selectedPosition + 1, photos.size());
+
+        like.setOnClickListener(v -> {
+            like.getDrawable().setTint(likeState == LikeState.UNLIKED ? Color.RED : Color.WHITE);
+            likeState = likeState == LikeState.UNLIKED ? LikeState.LIKED : LikeState.UNLIKED;
         });
     }
 
@@ -228,7 +229,7 @@ public class PhotoViewActivity extends AppCompatActivity {
 
             @Override
             public void onPageSelected(int position) {
-                getSupportActionBar().setTitle(getString(R.string.photo_of_photo, String.valueOf(position + 1), String.valueOf(photos.size())));
+                setTitle(position + 1, photos.size());
             }
 
             @Override
@@ -236,6 +237,10 @@ public class PhotoViewActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void setTitle(int current, int max) {
+        getSupportActionBar().setTitle(getString(R.string.photo_of_photo, current, max));
     }
 
     @Override

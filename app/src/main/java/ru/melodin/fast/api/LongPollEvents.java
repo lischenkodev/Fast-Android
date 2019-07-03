@@ -2,6 +2,8 @@ package ru.melodin.fast.api;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11,7 +13,6 @@ import ru.melodin.fast.api.model.VKMessage;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
-import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.util.StringUtils;
 
 public class LongPollEvents {
@@ -167,7 +168,7 @@ public class LongPollEvents {
         EventBus.getDefault().postSticky(new Object[]{KEY_MESSAGE_EDIT, message});
     }
 
-    public void process(JSONArray updates) {
+    public void process(@NonNull JSONArray updates) {
         if (updates.length() == 0) {
             return;
         }
@@ -205,7 +206,7 @@ public class LongPollEvents {
         }
     }
 
-    private void changeNotifications(JSONArray item) {
+    private void changeNotifications(@NonNull JSONArray item) {
         JSONObject o = item.optJSONObject(1);
 
         int peerId = o.optInt("peer_id", -1);
@@ -213,36 +214,35 @@ public class LongPollEvents {
         int disabledUntil = o.optInt("disabled_until", -2);
 
         EventBus.getDefault().postSticky(new Object[]{KEY_NOTIFICATIONS_CHANGE, peerId, !sound, disabledUntil});
-
-        Log.d("FVK Change Notif", item.toString());
     }
 
-    private void userOffline(JSONArray item) {
+    private void userOffline(@NonNull JSONArray item) {
         int userId = item.optInt(1) * (-1);
         boolean timeout = item.optInt(2) == 1;
         int time = item.optInt(3);
 
-        VKUser user = MemoryCache.getUser(userId);
+        VKUser user = CacheStorage.getUser(userId);
         if (user != null) {
             user.setOnline(false);
             user.setOnlineMobile(false);
             user.setLastSeen(time);
         }
 
-        EventBus.getDefault().postSticky(new Object[]{KEY_USER_OFFLINE, userId, time, timeout});
+        EventBus.getDefault().postSticky(new Object[]{KEY_USER_OFFLINE, userId, user.getLastSeen(), timeout});
     }
 
-    private void userOnline(JSONArray item) {
+    private void userOnline(@NonNull JSONArray item) {
         int userId = item.optInt(1) * (-1);
+        int platform = item.optInt(2);
         int time = item.optInt(3);
 
-        VKUser user = MemoryCache.getUser(userId);
+        VKUser user = CacheStorage.getUser(userId);
         if (user != null) {
             user.setOnline(true);
-            user.setOnlineMobile(false);
+            user.setOnlineMobile(platform > 0);
             user.setLastSeen(time);
         }
 
-        EventBus.getDefault().postSticky(new Object[]{KEY_USER_ONLINE, userId, time});
+        EventBus.getDefault().postSticky(new Object[]{KEY_USER_ONLINE, userId, user.getLastSeen(), user.isOnlineMobile()});
     }
 }

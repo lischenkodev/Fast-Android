@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
 
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -37,6 +38,7 @@ public class VKApi {
     public static UserConfig config;
     public static String lang = AppGlobal.locale.getLanguage();
 
+    @Nullable
     public static <T> ArrayList<T> execute(String url, Class<T> cls) throws Exception {
         if (BuildConfig.DEBUG) {
             Log.w(TAG, "url: " + url);

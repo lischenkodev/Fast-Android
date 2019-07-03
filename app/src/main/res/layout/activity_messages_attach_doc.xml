@@ -19,6 +19,7 @@
             android:layout_height="24dp"
             android:layout_gravity="center"
             android:scaleType="centerCrop"
+            android:tint="?android:textColorPrimary"
             android:src="@drawable/ic_vector_file"
             tools:tint="?colorAccent" />
 

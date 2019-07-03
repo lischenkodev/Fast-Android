@@ -80,7 +80,7 @@ public class FragmentFriends extends BaseFragment implements SwipeRefreshLayout.
 
         refreshLayout.setOnRefreshListener(this);
         refreshLayout.setColorSchemeColors(ThemeManager.getAccent());
-        refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.getBackground());
+        refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.getPrimary());
 
         LinearLayoutManager manager = new LinearLayoutManager(getActivity(), RecyclerView.VERTICAL, false);
         list.setHasFixedSize(true);
