@@ -2,10 +2,11 @@ package ru.melodin.fast;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
@@ -13,15 +14,17 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 
-import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -31,17 +34,22 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
+import ru.melodin.fast.api.Scopes;
 import ru.melodin.fast.api.UserConfig;
 import ru.melodin.fast.api.VKApi;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
-import ru.melodin.fast.concurrent.LowThread;
 import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.current.BaseActivity;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
+import ru.melodin.fast.util.ColorUtil;
 import ru.melodin.fast.util.Requests;
+import ru.melodin.fast.util.Util;
 import ru.melodin.fast.util.ViewUtil;
 
 public class LoginActivity extends BaseActivity {
@@ -49,16 +57,17 @@ public class LoginActivity extends BaseActivity {
     private String login_, password_;
 
     private TextInputLayout password, login;
-    private MaterialButton sign;
+    private ExtendedFloatingActionButton sign;
 
     private TextView webLogin;
 
-    private AlertDialog processDialog;
+    private ProgressBar progressBar;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setTheme(ThemeManager.getLoginTheme());
+        ViewUtil.applyWindowStyles(getWindow(), ThemeManager.getBackground());
         setContentView(R.layout.activity_login);
 
         sign = findViewById(R.id.btn_login);
@@ -66,12 +75,40 @@ public class LoginActivity extends BaseActivity {
         login = findViewById(R.id.login);
         password = findViewById(R.id.password);
 
-        sign.setOnClickListener(view -> login(false));
+        progressBar = findViewById(R.id.progress);
+        progressBar.setVisibility(View.INVISIBLE);
+        progressBar.setIndeterminateTintList(ColorStateList.valueOf(ColorUtil.saturateColor(ThemeManager.getAccent(), 2f)));
+
+        sign.shrink();
+        sign.extend();
+
+        sign.setOnClickListener(view -> {
+            if (!sign.isExtended()) {
+                toggleButton();
+            } else {
+                startTick();
+                login(false);
+            }
+        });
 
         findViewById(R.id.logo_text).setOnClickListener(view -> toggleTheme());
 
+        if (!ThemeManager.isDark()) {
+            @ColorInt int boxColor = ColorUtil.darkenColor(ThemeManager.getBackground(), 0.98f);
+            login.setBoxBackgroundColor(boxColor);
+            password.setBoxBackgroundColor(boxColor);
+        }
+
+        boolean anim = getIntent().getBooleanExtra("show_anim", true);
+
         MaterialCardView cardView = findViewById(R.id.card);
-        cardView.animate().translationY(200).setDuration(0).withEndAction(() -> cardView.animate().translationY(0).setDuration(500).start()).start();
+
+        if (anim)
+            cardView.animate().translationY(200).setDuration(0).withEndAction(() -> cardView.animate().translationY(0).setDuration(500).start()).start();
+
+        Bundle bundle = getIntent().getBundleExtra("data");
+        if (bundle != null)
+            onRestoreInstanceState(bundle);
 
         password.getEditText().setOnEditorActionListener((textView, i, keyEvent) -> {
             ViewUtil.hideKeyboard(password.getEditText());
@@ -86,34 +123,42 @@ public class LoginActivity extends BaseActivity {
         });
     }
 
+    private void startTick() {
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                runOnUiThread(() -> {
+                    if (!sign.isExtended()) toggleButton();
+                    ViewUtil.snackbar(sign, R.string.error).show();
+                });
+            }
+        }, 30000);
+    }
+
     private void login(boolean fromKeyboard) {
         String login = this.login.getEditText().getText().toString().trim();
         String password = this.password.getEditText().getText().toString().trim();
 
         if (login.isEmpty() || password.isEmpty()) {
             if (!fromKeyboard)
-                Snackbar.make(sign, R.string.all_necessary_data, Snackbar.LENGTH_SHORT).show();
+                ViewUtil.snackbar(sign, R.string.all_necessary_data).show();
             return;
         }
 
         login_ = login;
         password_ = password;
 
-        processDialog = createProcessDialog();
-
         login(login_, password_, "");
     }
 
-    @NonNull
-    private AlertDialog createProcessDialog() {
-        return new AlertDialog.Builder(this)
-                .setMessage(R.string.loading)
-                .create();
-    }
-
     public void login(final String login, final String password, String captcha) {
-        if (!processDialog.isShowing())
-            processDialog.show();
+        if (!Util.hasConnection()) {
+            ViewUtil.snackbar(sign, R.string.connect_to_the_internet).show();
+            return;
+        }
+
+        toggleButton();
+
         final WebView webView = new WebView(this);
         webView.getSettings().setJavaScriptEnabled(true);
         webView.getSettings().setDomStorageEnabled(true);
@@ -129,8 +174,11 @@ public class LoginActivity extends BaseActivity {
         manager.setAcceptCookie(false);
 
         final String url =
-                "https://oauth.vk.com/token?grant_type=password&client_id=2274003&scope=notify,friends,photos,audio,video,docs,notes,pages,status,offers,questions,wall,groups,messages,email,notifications,stats,ads,,market,offline&client_secret=hHbZxrka2uZ6jB1inYsH&username="
-                        + login + "&password=" + password + captcha + "&v=5.68";
+                "https://oauth.vk.com/token?grant_type=password&client_id=2274003&scope=" + Scopes.all() + "&client_secret=hHbZxrka2uZ6jB1inYsH" +
+                        "&username=" + login +
+                        "&password=" + password +
+                        captcha +
+                        "&v=5.68";
 
         webView.addJavascriptInterface(new HandlerInterface(), "HtmlHandler");
         webView.setWebViewClient(new WebViewClient() {
@@ -145,23 +193,30 @@ public class LoginActivity extends BaseActivity {
     }
 
     public void authorize(final String jsonObject) {
-        if (processDialog.isShowing())
-            processDialog.dismiss();
-        new LowThread(() -> {
-            try {
-                JSONObject response = new JSONObject(jsonObject);
+        ThreadExecutor.execute(new AsyncCallback(this) {
+            JSONObject response;
+
+            @Override
+            public void ready() throws Exception {
+                response = new JSONObject(jsonObject);
+            }
+
+            @Override
+            public void done() {
+                toggleButton();
+
                 if (response.has("error")) {
-                    final String error = response.optString("error");
+                    final String errorDescription = response.optString("error_description");
+                    final String error = response.optString("error", getString(R.string.error));
 
                     switch (error) {
                         case "need_validation":
                             final String redirect_uri = response.optString("redirect_uri");
-                            runOnUiThread(() -> {
-                                Intent intent = new Intent(LoginActivity.this, ValidationActivity.class);
-                                intent.putExtra("url", redirect_uri);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                startActivityForResult(intent, Requests.VALIDATE_LOGIN);
-                            });
+                            Intent intent = new Intent(LoginActivity.this, ValidationActivity.class);
+                            intent.putExtra("url", redirect_uri);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivityForResult(intent, Requests.VALIDATE_LOGIN);
+
                             break;
                         case "need_captcha":
                             String captcha_img = response.optString("captcha_img");
@@ -169,7 +224,7 @@ public class LoginActivity extends BaseActivity {
                             showCaptchaDialog(captcha_sid, captcha_img);
                             break;
                         default:
-                            Snackbar.make(sign, R.string.error, Snackbar.LENGTH_LONG).show();
+                            Snackbar.make(sign, errorDescription, Snackbar.LENGTH_LONG).show();
                             break;
                     }
                 } else {
@@ -177,51 +232,50 @@ public class LoginActivity extends BaseActivity {
                     UserConfig.accessToken = response.optString("access_token");
                     UserConfig.save();
 
-                    processDialog.show();
-
                     getCurrentUser(UserConfig.userId);
                     startMainActivity();
                 }
-            } catch (Exception e) {
-                Log.e("Error auth void", e.toString());
             }
-        }).start();
+
+            @Override
+            public void error(Exception e) {
+                Toast.makeText(LoginActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void showCaptchaDialog(final String captcha_sid, final String captcha_img) {
-        runOnUiThread(() -> {
-            DisplayMetrics metrics = getResources().getDisplayMetrics();
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
 
-            ImageView image = new ImageView(LoginActivity.this);
-            image.setLayoutParams(new ViewGroup.LayoutParams((int) (metrics.widthPixels / 3.5), getResources().getDisplayMetrics().heightPixels / 7));
+        ImageView image = new ImageView(LoginActivity.this);
+        image.setLayoutParams(new ViewGroup.LayoutParams((int) (metrics.widthPixels / 3.5), getResources().getDisplayMetrics().heightPixels / 7));
 
-            Picasso.get().load(captcha_img).priority(Picasso.Priority.HIGH).into(image);
+        Picasso.get().load(captcha_img).priority(Picasso.Priority.HIGH).into(image);
 
-            final TextInputEditText input = new TextInputEditText(LoginActivity.this);
+        final TextInputEditText input = new TextInputEditText(LoginActivity.this);
 
-            input.setHint(getString(R.string.captcha));
-            input.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+        input.setHint(getString(R.string.captcha));
+        input.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
 
-            final AlertDialog.Builder adb = new AlertDialog.Builder(LoginActivity.this);
+        final AlertDialog.Builder adb = new AlertDialog.Builder(LoginActivity.this);
 
-            LinearLayout layout = new LinearLayout(LoginActivity.this);
-            layout.setOrientation(LinearLayout.VERTICAL);
-            layout.setGravity(Gravity.CENTER);
-            layout.addView(image);
-            layout.addView(input);
+        LinearLayout layout = new LinearLayout(LoginActivity.this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setGravity(Gravity.CENTER);
+        layout.addView(image);
+        layout.addView(input);
 
-            adb.setView(layout);
-            adb.setNegativeButton(android.R.string.cancel, null);
-            adb.setPositiveButton(android.R.string.ok,
-                    (dialog, id) -> {
-                        String captcha_code = input.getText().toString().trim();
-                        login(login_, password_, "&captcha_sid=" + captcha_sid + "&captcha_key=" + captcha_code);
-                    });
-            adb.setTitle("Input text from picture:");
-            adb.setCancelable(true);
-            AlertDialog alert = adb.create();
-            alert.show();
-        });
+        adb.setView(layout);
+        adb.setNegativeButton(android.R.string.cancel, null);
+        adb.setPositiveButton(android.R.string.ok,
+                (dialog, id) -> {
+                    String captcha_code = input.getText().toString().trim();
+                    login(login_, password_, "&captcha_sid=" + captcha_sid + "&captcha_key=" + captcha_code);
+                });
+        adb.setTitle(R.string.input_text_from_picture);
+        adb.setCancelable(true);
+        AlertDialog alert = adb.create();
+        alert.show();
     }
 
     private void startWebLogin() {
@@ -235,8 +289,7 @@ public class LoginActivity extends BaseActivity {
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
-        outState.putStringArray("fields", new String[]{login.getEditText().getText().toString().trim(), password.getEditText().getText().toString().trim()});
-        super.onSaveInstanceState(outState);
+        super.onSaveInstanceState(createBundle(outState));
     }
 
     @Override
@@ -283,8 +336,6 @@ public class LoginActivity extends BaseActivity {
 
             @Override
             public void done() {
-                if (processDialog != null && processDialog.isShowing())
-                    processDialog.dismiss();
             }
 
             @Override
@@ -294,9 +345,34 @@ public class LoginActivity extends BaseActivity {
         });
     }
 
+    private Bundle createBundle(Bundle bundle) {
+        if (bundle == null) bundle = new Bundle();
+        bundle.putStringArray("fields", new String[]{login.getEditText().getText().toString().trim(), password.getEditText().getText().toString().trim()});
+        return bundle;
+    }
+
     private void toggleTheme() {
         ThemeManager.toggleTheme();
         applyStyles();
+    }
+
+    @Override
+    public void applyStyles() {
+        finish();
+        startActivity(getIntent().putExtra("data", createBundle(null)).putExtra("show_anim", false));
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+    }
+
+    private void toggleButton() {
+        if (sign.isExtended()) {
+            progressBar.setVisibility(View.VISIBLE);
+            sign.shrink(true);
+            sign.setIcon(drawable(R.drawable.ic_refresh_black_24dp));
+        } else {
+            progressBar.setVisibility(View.INVISIBLE);
+            sign.extend(true);
+            sign.setIcon(drawable(R.drawable.md_done));
+        }
     }
 
     private class HandlerInterface {
@@ -305,7 +381,9 @@ public class LoginActivity extends BaseActivity {
         public void handleHtml(String html) {
             Document doc = Jsoup.parse(html);
             String response_string = doc.select("pre[style=\"word-wrap: break-word; white-space: pre-wrap;\"]").first().text();
-            authorize(response_string);
+            runOnUiThread(() -> {
+                authorize(response_string);
+            });
         }
     }
 }

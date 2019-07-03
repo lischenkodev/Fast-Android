@@ -25,6 +25,6 @@ class SettingsActivity : BaseActivity() {
     override fun applyStyles() {
         finish()
         startActivity(intent)
-        overridePendingTransition(R.anim.abc_fade_in, R.anim.abc_fade_out)
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
     }
 }

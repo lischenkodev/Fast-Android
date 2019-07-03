@@ -8,6 +8,10 @@ import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 
 import androidx.annotation.ColorInt;
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.common.ThemeManager;
@@ -68,5 +72,15 @@ public class ViewUtil {
             window.setStatusBarColor(light ? ColorUtil.darkenColor(color) : color);
             window.setNavigationBarColor(window.getStatusBarColor());
         }
+    }
+
+    @NonNull
+    public static Snackbar snackbar(View v, String text) {
+        return Snackbar.make(v, text, Snackbar.LENGTH_SHORT);
+    }
+
+    @NonNull
+    public static Snackbar snackbar(View v, @StringRes int text) {
+        return Snackbar.make(v, text, Snackbar.LENGTH_SHORT);
     }
 }

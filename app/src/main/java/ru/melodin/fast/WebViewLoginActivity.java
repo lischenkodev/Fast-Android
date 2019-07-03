@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.WebView;
@@ -27,8 +26,7 @@ import ru.melodin.fast.view.FastToolbar;
 public class WebViewLoginActivity extends AppCompatActivity {
 
     private WebView webView;
-    private ProgressBar bar;
-    private FastToolbar tb;
+    private ProgressBar progressBar;
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -38,10 +36,10 @@ public class WebViewLoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web_login);
 
-        bar = findViewById(R.id.progress);
+        progressBar = findViewById(R.id.progress);
         webView = findViewById(R.id.web);
-        tb = findViewById(R.id.tb);
 
+        FastToolbar tb = findViewById(R.id.tb);
         tb.setBackVisible(true);
         tb.setOnBackClickListener((view) -> onBackPressed());
         tb.inflateMenu(R.menu.activity_login);
@@ -60,21 +58,20 @@ public class WebViewLoginActivity extends AppCompatActivity {
         manager.setAcceptCookie(true);
 
         webView.loadUrl(Auth.getUrl(AppIds.FAST_ID, Scopes.allInt()));
+
+        tb.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.refresh) {
+                progressBar.setVisibility(View.VISIBLE);
+                webView.setVisibility(View.GONE);
+                webView.reload();
+            }
+        });
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_login, menu);
         return super.onCreateOptionsMenu(menu);
-    }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.refresh) {
-            webView.reload();
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -120,7 +117,7 @@ public class WebViewLoginActivity extends AppCompatActivity {
 
         @Override
         public void onPageFinished(WebView view, String url) {
-            bar.setVisibility(View.GONE);
+            progressBar.setVisibility(View.GONE);
             webView.setVisibility(View.VISIBLE);
         }
 

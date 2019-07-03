@@ -8,6 +8,11 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Environment;
+import android.view.View;
+
+import androidx.annotation.NonNull;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

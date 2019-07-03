@@ -42,7 +42,7 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="16dp"
-                    android:paddingEnd="0dp">
+                    android:paddingEnd="8dp">
 
                     <ImageView
                         android:layout_width="wrap_content"
@@ -76,7 +76,7 @@
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="16dp"
-                    android:paddingEnd="0dp">
+                    android:paddingEnd="8dp">
 
                     <ImageView
                         android:layout_width="wrap_content"
@@ -104,35 +104,45 @@
 
                 </LinearLayout>
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_login"
-                    android:layout_width="140dp"
-                    android:layout_height="60dp"
-                    android:layout_gravity="center_horizontal"
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_marginTop="30dp"
-                    android:layout_marginBottom="16dp"
-                    android:backgroundTint="?colorAccent"
-                    android:text="@string/login"
-                    android:textColor="#ffffff"
-                    app:cornerRadius="24dp"
-                    app:icon="@drawable/md_done"
-                    app:iconGravity="start"
-                    app:iconTint="@android:color/white"
-                    app:rippleColor="@android:color/white" />
+                    android:paddingBottom="16dp">
 
+                    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                        android:id="@+id/btn_login"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:layout_gravity="center"
+                        android:backgroundTint="?colorAccent"
+                        android:gravity="center"
+                        android:text="@string/login"
+                        android:textColor="?android:textColorPrimaryInverse"
+                        app:cornerRadius="24dp"
+                        app:icon="@drawable/md_done"
+                        app:iconTint="?android:textColorPrimaryInverse"
+                        app:rippleColor="@android:color/white" />
+
+                    <ProgressBar
+                        android:id="@+id/progress"
+                        android:layout_width="76dp"
+                        android:layout_height="76dp"
+                        android:layout_gravity="center" />
+
+                </FrameLayout>
             </LinearLayout>
-
         </LinearLayout>
-
     </com.google.android.material.card.MaterialCardView>
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/web_login"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="20dp"
-        android:text="@string/login_via_webview" />
+        android:background="?selectableItemBackground"
+        android:text="@string/login_via_webview"
+        android:textColor="?colorAccent" />
 
 </FrameLayout>
