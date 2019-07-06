@@ -217,5 +217,4 @@ public class VKUtil {
             return conversation.getLast().isOut() && !conversation.isChat() ? UserConfig.user.getPhoto100() : user == null ? null : user.getPhoto100();
         }
     }
-
 }

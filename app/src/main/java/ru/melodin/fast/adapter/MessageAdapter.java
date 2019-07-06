@@ -194,8 +194,6 @@ public class MessageAdapter extends RecyclerAdapter<VKMessage, MessageAdapter.Vi
                 if (activity.isLoading()) {
                     activity.setLoading(false);
                 }
-
-                activity.updateHistory();
                 break;
         }
     }

@@ -44,6 +44,7 @@ public class AppGlobal extends Application {
         }
 
         CrashManager.init();
+        TaskManager.init();
         ThemeManager.init();
     }
 }

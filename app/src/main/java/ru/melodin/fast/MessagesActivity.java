@@ -63,6 +63,7 @@ import ru.melodin.fast.api.model.VKMessage;
 import ru.melodin.fast.api.model.VKUser;
 import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.common.AttachmentInflater;
+import ru.melodin.fast.common.TaskManager;
 import ru.melodin.fast.common.ThemeManager;
 import ru.melodin.fast.concurrent.AsyncCallback;
 import ru.melodin.fast.concurrent.LowThread;
@@ -199,7 +200,6 @@ public class MessagesActivity extends BaseActivity implements RecyclerAdapter.On
 
         tb.setTitle(title);
         tb.setBackVisible(true);
-        tb.setBackIcon(drawable(R.drawable.md_clear));
         tb.setOnBackClickListener(view -> onBackPressed());
 
         updateToolbar();
@@ -635,65 +635,77 @@ public class MessagesActivity extends BaseActivity implements RecyclerAdapter.On
     private void sendMessage() {
         if (messageText.trim().isEmpty()) return;
 
-        final VKMessage msg = new VKMessage();
-        msg.setText(messageText.trim());
-        msg.setFromId(UserConfig.userId);
-        msg.setPeerId(peerId);
-        msg.setAdded(true);
-        msg.setDate(Calendar.getInstance().getTimeInMillis());
-        msg.setOut(true);
-        msg.setRandomId(random.nextInt());
-        msg.setStatus(VKMessage.Status.SENDING);
+        VKMessage message = new VKMessage();
+        message.setText(messageText.trim());
+        message.setFromId(UserConfig.userId);
+        message.setPeerId(peerId);
+        message.setAdded(true);
+        message.setDate(Calendar.getInstance().getTimeInMillis());
+        message.setOut(true);
+        message.setRandomId(random.nextInt());
+        message.setStatus(VKMessage.Status.SENDING);
 
-        adapter.addMessage(msg, false);
-        adapter.notifyDataSetChanged();
+        adapter.addMessage(message, false);
 
         final int position = adapter.getLastPosition();
 
+        final VKMessage msg = adapter.getItem(position);
+
+        adapter.notifyDataSetChanged();
         recyclerView.smoothScrollToPosition(position);
 
         final int size = adapter.getItemCount();
 
-        ThreadExecutor.execute(new AsyncCallback(this) {
+        new LowThread(new Runnable() {
 
             int id = -1;
 
             @Override
-            public void ready() throws Exception {
-                id = VKApi.messages().send().randomId(msg.getRandomId()).text(messageText.trim()).peerId(peerId).execute(Integer.class).get(0);
-            }
-
-            @Override
-            public void done() {
-                if (typing) {
-                    typing = false;
-                    if (timer != null)
-                        timer.cancel();
+            public void run() {
+                if (!Util.hasConnection()) {
+                    try {
+                        throw new RuntimeException("No internet");
+                    } catch (Exception ignored) {
+                    }
                 }
 
-                msg.setId(id);
+                TaskManager.sendMessage(VKApi.messages().send().randomId(msg.getRandomId()).text(messageText.trim()).peerId(peerId), new TaskManager.CompleteListener() {
+                    @Override
+                    public void onComplete(ArrayList<Object> models) {
+                        id = (int) models.get(0);
 
-                int i = adapter.searchPosition(id);
-                adapter.getItem(i).setStatus(VKMessage.Status.SENT);
-                adapter.notifyItemChanged(i, -1);
+                        if (typing) {
+                            typing = false;
+                            if (timer != null)
+                                timer.cancel();
+                        }
 
-                if (adapter.getItemCount() > size) {
-                    adapter.remove(i);
-                    adapter.add(msg);
-                    adapter.notifyItemMoved(i, adapter.getLastPosition());
-                    adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
-                }
+                        msg.setId(id);
+                        msg.setStatus(VKMessage.Status.SENT);
+
+                        int position = adapter.searchPosition(id);
+
+                        adapter.notifyDataSetChanged();
+
+                        if (adapter.getItemCount() > size) {
+                            adapter.remove(position);
+                            adapter.add(msg);
+                            adapter.notifyItemMoved(position, adapter.getLastPosition());
+                            adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e("Error send message", Log.getStackTraceString(e));
+                        Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
+
+                        msg.setStatus(VKMessage.Status.ERROR);
+                        adapter.notifyDataSetChanged();
+                    }
+                });
             }
-
-            @Override
-            public void error(Exception e) {
-                Log.e("Error send message", Log.getStackTraceString(e));
-                Toast.makeText(MessagesActivity.this, R.string.error, Toast.LENGTH_SHORT).show();
-
-                adapter.getItem(position).setStatus(VKMessage.Status.ERROR);
-                adapter.notifyDataSetChanged();
-            }
-        });
+        }).start();
     }
 
     public RecyclerView getRecyclerView() {
@@ -747,7 +759,7 @@ public class MessagesActivity extends BaseActivity implements RecyclerAdapter.On
 
         loading = true;
 
-        if (adapter.isEmpty())
+        if (adapter == null || adapter.isEmpty())
             tb.setSubtitle(R.string.loading);
 
         ThreadExecutor.execute(new AsyncCallback(this) {
@@ -876,6 +888,7 @@ public class MessagesActivity extends BaseActivity implements RecyclerAdapter.On
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_chat_history, menu);
+        actionTb.getNavigationIcon().setTint(ThemeManager.getMain());
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -1085,6 +1098,7 @@ public class MessagesActivity extends BaseActivity implements RecyclerAdapter.On
             remove.add(getString(R.string.pin_message));
             remove.add(getString(R.string.edit));
         } else {
+            remove.add(getString(R.string.retry));
             if (!conversation.isCanChangePin()) {
                 remove.add(getString(R.string.pin_message));
             }
@@ -1109,7 +1123,9 @@ public class MessagesActivity extends BaseActivity implements RecyclerAdapter.On
         adb.setItems(items, (dialogInterface, i) -> {
             String title = items[i];
 
-            if (title.equals(getString(R.string.delete))) {
+            if (title.equals(getString(R.string.retry))) {
+                TaskManager.resendMessage(item.getRandomId());
+            } else if (title.equals(getString(R.string.delete))) {
                 showConfirmDeleteMessages(new ArrayList<>(Collections.singletonList(item)));
             } else if (title.equals(getString(R.string.pin_message))) {
                 showConfirmPinDialog(item);

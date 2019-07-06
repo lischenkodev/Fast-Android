@@ -35,7 +35,6 @@ import ru.melodin.fast.concurrent.ThreadExecutor;
 import ru.melodin.fast.current.BaseFragment;
 import ru.melodin.fast.database.CacheStorage;
 import ru.melodin.fast.database.DatabaseHelper;
-import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
 import ru.melodin.fast.view.FastToolbar;
@@ -218,12 +217,9 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
 
         int peerId = conversation.getPeerId();
 
-        VKUser user = CacheStorage.getUser(peerId);
-        VKGroup group = CacheStorage.getGroup(VKGroup.toGroupId(peerId));
-
         Intent intent = new Intent(getActivity(), MessagesActivity.class);
-        intent.putExtra("title", conversation.getTitle());
-        intent.putExtra("photo", adapter.getPhoto(conversation));
+        intent.putExtra("title", conversation.getFullTitle());
+        intent.putExtra("photo", conversation.getPhoto());
         intent.putExtra("conversation", conversation);
         intent.putExtra("peer_id", peerId);
         intent.putExtra("can_write", conversation.isCanWrite());
@@ -283,15 +279,12 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
 
         VKConversation conversation = adapter.getItem(position);
 
-        int peerId = conversation.getLastMessageId() == -1 || conversation.getLast() == null ? conversation.getPeerId() : conversation.getLast().getPeerId();
+        int peerId = conversation.getPeerId();
 
-        VKUser user = MemoryCache.getUser(peerId);
-        VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(peerId));
-
-        adb.setTitle(adapter.getTitle(conversation, user, group));
+        adb.setTitle(conversation.getFullTitle());
 
         ArrayList<String> list = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.conversation_functions)));
-        ArrayList<String> remove = new ArrayList<>(list.size());
+        ArrayList<String> remove = new ArrayList<>();
 
         if (conversation.getLast() == null || conversation.getLastMessageId() == -1 || conversation.getLast().isOut() || conversation.isRead() || conversation.getLast().isRead()) {
             remove.add(getString(R.string.read));

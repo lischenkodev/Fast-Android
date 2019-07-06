@@ -527,12 +527,11 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
                 fromUser = searchUser(last.getFromId());
             }
 
-            String title_ = item.getTitle(peerUser, peerGroup);
-            String peerAvatar = VKUtil.getPhoto200(item, peerUser, peerGroup);
+            String peerAvatar = item.getPhoto();
             String fromAvatar = VKUtil.getPhoto100(item, fromUser, fromGroup);
 
             body.setText(last.getText());
-            title.setText(title_);
+            title.setText(item.getFullTitle());
 
             counter.setText(item.getUnread() > 0 ? String.valueOf(item.getUnread()) : "");
             time.setText(Util.dateFormatter.format(last.getDate() * 1000));

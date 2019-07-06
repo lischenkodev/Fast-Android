@@ -223,6 +223,7 @@ public class VKConversation extends VKModel implements Serializable {
         }
     }
 
+    @Contract(value = "null -> null", pure = true)
     public static String getType(Type type) {
         if (type == null) return null;
         switch (type) {
@@ -246,36 +247,82 @@ public class VKConversation extends VKModel implements Serializable {
     public String getFullTitle() {
         int peerId = getPeerId();
 
-        VKGroup group = null;
-        VKUser user = null;
+        VKGroup group;
+        VKUser user;
 
         switch (getType()) {
             case GROUP:
                 group = CacheStorage.getGroup(VKGroup.toGroupId(peerId));
-                break;
+                if (group == null) {
+                    EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+                    return null;
+                } else {
+                    return group.toString();
+                }
             case USER:
                 user = CacheStorage.getUser(getPeerId());
                 if (user == null) {
-                    user = VKUser.EMPTY;
                     EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+                    return null;
+                } else {
+                    return user.toString();
                 }
             case CHAT:
-                if (isGroupChannel())
+                if (isGroupChannel()) {
                     group = CacheStorage.getGroup(VKGroup.toGroupId(peerId));
-                break;
+                    if (group == null) {
+                        EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+                        return null;
+                    } else {
+                        return group.toString();
+                    }
+                } else {
+                    return toString();
+                }
         }
 
-        if (group == null) {
-            EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+        return null;
+    }
+
+    @Nullable
+    public String getPhoto() {
+        int peerId = getPeerId();
+
+        VKGroup group;
+        VKUser user;
+
+        switch (getType()) {
+            case GROUP:
+                group = CacheStorage.getGroup(VKGroup.toGroupId(peerId));
+                if (group == null) {
+                    EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+                    return null;
+                } else {
+                    return group.getPhoto200();
+                }
+            case USER:
+                user = CacheStorage.getUser(getPeerId());
+                if (user == null) {
+                    EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+                    return null;
+                } else {
+                    return user.getPhoto200();
+                }
+            case CHAT:
+                if (isGroupChannel()) {
+                    group = CacheStorage.getGroup(VKGroup.toGroupId(peerId));
+                    if (group == null) {
+                        EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+                        return null;
+                    } else {
+                        return group.getPhoto200();
+                    }
+                } else {
+                    return getPhoto200();
+                }
         }
 
-        if (peerId > 2_000_000_000) {
-            return toString();
-        } else if (peerId < 0) {
-            return group == null ? null : group.toString();
-        } else {
-            return user == null ? null : user.toString();
-        }
+        return null;
     }
 
     @NonNull

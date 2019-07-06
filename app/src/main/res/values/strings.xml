@@ -158,4 +158,5 @@
     <string name="return_to_chat">Return to chat</string>
     <string name="subscribe_to_channel">Subscribe to channel</string>
     <string name="unsubscribe_from_channel">Unsubscribe from channel</string>
+    <string name="retry">Retry</string>
 </resources>

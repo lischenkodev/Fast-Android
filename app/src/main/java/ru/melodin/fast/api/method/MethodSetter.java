@@ -61,7 +61,7 @@ public class MethodSetter {
     }
 
     public String getParams() {
-        if (params == null || (params != null && params.size() == 0)) return "";
+        if (params == null || params.size() == 0) return "";
 
         StringBuilder buffer = new StringBuilder();
         try {
