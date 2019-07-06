@@ -2,6 +2,7 @@ package ru.melodin.fast.view;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -21,6 +22,7 @@ import androidx.annotation.AttrRes;
 import androidx.annotation.ColorInt;
 import androidx.annotation.MenuRes;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import ru.melodin.fast.R;
 
@@ -67,7 +69,7 @@ public class FastToolbar extends FrameLayout {
 
         title = findViewById(R.id.abc_tb_title);
         subtitle = findViewById(R.id.abc_tb_subtitle);
-        avatar = findViewById(R.id.userAvatar);
+        avatar = findViewById(R.id.abc_user_avatar);
         back = findViewById(R.id.abc_tb_back);
         menuLayout = findViewById(R.id.abc_tb_menu);
 
@@ -80,12 +82,7 @@ public class FastToolbar extends FrameLayout {
 
         for (int i = 0; i < menu.size(); i++) {
             final int finalI = i;
-            menuLayout.getChildAt(i).setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    onMenuItemClickListener.onMenuItemClick(menu.getItem(finalI));
-                }
-            });
+            menuLayout.getChildAt(i).setOnClickListener(view -> onMenuItemClickListener.onMenuItemClick(menu.getItem(finalI)));
         }
     }
 
@@ -150,16 +147,22 @@ public class FastToolbar extends FrameLayout {
         return menu;
     }
 
-    public ImageView getAvatar() {
-        return avatar;
-    }
-
     public void setAvatar(Drawable drawable) {
         avatar.setImageDrawable(drawable);
+        avatar.setVisibility(drawable == null ? GONE : VISIBLE);
     }
 
     public void setAvatar(int resId) {
-        avatar.setImageResource(resId);
+        setAvatar(ContextCompat.getDrawable(getContext(), resId));
+    }
+
+    public void setAvatar(Bitmap bitmap) {
+        avatar.setImageBitmap(bitmap);
+        avatar.setVisibility(bitmap == null ? GONE : VISIBLE);
+    }
+
+    public ImageView getAvatar() {
+        return avatar;
     }
 
     public String getSubtitle() {

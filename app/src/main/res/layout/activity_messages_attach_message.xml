@@ -9,6 +9,7 @@
         android:id="@+id/message_line"
         android:layout_width="2dp"
         android:layout_height="match_parent"
+        android:layout_marginStart="6dp"
         android:layout_marginEnd="4dp"
         tools:background="?colorAccent" />
 

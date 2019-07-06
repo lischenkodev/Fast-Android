@@ -8,7 +8,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 
@@ -31,13 +30,7 @@ public class GroupAdapter extends RecyclerAdapter<VKGroup, GroupAdapter.ViewHold
         return new ViewHolder(inflater.inflate(R.layout.item_group, parent, false));
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        super.onBindViewHolder(holder, position);
-        holder.bind(position);
-    }
-
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerHolder {
 
         CircleImageView avatar;
 
@@ -52,7 +45,8 @@ public class GroupAdapter extends RecyclerAdapter<VKGroup, GroupAdapter.ViewHold
             description = v.findViewById(R.id.description);
         }
 
-        void bind(int position) {
+        @Override
+        public void bind(int position) {
             VKGroup group = getItem(position);
 
             name.setText(group.getName());

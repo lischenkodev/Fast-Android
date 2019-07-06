@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -63,6 +65,9 @@ public class VKApi {
             return null;
         }
 
+        if (BuildConfig.DEBUG)
+            Log.i("Class is", cls.getSimpleName());
+
         if (cls == VKLongPollServer.class) {
             VKLongPollServer server = new VKLongPollServer(json.optJSONObject("response"));
             return (ArrayList<T>) ArrayUtil.singletonList(server);
@@ -78,7 +83,7 @@ public class VKApi {
             return (ArrayList<T>) ArrayUtil.singletonList(value);
         }
 
-        if (cls == Integer.class) {
+        if (cls == Integer.class || cls == int.class) {
             int value = json.optInt("response");
             return (ArrayList<T>) ArrayUtil.singletonList(value);
         }
@@ -181,7 +186,8 @@ public class VKApi {
         });
     }
 
-    private static JSONArray optItems(JSONObject source) {
+    @Nullable
+    private static JSONArray optItems(@NonNull JSONObject source) {
         Object response = source.opt("response");
         if (response instanceof JSONArray) {
             return (JSONArray) response;
@@ -189,6 +195,7 @@ public class VKApi {
 
         if (response instanceof JSONObject) {
             JSONObject json = (JSONObject) response;
+            if (!json.has("items")) return null;
             return json.optJSONArray("items");
         }
 
@@ -208,7 +215,7 @@ public class VKApi {
         }
     }
 
-    private static void checkError(JSONObject json, String url) throws VKException {
+    private static void checkError(@NonNull JSONObject json, String url) throws VKException {
         if (json.has("error")) {
             JSONObject error = json.optJSONObject("error");
 

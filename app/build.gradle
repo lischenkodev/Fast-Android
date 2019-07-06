@@ -6,7 +6,6 @@ android {
     compileSdkVersion 29
     buildToolsVersion "29.0.0"
 
-
     defaultConfig {
         applicationId "ru.melodin.fast"
         minSdkVersion 21

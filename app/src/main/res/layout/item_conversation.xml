@@ -58,11 +58,10 @@
                     android:layout_weight="1">
 
                     <TextView
-                        android:id="@+id/abc_tb_title"
+                        android:id="@+id/title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
-                        android:layout_marginBottom="4dp"
                         android:fontFamily="@font/ps_regular"
                         android:maxLines="1"
                         android:singleLine="true"
@@ -106,6 +105,7 @@
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:layout_marginEnd="6dp"
+
                     tools:src="@drawable/avatar_placeholder" />
 
                 <TextView

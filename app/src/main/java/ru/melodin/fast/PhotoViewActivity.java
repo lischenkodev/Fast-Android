@@ -1,7 +1,6 @@
 package ru.melodin.fast;
 
 import android.Manifest;
-import android.animation.Animator;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.Menu;
@@ -35,61 +34,13 @@ public class PhotoViewActivity extends AppCompatActivity {
     private LinearLayout items;
     private ViewPager pager;
 
-    private int animState = AnimState.SHOWED;
-    private int likeState = LikeState.UNLIKED;
+    private AnimState animState = AnimState.SHOWED;
+    private LikeState likeState = LikeState.UNLIKED;
 
     private PhotoViewAdapter adapter;
     private VKPhoto source;
 
     private ImageButton like, comment, repost;
-    private Animator.AnimatorListener hideListener = new Animator.AnimatorListener() {
-        @Override
-        public void onAnimationStart(Animator animation) {
-        }
-
-        @Override
-        public void onAnimationEnd(Animator animation) {
-            if (tb.getVisibility() != View.INVISIBLE) {
-                tb.setVisibility(View.INVISIBLE);
-            }
-
-            if (items.getVisibility() != View.INVISIBLE) {
-                items.setVisibility(View.INVISIBLE);
-            }
-        }
-
-        @Override
-        public void onAnimationCancel(Animator animation) {
-        }
-
-        @Override
-        public void onAnimationRepeat(Animator animation) {
-        }
-    };
-    private Animator.AnimatorListener showListener = new Animator.AnimatorListener() {
-        @Override
-        public void onAnimationStart(Animator animation) {
-            if (tb.getVisibility() != View.VISIBLE) {
-                tb.setVisibility(View.VISIBLE);
-            }
-
-            if (items.getVisibility() != View.VISIBLE) {
-                items.setVisibility(View.VISIBLE);
-            }
-        }
-
-        @Override
-        public void onAnimationEnd(Animator animation) {
-        }
-
-        @Override
-        public void onAnimationCancel(Animator animation) {
-        }
-
-        @Override
-        public void onAnimationRepeat(Animator animation) {
-        }
-    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -104,15 +55,19 @@ public class PhotoViewActivity extends AppCompatActivity {
         repost = findViewById(R.id.repost);
 
         setSupportActionBar(tb);
-
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+
+        changeTbVisibility();
+
         ArrayList<VKPhoto> photos = (ArrayList<VKPhoto>) getIntent().getSerializableExtra("photo");
+        source = (VKPhoto) getIntent().getSerializableExtra("selected");
+
         if (ArrayUtil.isEmpty(photos)) {
             finish();
             return;
         }
-        source = (VKPhoto) getIntent().getSerializableExtra("selected");
 
         int selectedPosition = 0;
 
@@ -123,7 +78,25 @@ public class PhotoViewActivity extends AppCompatActivity {
                     selectedPosition = i;
             }
 
-        if (!ArrayUtil.isEmpty(photos) && Util.hasConnection()) {
+        pager = findViewById(R.id.pager);
+        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                setTitle(position + 1, photos.size());
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+        if (Util.hasConnection()) {
             createAdapter(photos);
         }
 
@@ -150,12 +123,28 @@ public class PhotoViewActivity extends AppCompatActivity {
 
     public void changeTbVisibility() {
         if (animState == AnimState.SHOWED) {
-            animState = AnimState.HIDED;
-            tb.animate().alpha(0).setDuration(300).setListener(hideListener).start();
+            animState = AnimState.HIDDEN;
+            tb.animate().alpha(0).setDuration(300).withEndAction(() -> {
+                if (tb.getVisibility() != View.INVISIBLE) {
+                    tb.setVisibility(View.INVISIBLE);
+                }
+
+                if (items.getVisibility() != View.INVISIBLE) {
+                    items.setVisibility(View.INVISIBLE);
+                }
+            }).start();
             items.animate().alpha(0).setDuration(300).start();
         } else {
             animState = AnimState.SHOWED;
-            tb.animate().alpha(1).setDuration(300).setListener(showListener).start();
+            tb.animate().alpha(1).setDuration(300).withStartAction(() -> {
+                if (tb.getVisibility() != View.VISIBLE) {
+                    tb.setVisibility(View.VISIBLE);
+                }
+
+                if (items.getVisibility() != View.VISIBLE) {
+                    items.setVisibility(View.VISIBLE);
+                }
+            }).start();
             items.animate().alpha(1).setDuration(300).start();
         }
     }
@@ -216,29 +205,10 @@ public class PhotoViewActivity extends AppCompatActivity {
     }
 
     private void createAdapter(final ArrayList<VKPhoto> photos) {
-        if (ArrayUtil.isEmpty(photos)) return;
-        pager = findViewById(R.id.pager);
-
-        pager.setOffscreenPageLimit(photos.size() - 1);
+        pager.setOffscreenPageLimit(photos.size() == 1 ? 1 : photos.size() - 1);
 
         adapter = new PhotoViewAdapter(getSupportFragmentManager(), photos);
         pager.setAdapter(adapter);
-        pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                setTitle(position + 1, photos.size());
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });
     }
 
     private void setTitle(int current, int max) {
@@ -261,13 +231,11 @@ public class PhotoViewActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private class LikeState {
-        static final int LIKED = 1;
-        static final int UNLIKED = 2;
+    private enum LikeState {
+        LIKED, UNLIKED
     }
 
-    private class AnimState {
-        static final int SHOWED = 1;
-        static final int HIDED = 2;
+    private enum AnimState {
+        SHOWED, HIDDEN
     }
 }

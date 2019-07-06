@@ -8,6 +8,7 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -19,7 +20,6 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 
@@ -108,13 +108,13 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             case LongPollEvents.KEY_NOTIFICATIONS_CHANGE:
                 changeNotifications((int) data[1], (boolean) data[2], (int) data[3]);
                 break;
-            case Keys.KEY_UPDATE_USER:
+            case Keys.UPDATE_USER:
                 updateUser((int) data[1]);
                 break;
-            case Keys.KEY_UPDATE_GROUP:
+            case Keys.UPDATE_GROUP:
                 updateGroup((int) data[1]);
                 break;
-            case Keys.KEY_CONNECTED:
+            case Keys.CONNECTED:
                 if (fragment.isLoading())
                     fragment.setLoading(false);
 
@@ -347,12 +347,6 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        super.onBindViewHolder(holder, position);
-        holder.bind(position);
-    }
-
-    @Override
     protected boolean onQueryItem(VKConversation item, String lowerQuery) {
         if (item == null) return false;
 
@@ -375,42 +369,8 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
         return false;
     }
 
-    public String getTitle(@NonNull VKConversation item, VKUser user, VKGroup group) {
-        int peerId = item.getLast().getPeerId();
-
-        if (peerId > 2_000_000_000) {
-            return item.toString();
-        } else if (peerId < 0) {
-            return group == null ? "Group" : group.toString();
-        } else {
-            return user == null ? "User" : user.toString();
-        }
-    }
-
-    public String getPhoto(@NonNull VKConversation item, VKUser user, VKGroup group) {
-        int peerId = item.getLast().getPeerId();
-
-        if (peerId > 2_000_000_000) {
-            return item.getPhoto200();
-        } else if (peerId < 0) {
-            return group == null ? "" : group.getPhoto200();
-        } else {
-            return user == null ? "" : user.getPhoto200();
-        }
-    }
-
-    private String getFromPhoto(@NonNull VKConversation item, VKUser user, VKGroup group) {
-        int fromId = item.getLast().getFromId();
-
-        if (fromId < 0) {
-            return group == null ? "" : group.getPhoto100();
-        } else {
-            return item.getLast().isOut() && !item.isChat() ? UserConfig.user.getPhoto100() : user == null ? "" : user.getPhoto100();
-        }
-    }
-
     private VKUser searchUser(int userId) {
-        VKUser user = MemoryCache.getUser(userId);
+        VKUser user = CacheStorage.getUser(userId);
         if (user == null) {
             loadUser(userId);
             return VKUser.EMPTY;
@@ -433,7 +393,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             public void done() {
                 CacheStorage.insert(DatabaseHelper.USERS_TABLE, user);
                 updateUser(userId);
-                EventBus.getDefault().postSticky(new Object[]{Keys.KEY_UPDATE_USER, userId});
+                EventBus.getDefault().postSticky(new Object[]{Keys.UPDATE_USER, userId});
             }
 
             @Override
@@ -470,7 +430,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             public void done() {
                 CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, group);
                 updateGroup(groupId);
-                EventBus.getDefault().postSticky(new Object[]{Keys.KEY_UPDATE_GROUP, groupId});
+                EventBus.getDefault().postSticky(new Object[]{Keys.UPDATE_GROUP, groupId});
             }
 
             @Override
@@ -492,7 +452,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
         return -1;
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerHolder {
 
         ImageView avatar;
         ImageView avatarSmall;
@@ -528,7 +488,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             out = v.findViewById(R.id.icon_out_message);
             muted = v.findViewById(R.id.muted);
 
-            title = v.findViewById(R.id.abc_tb_title);
+            title = v.findViewById(R.id.title);
             body = v.findViewById(R.id.body);
             time = v.findViewById(R.id.date);
             counter = v.findViewById(R.id.counter);
@@ -543,7 +503,8 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             counter.setBackground(background);
         }
 
-        void bind(int position) {
+        @Override
+        public void bind(int position) {
             VKConversation item = getItem(position);
 
             VKMessage last = item.getLast();
@@ -558,17 +519,7 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             VKUser fromUser = null;
             VKUser peerUser = null;
 
-            switch (item.getType()) {
-                case GROUP:
-                    peerGroup = searchGroup(VKGroup.toGroupId(last.getPeerId()));
-                    break;
-                case USER:
-                    peerUser = searchUser(last.getPeerId());
-                    break;
-            }
 
-            if (peerGroup == null && item.isGroupChannel())
-                peerGroup = searchGroup(VKGroup.toGroupId(last.getPeerId()));
 
             if (item.isFromGroup()) {
                 fromGroup = searchGroup(VKGroup.toGroupId(last.getFromId()));
@@ -576,9 +527,9 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
                 fromUser = searchUser(last.getFromId());
             }
 
-            String title_ = getTitle(item, peerUser, peerGroup);
-            String peerAvatar = getPhoto(item, peerUser, peerGroup);
-            String fromAvatar = getFromPhoto(item, fromUser, fromGroup);
+            String title_ = item.getTitle(peerUser, peerGroup);
+            String peerAvatar = VKUtil.getPhoto200(item, peerUser, peerGroup);
+            String fromAvatar = VKUtil.getPhoto100(item, fromUser, fromGroup);
 
             body.setText(last.getText());
             title.setText(title_);
@@ -593,6 +544,8 @@ public class ConversationAdapter extends RecyclerAdapter<VKConversation, Convers
             } else {
                 avatarSmall.setVisibility(View.GONE);
             }
+
+            ((LinearLayout) avatarSmall.getParent()).setGravity(avatar.getVisibility() == View.VISIBLE ? Gravity.CENTER_VERTICAL : Gravity.START | Gravity.TOP);
 
             if (!TextUtils.isEmpty(peerAvatar)) {
                 Picasso.get()

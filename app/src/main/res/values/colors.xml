@@ -8,7 +8,7 @@
     <color name="dark_primary">#232323</color>
     <color name="dark_primary_dark">@color/dark_primary</color>
     <color name="dark_accent">#42A5F5</color>
-    <color name="dark_background">#0E0E0E</color>
+    <color name="dark_background">#161616</color>
 
     <color name="online">#7BB865</color>
 

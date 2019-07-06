@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 
 import com.squareup.picasso.Callback;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 
 import ru.melodin.fast.PhotoViewActivity;
 import ru.melodin.fast.R;
+import ru.melodin.fast.adapter.MessageAdapter;
 import ru.melodin.fast.api.VKUtil;
 import ru.melodin.fast.api.model.VKAudio;
 import ru.melodin.fast.api.model.VKDoc;
@@ -56,18 +58,25 @@ public class AttachmentInflater {
     public static final String KEY_PLAY_AUDIO = "play_audio";
     public static final String KEY_PAUSE_AUDIO = "pause_audio";
     public static final String KEY_STOP_AUDIO = "stop_audio";
+
     private Context context;
     private LayoutInflater inflater;
     private DisplayMetrics metrics;
 
-    public AttachmentInflater(Context context) {
+    private @Nullable
+    MessageAdapter adapter;
+
+    public AttachmentInflater(@Nullable MessageAdapter adapter, Context context) {
+        this.adapter = adapter;
         this.context = context;
         this.inflater = LayoutInflater.from(context);
         this.metrics = context.getResources().getDisplayMetrics();
     }
 
-    public synchronized static AttachmentInflater getInstance(Context context) {
-        return new AttachmentInflater(context);
+    @Contract("_, _ -> new")
+    @NonNull
+    public synchronized static AttachmentInflater getInstance(@Nullable MessageAdapter adapter, Context context) {
+        return new AttachmentInflater(adapter, context);
     }
 
     public void showForwardedMessages(VKMessage item, ViewGroup parent, boolean reply, boolean withStyles) {
@@ -79,7 +88,7 @@ public class AttachmentInflater {
             }
     }
 
-    public void inflateAttachments(VKMessage item, ViewGroup parent, ViewGroup images, int maxWidth, boolean forwarded) {
+    private void inflateAttachments(@NonNull VKMessage item, ViewGroup parent, ViewGroup images, int maxWidth, boolean forwarded) {
         ArrayList<VKModel> attachments = item.getAttachments();
         for (int i = 0; i < attachments.size(); i++) {
             VKModel attachment = attachments.get(i);
@@ -88,15 +97,15 @@ public class AttachmentInflater {
             } else if (attachment instanceof VKPhoto) {
                 photo(item, images, (VKPhoto) attachment, forwarded ? maxWidth : -1);
             } else if (attachment instanceof VKSticker) {
-                sticker(images, (VKSticker) attachment);
+                sticker(item, images, (VKSticker) attachment);
             } else if (attachment instanceof VKDoc) {
                 doc(item, parent, (VKDoc) attachment);
             } else if (attachment instanceof VKLink) {
                 link(item, parent, (VKLink) attachment);
             } else if (attachment instanceof VKVideo) {
-                video(parent, (VKVideo) attachment, forwarded ? maxWidth : -1);
+                video(item, parent, (VKVideo) attachment, forwarded ? maxWidth : -1);
             } else if (attachment instanceof VKGraffiti) {
-                graffiti(parent, (VKGraffiti) attachment);
+                graffiti(item, parent, (VKGraffiti) attachment);
             } else if (attachment instanceof VKVoice) {
                 voice(item, parent, (VKVoice) attachment);
             } else if (attachment instanceof VKWall) {
@@ -107,11 +116,11 @@ public class AttachmentInflater {
         }
     }
 
-    public void loadImage(final ImageView image, final String smallSrc, final String normalSrc) {
+    private void loadImage(final ImageView image, final String smallSrc, final String normalSrc) {
         loadImage(image, smallSrc, normalSrc, null);
     }
 
-    public void loadImage(final ImageView image, final String smallSrc, final String normalSrc, Drawable placeholder) {
+    private void loadImage(final ImageView image, final String smallSrc, final String normalSrc, Drawable placeholder) {
         if (TextUtils.isEmpty(smallSrc)) return;
         try {
             Picasso.get()
@@ -198,6 +207,12 @@ public class AttachmentInflater {
 
     public void wall(VKMessage item, ViewGroup parent, final VKWall source) {
         View v = inflater.inflate(R.layout.activity_messages_attach_doc, parent, false);
+        v.setOnLongClickListener((view -> {
+            simulateLongClick(item);
+            return true;
+        }));
+
+        v.setOnClickListener(view -> isSelected(item));
 
         TextView title = v.findViewById(R.id.abc_tb_title);
         TextView body = v.findViewById(R.id.body);
@@ -209,14 +224,20 @@ public class AttachmentInflater {
         title.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
         body.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
 
-        Drawable arrow = context.getResources().getDrawable(R.drawable.ic_assignment_black_24dp);
-        icon.setImageDrawable(arrow);
+        Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_assignment_black_24dp);
+        icon.setImageDrawable(drawable);
 
         parent.addView(v);
     }
 
-    public void graffiti(ViewGroup parent, @NonNull VKGraffiti source) {
+    public void graffiti(VKMessage item, ViewGroup parent, @NonNull VKGraffiti source) {
         final ImageView image = (ImageView) inflater.inflate(R.layout.activity_messages_attach_photo, parent, false);
+        image.setOnLongClickListener((view -> {
+            simulateLongClick(item);
+            return true;
+        }));
+
+        image.setOnClickListener(view -> isSelected(item));
 
         image.setLayoutParams(getParams());
         loadImage(image, source.url, null);
@@ -227,8 +248,14 @@ public class AttachmentInflater {
         parent.addView(image);
     }
 
-    public void sticker(ViewGroup parent, VKSticker source) {
+    public void sticker(VKMessage item, ViewGroup parent, VKSticker source) {
         final ImageView image = (ImageView) inflater.inflate(R.layout.activity_messages_attach_photo, parent, false);
+        image.setOnLongClickListener((view -> {
+            simulateLongClick(item);
+            return true;
+        }));
+
+        image.setOnClickListener(view -> isSelected(item));
 
         image.setLayoutParams(getParams(400, 400));
         loadImage(image, ThemeManager.isDark() ? source.getMaxBackgroundSize() : source.getMaxSize(), null);
@@ -246,8 +273,14 @@ public class AttachmentInflater {
         parent.addView(text);
     }
 
-    public void video(ViewGroup parent, @NonNull final VKVideo source, int maxWidth) {
+    public void video(VKMessage item, ViewGroup parent, @NonNull final VKVideo source, int maxWidth) {
         View v = inflater.inflate(R.layout.activity_messages_attach_video, parent, false);
+        v.setOnLongClickListener((view) -> {
+            simulateLongClick(item);
+            return true;
+        });
+
+        v.setOnClickListener(view -> isSelected(item));
 
         ImageView image = v.findViewById(R.id.image);
         TextView time = v.findViewById(R.id.time);
@@ -266,6 +299,8 @@ public class AttachmentInflater {
 
         image.setLayoutParams(maxWidth == -1 ? getParams(source.getMaxWidth(), source.getMaxHeight()) : getParams(maxWidth));
         image.setOnClickListener(v -> {
+            if (isSelected(item)) return;
+
             Intent intent = new Intent(context, PhotoViewActivity.class);
 
             ArrayList<VKPhoto> photos = new ArrayList<>();
@@ -281,6 +316,11 @@ public class AttachmentInflater {
             context.startActivity(intent);
         });
 
+        image.setOnLongClickListener((view -> {
+            simulateLongClick(item);
+            return true;
+        }));
+
         loadImage(image, source.getMaxSize(), null);
         parent.addView(image);
     }
@@ -289,6 +329,15 @@ public class AttachmentInflater {
         View v = inflater.inflate(R.layout.activity_messages_attach_message, parent, false);
         v.setClickable(false);
         v.setFocusable(false);
+
+        if (item != null) {
+            v.setOnLongClickListener((view -> {
+                simulateLongClick(item);
+                return true;
+            }));
+
+            v.setOnClickListener(view -> isSelected(item));
+        }
 
         TextView name = v.findViewById(R.id.userName);
         TextView message = v.findViewById(R.id.user_message);
@@ -344,6 +393,10 @@ public class AttachmentInflater {
 
     public void doc(VKMessage item, ViewGroup parent, @NonNull final VKDoc source) {
         View v = inflater.inflate(R.layout.activity_messages_attach_doc, parent, false);
+        v.setOnLongClickListener((view -> {
+            simulateLongClick(item);
+            return true;
+        }));
 
         TextView title = v.findViewById(R.id.abc_tb_title);
         TextView size = v.findViewById(R.id.body);
@@ -358,6 +411,8 @@ public class AttachmentInflater {
 
         parent.addView(v);
         v.setOnClickListener(p1 -> {
+            if (isSelected(item)) return;
+
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(source.getUrl()));
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
@@ -366,6 +421,12 @@ public class AttachmentInflater {
 
     public void voice(@NonNull final VKMessage item, ViewGroup parent, @NonNull final VKVoice source) {
         View v = inflater.inflate(R.layout.activity_messages_attach_audio, parent, false);
+        v.setOnLongClickListener((view -> {
+            simulateLongClick(item);
+            return true;
+        }));
+
+        v.setOnClickListener(view -> isSelected(item));
 
         TextView title = v.findViewById(R.id.abc_tb_title);
         TextView body = v.findViewById(R.id.body);
@@ -398,8 +459,15 @@ public class AttachmentInflater {
         parent.addView(v);
     }
 
-    public void audio(@NonNull VKMessage item, ViewGroup parent, @NonNull VKAudio source) {
+    public void audio(@Nullable VKMessage item, ViewGroup parent, @NonNull VKAudio source) {
         View v = inflater.inflate(R.layout.activity_messages_attach_audio, parent, false);
+
+        v.setOnLongClickListener((view -> {
+            simulateLongClick(item);
+            return true;
+        }));
+
+        v.setOnClickListener(view -> isSelected(item));
 
         TextView title = v.findViewById(R.id.abc_tb_title);
         TextView body = v.findViewById(R.id.body);
@@ -434,6 +502,10 @@ public class AttachmentInflater {
 
     public void link(VKMessage item, ViewGroup parent, @NonNull final VKLink source) {
         View v = inflater.inflate(R.layout.activity_messages_attach_link, parent, false);
+        v.setOnLongClickListener((view -> {
+            simulateLongClick(item);
+            return true;
+        }));
 
         TextView title = v.findViewById(R.id.abc_tb_title);
         TextView description = v.findViewById(R.id.description);
@@ -470,6 +542,8 @@ public class AttachmentInflater {
         parent.addView(v);
 
         v.setOnClickListener(p1 -> {
+            if (isSelected(item)) return;
+
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(source.getUrl()));
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.setPackage("com.android.chrome");
@@ -480,5 +554,34 @@ public class AttachmentInflater {
                 context.startActivity(intent);
             }
         });
+    }
+
+    @Contract(pure = true)
+    private boolean isSelected(@NonNull VKMessage item) {
+        if (adapter == null) return false;
+        if (adapter.isSelected()) {
+            simulateClick(item);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void simulateClick(VKMessage item) {
+        if (adapter == null) return;
+
+        int position = adapter.searchPosition(item.getId());
+        if (position == -1) return;
+
+        adapter.getActivity().onItemClick(null, position);
+    }
+
+    private void simulateLongClick(VKMessage item) {
+        if (adapter == null) return;
+
+        int position = adapter.searchPosition(item.getId());
+        if (position == -1) return;
+
+        adapter.getActivity().onItemLongClick(null, position);
     }
 }

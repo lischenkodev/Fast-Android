@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <plurals name="members">
+        <item quantity="zero">@string/no_members</item>
+        <item quantity="one">@string/member</item>
+        <item quantity="other">@string/members_count</item>
+    </plurals>
+
+</resources>

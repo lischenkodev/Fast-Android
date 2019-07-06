@@ -3,6 +3,7 @@ package ru.melodin.fast.fragment
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,6 +18,7 @@ import ru.melodin.fast.SettingsActivity
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.AppGlobal
+import ru.melodin.fast.concurrent.LowThread
 import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.service.LongPollService
@@ -35,11 +37,17 @@ class FragmentItems : BaseFragment() {
 
         userName.text = user.toString()
 
-        Picasso.get()
-                .load(user.photo200)
-                .priority(Picasso.Priority.HIGH)
-                .placeholder(R.drawable.avatar_placeholder)
-                .into(userAvatar)
+        if (!TextUtils.isEmpty(user.photo200))
+            LowThread(Runnable {
+                activity!!.runOnUiThread {
+                    Picasso.get()
+                            .load(user.photo200)
+                            .priority(Picasso.Priority.HIGH)
+                            .placeholder(R.drawable.avatar_placeholder)
+                            .into(userAvatar)
+                }
+            }).start()
+
 
         userOnline.visibility = View.VISIBLE
         userOnline.setImageDrawable(getOnlineIndicator(user))

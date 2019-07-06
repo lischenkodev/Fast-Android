@@ -7,15 +7,17 @@
 
     <include layout="@layout/toolbar" />
 
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/title"
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/chatTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:background="#00000000"
         android:ems="10"
         android:hint="@string/chat_title"
-        android:inputType="textPersonName" />
+        android:inputType="textNoSuggestions"
+        android:maxLines="1"
+        android:singleLine="true" />
 
     <LinearLayout
         android:layout_width="match_parent"

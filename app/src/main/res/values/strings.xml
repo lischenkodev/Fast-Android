@@ -130,7 +130,7 @@
     <string name="editing">Editing</string>
     <string name="enable_notifications">Enable notifications</string>
     <string name="disable_notifications">Disable notifications</string>
-    <string name="clear_messages_history">Clear messages history</string>
+    <string name="clear_messages_history">Delete history</string>
     <string name="leave_from">Leave from %s</string>
     <string name="return_to">Return to %s</string>
     <string name="chat">Chat</string>
@@ -149,4 +149,13 @@
     <string name="input_text_from_picture">Input text from picture:</string>
     <string name="connect_to_the_internet">Connect to the Internet</string>
     <string name="saved_into">Saved into %s</string>
+
+    <string name="no_members">No members</string>
+    <string name="member">1 member</string>
+    <string name="few_members">@string/members_count</string>
+    <string name="many_members">@string/members_count</string>
+    <string name="leave_from_chat">Leave from chat</string>
+    <string name="return_to_chat">Return to chat</string>
+    <string name="subscribe_to_channel">Subscribe to channel</string>
+    <string name="unsubscribe_from_channel">Unsubscribe from channel</string>
 </resources>

@@ -47,11 +47,6 @@
         <item name="alertDialogTheme">@style/AlertDialog.Theme.Dark</item>
     </style>
 
-    <style name="AppTheme.Slide">
-        <item name="android:windowEnterAnimation">@anim/slide_up</item>
-        <item name="android:windowExitAnimation">@anim/slide_down</item>
-    </style>
-
     <style name="AlertDialog.Theme.Light" parent="Theme.MaterialComponents.Light.Dialog.Alert">
         <item name="colorAccent">@color/accent</item>
         <item name="dialogCornerRadius">12dp</item>

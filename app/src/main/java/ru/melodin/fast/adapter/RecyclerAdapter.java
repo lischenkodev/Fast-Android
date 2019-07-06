@@ -8,36 +8,37 @@ import android.view.ViewGroup;
 
 import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
-public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
-        extends RecyclerView.Adapter<VH> {
+public abstract class RecyclerAdapter<T, VH extends RecyclerHolder> extends RecyclerView.Adapter<VH> {
+
+    @NonNull
     protected Context context;
+
     LayoutInflater inflater;
+
     private ArrayList<T> values;
     private ArrayList<T> cleanValues;
     private OnItemClickListener click;
     private OnItemLongClickListener long_click;
+    private int viewRes;
 
-    RecyclerAdapter(Context context, ArrayList<T> values) {
+    RecyclerAdapter(@NonNull Context context, ArrayList<T> values) {
         this.context = context;
         this.values = values;
 
         this.inflater = LayoutInflater.from(context);
     }
 
-    protected @ColorInt
-    int getColor(int resId) {
-        if (context == null) return -1;
-
-        return context.getResources().getColor(resId);
+    @ColorInt
+    protected int getColor(int resId) {
+        return ContextCompat.getColor(context, resId);
     }
 
-    @Nullable
+    @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         return null;
@@ -46,6 +47,7 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
     @Override
     public void onBindViewHolder(@NonNull VH holder, int position) {
         updateListeners(holder.itemView, position);
+        holder.bind(position);
     }
 
     @Override
@@ -102,21 +104,13 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
 
     private void updateListeners(View v, final int position) {
         if (click != null) {
-            v.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    click.onItemClick(v, position);
-                }
-            });
+            v.setOnClickListener(v1 -> click.onItemClick(v1, position));
         }
 
         if (long_click != null) {
-            v.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    long_click.onItemLongClick(v, position);
-                    return click != null;
-                }
+            v.setOnLongClickListener(v12 -> {
+                long_click.onItemLongClick(v12, position);
+                return click != null;
             });
         }
     }
@@ -162,12 +156,12 @@ public abstract class RecyclerAdapter<T, VH extends RecyclerView.ViewHolder>
         return context.getString(res, args);
     }
 
-    Drawable getDrawable(int res) {
+    protected Drawable getDrawable(int res) {
         return ContextCompat.getDrawable(context, res);
     }
 
     public boolean isEmpty() {
-        return getItemCount() == 0;
+        return getValues().size() == 0;
     }
 
     public int getLastPosition() {

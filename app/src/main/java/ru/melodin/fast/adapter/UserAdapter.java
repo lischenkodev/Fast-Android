@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 
@@ -71,12 +70,12 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
 
         switch (key) {
             case LongPollEvents.KEY_USER_OFFLINE:
-                setUserOnline(false, (int) data[1], (int) data[2]);
+                setUserOnline(false, (long) data[1], (int) data[2]);
                 break;
             case LongPollEvents.KEY_USER_ONLINE:
-                setUserOnline(true, (int) data[1], (int) data[2]);
+                setUserOnline(true, (long) data[1], (int) data[2]);
                 break;
-            case Keys.KEY_CONNECTED:
+            case Keys.CONNECTED:
                 if (fragment == null) return;
                 if (fragment.isLoading())
                     fragment.setLoading(false);
@@ -85,7 +84,7 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
         }
     }
 
-    private void setUserOnline(boolean online, int userId, int time) {
+    private void setUserOnline(boolean online, long userId, int time) {
         for (int i = 0; i < getItemCount(); i++) {
             VKUser user = getItem(i);
             if (user.getId() == userId) {
@@ -96,7 +95,7 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
         }
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerHolder {
 
         CircleImageView avatar;
         ImageView online;
@@ -125,23 +124,12 @@ public class UserAdapter extends RecyclerAdapter<VKUser, UserAdapter.ViewHolder>
             functions = v.findViewById(R.id.functions);
         }
 
-        void bind(final int position) {
+        @Override
+        public void bind(final int position) {
             if (fragment != null) {
-                message.setOnClickListener(new View.OnClickListener() {
+                message.setOnClickListener(v -> fragment.openChat(position));
 
-                    @Override
-                    public void onClick(View v) {
-                        fragment.openChat(position);
-                    }
-                });
-
-                functions.setOnClickListener(new View.OnClickListener() {
-
-                    @Override
-                    public void onClick(View v) {
-                        fragment.showDialog(position, v);
-                    }
-                });
+                functions.setOnClickListener(v -> fragment.showDialog(position, v));
             } else {
                 message.setVisibility(View.GONE);
                 functions.setVisibility(View.GONE);

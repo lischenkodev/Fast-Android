@@ -11,16 +11,16 @@
         android:id="@+id/play"
         android:layout_width="36dp"
         android:layout_height="36dp"
-        android:layout_marginEnd="6dp"
+        android:layout_marginEnd="4dp"
         android:background="@android:color/transparent"
         android:src="@drawable/ic_play_circle_filled_black_24dp"
-        android:tint="?android:textColorPrimary"
-        tools:tint="?colorAccent" />
+        android:tint="?colorAccent" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
+        android:layout_marginEnd="4dp"
         android:orientation="vertical">
 
         <TextView

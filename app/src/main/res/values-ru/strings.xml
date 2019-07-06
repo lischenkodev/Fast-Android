@@ -123,7 +123,7 @@
     <string name="for_everyone">Для всех</string>
     <string name="pin_message">Закрепить</string>
     <string name="editing">Редактирование</string>
-    <string name="clear_messages_history">Очистить историю сообщений</string>
+    <string name="clear_messages_history">Удалить историю</string>
     <string name="disable_notifications">Выключить уведомления</string>
     <string name="enable_notifications">Включить уведомления</string>
     <string name="chat">Чат</string>
@@ -142,4 +142,13 @@
     <string name="connect_to_the_internet">Подключитесь к Интернету</string>
     <string name="input_text_from_picture">Введите изображение с картинки:</string>
     <string name="saved_into">Сохранено в %s</string>
+
+    <string name="few_members" translatable="false">%d участника</string>
+    <string name="many_members" translatable="false">%d участников</string>
+    <string name="member">1 участник</string>
+    <string name="no_members">Нет участников</string>
+    <string name="leave_from_chat">Выйти из беседы</string>
+    <string name="return_to_chat">Вернуться в беседу</string>
+    <string name="subscribe_to_channel">Подписаться на канал</string>
+    <string name="unsubscribe_from_channel">Отписаться от канала</string>
 </resources>

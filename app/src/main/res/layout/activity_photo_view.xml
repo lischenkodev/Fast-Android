@@ -9,7 +9,8 @@
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true" />
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -28,7 +29,7 @@
         android:gravity="center"
         android:weightSum="0.9">
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/like"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -38,7 +39,7 @@
             android:tint="#ffffff" />
 
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/comment"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -48,7 +49,7 @@
             android:tint="#ffffff" />
 
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/repost"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

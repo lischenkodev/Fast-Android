@@ -207,7 +207,7 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
             public void error(Exception e) {
                 loading = false;
                 refreshLayout.setRefreshing(false);
-                Toast.makeText(getActivity(), getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show();
 
             }
         });
@@ -216,14 +216,14 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
     private void openChat(int position) {
         VKConversation conversation = adapter.getItem(position);
 
-        int peerId = conversation.getLast().getPeerId();
+        int peerId = conversation.getPeerId();
 
-        VKUser user = MemoryCache.getUser(peerId);
-        VKGroup group = MemoryCache.getGroup(VKGroup.toGroupId(peerId));
+        VKUser user = CacheStorage.getUser(peerId);
+        VKGroup group = CacheStorage.getGroup(VKGroup.toGroupId(peerId));
 
         Intent intent = new Intent(getActivity(), MessagesActivity.class);
-        intent.putExtra("title", adapter.getTitle(conversation, user, group));
-        intent.putExtra("photo", adapter.getPhoto(conversation, user, group));
+        intent.putExtra("title", conversation.getTitle());
+        intent.putExtra("photo", adapter.getPhoto(conversation));
         intent.putExtra("conversation", conversation);
         intent.putExtra("peer_id", peerId);
         intent.putExtra("can_write", conversation.isCanWrite());
@@ -336,21 +336,18 @@ public class FragmentConversations extends BaseFragment implements SwipeRefreshL
         refreshLayout.setRefreshing(true);
 
         ThreadExecutor.execute(new AsyncCallback(getActivity()) {
-            int response;
 
             @Override
             public void ready() throws Exception {
-                response = VKApi.messages().deleteConversation().peerId(peerId).execute(Integer.class).get(0);
+                VKApi.messages().deleteConversation().peerId(peerId).execute();
             }
 
             @Override
             public void done() {
-                if (response == 1) {
-                    CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE, DatabaseHelper.PEER_ID, peerId);
-                    adapter.remove(position);
-                    adapter.notifyItemRemoved(position);
-                    adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
-                }
+                CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE, DatabaseHelper.PEER_ID, peerId);
+                adapter.remove(position);
+                adapter.notifyItemRemoved(position);
+                adapter.notifyItemRangeChanged(0, adapter.getItemCount(), -1);
                 refreshLayout.setRefreshing(false);
             }
 

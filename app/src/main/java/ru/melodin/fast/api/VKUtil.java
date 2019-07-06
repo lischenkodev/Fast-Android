@@ -5,6 +5,9 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -152,6 +155,7 @@ public class VKUtil {
         return s;
     }
 
+    @Contract("_, null -> null; null, !null -> null")
     public static String getGroupStringType(Context context, VKGroup.Type type) {
         if (type == null || context == null) return null;
 
@@ -167,6 +171,7 @@ public class VKUtil {
         return null;
     }
 
+    @NonNull
     public static String getErrorReason(VKConversation.Reason reason) {
         switch (reason) {
             case USER_BLACKLIST:
@@ -184,7 +189,33 @@ public class VKUtil {
         }
     }
 
+    @NonNull
     private static String getString(int res) {
         return AppGlobal.getContext().getString(res);
     }
+
+    @Nullable
+    public static String getPhoto200(@NonNull VKConversation conversation, VKUser user, VKGroup group) {
+        int peerId = conversation.getPeerId();
+
+        if (peerId > 2_000_000_000) {
+            return conversation.getPhoto200();
+        } else if (peerId < 0) {
+            return group == null ? null : group.getPhoto200();
+        } else {
+            return user == null ? null : user.getPhoto200();
+        }
+    }
+
+    @Nullable
+    public static String getPhoto100(@NonNull VKConversation conversation, VKUser user, VKGroup group) {
+        int fromId = conversation.getLast().getFromId();
+
+        if (fromId < 0) {
+            return group == null ? null : group.getPhoto100();
+        } else {
+            return conversation.getLast().isOut() && !conversation.isChat() ? UserConfig.user.getPhoto100() : user == null ? null : user.getPhoto100();
+        }
+    }
+
 }

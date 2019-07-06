@@ -4,12 +4,17 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
+import org.greenrobot.eventbus.EventBus;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+
+import ru.melodin.fast.database.CacheStorage;
+import ru.melodin.fast.util.Keys;
 
 public class VKConversation extends VKModel implements Serializable {
 
@@ -232,8 +237,45 @@ public class VKConversation extends VKModel implements Serializable {
         }
     }
 
+    @Contract(pure = true)
     private static boolean isChatId(int peerId) {
         return peerId > 2_000_000_00;
+    }
+
+    @Nullable
+    public String getFullTitle() {
+        int peerId = getPeerId();
+
+        VKGroup group = null;
+        VKUser user = null;
+
+        switch (getType()) {
+            case GROUP:
+                group = CacheStorage.getGroup(VKGroup.toGroupId(peerId));
+                break;
+            case USER:
+                user = CacheStorage.getUser(getPeerId());
+                if (user == null) {
+                    user = VKUser.EMPTY;
+                    EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+                }
+            case CHAT:
+                if (isGroupChannel())
+                    group = CacheStorage.getGroup(VKGroup.toGroupId(peerId));
+                break;
+        }
+
+        if (group == null) {
+            EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+        }
+
+        if (peerId > 2_000_000_000) {
+            return toString();
+        } else if (peerId < 0) {
+            return group == null ? null : group.toString();
+        } else {
+            return user == null ? null : user.toString();
+        }
     }
 
     @NonNull

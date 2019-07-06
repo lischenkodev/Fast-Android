@@ -11,7 +11,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 
@@ -36,12 +35,7 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
         return new ViewHolder(v);
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(position);
-    }
-
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerHolder {
 
         CircleImageView avatar;
         ImageView online;
@@ -67,7 +61,8 @@ public class ShowCreateAdapter extends RecyclerAdapter<VKUser, ShowCreateAdapter
             invitedBy = v.findViewById(R.id.lastSeen);
         }
 
-        void bind(final int position) {
+        @Override
+        public void bind(final int position) {
             VKUser user = getItem(position);
 
             name.setText(user.toString());

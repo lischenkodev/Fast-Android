@@ -13,7 +13,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatCheckBox;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.squareup.picasso.Picasso;
 
@@ -89,13 +88,7 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
         return new ViewHolder(v);
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        super.onBindViewHolder(holder, position);
-        holder.bind(position);
-    }
-
-    class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerHolder {
 
         CircleImageView avatar;
         ImageView online;
@@ -124,7 +117,8 @@ public class CreateChatAdapter extends RecyclerAdapter<VKUser, CreateChatAdapter
             lastSeen = v.findViewById(R.id.lastSeen);
         }
 
-        void bind(int position) {
+        @Override
+        public void bind(int position) {
             VKUser user = getItem(position);
 
             name.setText(user.toString());

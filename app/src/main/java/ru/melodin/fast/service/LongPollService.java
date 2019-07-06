@@ -31,6 +31,9 @@ public class LongPollService extends Service {
 
     private boolean needRefresh;
 
+
+    private VKLongPollServer server;
+
     public LongPollService() {
     }
 
@@ -70,7 +73,6 @@ public class LongPollService extends Service {
     private class MessageUpdater implements Runnable {
         @Override
         public void run() {
-            VKLongPollServer server = null;
             if (!isRunning) {
                 isRunning = true;
             }
@@ -88,8 +90,10 @@ public class LongPollService extends Service {
                     continue;
                 }
 
-                EventBus.getDefault().postSticky(new Object[]{Keys.KEY_CONNECTED});
-                needRefresh = false;
+                if (needRefresh) {
+                    EventBus.getDefault().postSticky(new Object[]{Keys.CONNECTED});
+                    needRefresh = false;
+                }
 
                 try {
                     if (server == null) {
@@ -99,7 +103,7 @@ public class LongPollService extends Service {
 
                     JSONObject response = getResponse(server);
                     if (response.has("failed")) {
-                        Log.w(TAG, "Failed get response from");
+                        Log.w(TAG, "Failed to get response from");
                         Thread.sleep(1_000);
                         server = null;
                         continue;

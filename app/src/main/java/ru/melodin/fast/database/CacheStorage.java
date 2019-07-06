@@ -359,6 +359,7 @@ public class CacheStorage {
     private static VKConversation parseConversation(Cursor cursor) {
         VKConversation dialog = new VKConversation();
 
+        dialog.setPeerId(getInt(cursor, PEER_ID));
         dialog.setRead(getInt(cursor, READ_STATE) == 1);
         dialog.setTitle(getString(cursor, TITLE));
         dialog.setMembersCount(getInt(cursor, USERS_COUNT));
@@ -473,10 +474,10 @@ public class CacheStorage {
 
         if (TextUtils.isEmpty(dialog.getTitle())) {
             if (dialog.isGroup()) {
-                VKGroup group = getGroup(dialog.getLast().getPeerId());
+                VKGroup group = getGroup(dialog.getPeerId());
                 values.put(TITLE, group == null ? "" : group.getName());
             } else {
-                VKUser user = getUser(dialog.getLast().getPeerId());
+                VKUser user = getUser(dialog.getPeerId());
                 values.put(TITLE, user == null ? "" : user.getName() + " " + user.getSurname());
             }
         } else {
@@ -485,12 +486,12 @@ public class CacheStorage {
 
         if (TextUtils.isEmpty(dialog.getPhoto50()) && TextUtils.isEmpty(dialog.getPhoto100()) && TextUtils.isEmpty(dialog.getPhoto200())) {
             if (dialog.isGroup()) {
-                VKGroup group = getGroup(dialog.getLast().getPeerId());
+                VKGroup group = getGroup(dialog.getPeerId());
                 values.put(PHOTO_50, group == null ? "" : group.getPhoto50());
                 values.put(PHOTO_100, group == null ? "" : group.getPhoto100());
                 values.put(PHOTO_200, group == null ? "" : group.getPhoto200());
             } else {
-                VKUser user = getUser(dialog.getLast().getPeerId());
+                VKUser user = getUser(dialog.getPeerId());
                 values.put(PHOTO_50, user == null ? "" : user.getPhoto50());
                 values.put(PHOTO_100, user == null ? "" : user.getPhoto100());
                 values.put(PHOTO_200, user == null ? "" : user.getPhoto200());
