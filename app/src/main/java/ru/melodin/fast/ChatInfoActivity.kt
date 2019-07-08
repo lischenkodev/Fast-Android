@@ -44,6 +44,7 @@ class ChatInfoActivity : BaseActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
 
         chatTitle.setText(title)
+        chatTitle.setSelection(chatTitle.text!!.length)
         chatTitle.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 val newTitle = chatTitle.text.toString().trim()
@@ -139,7 +140,7 @@ class ChatInfoActivity : BaseActivity() {
     }
 
     private fun loadAvatar() {
-        if (!TextUtils.isEmpty(title)) {
+        if (!TextUtils.isEmpty(if (chat == null) photo else chat!!.photo200)) {
             TaskManager.execute {
                 runOnUiThread {
                     Picasso.get()

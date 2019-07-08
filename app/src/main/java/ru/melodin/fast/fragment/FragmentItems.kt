@@ -19,7 +19,7 @@ import ru.melodin.fast.SettingsActivity
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.AppGlobal
-import ru.melodin.fast.concurrent.LowThread
+import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.service.LongPollService
@@ -35,12 +35,15 @@ class FragmentItems : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        toolbar = tb
+        recyclerView = list
+
         val user = UserConfig.getUser()
 
         userName.text = user.toString()
 
-        if (!TextUtils.isEmpty(user!!.photo200))
-            LowThread {
+        if (user != null && !TextUtils.isEmpty(user.photo200))
+            TaskManager.execute {
                 activity!!.runOnUiThread {
                     Picasso.get()
                             .load(user.photo200)
@@ -48,7 +51,7 @@ class FragmentItems : BaseFragment() {
                             .placeholder(R.drawable.avatar_placeholder)
                             .into(userAvatar)
                 }
-            }.start()
+            }
 
 
         userOnline.visibility = View.VISIBLE
@@ -67,8 +70,9 @@ class FragmentItems : BaseFragment() {
         logout.setOnClickListener { showExitDialog() }
     }
 
-    private fun getOnlineIndicator(user: VKUser): Drawable? {
+    private fun getOnlineIndicator(user: VKUser?): Drawable? {
         return when {
+            user == null -> null
             user.isOnlineMobile -> ContextCompat.getDrawable(context!!, R.drawable.ic_online_mobile)
             user.isOnline -> ContextCompat.getDrawable(context!!, R.drawable.ic_online)
             else -> null

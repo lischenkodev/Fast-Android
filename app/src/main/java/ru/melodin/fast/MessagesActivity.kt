@@ -43,7 +43,6 @@ import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.common.AttachmentInflater
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
-import ru.melodin.fast.concurrent.LowThread
 import ru.melodin.fast.current.BaseActivity
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
@@ -83,7 +82,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     private var reason: VKConversation.Reason? = null
 
     private var messageText: String? = null
-    private var title: String? = null
+    private var chatTitle: String? = null
 
     private var timer: Timer? = null
     private var selectTimer: Timer? = null
@@ -155,6 +154,12 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         getConversation(peerId)
         checkCanWrite()
 
+        tb.setTitle(chatTitle)
+        tb.setBackVisible(true)
+        tb.setOnBackClickListener(View.OnClickListener {
+            onBackPressed()
+        })
+
         setSupportActionBar(actionTb)
         supportActionBar!!.setDisplayShowTitleEnabled(false)
 
@@ -169,15 +174,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
         layoutManager.stackFromEnd = true
 
-        recyclerView.setItemViewCacheSize(20)
-
         recyclerView.layoutManager = layoutManager
-
-        tb.setTitle(title)
-        tb.setBackVisible(true)
-        tb.setOnBackClickListener(View.OnClickListener {
-            onBackPressed()
-        })
 
         updateToolbar()
         initPopupWindow()
@@ -410,8 +407,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
     private fun getIntentData() {
         val intent = intent
-        conversation = intent.getSerializableExtra("conversation") as VKConversation
-        title = intent.getStringExtra("title")
+        conversation = intent.getSerializableExtra("conversation") as VKConversation?
+        chatTitle = intent.getStringExtra("title")
         peerId = intent.getIntExtra("peer_id", -1)
         photo = intent.getStringExtra("photo")
         cantWriteReason = intent.getIntExtra("reason", -1)
@@ -499,7 +496,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         var user = CacheStorage.getUser(pinned.fromId)
         if (user == null) user = VKUser.EMPTY
 
-        pinnedName.text = user!!.toString().trim()
+        pinnedName.text = user.toString().trim()
         pinnedDate.text = Util.dateFormatter.format(pinned.date * 1000L)
 
         pinnedText.text = pinned.text
@@ -507,13 +504,12 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         unpin.visibility = if (conversation!!.isCanChangePin) View.VISIBLE else View.GONE
         unpin.setOnClickListener { showConfirmUnpinMessage() }
 
-        if ((pinned.attachments != null || !ArrayUtil.isEmpty(pinned.fwdMessages)) && TextUtils.isEmpty(pinned.text)) {
-
+        if (TextUtils.isEmpty(pinned.text) && !ArrayUtil.isEmpty(pinned.attachments)) {
             val body = VKUtil.getAttachmentBody(pinned.attachments, pinned.fwdMessages)
 
             val r = "<b>$body</b>"
             val span = SpannableString(HtmlCompat.fromHtml(r, HtmlCompat.FROM_HTML_MODE_LEGACY))
-            span.setSpan(ForegroundColorSpan(resources.getColor(R.color.accent)), 0, body.length, 0)
+            span.setSpan(ForegroundColorSpan(color(R.color.accent)), 0, body.length, 0)
 
             pinnedText.append(span)
         }
@@ -623,8 +619,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
         val size = adapter!!.itemCount
 
-        LowThread {
-
+        TaskManager.execute {
             var id: Int
 
             if (!Util.hasConnection()) {
@@ -632,7 +627,6 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                     throw RuntimeException("No internet")
                 } catch (ignored: Exception) {
                 }
-
             }
 
             TaskManager.sendMessage(VKApi.messages().send().randomId(msg.randomId).text(messageText!!.trim()).peerId(peerId), object : TaskManager.OnCompleteListener {
@@ -643,8 +637,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
                     if (typing) {
                         typing = false
-                        if (timer != null)
-                            timer!!.cancel()
+                        timer?.cancel()
                     }
 
                     msg.id = id
@@ -670,7 +663,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                     adapter!!.notifyDataSetChanged()
                 }
             })
-        }.start()
+        }
     }
 
     private fun createAdapter(messages: ArrayList<VKMessage>, offset: Int) {
@@ -685,6 +678,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
             recyclerView.adapter = adapter
 
             recyclerView.scrollToPosition(adapter!!.lastPosition)
+            recyclerView.smoothScrollToPosition(adapter!!.lastPosition)
             return
         }
 
@@ -701,6 +695,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
         if (empty) {
             recyclerView.scrollToPosition(adapter!!.lastPosition)
+            recyclerView.smoothScrollToPosition(adapter!!.lastPosition)
         }
     }
 
@@ -739,7 +734,6 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                             if (ArrayUtil.isEmpty(models)) return
 
                             messages = models as ArrayList<VKMessage>
-
                             messages.reverse()
 
                             val users = VKMessage.users
@@ -780,7 +774,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
     fun updateToolbar() {
         invalidateOptionsMenu()
-        tb.setSubtitle(subtitle)
+
+        tb.setSubtitle(if (isLoading) getString(R.string.loading) else subtitle)
 
         if (!editing && adapter != null && !adapter!!.isSelected && pinned != null)
             showPinned(DURATION_DEFAULT)
@@ -795,7 +790,6 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     private fun loadUser(id: Int) {
         TaskManager.loadUser(id, object : TaskManager.OnCompleteListener {
             override fun onComplete(models: ArrayList<*>?) {
-                Toast.makeText(this@MessagesActivity, "models == null: " + (models == null || models.isEmpty()), Toast.LENGTH_SHORT).show()
                 updateToolbar()
             }
 
@@ -828,7 +822,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         adb.setMessage(R.string.are_you_sure)
         adb.setPositiveButton(R.string.yes) { _, _ ->
             val leave = conversation!!.state == VKConversation.State.IN
-            val chatId = conversation!!.last.peerId - 2000000000
+            val chatId = conversation!!.last!!.peerId - 2000000000
             setChatState(chatId, leave)
         }
         adb.setNegativeButton(R.string.no, null)
@@ -836,7 +830,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     }
 
     private fun setChatState(chatId: Int, leave: Boolean) {
-        LowThread {
+        TaskManager.execute {
             val setter: MethodSetter = if (leave) {
                 VKApi.messages()
                         .removeChatUser()
@@ -862,7 +856,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                     Toast.makeText(this@MessagesActivity, R.string.error, Toast.LENGTH_SHORT).show()
                 }
             })
-        }.start()
+        }
     }
 
     private fun toggleNotifications() {
@@ -980,8 +974,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     }
 
     override fun onDestroy() {
-        if (adapter != null)
-            adapter!!.destroy()
+        adapter?.destroy()
         super.onDestroy()
     }
 
@@ -1012,7 +1005,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                 remove.add(getString(R.string.pin_message))
             }
 
-            if (conversation!!.last.date * 1000L < System.currentTimeMillis() - AlarmManager.INTERVAL_DAY || !item.isOut) {
+            if (conversation!!.last!!.date * 1000L < System.currentTimeMillis() - AlarmManager.INTERVAL_DAY || !item.isOut) {
                 remove.add(getString(R.string.edit))
             }
         }
@@ -1091,7 +1084,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     private fun editMessage(edited: VKMessage) {
         edited.text = message.text!!.toString().trim()
 
-        if (edited.text.trim().isEmpty() && ArrayUtil.isEmpty(edited.attachments) && ArrayUtil.isEmpty(edited.fwdMessages)) {
+        if (edited.text!!.trim().isEmpty() && ArrayUtil.isEmpty(edited.attachments) && ArrayUtil.isEmpty(edited.fwdMessages)) {
             showConfirmDeleteMessages(ArrayList(listOf(edited)))
         } else {
             val message = adapter!!.getItem(editingPosition)
@@ -1106,7 +1099,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
             TaskManager.execute {
                 VKApi.messages().edit()
-                        .text(edited.text)
+                        .text(edited.text!!)
                         .messageId(edited.id)
                         .attachment(edited.attachments)
                         .keepForwardMessages(true)
@@ -1285,7 +1278,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         return recyclerView
     }
 
-    fun isResumed(): Boolean {
+    fun isRunning(): Boolean {
         return resumed
     }
 
@@ -1294,7 +1287,6 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     }
 
     companion object {
-
         private const val MESSAGES_COUNT = 30
         private const val DURATION_DEFAULT = 200
     }

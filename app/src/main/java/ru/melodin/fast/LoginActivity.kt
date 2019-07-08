@@ -156,7 +156,7 @@ class LoginActivity : BaseActivity() {
             }
         }
 
-        LowThread {
+        TaskManager.execute {
             val manager = CookieManager.getInstance()
             manager.removeAllCookies(null)
             manager.flush()
@@ -169,7 +169,7 @@ class LoginActivity : BaseActivity() {
                     "&v=5.68"
 
             runOnUiThread { webView.loadUrl(url) }
-        }.start()
+        }
     }
 
     fun authorize(jsonObject: String) {

@@ -110,10 +110,6 @@ class TaskManager {
                             tasks.remove(task)
                         }
 
-
-
-                        listener?.onComplete(models)
-
                         if (!ArrayUtil.isEmpty(pushData)) {
                             val key = pushData!![0] as String
 
@@ -130,6 +126,8 @@ class TaskManager {
                                 EventBus.getDefault().postSticky(pushData)
                             }
                         }
+
+                        listener?.onComplete(models)
                     }
 
 
@@ -155,7 +153,7 @@ class TaskManager {
         }
 
         fun execute(runnable: () -> Unit) {
-            LowThread(runnable).start()
+            LowThread(Runnable {runnable()}).start()
         }
     }
 }

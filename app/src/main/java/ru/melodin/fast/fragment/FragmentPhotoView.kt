@@ -117,7 +117,7 @@ class FragmentPhotoView : Fragment() {
         getView()!!.getChildAt(0).setOnTouchListener(onTouchListener)
     }
 
-    private fun loadPhoto(url: String) {
+    private fun loadPhoto(url: String?) {
         try {
             Picasso.get().load(url).placeholder(ColorDrawable(Color.GRAY)).into(view!!.getChildAt(0) as ImageView)
         } catch (e: Exception) {

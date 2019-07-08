@@ -10,7 +10,7 @@ import androidx.collection.SparseArrayCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import ru.melodin.fast.model.Model
-import java.util.*
+
 
 abstract class RecyclerAdapter<T : Model, VH : RecyclerHolder> internal constructor(protected var context: Context, var viewRes: Int, values: ArrayList<T>) : RecyclerView.Adapter<RecyclerHolder>() {
 
@@ -46,7 +46,7 @@ abstract class RecyclerAdapter<T : Model, VH : RecyclerHolder> internal construc
         get() = values == null || values!!.size == 0
 
     val lastPosition: Int
-        get() = itemCount - 1
+        get() = values!!.size - 1
 
     init {
         this.values = values
@@ -66,6 +66,7 @@ abstract class RecyclerAdapter<T : Model, VH : RecyclerHolder> internal construc
 
         notifyItemChanged(position, -1)
     }
+
 
     fun clearSelected() {
         for (item in values!!) {
@@ -94,13 +95,13 @@ abstract class RecyclerAdapter<T : Model, VH : RecyclerHolder> internal construc
         return ContextCompat.getColor(context, resId)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerHolder {
-        return RecyclerHolder(inflater.inflate(viewRes, parent, false))
-    }
-
     override fun onBindViewHolder(holder: RecyclerHolder, position: Int) {
         updateListeners(holder.itemView, position)
         holder.bind(position)
+    }
+
+    fun getView(parent: ViewGroup?): View? {
+        return inflater.inflate(viewRes, parent, false)
     }
 
     override fun getItemCount(): Int {

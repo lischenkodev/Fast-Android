@@ -143,12 +143,16 @@
     <string name="input_text_from_picture">Введите изображение с картинки:</string>
     <string name="saved_into">Сохранено в %s</string>
 
-    <string name="few_members" translatable="false">%d участника</string>
-    <string name="many_members" translatable="false">%d участников</string>
+    <string name="few_members">%d участника</string>
+    <string name="many_members">%d участников</string>
     <string name="member">1 участник</string>
     <string name="no_members">Нет участников</string>
     <string name="leave_from_chat">Выйти из беседы</string>
     <string name="return_to_chat">Вернуться в беседу</string>
     <string name="subscribe_to_channel">Подписаться на канал</string>
     <string name="unsubscribe_from_channel">Отписаться от канала</string>
+    <string name="chat_info">Информация о беседе</string>
+    <string name="retry">Повторить</string>
+    <string name="title">Название</string>
+    <string name="title_changed">Название было изменено</string>
 </resources>

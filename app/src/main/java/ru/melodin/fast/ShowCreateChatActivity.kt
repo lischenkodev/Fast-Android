@@ -31,9 +31,11 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
     override fun afterTextChanged(p0: Editable?) {
 
     }
+
     override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
 
     }
+
     override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
         invalidateOptionsMenu()
     }
@@ -90,38 +92,40 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
             val builder: StringBuilder = StringBuilder(chatTitle.text.toString().trim())
 
             val ids = ArrayList<Int>()
-                for (user in adapter!!.values!!) {
-                    ids.add(user.id)
-                }
+            for (user in adapter!!.values!!) {
+                ids.add(user.id)
+            }
 
             if (TextUtils.isEmpty(builder.toString())) {
-                    builder.append(users!![0])
-                    users!!.forEach {
-                        builder.append(',')
-                        builder.append(it.name)
-                    }
+                builder.append(users!![0].name)
+
+                for (i in 1 until users!!.size) {
+                    if (i > 3) break
+                    builder.append(", ")
+                    builder.append(users!![i].name)
+                }
+            }
+
+            VKApi.messages().createChat().title(builder.toString()).userIds(ids).execute(Int::class.java, object : VKApi.OnResponseListener {
+                override fun onSuccess(models: ArrayList<*>?) {
+                    if (ArrayUtil.isEmpty(models)) return
+                    models ?: return
+
+                    val peerId = 2_000_000_000 + models[0] as Int
+
+                    val intent = Intent()
+                    intent.putExtra("title", title.toString())
+                    intent.putExtra("peer_id", peerId)
+                    setResult(Activity.RESULT_OK, intent)
+                    finish()
                 }
 
-                 VKApi.messages().createChat().title(builder.toString()).userIds(ids).execute(Int::class.java, object : VKApi.OnResponseListener {
-                     override fun onSuccess(models: ArrayList<*>?) {
-                         if (ArrayUtil.isEmpty(models)) return
-                         models?: return
-
-                         val peerId = 2_000_000_000 + models[0] as Int
-
-                         val intent = Intent()
-                         intent.putExtra("title", title.toString())
-                         intent.putExtra("peer_id", peerId)
-                         setResult(Activity.RESULT_OK, intent)
-                         finish()
-                     }
-
-                     override fun onError(e: Exception) {
-                         Log.e("Error create chat", Log.getStackTraceString(e))
-                         Toast.makeText(this@ShowCreateChatActivity, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show()
-                     }
-                 })
-            }
+                override fun onError(e: Exception) {
+                    Log.e("Error create chat", Log.getStackTraceString(e))
+                    Toast.makeText(this@ShowCreateChatActivity, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
 
     }
 }

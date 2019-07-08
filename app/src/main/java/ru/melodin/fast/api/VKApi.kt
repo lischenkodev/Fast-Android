@@ -124,10 +124,6 @@ object VKApi {
             for (i in 0 until array!!.length()) {
                 models.add(VKGroup(array.optJSONObject(i)) as T)
             }
-        } else if (cls == VKApp::class.java) {
-            for (i in 0 until array!!.length()) {
-                models.add(VKApp(array.optJSONObject(i)) as T)
-            }
         } else if (cls == VKModel::class.java && url.contains("messages.getHistoryAttachments")) {
             return VKAttachments.parse(array!!) as ArrayList<T>
         } else if (cls == VKConversation::class.java) {

@@ -77,8 +77,9 @@ class WebViewLoginActivity : AppCompatActivity() {
         }
     }
 
-    private fun parseUrl(url: String) {
+    private fun parseUrl(url: String?) {
         if (TextUtils.isEmpty(url)) return
+        url?: return
 
         try {
             if (url.startsWith(Auth.REDIRECT_URL) && !url.contains("error=")) {
@@ -108,12 +109,12 @@ class WebViewLoginActivity : AppCompatActivity() {
 
     private inner class VKWebViewClient : WebViewClient() {
 
-        override fun onPageFinished(view: WebView, url: String) {
+        override fun onPageFinished(view: WebView?, url: String?) {
             progress.visibility = View.GONE
             web.visibility = View.VISIBLE
         }
 
-        override fun onPageStarted(view: WebView, url: String, favicon: Bitmap) {
+        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
             parseUrl(url)
         }

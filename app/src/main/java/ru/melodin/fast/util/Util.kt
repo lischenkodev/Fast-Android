@@ -57,7 +57,7 @@ object Util {
         return String.format(Locale.US, "%.1f %sB", sizeInBytes / Math.pow(unit.toDouble(), exp.toDouble()), pre)
     }
 
-    fun serialize(source: Any): ByteArray? {
+    fun serialize(source: Any?): ByteArray? {
         try {
             val bos = BytesOutputStream()
             val out = ObjectOutputStream(bos)
@@ -72,7 +72,7 @@ object Util {
         return null
     }
 
-    fun deserialize(source: ByteArray): Any? {
+    fun deserialize(source: ByteArray?): Any? {
         if (ArrayUtil.isEmpty(source)) {
             return null
         }

@@ -12,7 +12,7 @@ import ru.melodin.fast.api.LongPollEvents
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKLongPollServer
-import ru.melodin.fast.concurrent.LowThread
+import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.net.HttpRequest
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Keys
@@ -51,11 +51,7 @@ class LongPollService : Service() {
         if (!isRunning) {
             isRunning = true
         }
-        val updateThread = LowThread{
-            MessageUpdater()
-        }
-
-        updateThread.start()
+        TaskManager.execute { MessageUpdater() }
     }
 
     private inner class MessageUpdater : Runnable {
@@ -142,7 +138,6 @@ class LongPollService : Service() {
     }
 
     companion object {
-
         const val TAG = "FastVK LongPoll"
     }
 }

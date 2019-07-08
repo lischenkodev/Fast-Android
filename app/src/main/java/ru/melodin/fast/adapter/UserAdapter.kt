@@ -5,6 +5,7 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.text.TextUtils
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -55,7 +56,6 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
         EventBus.getDefault().unregister(this)
     }
 
-
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     fun onReceive(data: Array<Any>) {
         if (ArrayUtil.isEmpty(data)) return
@@ -81,6 +81,10 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
                 notifyItemChanged(i, -1)
             }
         }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerHolder {
+        return ViewHolder(getView(parent)!!)
     }
 
     inner class ViewHolder(v: View) : RecyclerHolder(v) {
@@ -159,7 +163,7 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
                     EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, user.invitedBy))
                 }
 
-                val text = if (invitedUser!!.id == user.id) getString(R.string.chat_creator) else getString(R.string.invited_by, invitedUser.toString())
+                val text = if (invitedUser.id == user.id) getString(R.string.chat_creator) else getString(R.string.invited_by, invitedUser.toString())
                 lastSeen.text = text
                 lastSeen.visibility = View.VISIBLE
             } else {

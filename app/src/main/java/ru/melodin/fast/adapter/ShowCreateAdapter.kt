@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.text.TextUtils
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -16,8 +17,8 @@ import java.util.*
 
 class ShowCreateAdapter(context: Context, users: ArrayList<VKUser>) : RecyclerAdapter<VKUser, ShowCreateAdapter.ViewHolder>(context, R.layout.activity_create_show_list, users) {
 
-    init {
-        UserConfig.getUser()
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerHolder {
+        return ViewHolder(getView(parent)!!)
     }
 
     inner class ViewHolder(v: View) : RecyclerHolder(v) {
@@ -67,7 +68,7 @@ class ShowCreateAdapter(context: Context, users: ArrayList<VKUser>) : RecyclerAd
 
             remove.visibility = if (user.id == UserConfig.userId) View.GONE else View.VISIBLE
 
-            remove.setOnClickListener { p1 ->
+            remove.setOnClickListener {
                 if (values!!.size >= 2) {
                     remove(position)
                     notifyItemRemoved(position)

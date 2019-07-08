@@ -29,23 +29,23 @@ import java.util.*
 
 class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener {
 
-    private val fragmentConversations = FragmentConversations()
-    private val fragmentFriends = FragmentFriends()
-    private val fragmentItems = FragmentItems()
+    private lateinit var fragmentConversations: FragmentConversations
+    private lateinit var fragmentFriends: FragmentFriends
+    private lateinit var fragmentItems: FragmentItems
 
     private var selectedId = -1
     private var selectedFragment: BaseFragment? = null
 
-    private var paused: Boolean = false
-    private var running: Boolean = false
+    private var fromRecreate: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         ViewUtil.applyWindowStyles(window, ThemeManager.primaryDark)
         setTheme(ThemeManager.currentTheme)
         VKApi.config = UserConfig.restore()
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_main)
+
+        initFragments()
 
         navigationView.selectedItemId = R.id.conversations
         navigationView.setOnNavigationItemSelectedListener(this)
@@ -61,25 +61,10 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
         EventBus.getDefault().register(this)
     }
 
-    override fun onPause() {
-        super.onPause()
-        running = false
-    }
-
-    override fun onResume() {
-        super.onResume()
-        running = true
-
-        if (paused && UserConfig.isLoggedIn) {
-            try {
-                startLongPoll()
-                runOnUiThread { paused = false }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                paused = true
-            }
-
-        }
+    private fun initFragments() {
+        fragmentConversations = FragmentConversations()
+        fragmentFriends = FragmentFriends()
+        fragmentItems = FragmentItems()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -93,6 +78,7 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
 
         val key = data[0] as String
         if (key == ThemeManager.KEY_THEME_UPDATE) {
+            fromRecreate = true
             applyStyles()
         }
     }
@@ -107,12 +93,9 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
         if (!UserConfig.isLoggedIn) {
             startLoginActivity()
         } else {
-            if (running)
-                startLongPoll()
-            else
-                paused = true
-
             if (savedInstanceState == null) {
+                startLongPoll()
+
                 selectedFragment = fragmentConversations
                 selectedId = R.id.conversations
             } else
@@ -173,10 +156,10 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
         val fragments = manager.fragments
         val classNames = ArrayList<String>(fragments.size)
 
-        val FRAGMENT_CONTAINER = R.id.fragment_container
+        val containerViewId = R.id.fragment_container
 
         if (ArrayUtil.isEmpty(fragments)) {
-            transaction.add(FRAGMENT_CONTAINER, fragment, fragment.javaClass.simpleName)
+            transaction.add(containerViewId, fragment, fragment.javaClass.simpleName)
         } else {
             for (f in fragments) {
                 transaction.hide(f)
@@ -190,7 +173,7 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
                         break
                     }
             } else {
-                transaction.add(FRAGMENT_CONTAINER, fragment, fragment.javaClass.simpleName)
+                transaction.add(containerViewId, fragment, fragment.javaClass.simpleName)
             }
         }
         transaction.commit()
@@ -198,6 +181,10 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
 
     public override fun onDestroy() {
         super.onDestroy()
+        if (!fromRecreate) {
+            stopService(Intent(this, LongPollService::class.java))
+        }
+
         EventBus.getDefault().unregister(this)
     }
 

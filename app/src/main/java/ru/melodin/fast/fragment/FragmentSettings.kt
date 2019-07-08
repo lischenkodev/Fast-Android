@@ -14,8 +14,8 @@ import ru.melodin.fast.adapter.GroupAdapter
 import ru.melodin.fast.adapter.UserAdapter
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.common.AppGlobal
+import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
-import ru.melodin.fast.concurrent.LowThread
 import ru.melodin.fast.current.BaseActivity
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
@@ -37,7 +37,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         darkTheme!!.onPreferenceChangeListener = this
 
         val user = UserConfig.getUser() ?: return
-        val hideTypingSummary = String.format(getString(R.string.hide_typing_summary), user.name, user.surname.substring(0, 1) + ".")
+        val hideTypingSummary = String.format(getString(R.string.hide_typing_summary), user.name, user.surname!!.substring(0, 1) + ".")
         hideTyping!!.summary = hideTypingSummary
     }
 
@@ -56,7 +56,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
     override fun onPreferenceClick(preference: Preference): Boolean {
         when (preference.key) {
             KEY_ABOUT -> Toast.makeText(context, String.format(getString(R.string.about_toast), AppGlobal.app_version_name, AppGlobal.app_version_code), Toast.LENGTH_LONG).show()
-            KEY_MESSAGES_CLEAR_CACHE -> showConfirmClearCacheDialog(false, false)
+            KEY_MESSAGES_CLEAR_CACHE -> showConfirmClearCacheDialog(users = false, groups = false)
             KEY_SHOW_CACHED_USERS -> showCachedUsers()
             KEY_SHOW_CACHED_GROUPS -> showCachedGroups()
         }
@@ -126,7 +126,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 .setTitle(R.string.confirmation)
                 .setMessage(R.string.clear_cache_confirm)
                 .setPositiveButton(R.string.yes) { _, _ ->
-                    LowThread {
+                    TaskManager.execute {
                         when {
                             users -> DatabaseHelper.getInstance().dropUsersTable(AppGlobal.database)
                             groups -> DatabaseHelper.getInstance().dropGroupsTable(AppGlobal.database)
@@ -135,7 +135,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                                 EventBus.getDefault().postSticky(arrayOf<Any>(KEY_MESSAGES_CLEAR_CACHE))
                             }
                         }
-                    }.start()
+                    }
                 }
                 .setNegativeButton(R.string.no, null)
                 .show()

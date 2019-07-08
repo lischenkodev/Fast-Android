@@ -8,6 +8,7 @@ import android.text.TextUtils
 import android.text.style.ForegroundColorSpan
 import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -132,7 +133,7 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
 
         for (i in 0 until itemCount) {
             val conversation = getItem(i)
-            if (conversation.last.id == messageId) {
+            if (conversation.last!!.id == messageId) {
                 conversation.last = CacheStorage.getMessage(messageId)
                 notifyItemChanged(i, -1)
                 break
@@ -143,13 +144,14 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
     private fun updateUser(userId: Int) {
         for (i in 0 until itemCount) {
             val conversation = getItem(i)
+            conversation.last ?: continue
             if (conversation.type == VKConversation.Type.USER) {
                 if (conversation.peerId == userId) {
                     notifyItemChanged(i, -1)
                     break
                 }
             } else if (conversation.isFromUser) {
-                if (conversation.last.fromId == userId) {
+                if (conversation.last!!.fromId == userId) {
                     notifyItemChanged(i, -1)
                     break
                 }
@@ -163,13 +165,14 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
             groupId *= -1
         for (i in 0 until itemCount) {
             val conversation = getItem(i)
+            conversation.last ?: continue
             if (conversation.type == VKConversation.Type.GROUP) {
                 if (conversation.peerId == groupId) {
                     notifyItemChanged(i, -1)
                     break
                 }
             } else if (conversation.isFromGroup) {
-                if (conversation.last.fromId == groupId) {
+                if (conversation.last!!.fromId == groupId) {
                     notifyItemChanged(i, -1)
                     break
                 }
@@ -180,7 +183,8 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
     private fun addMessage(conversation: VKConversation) {
         val firstVisiblePosition = manager.findFirstVisibleItemPosition()
 
-        val index = findConversationPosition(conversation.last.peerId)
+
+        val index = findConversationPosition(conversation.peerId)
         if (index >= 0) {
             val current = getItem(index)
 
@@ -205,7 +209,7 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
             conversation.isCanSeeInviteLink = current.isCanSeeInviteLink
             conversation.membersCount = current.membersCount
 
-            if (conversation.last.isOut) {
+            if (conversation.last!!.isOut) {
                 conversation.unread = 0
                 conversation.isRead = false
             }
@@ -226,7 +230,7 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
 
 
         } else {
-            if (!conversation.last.isOut)
+            if (!conversation.last!!.isOut)
                 conversation.unread = conversation.unread + 1
             add(0, conversation)
             notifyItemInserted(0)
@@ -237,7 +241,7 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         }
 
         CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
-        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last)
+        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last!!)
     }
 
     private fun readMessage(id: Int) {
@@ -258,7 +262,7 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
 
         val current = getItem(position)
         val last = current.last
-        last.flags = edited.flags
+        last!!.flags = edited.flags
         last.text = edited.text
         last.updateTime = edited.updateTime
         last.attachments = edited.attachments
@@ -284,7 +288,8 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
     private fun findConversationPosition(peerId: Int): Int {
         for (i in 0 until itemCount) {
             val conversation = getItem(i)
-            if (conversation.last.peerId == peerId)
+            conversation.last ?: continue
+            if (conversation.last!!.peerId == peerId)
                 return i
         }
 
@@ -326,6 +331,10 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         return -1
     }
 
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerHolder {
+        return ViewHolder(getView(parent)!!)
+    }
+
     inner class ViewHolder(v: View) : RecyclerHolder(v) {
 
         private var avatar: ImageView
@@ -352,7 +361,6 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         private var accentColor: Int = 0
 
         init {
-
             accentColor = ThemeManager.accent
             pushesEnabled = accentColor
             pushesDisabled = if (ThemeManager.isDark) ColorUtil.lightenColor(ThemeManager.primary, 2f) else Color.GRAY
@@ -438,8 +446,8 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 }
 
             if (last.action == null) {
-                if ((last.attachments != null || !ArrayUtil.isEmpty(last.fwdMessages)) && TextUtils.isEmpty(last.text)) {
-                    val body = VKUtil.getAttachmentBody(item.last.attachments, item.last.fwdMessages)
+                if (TextUtils.isEmpty(last.text)) {
+                    val body = VKUtil.getAttachmentBody(item.last!!.attachments, item.last!!.fwdMessages)
 
                     val span = SpannableString(body)
                     span.setSpan(ForegroundColorSpan(accentColor), 0, body.length, 0)
@@ -463,7 +471,7 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 var user = CacheStorage.getUser(item.peerId)
                 if (user == null) user = VKUser.EMPTY
 
-                online.visibility = if (user!!.isOnline) View.VISIBLE else View.GONE
+                online.visibility = if (user.isOnline) View.VISIBLE else View.GONE
                 online.setImageDrawable(getOnlineIndicator(user))
             } else {
                 online.visibility = View.GONE

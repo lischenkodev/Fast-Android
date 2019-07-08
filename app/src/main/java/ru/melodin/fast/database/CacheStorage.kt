@@ -136,7 +136,7 @@ object CacheStorage {
         return cursor.getInt(cursor.getColumnIndex(columnName))
     }
 
-    private fun getString(cursor: Cursor, columnName: String): String {
+    private fun getString(cursor: Cursor, columnName: String): String? {
         return cursor.getString(cursor.getColumnIndex(columnName))
     }
 
@@ -354,10 +354,8 @@ object CacheStorage {
         val last = getBlob(cursor, LAST_MESSAGE)
         val pinned = getBlob(cursor, PINNED_MESSAGE)
 
-        if (last != null)
-            dialog.last = Util.deserialize(last) as VKMessage
-        if (pinned != null)
-            dialog.pinned = Util.deserialize(pinned) as VKMessage
+        dialog.last = Util.deserialize(last) as VKMessage?
+        dialog.pinned = Util.deserialize(pinned) as VKMessage?
         return dialog
     }
 
@@ -370,9 +368,9 @@ object CacheStorage {
         message.text = getString(cursor, TEXT)
         message.isRead = getInt(cursor, READ_STATE) == 1
         message.isOut = getInt(cursor, IS_OUT) == 1
-        message.reply = Util.deserialize(getBlob(cursor, REPLY)!!) as VKReplyMessage
+        message.reply = Util.deserialize(getBlob(cursor, REPLY)) as VKReplyMessage?
         message.isImportant = getInt(cursor, IMPORTANT) == 1
-        message.status = VKMessage.getStatus(getString(cursor, STATUS))
+        message.status = VKMessage.getStatus(getString(cursor, STATUS))!!
         message.updateTime = getLong(cursor, UPDATE_TIME)
         message.action = VKMessage.getAction(getString(cursor, ACTION_TYPE))
         message.actionText = getString(cursor, ACTION_TEXT)
@@ -381,8 +379,8 @@ object CacheStorage {
         val attachments = getBlob(cursor, ATTACHMENTS)
         val forwarded = getBlob(cursor, FWD_MESSAGES)
 
-        message.attachments = Util.deserialize(attachments!!) as ArrayList<VKModel>
-        message.fwdMessages = Util.deserialize(forwarded!!) as ArrayList<VKMessage>
+        message.attachments = Util.deserialize(attachments) as ArrayList<VKModel>
+        message.fwdMessages = Util.deserialize(forwarded) as ArrayList<VKMessage>
         return message
     }
 
@@ -393,7 +391,7 @@ object CacheStorage {
         group.screenName = getString(cursor, SCREEN_NAME)
         group.description = getString(cursor, DESCRIPTION)
         group.status = getString(cursor, STATUS)
-        group.type = VKGroup.getType(getString(cursor, TYPE))
+        group.type = VKGroup.getType(getString(cursor, TYPE))!!
         group.isClosed = getInt(cursor, IS_CLOSED) == 1
         group.adminLevel = getInt(cursor, ADMIN_LEVEL)
         group.isAdmin = getInt(cursor, IS_ADMIN) == 1
@@ -414,7 +412,7 @@ object CacheStorage {
         chat.state = VKChat.getState(getInt(cursor, STATE))
         chat.title = getString(cursor, TITLE)
         chat.type = VKConversation.getType(getString(cursor, TYPE))
-        chat.users = Util.deserialize(getBlob(cursor, USERS)!!) as ArrayList<VKUser>
+        chat.users = Util.deserialize(getBlob(cursor, USERS)) as ArrayList<VKUser>
         return chat
     }
 
@@ -464,11 +462,11 @@ object CacheStorage {
         values.put(STATE, VKConversation.getState(dialog.state))
 
         if (dialog.last != null) {
-            values.put(LAST_MESSAGE, Util.serialize(dialog.last))
+            values.put(LAST_MESSAGE, Util.serialize(dialog.last!!))
         }
 
         if (dialog.pinned != null) {
-            values.put(PINNED_MESSAGE, Util.serialize(dialog.pinned))
+            values.put(PINNED_MESSAGE, Util.serialize(dialog.pinned!!))
         }
 
         if (TextUtils.isEmpty(dialog.title)) {
@@ -509,7 +507,7 @@ object CacheStorage {
         values.put(TEXT, message.text)
         values.put(DATE, message.date)
         values.put(IS_OUT, message.isOut)
-        values.put(REPLY, Util.serialize(message.reply))
+
         values.put(STATUS, VKMessage.getStatus(message.status))
         values.put(READ_STATE, message.isRead)
         values.put(UPDATE_TIME, message.updateTime)
@@ -517,14 +515,9 @@ object CacheStorage {
         values.put(ACTION_TYPE, VKMessage.getAction(message.action))
         values.put(ACTION_ID, message.actionId)
         values.put(IMPORTANT, message.isImportant)
-
-        if (!ArrayUtil.isEmpty(message.attachments)) {
-            values.put(ATTACHMENTS, Util.serialize(message.attachments))
-        }
-
-        if (!ArrayUtil.isEmpty(message.fwdMessages)) {
-            values.put(FWD_MESSAGES, Util.serialize(message.fwdMessages))
-        }
+        values.put(ATTACHMENTS, Util.serialize(message.attachments))
+        values.put(FWD_MESSAGES, Util.serialize(message.fwdMessages))
+        values.put(REPLY, Util.serialize(message.reply))
     }
 
     private fun putValues(values: ContentValues, group: VKGroup) {

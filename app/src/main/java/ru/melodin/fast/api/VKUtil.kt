@@ -112,12 +112,13 @@ object VKUtil {
     }
 
     fun getPhoto100(conversation: VKConversation, user: VKUser?, group: VKGroup?): String? {
-        val fromId = conversation.last.fromId
+        conversation.last ?: return null
+        val fromId = conversation.last!!.fromId
 
         return if (fromId < 0) {
             group?.photo100
         } else {
-            if (conversation.last.isOut && !conversation.isChat) if (UserConfig.getUser() != null) UserConfig.getUser()!!.photo100 else null else user?.photo100
+            if (conversation.last!!.isOut && !conversation.isChat) if (UserConfig.getUser() != null) UserConfig.getUser()!!.photo100 else null else user?.photo100
         }
     }
 }

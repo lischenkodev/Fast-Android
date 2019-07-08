@@ -164,12 +164,15 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
     private fun getUsers() {
         val items = adapter!!.selectedPositions
 
-        val users = ArrayList<VKUser>(items.size())
-        for (i in 0 until items.size()) {
-            users.add(items.valueAt(i))
-        }
+        if (items != null) {
+            val users = ArrayList<VKUser>(items.size())
+            for (i in 0 until items.size()) {
+                users.add(items.valueAt(i))
+            }
 
-        createChat(users)
+
+            createChat(users)
+        }
     }
 
     private fun createChat(users: ArrayList<VKUser>) {

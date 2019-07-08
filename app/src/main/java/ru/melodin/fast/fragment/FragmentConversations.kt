@@ -2,6 +2,7 @@ package ru.melodin.fast.fragment
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -77,16 +78,11 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
         refresh.setOnRefreshListener(this)
         refresh.setProgressBackgroundColorSchemeColor(ThemeManager.primary)
 
-        val manager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
         list.setHasFixedSize(true)
-
-        list.setItemViewCacheSize(20)
-
-        list.layoutManager = manager
+        list.layoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
 
         getCachedConversations()
-        if (savedInstanceState == null)
-            getConversations(CONVERSATIONS_COUNT, 0)
+        savedInstanceState ?: getConversations(CONVERSATIONS_COUNT, 0)
     }
 
     private fun createAdapter(conversations: ArrayList<VKConversation>?) {
@@ -145,8 +141,10 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
                             val groups = VKConversation.groups
                             val messages = ArrayList<VKMessage>()
 
-                            for (conversation in conversations!!)
-                                messages.add(conversation.last)
+                            for (conversation in conversations) {
+                                conversation.last ?: continue
+                                messages.add(conversation.last!!)
+                            }
 
                             CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
                             CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, groups)
@@ -162,13 +160,12 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
                             isLoading = false
                             refresh!!.isRefreshing = false
                             Toast.makeText(context, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show()
-
                         }
                     })
         }
     }
 
-       private fun openChat(position: Int) {
+    private fun openChat(position: Int) {
         val conversation = adapter!!.getItem(position)
 
         val peerId = conversation.peerId
@@ -190,14 +187,11 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
     private fun readConversation(peerId: Int) {
         if (!Util.hasConnection()) return
         TaskManager.execute {
-            VKApi.messages().markAsRead().peerId(peerId)
-                    .execute(null, object : VKApi.OnResponseListener {
-                        override fun onSuccess(models: ArrayList<*>?) {
-                        }
-
-                        override fun onError(e: Exception) {
-                        }
-                    })
+            try {
+                VKApi.messages().markAsRead().peerId(peerId).execute()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -205,7 +199,7 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
         getConversations(CONVERSATIONS_COUNT, 0)
     }
 
-    override fun onItemClick( position: Int) {
+    override fun onItemClick(position: Int) {
         openChat(position)
 
         val conversation = adapter!!.getItem(position)
@@ -231,7 +225,7 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
         val list = ArrayList(Arrays.asList(*resources.getStringArray(R.array.conversation_functions)))
         val remove = ArrayList<String>()
 
-        if (conversation.last == null || conversation.lastMessageId == -1 || conversation.last.isOut || conversation.isRead || conversation.last.isRead) {
+        if (conversation.last == null || conversation.lastMessageId == -1 || conversation.last!!.isOut || conversation.isRead || conversation.last!!.isRead) {
             remove.add(getString(R.string.read))
         }
 
@@ -264,7 +258,8 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
 
     private fun deleteConversation(position: Int) {
         val conversation = adapter!!.getItem(position)
-        val peerId = conversation.last.peerId
+
+        val peerId = conversation.peerId
 
         if (!Util.hasConnection() || peerId == -1 || peerId == 0) {
             refresh!!.isRefreshing = false
@@ -272,28 +267,27 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
         }
 
         refresh!!.isRefreshing = true
-        /*
-        TaskManager.execute(object : AsyncCallback(activity!!) {
 
-            @Throws(Exception::class)
-            override fun ready() {
-                VKApi.messages().deleteConversation().peerId(peerId).execute()
-            }
+        TaskManager.execute {
+            VKApi.messages()
+                    .deleteConversation()
+                    .peerId(peerId)
+                    .execute(null, object : VKApi.OnResponseListener {
+                        override fun onSuccess(models: ArrayList<*>?) {
+                            CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE, DatabaseHelper.PEER_ID, peerId)
+                            adapter!!.remove(position)
+                            adapter!!.notifyItemRemoved(position)
+                            adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
+                            refresh!!.isRefreshing = false
+                        }
 
-            override fun done() {
-                CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE, DatabaseHelper.PEER_ID, peerId)
-                adapter!!.remove(position)
-                adapter!!.notifyItemRemoved(position)
-                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
-                refresh!!.isRefreshing = false
-            }
-
-            override fun error(e: Exception) {
-                refresh!!.isRefreshing = false
-                Log.e("Error delete dialog", Log.getStackTraceString(e))
-                Toast.makeText(activity, R.string.error, Toast.LENGTH_SHORT).show()
-            }
-        })*/
+                        override fun onError(e: Exception) {
+                            refresh!!.isRefreshing = false
+                            Log.e("Error delete dialog", Log.getStackTraceString(e))
+                            Toast.makeText(activity, R.string.error, Toast.LENGTH_SHORT).show()
+                        }
+                    })
+        }
     }
 
     companion object {

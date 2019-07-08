@@ -3,6 +3,7 @@ package ru.melodin.fast.adapter
 import android.content.Context
 import android.text.TextUtils
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import com.squareup.picasso.Picasso
 import ru.melodin.fast.R
@@ -12,6 +13,10 @@ import ru.melodin.fast.view.CircleImageView
 import java.util.*
 
 class GroupAdapter(context: Context, values: ArrayList<VKGroup>) : RecyclerAdapter<VKGroup, GroupAdapter.ViewHolder>(context, R.layout.item_group, values) {
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerHolder {
+        return ViewHolder(getView(parent)!!)
+    }
 
     inner class ViewHolder(v: View) : RecyclerHolder(v) {
 

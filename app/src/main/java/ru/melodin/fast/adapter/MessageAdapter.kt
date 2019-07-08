@@ -102,12 +102,13 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
             Keys.KEY_MESSAGE_SET_FLAGS -> handleSetFlags(data)
             Keys.KEY_MESSAGE_NEW -> {
                 val conversation = data[1] as VKConversation
+                conversation.last ?: return
 
-                if (peerId != conversation.last.peerId) return
+                if (peerId != conversation.last?.peerId) return
 
                 val last = conversation.last
 
-                if (last.action == VKMessage.Action.PIN_MESSAGE) {
+                if (last!!.action == VKMessage.Action.PIN_MESSAGE) {
                     val position = findPosition(last.actionId)
                     if (position != -1)
                         activity.showPinned(getItem(position))
@@ -125,7 +126,7 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
                 }
 
                 if (!last.isOut && last.peerId == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
-                    if (!activity.isResumed()) {
+                    if (!activity.isRunning()) {
                         activity.setNotRead(last)
                     } else {
                         readNewMessage(last)
@@ -293,13 +294,6 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerHolder {
-        return when (viewType) {
-            TYPE_FOOTER -> FooterViewHolder(createFooter())
-            else -> ViewHolder(inflater.inflate(viewRes, parent, false))
-        }
-    }
-
     override fun getItemCount(): Int {
         return super.getItemCount() + 1
     }
@@ -424,10 +418,22 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
         }
     }
 
-    internal inner class FooterViewHolder(v: View) : ViewHolder(v) {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerHolder {
+        return when (viewType) {
+            TYPE_FOOTER -> FooterViewHolder(createFooter())
+            TYPE_NORMAL -> ViewHolder(getView(parent)!!)
+            else -> FooterViewHolder(createFooter())
+        }
+    }
 
-        override val isFooter: Boolean
-            get() = true
+    override fun onBindViewHolder(holder: RecyclerHolder, position: Int) {
+        if (holder is FooterViewHolder) return
+        holder.bind(position)
+
+        super.onBindViewHolder(holder, position)
+    }
+
+    internal inner class FooterViewHolder(v: View) : RecyclerHolder(v) {
 
         override fun bind(position: Int) {}
     }
@@ -459,19 +465,17 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
         @ColorInt
         var alphaAccentColor: Int = 0
 
-        open val isFooter: Boolean
-            get() = false
+        val isFooter = false
 
         init {
-
             alphaAccentColor = ColorUtil.alphaColor(ThemeManager.accent, 0.3f)
 
-            text = v.findViewById(R.id.text)
+            text = v.findViewById(R.id.message)
 
             placeholder = getDrawable(R.drawable.avatar_placeholder)
 
-            avatar = v.findViewById(R.id.userAvatar)
-            important = v.findViewById(R.id.important)
+            avatar = itemView.findViewById(R.id.userAvatar)
+            important = itemView.findViewById(R.id.important)
 
             circle = null
             defaultBg = getDrawable(R.drawable.msg_bg)
@@ -481,16 +485,16 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
             sending!!.setTint(ThemeManager.accent)
             error!!.setTint(Color.RED)
 
-            bubbleContainer = v.findViewById(R.id.bubble_container)
-            messageContainer = v.findViewById(R.id.message_container)
-            serviceContainer = v.findViewById(R.id.service_container)
-            mainContainer = v.findViewById(R.id.root)
-            replyContainer = v.findViewById(R.id.reply_container)
-            bubble = v.findViewById(R.id.bubble)
-            attachments = v.findViewById(R.id.attachments)
-            timeContainer = v.findViewById(R.id.time_container)
+            bubbleContainer = itemView.findViewById(R.id.bubble_container)
+            messageContainer = itemView.findViewById(R.id.message_container)
+            serviceContainer = itemView.findViewById(R.id.service_container)
+            mainContainer = itemView.findViewById(R.id.root)
+            replyContainer = itemView.findViewById(R.id.reply_container)
+            bubble = itemView.findViewById(R.id.bubble)
+            attachments = itemView.findViewById(R.id.attachments)
+            timeContainer = itemView.findViewById(R.id.time_container)
 
-            indicator = v.findViewById(R.id.message_state)
+            indicator = itemView.findViewById(R.id.message_state)
 
             bubble.maxWidth = metrics.widthPixels - metrics.widthPixels / 3
         }
@@ -570,7 +574,7 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
                 text.visibility = View.GONE
             } else {
                 text.visibility = View.VISIBLE
-                val text = item.text.trim()
+                val text = item.text!!.trim()
                 this.text.text = text
             }
 

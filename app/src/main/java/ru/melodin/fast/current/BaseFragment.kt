@@ -11,9 +11,8 @@ import ru.melodin.fast.view.FastToolbar
 abstract class BaseFragment : Fragment() {
 
     protected var title: CharSequence? = null
-        private set
+
     var recyclerView: RecyclerView? = null
-        protected set
     var toolbar: FastToolbar? = null
 
     protected fun setTitle(title: String) {
@@ -34,7 +33,7 @@ abstract class BaseFragment : Fragment() {
         val behavior = params.behavior as AppBarLayout.Behavior?
         if (behavior != null) {
             behavior.topAndBottomOffset = 0
-            behavior.onNestedPreScroll(appBar.parent as CoordinatorLayout, appBar, null!!, 0, 1, IntArray(2))
+            behavior.onNestedPreScroll(appBar.parent as CoordinatorLayout, appBar, appBar, 0, 1, IntArray(2))
         }
     }
 }

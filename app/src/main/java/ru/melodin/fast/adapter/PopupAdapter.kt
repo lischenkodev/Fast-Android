@@ -2,6 +2,7 @@ package ru.melodin.fast.adapter
 
 import android.content.Context
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import ru.melodin.fast.R
@@ -13,6 +14,10 @@ class PopupAdapter(context: Context, values: ArrayList<ListItem>) : RecyclerAdap
     override fun changeItems(items: ArrayList<ListItem>) {
         super.changeItems(items)
         notifyDataSetChanged()
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerHolder {
+        return ViewHolder(getView(parent)!!)
     }
 
     inner class ViewHolder(v: View) : RecyclerHolder(v) {

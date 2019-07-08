@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable
 import android.text.TextUtils
 import android.util.SparseArray
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -18,7 +19,7 @@ import java.util.*
 
 class CreateChatAdapter(context: Context, users: ArrayList<VKUser>) : RecyclerAdapter<VKUser, CreateChatAdapter.ViewHolder>(context, R.layout.activity_create_chat_list, users) {
 
-    val selectedPositions: SparseArray<VKUser>
+    val selectedPositions: SparseArray<VKUser> ?
         get() {
             val selected = SparseArray<VKUser>()
 
@@ -67,6 +68,10 @@ class CreateChatAdapter(context: Context, users: ArrayList<VKUser>) : RecyclerAd
                     u.isSelected = false
                 }
             }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerHolder {
+        return ViewHolder(getView(parent)!!)
     }
 
     inner class ViewHolder(v: View) : RecyclerHolder(v) {

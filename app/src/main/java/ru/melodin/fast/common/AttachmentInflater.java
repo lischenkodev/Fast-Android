@@ -237,7 +237,7 @@ public class AttachmentInflater {
         image.setOnClickListener(view -> isSelected(item));
 
         image.setLayoutParams(getParams());
-        loadImage(image, source.url, null);
+        loadImage(image, source.getUrl(), null);
 
         image.setClickable(false);
         image.setFocusable(false);
@@ -352,7 +352,7 @@ public class AttachmentInflater {
 
         VKUser user = MemoryCache.INSTANCE.getUser(source.getFromId());
         if (user == null) {
-            user = VKUser.EMPTY;
+            user = VKUser.Companion.getEMPTY();
         }
 
         if (TextUtils.isEmpty(user.getPhoto100()) || isReply) {
@@ -464,7 +464,7 @@ public class AttachmentInflater {
         parent.addView(v);
     }
 
-    public void audio(@Nullable VKMessage item, ViewGroup parent, @NonNull VKAudio source) {
+    public void audio(@NonNull VKMessage item, ViewGroup parent, @NonNull VKAudio source) {
         View v = inflater.inflate(R.layout.activity_messages_attach_audio, parent, false);
 
         v.setOnLongClickListener((view -> {
