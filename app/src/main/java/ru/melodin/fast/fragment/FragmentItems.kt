@@ -5,6 +5,7 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
@@ -22,6 +23,7 @@ import ru.melodin.fast.concurrent.LowThread
 import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.service.LongPollService
+import ru.melodin.fast.view.FastToolbar
 
 
 class FragmentItems : BaseFragment() {
@@ -37,8 +39,8 @@ class FragmentItems : BaseFragment() {
 
         userName.text = user.toString()
 
-        if (!TextUtils.isEmpty(user.photo200))
-            LowThread(Runnable {
+        if (!TextUtils.isEmpty(user!!.photo200))
+            LowThread {
                 activity!!.runOnUiThread {
                     Picasso.get()
                             .load(user.photo200)
@@ -46,18 +48,21 @@ class FragmentItems : BaseFragment() {
                             .placeholder(R.drawable.avatar_placeholder)
                             .into(userAvatar)
                 }
-            }).start()
+            }.start()
 
 
         userOnline.visibility = View.VISIBLE
         userOnline.setImageDrawable(getOnlineIndicator(user))
 
         tb.inflateMenu(R.menu.fragment_items)
-        tb.setOnMenuItemClickListener { item ->
-            if (item.itemId == R.id.menu) {
-                startActivity(Intent(context, SettingsActivity::class.java))
+        tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
+            override fun onMenuItemClick(item: MenuItem) {
+                if (item.itemId == R.id.menu) {
+                    startActivity(Intent(context, SettingsActivity::class.java))
+                }
             }
-        }
+
+        })
 
         logout.setOnClickListener { showExitDialog() }
     }

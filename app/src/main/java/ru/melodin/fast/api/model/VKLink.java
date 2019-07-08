@@ -1,8 +1,12 @@
 package ru.melodin.fast.api.model;
 
+import androidx.annotation.NonNull;
+
 import org.json.JSONObject;
 
 import java.io.Serializable;
+
+import ru.melodin.fast.api.model.attachment.VKPhoto;
 
 public class VKLink extends VKModel implements Serializable {
 
@@ -16,7 +20,7 @@ public class VKLink extends VKModel implements Serializable {
 
     private VKPhoto photo;
 
-    public VKLink(JSONObject source) {
+    public VKLink(@NonNull JSONObject source) {
         this.url = source.optString("url");
         this.title = source.optString("title");
         this.caption = source.optString("caption");

@@ -7,7 +7,7 @@
     app:elevation="0dp">
 
     <androidx.appcompat.widget.Toolbar
-        android:id="@+id/action_tb"
+        android:id="@+id/actionTb"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="?colorPrimary"

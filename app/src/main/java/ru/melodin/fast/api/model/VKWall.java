@@ -1,5 +1,7 @@
 package ru.melodin.fast.api.model;
 
+import androidx.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -21,7 +23,7 @@ public class VKWall extends VKModel implements Serializable {
     private boolean friendsOnly;
     private ArrayList<VKModel> attachments;
 
-    VKWall(JSONObject o) {
+    VKWall(@NonNull JSONObject o) {
         id = o.optInt("id", -1);
         ownerId = o.optInt("owner_id", -1);
         fromId = o.optInt("from_id", -1);

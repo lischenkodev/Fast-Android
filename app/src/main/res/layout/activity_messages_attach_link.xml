@@ -5,7 +5,8 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:minWidth="150dp"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:padding="10dp">
 
     <FrameLayout
         android:layout_width="wrap_content"
@@ -17,17 +18,18 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:scaleType="centerCrop"
-            tools:src="@drawable/avatar_placeholder" />
+            tools:src="@drawable/avatar_placeholder"
+            tools:visibility="gone" />
 
         <ImageView
             android:id="@+id/icon"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_gravity="center"
+            android:contentDescription="@string/app_name"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_vector_link_arrow"
-            android:tint="?android:textColorPrimary"
-            tools:tint="?colorAccent" />
+            android:tint="?colorAccent" />
 
     </FrameLayout>
 

@@ -63,14 +63,25 @@
 
     </LinearLayout>
 
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/kick"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:background="?selectableItemBackgroundBorderless"
+        android:padding="10dp"
+        android:src="@drawable/md_clear"
+        android:tint="?android:textColorSecondary" />
+
     <LinearLayout
+        android:id="@+id/contact_container"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_marginStart="10dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -79,7 +90,7 @@
             android:src="@drawable/md_mail"
             android:tint="?colorAccent" />
 
-        <ImageButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/functions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

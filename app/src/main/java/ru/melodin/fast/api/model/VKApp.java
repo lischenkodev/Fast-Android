@@ -110,8 +110,6 @@ public class VKApp extends VKModel implements Serializable {
      * @param source the json source to parse
      */
     public VKApp(JSONObject source) {
-        tag = VKAttachments.TYPE_APP;
-
         this.id = source.optInt("id");
         this.title = source.optString("title");
         this.description = source.optString("description");

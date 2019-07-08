@@ -29,7 +29,7 @@ public class VKReplyMessage extends VKModel implements Serializable {
         this.text = o.optString("text");
 
         JSONArray attachments = o.optJSONArray("attachments");
-        if (!ArrayUtil.isEmpty(attachments)) {
+        if (!ArrayUtil.INSTANCE.isEmpty(attachments)) {
             this.attachments = VKAttachments.parse(attachments);
         }
     }

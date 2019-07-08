@@ -1,5 +1,8 @@
 package ru.melodin.fast.api.model;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.StringRes;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -7,6 +10,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 import ru.melodin.fast.R;
+import ru.melodin.fast.api.model.attachment.VKAudio;
+import ru.melodin.fast.api.model.attachment.VKDoc;
+import ru.melodin.fast.api.model.attachment.VKPhoto;
+import ru.melodin.fast.api.model.attachment.VKVideo;
+import ru.melodin.fast.common.AppGlobal;
 import ru.melodin.fast.util.ArrayUtil;
 
 public class VKAttachments extends VKModel implements Serializable {
@@ -28,7 +36,7 @@ public class VKAttachments extends VKModel implements Serializable {
     public static final String TYPE_AUDIO_MESSAGE = "audio_message";
     public static final String TYPE_GRAFFITI = "graffiti";
 
-    public static ArrayList<VKModel> parse(JSONArray array) {
+    public static ArrayList<VKModel> parse(@NonNull JSONArray array) {
         ArrayList<VKModel> attachments = new ArrayList<>(array.length());
 
         for (int i = 0; i < array.length(); i++) {
@@ -39,6 +47,8 @@ public class VKAttachments extends VKModel implements Serializable {
 
             String type = attachment.optString("type");
             JSONObject object = attachment.optJSONObject(type);
+
+            if (object == null) return attachments;
 
             switch (type) {
                 case TYPE_PHOTO:
@@ -77,8 +87,9 @@ public class VKAttachments extends VKModel implements Serializable {
         return attachments;
     }
 
+    @NonNull
     public static String getAttachmentString(ArrayList<VKModel> attachments) {
-        if (ArrayUtil.isEmpty(attachments)) return "";
+        if (ArrayUtil.INSTANCE.isEmpty(attachments)) return "";
         StringBuilder b = new StringBuilder();
 
         if (attachments.size() > 1) {
@@ -115,7 +126,7 @@ public class VKAttachments extends VKModel implements Serializable {
     }
 
     private static boolean isOneType(Class type, ArrayList<VKModel> attachments) {
-        if (ArrayUtil.isEmpty(attachments) || type == null) return false;
+        if (ArrayUtil.INSTANCE.isEmpty(attachments) || type == null) return false;
 
         for (VKModel a : attachments) {
             if (!a.getClass().equals(type)) {
@@ -124,5 +135,9 @@ public class VKAttachments extends VKModel implements Serializable {
         }
 
         return true;
+    }
+
+    private static String getString(@StringRes int resId) {
+        return AppGlobal.context.getString(resId);
     }
 }

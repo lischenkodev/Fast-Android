@@ -94,7 +94,7 @@
     <string name="confirm_delete_friend">Вы действительно хотите удалить этого друга?</string>
     <string name="not_read_summary">Оставлять сообщения непрочитанными</string>
     <string name="not_read_title">Не читать сообщения</string>
-    <string name="chat_creator">Создатель чата</string>
+    <string name="chat_creator">Создатель беседы</string>
     <string name="save">Сохранить</string>
     <string name="copy_link">Скопировать ссылку</string>
     <string name="photo_of_photo">%1$d из %2$d</string>
@@ -126,7 +126,7 @@
     <string name="clear_messages_history">Удалить историю</string>
     <string name="disable_notifications">Выключить уведомления</string>
     <string name="enable_notifications">Включить уведомления</string>
-    <string name="chat">Чат</string>
+    <string name="chat">Беседа</string>
     <string name="leave_from">Выйти из %s</string>
     <string name="leave_from_chat_text">Вы вышли из беседы</string>
     <string name="return_to">Вернуться в %s</string>

@@ -46,7 +46,7 @@ public class VKConversation extends VKModel implements Serializable {
     private String photo50, photo100, photo200;
 
     //acl
-    private boolean canChangePin, canChangeInfo, canChangeInviteLink, canInvite, canPromoteUsers, canSeeInviteLink;
+    private boolean canChangePin, canChangeInfo, canChangeInviteLink, canInvite, canPromoteUsers, canSeeInviteLink, canModerate;
 
     //push_settings
     private int disabledUntil;
@@ -111,6 +111,7 @@ public class VKConversation extends VKModel implements Serializable {
                 this.canChangeInviteLink = acl.optBoolean("can_change_invite_link");
                 this.canChangeInfo = acl.optBoolean("can_change_info");
                 this.canChangePin = acl.optBoolean("can_change_pin");
+                this.canModerate = acl.optBoolean("can_moderate");
             }
 
             JSONObject pinned = ch.optJSONObject("pinned_message");
@@ -239,8 +240,8 @@ public class VKConversation extends VKModel implements Serializable {
     }
 
     @Contract(pure = true)
-    private static boolean isChatId(int peerId) {
-        return peerId > 2_000_000_00;
+    public static boolean isChatId(int peerId) {
+        return peerId > 2_000_000_000;
     }
 
     @Nullable
@@ -252,26 +253,26 @@ public class VKConversation extends VKModel implements Serializable {
 
         switch (getType()) {
             case GROUP:
-                group = CacheStorage.getGroup(VKGroup.toGroupId(peerId));
+                group = CacheStorage.INSTANCE.getGroup(VKGroup.toGroupId(peerId));
                 if (group == null) {
-                    EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+                    EventBus.getDefault().postSticky(new Object[]{Keys.NEED_LOAD_ID, peerId, getClass().getSimpleName()});
                     return null;
                 } else {
                     return group.toString();
                 }
             case USER:
-                user = CacheStorage.getUser(getPeerId());
+                user = CacheStorage.INSTANCE.getUser(getPeerId());
                 if (user == null) {
-                    EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+                    EventBus.getDefault().postSticky(new Object[]{Keys.NEED_LOAD_ID, peerId, getClass().getSimpleName()});
                     return null;
                 } else {
                     return user.toString();
                 }
             case CHAT:
                 if (isGroupChannel()) {
-                    group = CacheStorage.getGroup(VKGroup.toGroupId(peerId));
+                    group = CacheStorage.INSTANCE.getGroup(VKGroup.toGroupId(peerId));
                     if (group == null) {
-                        EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+                        EventBus.getDefault().postSticky(new Object[]{Keys.NEED_LOAD_ID, peerId, getClass().getSimpleName()});
                         return null;
                     } else {
                         return group.toString();
@@ -293,26 +294,26 @@ public class VKConversation extends VKModel implements Serializable {
 
         switch (getType()) {
             case GROUP:
-                group = CacheStorage.getGroup(VKGroup.toGroupId(peerId));
+                group = CacheStorage.INSTANCE.getGroup(VKGroup.toGroupId(peerId));
                 if (group == null) {
-                    EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+                    EventBus.getDefault().postSticky(new Object[]{Keys.NEED_LOAD_ID, peerId, getClass().getSimpleName()});
                     return null;
                 } else {
                     return group.getPhoto200();
                 }
             case USER:
-                user = CacheStorage.getUser(getPeerId());
+                user = CacheStorage.INSTANCE.getUser(getPeerId());
                 if (user == null) {
-                    EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+                    EventBus.getDefault().postSticky(new Object[]{Keys.NEED_LOAD_ID, peerId, getClass().getSimpleName()});
                     return null;
                 } else {
                     return user.getPhoto200();
                 }
             case CHAT:
                 if (isGroupChannel()) {
-                    group = CacheStorage.getGroup(VKGroup.toGroupId(peerId));
+                    group = CacheStorage.INSTANCE.getGroup(VKGroup.toGroupId(peerId));
                     if (group == null) {
-                        EventBus.getDefault().postSticky(new Object[]{Keys.KEY_NEED_LOAD_ID, peerId});
+                        EventBus.getDefault().postSticky(new Object[]{Keys.NEED_LOAD_ID, peerId, getClass().getSimpleName()});
                         return null;
                     } else {
                         return group.getPhoto200();
@@ -531,6 +532,14 @@ public class VKConversation extends VKModel implements Serializable {
         this.canChangeInviteLink = canChangeInviteLink;
     }
 
+    public boolean isCanModerate() {
+        return canModerate;
+    }
+
+    public void setCanModerate(boolean canModerate) {
+        this.canModerate = canModerate;
+    }
+
     public boolean isCanInvite() {
         return canInvite;
     }
@@ -577,6 +586,10 @@ public class VKConversation extends VKModel implements Serializable {
 
     public void setNoSound(boolean noSound) {
         this.noSound = noSound;
+    }
+
+    public static int toChatId(int id) {
+        return id > 2_000_000_000 ? id - 2_000_000_000 : id;
     }
 
     public enum State {

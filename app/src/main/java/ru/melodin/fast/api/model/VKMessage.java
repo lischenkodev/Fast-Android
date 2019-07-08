@@ -1,5 +1,9 @@
 package ru.melodin.fast.api.model;
 
+import androidx.annotation.NonNull;
+
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,12 +26,15 @@ public class VKMessage extends VKModel implements Serializable {
     public static final int DELETED = 128;      //сообщение удалено (в корзине)
     public static final int FIXED = 256;        //сообщение проверено пользователем на спам
     public static final int MEDIA = 512;        //сообщение содержит медиаконтент
-    public static final int BESEDA = 8192;      //беседа
+    public static final int BESEDA = 8192;
+    //беседа
     private static final long serialVersionUID = 1L;
+
     public static int count;
     public static int lastHistoryCount;
-    public static ArrayList<VKUser> users;
-    public static ArrayList<VKGroup> groups;
+
+    public static ArrayList<VKUser> users = new ArrayList<>();
+    public static ArrayList<VKGroup> groups = new ArrayList<>();
 
     private Action action;
     private int actionId;
@@ -46,7 +53,7 @@ public class VKMessage extends VKModel implements Serializable {
     private boolean important;
     private int unread;
     private ArrayList<VKModel> attachments = new ArrayList<>();
-    private ArrayList<VKMessage> fwdMessages;
+    private ArrayList<VKMessage> fwdMessages = new ArrayList<>();
     private VKReplyMessage reply;
     private long updateTime;
     private boolean added;
@@ -57,12 +64,12 @@ public class VKMessage extends VKModel implements Serializable {
     public VKMessage() {
     }
 
-    public VKMessage(JSONObject o) throws JSONException {
+    public VKMessage(@NonNull JSONObject o) throws JSONException {
         this.date = o.optLong("date", -1);
         this.fromId = o.optInt("from_id", -1);
         this.peerId = o.optInt("peer_id", -1);
         this.id = o.optInt("id", -1);
-        this.out = this.fromId == UserConfig.userId;
+        this.out = this.fromId == UserConfig.Companion.getUserId();
         this.text = o.optString("text");
         this.conversationMessageId = o.optInt("conversation_message_id", -1);
         this.important = o.optBoolean("important");
@@ -84,18 +91,20 @@ public class VKMessage extends VKModel implements Serializable {
 
         JSONArray fwdMessages = o.optJSONArray("fwd_messages");
 
-        if (!ArrayUtil.isEmpty(fwdMessages)) {
+        if (!ArrayUtil.INSTANCE.isEmpty(fwdMessages)) {
             this.fwdMessages = parseForwarded(fwdMessages);
         }
 
         JSONArray attachments = o.optJSONArray("attachments");
 
-        if (!ArrayUtil.isEmpty(attachments)) {
+        if (!ArrayUtil.INSTANCE.isEmpty(attachments)) {
             this.attachments = VKAttachments.parse(attachments);
         }
     }
 
-    public static Status getStatus(String status) {
+    @Nullable
+    @Contract(pure = true)
+    public static Status getStatus(@NonNull String status) {
         switch (status) {
             case "sending":
                 return Status.SENDING;
@@ -108,6 +117,8 @@ public class VKMessage extends VKModel implements Serializable {
         return null;
     }
 
+    @NonNull
+    @Contract(pure = true)
     public static String getStatus(Status status) {
         if (status == null) return "";
         switch (status) {
@@ -121,7 +132,9 @@ public class VKMessage extends VKModel implements Serializable {
         return "";
     }
 
-    public static Action getAction(String action) {
+    @Nullable
+    @Contract(pure = true)
+    public static Action getAction(@NonNull String action) {
         switch (action) {
             case "chat_create":
                 return Action.CREATE;

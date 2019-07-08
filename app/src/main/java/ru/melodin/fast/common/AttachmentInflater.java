@@ -36,18 +36,18 @@ import ru.melodin.fast.PhotoViewActivity;
 import ru.melodin.fast.R;
 import ru.melodin.fast.adapter.MessageAdapter;
 import ru.melodin.fast.api.VKUtil;
-import ru.melodin.fast.api.model.VKAudio;
-import ru.melodin.fast.api.model.VKDoc;
 import ru.melodin.fast.api.model.VKGraffiti;
 import ru.melodin.fast.api.model.VKLink;
 import ru.melodin.fast.api.model.VKMessage;
 import ru.melodin.fast.api.model.VKModel;
-import ru.melodin.fast.api.model.VKPhoto;
 import ru.melodin.fast.api.model.VKSticker;
 import ru.melodin.fast.api.model.VKUser;
-import ru.melodin.fast.api.model.VKVideo;
 import ru.melodin.fast.api.model.VKVoice;
 import ru.melodin.fast.api.model.VKWall;
+import ru.melodin.fast.api.model.attachment.VKAudio;
+import ru.melodin.fast.api.model.attachment.VKDoc;
+import ru.melodin.fast.api.model.attachment.VKPhoto;
+import ru.melodin.fast.api.model.attachment.VKVideo;
 import ru.melodin.fast.database.MemoryCache;
 import ru.melodin.fast.util.ArrayUtil;
 import ru.melodin.fast.util.Util;
@@ -79,13 +79,10 @@ public class AttachmentInflater {
         return new AttachmentInflater(adapter, context);
     }
 
-    public void showForwardedMessages(VKMessage item, ViewGroup parent, boolean reply, boolean withStyles) {
-        if (reply)
-            message(item, parent, item.getReply().asMessage(), reply, withStyles);
-        else
-            for (int i = 0; i < item.getFwdMessages().size(); i++) {
-                message(item, parent, item.getFwdMessages().get(i), false, withStyles);
-            }
+    public void showForwardedMessages(VKMessage item, ViewGroup parent, boolean withStyles) {
+        for (int i = 0; i < item.getFwdMessages().size(); i++) {
+            message(item, parent, item.getFwdMessages().get(i), false, withStyles);
+        }
     }
 
     private void inflateAttachments(@NonNull VKMessage item, ViewGroup parent, ViewGroup images, int maxWidth, boolean forwarded) {
@@ -258,7 +255,7 @@ public class AttachmentInflater {
         image.setOnClickListener(view -> isSelected(item));
 
         image.setLayoutParams(getParams(400, 400));
-        loadImage(image, ThemeManager.isDark() ? source.getMaxBackgroundSize() : source.getMaxSize(), null);
+        loadImage(image, ThemeManager.Companion.isDark() ? source.getMaxBackgroundSize() : source.getMaxSize(), null);
 
         image.setClickable(false);
         image.setFocusable(false);
@@ -269,7 +266,7 @@ public class AttachmentInflater {
     public void service(VKMessage item, ViewGroup parent) {
         TextView text = (TextView) inflater.inflate(R.layout.activity_messages_service, parent, false);
 
-        text.setText(Html.fromHtml(VKUtil.getActionBody(item, false)));
+        text.setText(Html.fromHtml(VKUtil.INSTANCE.getActionBody(item, false)));
         parent.addView(text);
     }
 
@@ -285,7 +282,7 @@ public class AttachmentInflater {
         ImageView image = v.findViewById(R.id.image);
         TextView time = v.findViewById(R.id.time);
 
-        String duration = String.format(AppGlobal.locale, "%d:%02d", source.getDuration() / 60, source.getDuration() % 60);
+        String duration = String.format(AppGlobal.Companion.getLocale(), "%d:%02d", source.getDuration() / 60, source.getDuration() % 60);
         time.setText(duration);
 
         image.setLayoutParams(maxWidth == -1 ? getFrameParams(source.getMaxWidth(), FrameLayout.LayoutParams.WRAP_CONTENT) : getFrameParams(maxWidth));
@@ -325,7 +322,14 @@ public class AttachmentInflater {
         parent.addView(image);
     }
 
-    public View message(VKMessage item, ViewGroup parent, @NonNull VKMessage source, boolean reply, boolean withStyles) {
+
+    public void reply(VKMessage item, ViewGroup parent, boolean withStyles) {
+        View v = message(item, null, item.getReply().asMessage(), true, withStyles);
+        v.setOnClickListener(view -> adapter.getActivity().chooseMessage(item.getReply().asMessage()));
+        parent.addView(v);
+    }
+
+    public View message(VKMessage item, ViewGroup parent, @NonNull VKMessage source, boolean isReply, boolean withStyles) {
         View v = inflater.inflate(R.layout.activity_messages_attach_message, parent, false);
         v.setClickable(false);
         v.setFocusable(false);
@@ -340,16 +344,18 @@ public class AttachmentInflater {
         }
 
         TextView name = v.findViewById(R.id.userName);
-        TextView message = v.findViewById(R.id.user_message);
+        TextView message = v.findViewById(R.id.userMessage);
         ImageView avatar = v.findViewById(R.id.userAvatar);
         View line = v.findViewById(R.id.message_line);
 
-        VKUser user = MemoryCache.getUser(source.getFromId());
+        message.setSingleLine(isReply);
+
+        VKUser user = MemoryCache.INSTANCE.getUser(source.getFromId());
         if (user == null) {
             user = VKUser.EMPTY;
         }
 
-        if (TextUtils.isEmpty(user.getPhoto100())) {
+        if (TextUtils.isEmpty(user.getPhoto100()) || isReply) {
             avatar.setVisibility(View.GONE);
         } else {
             avatar.setVisibility(View.VISIBLE);
@@ -360,9 +366,9 @@ public class AttachmentInflater {
                     .into(avatar);
         }
 
-        line.setBackgroundColor(withStyles ? ThemeManager.getAccent() : Color.TRANSPARENT);
+        line.setBackgroundColor(withStyles ? ThemeManager.Companion.getAccent() : Color.TRANSPARENT);
 
-        @ColorInt int lineColor = item != null ? ThemeManager.getAccent() : Color.TRANSPARENT;
+        @ColorInt int lineColor = item != null ? ThemeManager.Companion.getAccent() : Color.TRANSPARENT;
         line.setBackgroundColor(lineColor);
 
         name.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 3));
@@ -376,18 +382,17 @@ public class AttachmentInflater {
             message.setText(source.getText());
         }
 
-        if (!ArrayUtil.isEmpty(source.getAttachments())) {
+        if (!ArrayUtil.INSTANCE.isEmpty(source.getAttachments()) && !isReply) {
             LinearLayout container = v.findViewById(R.id.attachments);
             inflateAttachments(source, container, container, -1, true);
         }
 
-        if (!ArrayUtil.isEmpty(source.getFwdMessages())) {
+        if (!ArrayUtil.INSTANCE.isEmpty(source.getFwdMessages()) && !isReply) {
             LinearLayout container = v.findViewById(R.id.forwarded);
-            showForwardedMessages(source, container, false, withStyles);
+            showForwardedMessages(source, container, withStyles);
         }
 
-        if (parent != null)
-            parent.addView(v);
+        if (parent != null) parent.addView(v);
         return v;
     }
 
@@ -403,7 +408,7 @@ public class AttachmentInflater {
 
         title.setText(source.getTitle());
 
-        String size_ = Util.parseSize(source.getSize()) + " • " + source.getExt().toUpperCase();
+        String size_ = Util.INSTANCE.parseSize(source.getSize()) + " • " + source.getExt().toUpperCase();
         size.setText(size_);
 
         title.setMaxWidth(metrics.widthPixels - (metrics.widthPixels / 2));
@@ -434,7 +439,7 @@ public class AttachmentInflater {
 
         final ImageButton play = v.findViewById(R.id.play);
 
-        String duration = String.format(AppGlobal.locale, "%d:%02d", source.getDuration() / 60, source.getDuration() % 60);
+        String duration = String.format(AppGlobal.Companion.getLocale(), "%d:%02d", source.getDuration() / 60, source.getDuration() % 60);
         title.setText(context.getString(R.string.voice_message));
         body.setText(duration);
 
@@ -488,7 +493,7 @@ public class AttachmentInflater {
             }
         });
 
-        String duration = String.format(AppGlobal.locale, "%d:%02d", source.getDuration() / 60, source.getDuration() % 60);
+        String duration = String.format(AppGlobal.Companion.getLocale(), "%d:%02d", source.getDuration() / 60, source.getDuration() % 60);
         title.setText(source.getTitle());
         body.setText(source.getArtist());
         time.setText(duration);
@@ -573,7 +578,7 @@ public class AttachmentInflater {
         int position = adapter.searchPosition(item.getId());
         if (position == -1) return;
 
-        adapter.getActivity().onItemClick(null, position);
+        adapter.getActivity().onItemClick( position);
     }
 
     private void simulateLongClick(VKMessage item) {
@@ -582,6 +587,6 @@ public class AttachmentInflater {
         int position = adapter.searchPosition(item.getId());
         if (position == -1) return;
 
-        adapter.getActivity().onItemLongClick(null, position);
+        adapter.getActivity().onItemLongClick( position);
     }
 }

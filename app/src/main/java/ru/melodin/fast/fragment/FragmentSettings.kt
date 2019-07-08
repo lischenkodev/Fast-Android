@@ -15,6 +15,7 @@ import ru.melodin.fast.adapter.UserAdapter
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.common.ThemeManager
+import ru.melodin.fast.concurrent.LowThread
 import ru.melodin.fast.current.BaseActivity
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
@@ -35,7 +36,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
         darkTheme!!.onPreferenceChangeListener = this
 
-        val user = UserConfig.user ?: return
+        val user = UserConfig.getUser() ?: return
         val hideTypingSummary = String.format(getString(R.string.hide_typing_summary), user.name, user.surname.substring(0, 1) + ".")
         hideTyping!!.summary = hideTypingSummary
     }
@@ -73,13 +74,13 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         list.setHasFixedSize(true)
         list.layoutManager = manager
 
-        val groups = CacheStorage.getGroups()
+        val groups = CacheStorage.groups
         if (ArrayUtil.isEmpty(groups)) {
             Toast.makeText(activity, R.string.no_data, Toast.LENGTH_SHORT).show()
             return
         }
 
-        val adapter = GroupAdapter(context, groups)
+        val adapter = GroupAdapter(context!!, groups!!)
         list.adapter = adapter
 
         val adb = AlertDialog.Builder(context!!)
@@ -102,13 +103,13 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         list.setHasFixedSize(true)
         list.layoutManager = manager
 
-        val users = CacheStorage.getUsers()
+        val users = CacheStorage.users
         if (ArrayUtil.isEmpty(users)) {
             Toast.makeText(activity, R.string.no_data, Toast.LENGTH_SHORT).show()
             return
         }
 
-        val adapter = UserAdapter(context, users)
+        val adapter = UserAdapter(context!!, users)
         list.adapter = adapter
 
         val adb = AlertDialog.Builder(context!!)
@@ -125,15 +126,16 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 .setTitle(R.string.confirmation)
                 .setMessage(R.string.clear_cache_confirm)
                 .setPositiveButton(R.string.yes) { _, _ ->
-                    when {
-                        users -> DatabaseHelper.getInstance().dropUsersTable(AppGlobal.database)
-                        groups -> DatabaseHelper.getInstance().dropGroupsTable(AppGlobal.database)
-                        else -> {
-                            DatabaseHelper.getInstance().dropMessagesTable(AppGlobal.database)
-                            EventBus.getDefault().postSticky(arrayOf<Any>(KEY_MESSAGES_CLEAR_CACHE))
+                    LowThread {
+                        when {
+                            users -> DatabaseHelper.getInstance().dropUsersTable(AppGlobal.database)
+                            groups -> DatabaseHelper.getInstance().dropGroupsTable(AppGlobal.database)
+                            else -> {
+                                DatabaseHelper.getInstance().dropMessagesTable(AppGlobal.database)
+                                EventBus.getDefault().postSticky(arrayOf<Any>(KEY_MESSAGES_CLEAR_CACHE))
+                            }
                         }
-                    }
-
+                    }.start()
                 }
                 .setNegativeButton(R.string.no, null)
                 .show()

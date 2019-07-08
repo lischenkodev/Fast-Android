@@ -18,21 +18,21 @@
         tools:ignore="GoogleAppIndexingWarning"
         tools:targetApi="m">
 
-        <activity android:name=".ValidationActivity" />
-
-        <activity
-            android:name=".MainActivity">
+        <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity android:name=".LoginActivity" />
+        <activity android:name=".SettingsActivity" />
+        <activity android:name=".ChatInfoActivity" />
+        <activity android:name=".ValidationActivity" />
         <activity android:name=".CreateChatActivity" />
         <activity android:name=".ShowCreateChatActivity" />
-        <activity
-            android:name=".SettingsActivity"
-            android:label="@string/settings" />
+
         <activity
             android:name=".MessagesActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -45,8 +45,6 @@
             android:name=".PhotoViewActivity"
             android:configChanges="screenSize|orientation|density"
             android:theme="@style/AppTheme.PhotoView" />
-
-        <activity android:name=".LoginActivity" />
 
         <service
             android:name=".service.LongPollService"

@@ -1,5 +1,7 @@
 package ru.melodin.fast.api.model;
 
+import androidx.annotation.NonNull;
+
 import org.json.JSONObject;
 
 import java.io.Serializable;
@@ -16,7 +18,7 @@ public class VKGift extends VKModel implements Serializable {
     private String thumb96;
     private String thumb256;
 
-    public VKGift(JSONObject source) {
+    public VKGift(@NonNull JSONObject source) {
         this.id = source.optLong("id");
         this.fromId = source.optInt("from_id");
         this.date = source.optLong("date");

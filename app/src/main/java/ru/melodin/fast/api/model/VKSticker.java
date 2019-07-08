@@ -44,7 +44,7 @@ public class VKSticker extends VKModel implements Serializable {
     }
 
     public String size(int width) {
-        if (ArrayUtil.isEmpty(images)) return null;
+        if (ArrayUtil.INSTANCE.isEmpty(images)) return null;
         for (Size size : images) {
             if (size.getWidth() == width)
                 return size.getUrl();
@@ -54,7 +54,7 @@ public class VKSticker extends VKModel implements Serializable {
     }
 
     public String backgroundSize(int width) {
-        if (ArrayUtil.isEmpty(backgroundImages)) return null;
+        if (ArrayUtil.INSTANCE.isEmpty(backgroundImages)) return null;
         for (Size size : backgroundImages) {
             if (size.getWidth() == width)
                 return size.getUrl();
@@ -65,7 +65,7 @@ public class VKSticker extends VKModel implements Serializable {
     }
 
     private String findMaxSize() {
-        if (ArrayUtil.isEmpty(images)) return null;
+        if (ArrayUtil.INSTANCE.isEmpty(images)) return null;
         for (int i = images.size() - 1; i >= 0; i--) {
             Size size = images.get(i);
             String image = size.getUrl();
@@ -80,7 +80,7 @@ public class VKSticker extends VKModel implements Serializable {
     }
 
     private String findMaxBackgroundSize() {
-        if (ArrayUtil.isEmpty(backgroundImages)) return null;
+        if (ArrayUtil.INSTANCE.isEmpty(backgroundImages)) return null;
         for (int i = backgroundImages.size() - 1; i >= 0; i--) {
             String image = backgroundImages.get(i).getUrl();
             if (!TextUtils.isEmpty(image)) {

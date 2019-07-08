@@ -1,5 +1,7 @@
 package ru.melodin.fast.api.model;
 
+import androidx.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -15,7 +17,7 @@ public class VKVoice extends VKModel implements Serializable {
 
     private String linkOgg, linkMp3;
 
-    public VKVoice(JSONObject o) {
+    public VKVoice(@NonNull JSONObject o) {
         duration = o.optInt("duration");
         linkMp3 = o.optString("link_mp3");
         linkOgg = o.optString("link_ogg");

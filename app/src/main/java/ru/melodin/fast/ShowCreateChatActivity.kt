@@ -7,9 +7,9 @@ import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.Log
+import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_show_create.*
@@ -18,13 +18,15 @@ import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.adapter.ShowCreateAdapter
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKUser
+import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
-import ru.melodin.fast.concurrent.AsyncCallback
-import ru.melodin.fast.concurrent.ThreadExecutor
+import ru.melodin.fast.current.BaseActivity
+import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.ViewUtil
+import ru.melodin.fast.view.FastToolbar
 import java.util.*
 
-class ShowCreateChatActivity : AppCompatActivity(), TextWatcher {
+class ShowCreateChatActivity : BaseActivity(), TextWatcher {
 
     override fun afterTextChanged(p0: Editable?) {
 
@@ -41,7 +43,7 @@ class ShowCreateChatActivity : AppCompatActivity(), TextWatcher {
     private var users: ArrayList<VKUser>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(ThemeManager.getCurrentTheme())
+        setTheme(ThemeManager.currentTheme)
         ViewUtil.applyWindowStyles(window)
         super.onCreate(savedInstanceState)
 
@@ -50,13 +52,16 @@ class ShowCreateChatActivity : AppCompatActivity(), TextWatcher {
         setContentView(R.layout.activity_show_create)
 
         tb.inflateMenu(R.menu.activity_create_chat)
-        tb.setOnMenuItemClickListener { item ->
-            if (item.itemId == R.id.create && adapter != null)
-                createChat()
-        }
-        tb.setBackIcon(ContextCompat.getDrawable(this, R.drawable.md_clear))
+        tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
+            override fun onMenuItemClick(item: MenuItem) {
+                if (item.itemId == R.id.create && adapter != null)
+                    createChat()
+            }
+
+        })
+        tb.setBackIcon(drawable(R.drawable.md_clear))
         tb.setBackVisible(true)
-        tb.setOnBackClickListener { onBackPressed() }
+        tb.setOnBackClickListener(View.OnClickListener { onBackPressed() })
         tb.setTitle(R.string.create_chat)
 
         refresh.isEnabled = false
@@ -73,53 +78,50 @@ class ShowCreateChatActivity : AppCompatActivity(), TextWatcher {
     }
 
     private fun createAdapter() {
-        adapter = ShowCreateAdapter(this, users)
+        adapter = ShowCreateAdapter(this, users!!)
         list.adapter = adapter
 
         tb.setOnClickListener { list.smoothScrollToPosition(0) }
     }
 
     private fun createChat() {
-        ThreadExecutor.execute(object : AsyncCallback(this) {
+        TaskManager.execute {
 
-            var peerId: Int = 0
+            val builder: StringBuilder = StringBuilder(chatTitle.text.toString().trim())
 
-            lateinit var title_: StringBuilder
-
-            @Throws(Exception::class)
-            override fun ready() {
-                val ids = ArrayList<Int>()
-                for (user in adapter!!.values) {
+            val ids = ArrayList<Int>()
+                for (user in adapter!!.values!!) {
                     ids.add(user.id)
                 }
 
-                title_ = StringBuilder(chatTitle.text.toString().trim())
-
-                if (TextUtils.isEmpty(title_.toString())) {
-                    if (users!!.size == 1) {
-                        title_.append(users!![0].name)
-                    } else
-                        for (i in users!!.indices) {
-                            val user = adapter!!.getItem(i)
-                            title_.append(user.name).append(if (i == users!!.size) "" else ", ")
-                        }
+            if (TextUtils.isEmpty(builder.toString())) {
+                    builder.append(users!![0])
+                    users!!.forEach {
+                        builder.append(',')
+                        builder.append(it.name)
+                    }
                 }
 
-                peerId = 2000000000 + VKApi.messages().createChat().title(title_.toString()).userIds(ids).execute(Int::class.java)[0]
+                 VKApi.messages().createChat().title(builder.toString()).userIds(ids).execute(Int::class.java, object : VKApi.OnResponseListener {
+                     override fun onSuccess(models: ArrayList<*>?) {
+                         if (ArrayUtil.isEmpty(models)) return
+                         models?: return
+
+                         val peerId = 2_000_000_000 + models[0] as Int
+
+                         val intent = Intent()
+                         intent.putExtra("title", title.toString())
+                         intent.putExtra("peer_id", peerId)
+                         setResult(Activity.RESULT_OK, intent)
+                         finish()
+                     }
+
+                     override fun onError(e: Exception) {
+                         Log.e("Error create chat", Log.getStackTraceString(e))
+                         Toast.makeText(this@ShowCreateChatActivity, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show()
+                     }
+                 })
             }
 
-            override fun done() {
-                val intent = Intent()
-                intent.putExtra("title", title_.toString())
-                intent.putExtra("peer_id", peerId)
-                setResult(Activity.RESULT_OK, intent)
-                finish()
-            }
-
-            override fun error(e: Exception) {
-                Log.e("Error create chat", Log.getStackTraceString(e))
-                Toast.makeText(this@ShowCreateChatActivity, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show()
-            }
-        })
     }
 }

@@ -37,6 +37,7 @@
                 android:layout_height="15dp"
                 android:layout_gravity="center|bottom"
                 android:layout_marginEnd="4dp"
+                android:contentDescription="@string/app_name"
                 tools:src="@drawable/ic_not_read"
                 tools:tint="@android:color/white" />
 
@@ -51,6 +52,13 @@
                 android:minHeight="40dp"
                 android:orientation="vertical"
                 android:padding="4dp">
+
+                <LinearLayout
+                    android:id="@+id/reply_container"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:orientation="vertical" />
 
                 <androidx.appcompat.widget.AppCompatTextView
                     android:id="@+id/text"

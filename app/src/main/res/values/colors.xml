@@ -11,5 +11,6 @@
     <color name="dark_background">#161616</color>
 
     <color name="online">#7BB865</color>
+    <color name="warning">#ff0000</color>
 
 </resources>

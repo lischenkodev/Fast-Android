@@ -25,15 +25,14 @@ import ru.melodin.fast.api.Scopes
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKUser
+import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
-import ru.melodin.fast.concurrent.AsyncCallback
 import ru.melodin.fast.concurrent.LowThread
-import ru.melodin.fast.concurrent.ThreadExecutor
 import ru.melodin.fast.current.BaseActivity
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
+import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.ColorUtil
-import ru.melodin.fast.util.Requests
 import ru.melodin.fast.util.Util
 import ru.melodin.fast.util.ViewUtil
 import java.util.*
@@ -43,16 +42,16 @@ class LoginActivity : BaseActivity() {
     private var login: String? = null
     private var password: String? = null
 
-    private lateinit var timer: Timer
+    private var timer: Timer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setTheme(ThemeManager.getLoginTheme())
-        ViewUtil.applyWindowStyles(window, ThemeManager.getBackground())
+        setTheme(ThemeManager.loginTheme)
+        ViewUtil.applyWindowStyles(window, ThemeManager.background)
         setContentView(R.layout.activity_login)
 
         progress.visibility = View.INVISIBLE
-        progress.indeterminateTintList = ColorStateList.valueOf(ColorUtil.saturateColor(ThemeManager.getAccent(), 2f))
+        progress.indeterminateTintList = ColorStateList.valueOf(ColorUtil.saturateColor(ThemeManager.accent, 2f))
 
         buttonLogin.shrink()
         buttonLogin.extend()
@@ -68,13 +67,13 @@ class LoginActivity : BaseActivity() {
 
         logoText.setOnClickListener { toggleTheme() }
 
-        if (ThemeManager.isDark()) {
+        if (ThemeManager.isDark) {
             logoText.setTextColor(Color.WHITE)
-            val stateList = ColorStateList.valueOf(ThemeManager.getAccent())
+            val stateList = ColorStateList.valueOf(ThemeManager.accent)
             iconEmail.imageTintList = stateList
             iconKey.imageTintList = stateList
         } else {
-            @ColorInt val boxColor = ColorUtil.darkenColor(ThemeManager.getBackground(), 0.98f)
+            @ColorInt val boxColor = ColorUtil.darkenColor(ThemeManager.background, 0.98f)
             inputLogin.boxBackgroundColor = boxColor
             inputPassword.boxBackgroundColor = boxColor
         }
@@ -102,7 +101,7 @@ class LoginActivity : BaseActivity() {
 
     private fun startTick() {
         timer = Timer()
-        timer.schedule(object : TimerTask() {
+        timer!!.schedule(object : TimerTask() {
             override fun run() {
                 runOnUiThread {
                     if (!buttonLogin.isExtended) toggleButton()
@@ -174,51 +173,48 @@ class LoginActivity : BaseActivity() {
     }
 
     fun authorize(jsonObject: String) {
-        ThreadExecutor.execute(object : AsyncCallback(this) {
+        TaskManager.execute {
+
             lateinit var response: JSONObject
 
-            @Throws(Exception::class)
-            override fun ready() {
+            try {
                 response = JSONObject(jsonObject)
-            }
+                runOnUiThread {
+                    toggleButton()
 
-            override fun done() {
-                toggleButton()
+                    timer?.cancel()
 
-                timer.cancel()
+                    if (response.has("error")) {
+                        val errorDescription = response.optString("error_description")
 
-                if (response.has("error")) {
-                    val errorDescription = response.optString("error_description")
-
-                    when (response.optString("error", getString(R.string.error))) {
-                        "need_validation" -> {
-                            val redirectUri = response.optString("redirect_uri")
-                            val intent = Intent(this@LoginActivity, ValidationActivity::class.java)
-                            intent.putExtra("url", redirectUri)
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                            startActivityForResult(intent, Requests.VALIDATE_LOGIN)
+                        when (response.optString("error", getString(R.string.error))) {
+                            "need_validation" -> {
+                                val redirectUri = response.optString("redirect_uri")
+                                val intent = Intent(this@LoginActivity, ValidationActivity::class.java)
+                                intent.putExtra("url", redirectUri)
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+                                startActivityForResult(intent, REQUEST_VALIDATE)
+                            }
+                            "need_captcha" -> {
+                                val captchaImg = response.optString("captcha_img")
+                                val captchaSid = response.optString("captcha_sid")
+                                showCaptchaDialog(captchaSid, captchaImg)
+                            }
+                            else -> Snackbar.make(buttonLogin, errorDescription, Snackbar.LENGTH_LONG).show()
                         }
-                        "need_captcha" -> {
-                            val captchaImg = response.optString("captcha_img")
-                            val captchaSid = response.optString("captcha_sid")
-                            showCaptchaDialog(captchaSid, captchaImg)
-                        }
-                        else -> Snackbar.make(buttonLogin, errorDescription, Snackbar.LENGTH_LONG).show()
+                    } else {
+                        UserConfig.userId = response.optInt("user_id", -1)
+                        UserConfig.accessToken = response.optString("access_token")
+                        UserConfig.save()
+
+                        getCurrentUser(UserConfig.userId)
+                        startMainActivity()
                     }
-                } else {
-                    UserConfig.userId = response.optInt("user_id", -1)
-                    UserConfig.accessToken = response.optString("access_token")
-                    UserConfig.save()
-
-                    getCurrentUser(UserConfig.userId)
-                    startMainActivity()
                 }
+            } catch (e: Exception) {
+                runOnUiThread { Toast.makeText(this@LoginActivity, R.string.error, Toast.LENGTH_SHORT).show() }
             }
-
-            override fun error(e: Exception) {
-                Toast.makeText(this@LoginActivity, R.string.error, Toast.LENGTH_SHORT).show()
-            }
-        })
+        }
     }
 
     private fun showCaptchaDialog(captcha_sid: String, captcha_img: String) {
@@ -255,7 +251,7 @@ class LoginActivity : BaseActivity() {
     }
 
     private fun startWebLogin() {
-        startActivityForResult(Intent(this, WebViewLoginActivity::class.java), Requests.WEB_LOGIN)
+        startActivityForResult(Intent(this, WebViewLoginActivity::class.java), REQUEST_WEB_LOGIN)
     }
 
     private fun startMainActivity() {
@@ -279,7 +275,7 @@ class LoginActivity : BaseActivity() {
         if (!webLogin!!.isEnabled)
             webLogin!!.isEnabled = true
 
-        if ((requestCode == Requests.VALIDATE_LOGIN || requestCode == Requests.WEB_LOGIN) && resultCode == Activity.RESULT_OK) {
+        if ((requestCode == REQUEST_VALIDATE || requestCode == REQUEST_WEB_LOGIN) && resultCode == Activity.RESULT_OK) {
             val token = data!!.getStringExtra("token")
             val id = data.getIntExtra("id", -1)
 
@@ -295,23 +291,26 @@ class LoginActivity : BaseActivity() {
     }
 
     private fun getCurrentUser(id: Int) {
-        ThreadExecutor.execute(object : AsyncCallback(this) {
+        TaskManager.execute {
+            var user: VKUser?
 
-            lateinit var user: VKUser
+            VKApi.users().get().userIds(id).fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java, object : VKApi.OnResponseListener {
+                override fun onSuccess(models: ArrayList<*>?) {
+                    if (ArrayUtil.isEmpty(models)) return
+                    models ?: return
 
-            @Throws(Exception::class)
-            override fun ready() {
-                user = VKApi.users().get().userIds(id).fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java)[0]
-                CacheStorage.insert(DatabaseHelper.USERS_TABLE, user)
-                UserConfig.getUser()
-            }
+                    user = models[0] as VKUser?
 
-            override fun done() {}
+                    CacheStorage.insert(DatabaseHelper.USERS_TABLE, user!!)
+                    UserConfig.getUser()
+                }
 
-            override fun error(e: Exception) {
-                Toast.makeText(this@LoginActivity, R.string.error, Toast.LENGTH_LONG).show()
-            }
-        })
+                override fun onError(e: Exception) {
+                    Toast.makeText(this@LoginActivity, R.string.error, Toast.LENGTH_LONG).show()
+                }
+
+            })
+        }
     }
 
     private fun createBundle(savedInstanceState: Bundle): Bundle {
@@ -350,5 +349,10 @@ class LoginActivity : BaseActivity() {
             val response = doc.select("pre[style=\"word-wrap: break-word; white-space: pre-wrap;\"]").first().text()
             runOnUiThread { authorize(response) }
         }
+    }
+
+    companion object {
+        const val REQUEST_WEB_LOGIN = 1
+        const val REQUEST_VALIDATE = 2
     }
 }

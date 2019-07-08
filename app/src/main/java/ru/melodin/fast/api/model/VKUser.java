@@ -11,17 +11,21 @@ import java.util.ArrayList;
 public class VKUser extends VKModel implements Serializable {
 
     public static final String FIELDS_DEFAULT = "photo_50,photo_100,photo_200,status,screen_name,online,online_mobile,last_seen,verified,sex";
+
     public static final VKUser EMPTY = new VKUser() {
         @NonNull
         @Override
         public String toString() {
-            return "User";
+            return "...";
         }
     };
+
     private static final long serialVersionUID = 1L;
+
     public static int count;
 
     private int id;
+    private int invitedBy;
     private String name;
     private String surname;
     private String fullName;
@@ -46,6 +50,7 @@ public class VKUser extends VKModel implements Serializable {
     public VKUser(@NonNull JSONObject source) {
 
         this.id = source.optInt("id");
+        this.invitedBy = source.optInt("invited_by", -1);
         this.name = source.optString("first_name", "...");
         this.surname = source.optString("last_name", "");
 
@@ -200,6 +205,14 @@ public class VKUser extends VKModel implements Serializable {
 
     public void setDeactivated(boolean deactivated) {
         this.deactivated = deactivated;
+    }
+
+    public int getInvitedBy() {
+        return invitedBy;
+    }
+
+    public void setInvitedBy(int invitedBy) {
+        this.invitedBy = invitedBy;
     }
 
     public int getSex() {
