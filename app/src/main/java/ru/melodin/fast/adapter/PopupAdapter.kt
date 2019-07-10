@@ -34,7 +34,6 @@ class PopupAdapter(context: Context, values: ArrayList<ListItem>) : RecyclerAdap
     }
 
     companion object {
-
         const val ID_CLEAR_DIALOG = 0
         const val ID_NOTIFICATIONS = 1
         const val ID_LEAVE = 2

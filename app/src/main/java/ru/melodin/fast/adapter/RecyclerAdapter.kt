@@ -14,11 +14,11 @@ import ru.melodin.fast.model.Model
 
 abstract class RecyclerAdapter<T : Model, VH : RecyclerHolder> internal constructor(protected var context: Context, var viewRes: Int, values: ArrayList<T>) : RecyclerView.Adapter<RecyclerHolder>() {
 
-    internal var inflater: LayoutInflater
 
     var values: ArrayList<T>? = null
         private set
 
+    private var inflater: LayoutInflater
     private var cleanValues: ArrayList<T>? = null
     private var click: OnItemClickListener? = null
     private var longClick: OnItemLongClickListener? = null

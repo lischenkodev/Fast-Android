@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?android:windowBackground"
@@ -7,45 +8,56 @@
 
     <include layout="@layout/toolbar" />
 
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/chatTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:background="#00000000"
-        android:ems="10"
-        android:hint="@string/chat_title"
-        android:inputType="textNoSuggestions"
-        android:maxLines="1"
-        android:singleLine="true" />
-
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="22dp"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:padding="6dp"
-            android:text="@string/members" />
+            android:fontFamily="@font/ps_regular"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:text="@string/title"
+            android:textColor="?android:textColorSecondary"
+            android:textSize="16sp" />
 
-        <LinearLayout
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/chatTitle"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="10dp"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <include layout="@layout/recycler_list" />
-
-        </LinearLayout>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/activity_chat_info_edittext"
+            android:backgroundTint="?colorPrimary"
+            android:backgroundTintMode="multiply"
+            android:gravity="start|center_vertical"
+            android:hint="@string/title"
+            android:imeOptions="actionDone"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:textColor="?android:textColorSecondary" />
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/chatMembers"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:fontFamily="@font/ps_regular"
+        android:gravity="center_vertical|start"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/members"
+        android:textColor="?android:textColorPrimary" />
+
+    <include layout="@layout/recycler_list" />
 
 </LinearLayout>
 

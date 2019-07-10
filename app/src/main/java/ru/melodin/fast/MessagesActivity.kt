@@ -156,9 +156,6 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
         tb.setTitle(chatTitle)
         tb.setBackVisible(true)
-        tb.setOnBackClickListener(View.OnClickListener {
-            onBackPressed()
-        })
 
         setSupportActionBar(actionTb)
         supportActionBar!!.setDisplayShowTitleEnabled(false)
@@ -248,7 +245,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         val clear = ListItem(PopupAdapter.ID_CLEAR_DIALOG, getString(R.string.clear_messages_history), drawable(R.drawable.ic_trash))
         val left = ListItem(PopupAdapter.ID_LEAVE, "", ColorDrawable(Color.TRANSPARENT))
 
-        val items = ArrayList(Arrays.asList(chatInfo, disableNotifications, clear, left))
+        val items = ArrayList(listOf(chatInfo, disableNotifications, clear, left))
 
         for (item in items)
             updatePopupItemById(item)
@@ -677,8 +674,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
             adapter!!.setOnItemLongClickListener(this)
             recyclerView.adapter = adapter
 
-            recyclerView.scrollToPosition(adapter!!.lastPosition)
-            recyclerView.smoothScrollToPosition(adapter!!.lastPosition)
+            recyclerView.scrollToPosition(adapter!!.itemCount)
+            recyclerView.smoothScrollToPosition(adapter!!.itemCount)
             return
         }
 
@@ -694,8 +691,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
 
         if (empty) {
-            recyclerView.scrollToPosition(adapter!!.lastPosition)
-            recyclerView.smoothScrollToPosition(adapter!!.lastPosition)
+            recyclerView.scrollToPosition(adapter!!.itemCount)
+            recyclerView.smoothScrollToPosition(adapter!!.itemCount)
         }
     }
 

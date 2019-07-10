@@ -2,7 +2,6 @@ package ru.melodin.fast.view
 
 import android.app.Activity
 import android.content.Context
-import android.graphics.Bitmap
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.util.TypedValue
@@ -16,15 +15,12 @@ import ru.melodin.fast.R
 
 class FastToolbar : FrameLayout {
 
-    private var title: TextView? = null
-    private var subtitle: TextView? = null
+    private lateinit var title: TextView
+    private lateinit var subtitle: TextView
+    private lateinit var back: ImageButton
+    private lateinit var menuLayout: LinearLayout
 
     lateinit var avatar: ImageView
-        private set
-
-    private var back: ImageButton? = null
-
-    private var menuLayout: LinearLayout? = null
 
     var menu: Menu? = null
         private set
@@ -68,16 +64,16 @@ class FastToolbar : FrameLayout {
         if (onMenuItemClickListener == null || menu!!.size() == 0) return
 
         for (i in 0 until menu!!.size()) {
-            menuLayout!!.getChildAt(i).setOnClickListener { onMenuItemClickListener!!.onMenuItemClick(menu!!.getItem(i)) }
+            menuLayout.getChildAt(i).setOnClickListener { onMenuItemClickListener!!.onMenuItemClick(menu!!.getItem(i)) }
         }
     }
 
     private fun validateVisibility() {
-        val title = this.title!!.text.toString().trim { it <= ' ' }
-        val subtitle = this.subtitle!!.text.toString().trim { it <= ' ' }
+        val title = this.title.text.toString().trim { it <= ' ' }
+        val subtitle = this.subtitle.text.toString().trim { it <= ' ' }
 
-        this.title!!.visibility = if (title.isEmpty()) View.GONE else View.VISIBLE
-        this.subtitle!!.visibility = if (subtitle.isEmpty()) View.GONE else View.VISIBLE
+        this.title.visibility = if (title.isEmpty()) View.GONE else View.VISIBLE
+        this.subtitle.visibility = if (subtitle.isEmpty()) View.GONE else View.VISIBLE
     }
 
     fun inflateMenu(@MenuRes resId: Int) {
@@ -99,89 +95,66 @@ class FastToolbar : FrameLayout {
     }
 
     fun setBackIcon(icon: Drawable) {
-        back!!.setImageDrawable(icon)
+        back.setImageDrawable(icon)
     }
 
     fun setBackVisible(visible: Boolean) {
-        back!!.visibility = if (visible) View.VISIBLE else View.GONE
+        back.visibility = if (visible) View.VISIBLE else View.GONE
 
         if (visible && context is Activity) {
-            back!!.setOnClickListener { (context as Activity).onBackPressed() }
+            back.setOnClickListener { (context as Activity).onBackPressed() }
         } else {
-            back!!.setOnClickListener(null)
+            back.setOnClickListener(null)
         }
     }
 
-    fun setOnBackClickListener(listener: OnClickListener) {
-        back!!.setOnClickListener(listener)
+    fun setOnBackClickListener(target: () -> Unit) {
+        back.setOnClickListener { target() }
     }
 
     private fun addMenuItem(i: Int) {
-        val menuButton = menuLayout!!.getChildAt(i) as ImageButton
+        val menuButton = menuLayout.getChildAt(i) as ImageButton
         menuButton.visibility = View.VISIBLE
         menuButton.setImageDrawable(menu!!.getItem(i).icon)
     }
 
-    fun addMenuItem(item: MenuItem) {
-        if (menu!!.size() == 2) return
-
-        val menuButton = menuLayout!!.getChildAt(if (menu!!.size() == 0) 0 else menu!!.size() - 1) as ImageButton
-        menuButton.visibility = View.VISIBLE
-        menuButton.setImageDrawable(item.icon)
-    }
-
     fun setItemVisible(i: Int, visible: Boolean) {
         if (i > 1) return
-        menuLayout!!.getChildAt(i).visibility = if (visible) View.VISIBLE else View.GONE
+        menuLayout.getChildAt(i).visibility = if (visible) View.VISIBLE else View.GONE
     }
 
     private fun setAvatar(drawable: Drawable?) {
-        avatar!!.setImageDrawable(drawable)
-        avatar!!.visibility = if (drawable == null) View.GONE else View.VISIBLE
+        avatar.setImageDrawable(drawable)
+        avatar.visibility = if (drawable == null) View.GONE else View.VISIBLE
     }
 
     fun setAvatar(resId: Int) {
         setAvatar(ContextCompat.getDrawable(context, resId))
     }
 
-    fun setAvatar(bitmap: Bitmap?) {
-        avatar!!.setImageBitmap(bitmap)
-        avatar!!.visibility = if (bitmap == null) View.GONE else View.VISIBLE
-    }
-
     fun setOnAvatarClickListener(listener: () -> Unit) {
-        avatar!!.setOnClickListener { listener() }
-    }
-
-    fun getSubtitle(): String {
-        return subtitle!!.text.toString()
+        avatar.setOnClickListener { listener() }
     }
 
     fun setSubtitle(title: CharSequence?) {
-        if (title == null || title.toString().trim { it <= ' ' }.isEmpty()) return
-        this.subtitle!!.text = title.toString().trim { it <= ' ' }
+        this.subtitle.text = title.toString().trim()
         validateVisibility()
     }
 
     fun setSubtitle(resId: Int) {
         val text = context.getString(resId)
-        this.subtitle!!.text = text.trim { it <= ' ' }
+        this.subtitle.text = text.trim()
         validateVisibility()
     }
 
-    fun getTitle(): String {
-        return title!!.text.toString()
-    }
-
     fun setTitle(title: CharSequence?) {
-        if (title == null || title.toString().trim { it <= ' ' }.isEmpty()) return
-        this.title!!.text = title.toString().trim { it <= ' ' }
+        this.title.text = title.toString().trim()
         validateVisibility()
     }
 
     fun setTitle(resId: Int) {
         val text = context.getString(resId)
-        this.title!!.text = text.trim { it <= ' ' }
+        this.title.text = text.trim()
         validateVisibility()
     }
 

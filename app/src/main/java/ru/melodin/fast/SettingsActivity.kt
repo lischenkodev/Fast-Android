@@ -1,7 +1,6 @@
 package ru.melodin.fast
 
 import android.os.Bundle
-import android.view.View
 import kotlinx.android.synthetic.main.activity_messages.*
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.current.BaseActivity
@@ -18,7 +17,6 @@ class SettingsActivity : BaseActivity() {
 
         tb.setTitle(R.string.settings)
         tb.setBackVisible(true)
-        tb.setOnBackClickListener(View.OnClickListener { onBackPressed() })
 
         supportFragmentManager.beginTransaction().add(R.id.fragment_container, FragmentSettings()).commit()
     }

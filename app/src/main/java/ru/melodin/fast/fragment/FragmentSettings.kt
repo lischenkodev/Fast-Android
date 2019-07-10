@@ -1,5 +1,6 @@
 package ru.melodin.fast.fragment
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -63,6 +64,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         return true
     }
 
+    @SuppressLint("InflateParams")
     private fun showCachedGroups() {
         val v = layoutInflater.inflate(R.layout.recycler_list, null, false)
 
@@ -92,6 +94,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         adb.show()
     }
 
+    @SuppressLint("InflateParams")
     private fun showCachedUsers() {
         val v = layoutInflater.inflate(R.layout.recycler_list, null, false)
 
@@ -154,6 +157,9 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         private const val KEY_ABOUT = "about"
         private const val KEY_SHOW_CACHED_GROUPS = "show_cached_groups"
         private const val KEY_SHOW_CACHED_USERS = "show_cached_users"
+
+        const val KEY_CRASHLOG = "crashLog"
+        const val KEY_CRASHED = "isCrashed"
     }
 
 }

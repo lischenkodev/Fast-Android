@@ -8,14 +8,13 @@ import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.Log
 import android.view.MenuItem
-import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_show_create.*
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
-import ru.melodin.fast.adapter.ShowCreateAdapter
+import ru.melodin.fast.adapter.UserAdapter
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.TaskManager
@@ -40,7 +39,7 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
         invalidateOptionsMenu()
     }
 
-    private var adapter: ShowCreateAdapter? = null
+    private var adapter: UserAdapter? = null
 
     private var users: ArrayList<VKUser>? = null
 
@@ -63,7 +62,6 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
         })
         tb.setBackIcon(drawable(R.drawable.md_clear))
         tb.setBackVisible(true)
-        tb.setOnBackClickListener(View.OnClickListener { onBackPressed() })
         tb.setTitle(R.string.create_chat)
 
         refresh.isEnabled = false
@@ -80,7 +78,7 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
     }
 
     private fun createAdapter() {
-        adapter = ShowCreateAdapter(this, users!!)
+        adapter = UserAdapter(this, users!!, true)
         list.adapter = adapter
 
         tb.setOnClickListener { list.smoothScrollToPosition(0) }
@@ -113,10 +111,10 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
 
                     val peerId = 2_000_000_000 + models[0] as Int
 
-                    val intent = Intent()
-                    intent.putExtra("title", title.toString())
-                    intent.putExtra("peer_id", peerId)
-                    setResult(Activity.RESULT_OK, intent)
+                    setResult(Activity.RESULT_OK, Intent().apply {
+                        putExtra("title", title.toString())
+                        putExtra("peer_id", peerId)
+                    })
                     finish()
                 }
 
@@ -127,5 +125,19 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
             })
         }
 
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransition(-1, -1)
+    }
+
+    fun confirmKick(position: Int) {
+        if (position == 0) finish()
+        if (list.isComputingLayout) return
+
+        adapter!!.remove(position)
+        adapter!!.notifyItemRemoved(position)
+        adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
     }
 }

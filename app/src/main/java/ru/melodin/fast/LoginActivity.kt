@@ -27,7 +27,6 @@ import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
-import ru.melodin.fast.concurrent.LowThread
 import ru.melodin.fast.current.BaseActivity
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
@@ -276,7 +275,8 @@ class LoginActivity : BaseActivity() {
             webLogin!!.isEnabled = true
 
         if ((requestCode == REQUEST_VALIDATE || requestCode == REQUEST_WEB_LOGIN) && resultCode == Activity.RESULT_OK) {
-            val token = data!!.getStringExtra("token")
+            data ?: return
+            val token = data.getStringExtra("token")
             val id = data.getIntExtra("id", -1)
 
             UserConfig.userId = id

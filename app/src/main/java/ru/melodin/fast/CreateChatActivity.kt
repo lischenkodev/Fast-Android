@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -40,7 +39,7 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
     override fun onItemClick(position: Int) {
         adapter!!.toggleSelected(position)
         adapter!!.notifyItemChanged(position, -1)
-        setTitle()
+        changeTitle()
 
         selecting = adapter!!.selectedCount > 0
     }
@@ -51,10 +50,9 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_chat)
 
-        setTitle()
+        tb.setTitle(R.string.select_friends)
 
         tb.setBackVisible(true)
-        tb.setOnBackClickListener(View.OnClickListener { onBackPressed() })
         tb.inflateMenu(R.menu.activity_create_chat)
         tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
             override fun onMenuItemClick(item: MenuItem) {
@@ -83,7 +81,7 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
             adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
             selecting = false
 
-            setTitle()
+            changeTitle()
         } else
             super.onBackPressed()
     }
@@ -119,7 +117,7 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
             return
         }
 
-        setTitle()
+        changeTitle()
 
         refresh.isRefreshing = true
         TaskManager.execute {
@@ -129,7 +127,7 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
             VKApi.friends().get().userId(UserConfig.userId).order("hints").fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java, object : VKApi.OnResponseListener {
                 override fun onSuccess(models: ArrayList<*>?) {
                     if (ArrayUtil.isEmpty(models)) return
-                    models?: return
+                    models ?: return
 
                     friends = models as ArrayList<VKUser>
                     CacheStorage.delete(DatabaseHelper.FRIENDS_TABLE)
@@ -139,11 +137,11 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
                     createAdapter(friends)
                     refresh.isRefreshing = false
 
-                    setTitle()
+                    changeTitle()
                 }
 
                 override fun onError(e: Exception) {
-                    setTitle()
+                    changeTitle()
                     refresh.isRefreshing = false
                     Toast.makeText(this@CreateChatActivity, R.string.error, Toast.LENGTH_LONG).show()
                 }
@@ -151,13 +149,12 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
         }
     }
 
-    private fun setTitle() {
-        val selected = if (adapter == null) 0 else adapter!!.selectedCount
+    private fun changeTitle() {
+        adapter ?: return
+        val selected = adapter!!.selectedCount
 
-        val title = getString(R.string.select_friends)
         val subtitle = if (selected > 0) String.format(getString(R.string.selected_count), selected.toString()) else ""
 
-        tb.setTitle(title)
         tb.setSubtitle(subtitle)
     }
 
@@ -170,7 +167,6 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
                 users.add(items.valueAt(i))
             }
 
-
             createChat(users)
         }
     }
@@ -181,12 +177,12 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
 
         val intent = Intent(this, ShowCreateChatActivity::class.java)
         intent.putExtra("users", users)
-
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
         startActivityForResult(intent, REQUEST_CREATE_CHAT)
 
         adapter!!.clearSelect()
-        adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
-        setTitle()
+        adapter!!.notifyDataSetChanged()
+        changeTitle()
     }
 
     private fun openChat(title: String?, peerId: Int) {

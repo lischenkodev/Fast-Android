@@ -7,13 +7,13 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.util.AttributeSet
-import android.widget.ImageView
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.ContextCompat
 import ru.melodin.fast.R
+import kotlin.math.min
 
 class CircleImageView : AppCompatImageView {
 
@@ -90,21 +90,20 @@ class CircleImageView : AppCompatImageView {
         }
 
     constructor(context: Context) : super(context) {
-
         init()
     }
 
     @JvmOverloads
     constructor(context: Context, attrs: AttributeSet, defStyle: Int = 0) : super(context, attrs, defStyle) {
 
-        val a = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView, defStyle, 0)
+        val attributes = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView, defStyle, 0)
 
-        mBorderWidth = a.getDimensionPixelSize(R.styleable.CircleImageView_border_width, DEFAULT_BORDER_WIDTH)
-        mBorderColor = a.getColor(R.styleable.CircleImageView_border_color, DEFAULT_BORDER_COLOR)
-        mBorderOverlay = a.getBoolean(R.styleable.CircleImageView_border_overlay, DEFAULT_BORDER_OVERLAY)
-        mFillColor = a.getColor(R.styleable.CircleImageView_fill_color, DEFAULT_FILL_COLOR)
+        mBorderWidth = attributes.getDimensionPixelSize(R.styleable.CircleImageView_border_width, DEFAULT_BORDER_WIDTH)
+        mBorderColor = attributes.getColor(R.styleable.CircleImageView_border_color, DEFAULT_BORDER_COLOR)
+        mBorderOverlay = attributes.getBoolean(R.styleable.CircleImageView_border_overlay, DEFAULT_BORDER_OVERLAY)
+        mFillColor = attributes.getColor(R.styleable.CircleImageView_fill_color, DEFAULT_FILL_COLOR)
 
-        a.recycle()
+        attributes.recycle()
 
         init()
     }
@@ -119,11 +118,11 @@ class CircleImageView : AppCompatImageView {
         }
     }
 
-    override fun getScaleType(): ImageView.ScaleType {
+    override fun getScaleType(): ScaleType {
         return SCALE_TYPE
     }
 
-    override fun setScaleType(scaleType: ImageView.ScaleType) {
+    override fun setScaleType(scaleType: ScaleType) {
         if (scaleType != SCALE_TYPE) {
             throw IllegalArgumentException(String.format("ScaleType %s not supported.", scaleType))
         }
@@ -256,13 +255,13 @@ class CircleImageView : AppCompatImageView {
         mBitmapWidth = mBitmap!!.width
 
         mBorderRect.set(0f, 0f, width.toFloat(), height.toFloat())
-        mBorderRadius = Math.min((mBorderRect.height() - mBorderWidth) / 2.0f, (mBorderRect.width() - mBorderWidth) / 2.0f)
+        mBorderRadius = min((mBorderRect.height() - mBorderWidth) / 2.0f, (mBorderRect.width() - mBorderWidth) / 2.0f)
 
         mDrawableRect.set(mBorderRect)
         if (!mBorderOverlay) {
             mDrawableRect.inset(mBorderWidth.toFloat(), mBorderWidth.toFloat())
         }
-        mDrawableRadius = Math.min(mDrawableRect.height() / 2.0f, mDrawableRect.width() / 2.0f)
+        mDrawableRadius = min(mDrawableRect.height() / 2.0f, mDrawableRect.width() / 2.0f)
 
         updateShaderMatrix()
         invalidate()

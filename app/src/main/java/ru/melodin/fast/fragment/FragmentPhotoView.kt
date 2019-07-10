@@ -13,20 +13,18 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
-
 import com.squareup.picasso.Picasso
-
 import org.jetbrains.annotations.Contract
-
 import ru.melodin.fast.BuildConfig
 import ru.melodin.fast.PhotoViewActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.api.model.attachment.VKPhoto
 import ru.melodin.fast.util.Util
+import kotlin.math.abs
 
-class FragmentPhotoView : Fragment() {
+class FragmentPhotoView(private var photo: VKPhoto?) : Fragment() {
 
-    private var photo: VKPhoto? = null
+    constructor() : this(null)
 
     var url: String? = null
         private set
@@ -39,11 +37,13 @@ class FragmentPhotoView : Fragment() {
         get() = View.OnTouchListener { view, event ->
             val y = event.rawY.toInt()
 
-            when (event.action and MotionEvent.ACTION_MASK) {
-
+            when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     val lParams = view.layoutParams as FrameLayout.LayoutParams
                     yDelta = y - lParams.topMargin
+
+                    getView()!!.invalidate()
+                    true
                 }
 
                 MotionEvent.ACTION_UP -> {
@@ -65,24 +65,30 @@ class FragmentPhotoView : Fragment() {
                         if (view.top > 0) {
                             params.topMargin = view.height * 2
                         } else {
-                            params.topMargin = Math.abs(view.height * 2)
+                            params.topMargin = abs(view.height * 2)
                         }
 
                         activity!!.finish()
                         activity!!.overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
                         return@OnTouchListener true
+                    } else {
+                        (activity as PhotoViewActivity).changeTbVisibility()
                     }
+
+                    getView()!!.invalidate()
+                    true
                 }
 
                 MotionEvent.ACTION_MOVE -> {
                     val layoutParams = view.layoutParams as FrameLayout.LayoutParams
                     layoutParams.topMargin = y - yDelta
                     view.layoutParams = layoutParams
-                }
-            }
 
-            getView()!!.invalidate()
-            true
+                    getView()!!.invalidate()
+                    true
+                }
+                else -> false
+            }
         }
 
     override fun getView(): FrameLayout? {
@@ -113,7 +119,6 @@ class FragmentPhotoView : Fragment() {
 
         loadPhoto(maxSize)
 
-        view.setOnClickListener { (activity as PhotoViewActivity).changeTbVisibility() }
         getView()!!.getChildAt(0).setOnTouchListener(onTouchListener)
     }
 
@@ -125,14 +130,4 @@ class FragmentPhotoView : Fragment() {
         }
 
     }
-
-    companion object {
-
-        fun newInstance(photo: VKPhoto): FragmentPhotoView {
-            val fragment = FragmentPhotoView()
-            fragment.photo = photo
-            return fragment
-        }
-    }
-
 }

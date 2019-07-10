@@ -121,9 +121,12 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
     }
 
     private fun checkCrash() {
-        if (AppGlobal.preferences.getBoolean("isCrashed", false)) {
-            val trace = AppGlobal.preferences.getString("crashLog", "")
-            AppGlobal.preferences.edit().putBoolean("isCrashed", false).putString("crashLog", "").apply()
+        if (AppGlobal.preferences.getBoolean(FragmentSettings.KEY_CRASHED, false)) {
+            val trace = AppGlobal.preferences.getString(FragmentSettings.KEY_CRASHLOG, "")
+            AppGlobal.preferences.edit()
+                    .putBoolean(FragmentSettings.KEY_CRASHED, false)
+                    .putString(FragmentSettings.KEY_CRASHLOG, "")
+                    .apply()
 
 
             if (!AppGlobal.preferences.getBoolean(FragmentSettings.KEY_SHOW_ERROR, false))
@@ -135,15 +138,15 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
             adb.setMessage(R.string.app_crashed)
             adb.setPositiveButton(android.R.string.ok, null)
             adb.setNeutralButton(R.string.show_error) { _, _ ->
-                val adb1 = AlertDialog.Builder(this@MainActivity)
-                adb1.setTitle(R.string.error_log)
-                adb1.setMessage(trace)
-                adb1.setPositiveButton(android.R.string.ok, null)
-                adb1.setNeutralButton(R.string.copy) { _, _ -> Util.copyText(trace!!) }
-                adb1.create().show()
+                val builder = AlertDialog.Builder(this@MainActivity)
+                builder.setTitle(R.string.error_log)
+                builder.setMessage(trace)
+                builder.setPositiveButton(android.R.string.ok, null)
+                builder.setNeutralButton(R.string.copy) { _, _ -> Util.copyText(trace!!) }
+                builder.show()
             }
 
-            adb.create().show()
+            adb.show()
         }
     }
 
@@ -201,7 +204,6 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
     }
 
     override fun onNavigationItemReselected(item: MenuItem) {
-        if (selectedFragment != null)
-            selectedFragment!!.scrollToTop()
+        selectedFragment?.scrollToTop()
     }
 }

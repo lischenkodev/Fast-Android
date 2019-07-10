@@ -16,6 +16,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import ru.melodin.fast.ChatInfoActivity
 import ru.melodin.fast.R
+import ru.melodin.fast.ShowCreateChatActivity
 import ru.melodin.fast.api.model.VKConversation
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.ThemeManager
@@ -40,9 +41,7 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
         EventBus.getDefault().register(this)
     }
 
-    @JvmOverloads
     constructor(context: Context, users: ArrayList<VKUser>, withUpdates: Boolean = false, conversation: VKConversation? = null) : super(context, R.layout.item_user, users) {
-
         if (conversation != null) {
             this.conversation = conversation
             this.withKick = conversation.isCanModerate
@@ -50,6 +49,12 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
 
         if (withUpdates)
             EventBus.getDefault().register(this)
+    }
+
+    constructor(context: Context, users: ArrayList<VKUser>, withKick: Boolean) : super(context, R.layout.item_user, users) {
+        this.withKick = withKick
+
+        EventBus.getDefault().register(this)
     }
 
     fun destroy() {
@@ -104,7 +109,6 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
         private var placeholder: Drawable? = null
 
         init {
-
             placeholder = getDrawable(R.drawable.avatar_placeholder)
 
             avatar = v.findViewById(R.id.userAvatar)
@@ -118,7 +122,6 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
             kick = v.findViewById(R.id.kick)
 
             contactContainer = v.findViewById(R.id.contact_container)
-
         }
 
         override fun bind(position: Int) {
@@ -136,6 +139,8 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
                 kick.setOnClickListener {
                     if (context is ChatInfoActivity) {
                         (context as ChatInfoActivity).confirmKick(position)
+                    } else if (context is ShowCreateChatActivity) {
+                        (context as ShowCreateChatActivity).confirmKick(position)
                     }
                 }
             } else {

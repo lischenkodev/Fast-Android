@@ -32,7 +32,6 @@ class WebViewLoginActivity : AppCompatActivity() {
         setContentView(R.layout.activity_web_login)
 
         tb.setBackVisible(true)
-        tb.setOnBackClickListener (View.OnClickListener { onBackPressed() })
         tb.inflateMenu(R.menu.activity_login)
 
         web.visibility = View.GONE
@@ -79,7 +78,7 @@ class WebViewLoginActivity : AppCompatActivity() {
 
     private fun parseUrl(url: String?) {
         if (TextUtils.isEmpty(url)) return
-        url?: return
+        url ?: return
 
         try {
             if (url.startsWith(Auth.REDIRECT_URL) && !url.contains("error=")) {

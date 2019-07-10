@@ -9,7 +9,7 @@ import java.util.*
 
 class PhotoViewAdapter(fm: FragmentManager, private val items: ArrayList<VKPhoto>) : FragmentStatePagerAdapter(fm) {
 
-    var fragments: ArrayList<Fragment>? = null
+    var fragments: ArrayList<Fragment>? = arrayListOf()
 
     init {
         repeat(items.size) {
@@ -17,7 +17,7 @@ class PhotoViewAdapter(fm: FragmentManager, private val items: ArrayList<VKPhoto
         }
 
         for (i in fragments!!.indices) {
-            fragments!![i] = FragmentPhotoView.newInstance(items[i])
+            fragments!![i] = FragmentPhotoView(items[i])
         }
     }
 
