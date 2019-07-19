@@ -2,6 +2,7 @@ package ru.melodin.fast
 
 import android.annotation.SuppressLint
 import android.app.AlarmManager
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
@@ -422,6 +423,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         val intent = intent
         intent.setClass(this, ChatInfoActivity::class.java)
         intent.putExtra("conversation", conversation)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
         startActivity(intent)
     }
 
@@ -979,7 +981,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         if (conversation == null) return
         val item = adapter!!.getItem(position)
 
-        val list = ArrayList(Arrays.asList(*resources.getStringArray(R.array.message_functions)))
+        val list = ArrayList(listOf(*resources.getStringArray(R.array.message_functions)))
         val remove = ArrayList<String>()
 
         if (!ArrayUtil.isEmpty(item.attachments)) {

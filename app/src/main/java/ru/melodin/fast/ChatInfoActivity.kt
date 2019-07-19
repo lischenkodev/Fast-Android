@@ -16,17 +16,15 @@ import ru.melodin.fast.api.model.VKConversation
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.current.BaseActivity
+import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.CacheStorage.getChat
+import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Util
 import ru.melodin.fast.util.ViewUtil
 import java.util.*
 
 class ChatInfoActivity : BaseActivity() {
-
-    private var title: String? = null
-    private var photo: String? = null
-    private var peerId: Int = -1
 
     private var chat: VKChat? = null
 
@@ -39,11 +37,12 @@ class ChatInfoActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_chat_info)
-        getIntentData()
+
+        conversation = intent.getSerializableExtra("conversation") as VKConversation
 
         recyclerView.layoutManager = LinearLayoutManager(this, RecyclerView.VERTICAL, false)
 
-        chatTitle.setText(title)
+        chatTitle.setText(conversation.title)
         chatTitle.setSelection(chatTitle.text!!.length)
         chatTitle.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
@@ -61,30 +60,32 @@ class ChatInfoActivity : BaseActivity() {
         tb.setBackVisible(true)
 
         loadAvatar()
-        setMembersCount(conversation.membersCount)
 
         getCachedChat()
         if (Util.hasConnection()) getChat()
     }
 
     private fun getCachedChat() {
-        chat = getChat(VKConversation.toChatId(peerId))
+        chat = getChat(VKConversation.toChatId(conversation.peerId))
 
         chat ?: return
 
+        setMembersCount(chat!!.users.size)
         chatTitle.setText(chat!!.title)
         loadAvatar()
         createAdapter(chat!!.users)
     }
 
     private fun getChat() {
-        TaskManager.loadChat(VKConversation.toChatId(peerId), VKUser.FIELDS_DEFAULT, object : TaskManager.OnCompleteListener {
+        TaskManager.loadChat(VKConversation.toChatId(conversation.peerId), VKUser.FIELDS_DEFAULT, object : TaskManager.OnCompleteListener {
 
             override fun onComplete(models: ArrayList<*>?) {
                 if (ArrayUtil.isEmpty(models)) return
 
                 chat = models?.get(0) as VKChat
+                CacheStorage.insert(DatabaseHelper.CHATS_TABLE, chat!!)
 
+                setMembersCount(chat!!.users.size)
                 chatTitle.setText(chat!!.title)
                 loadAvatar()
                 createAdapter(chat!!.users)
@@ -98,7 +99,7 @@ class ChatInfoActivity : BaseActivity() {
 
     private fun createAdapter(items: ArrayList<VKUser>) {
         if (adapter == null) {
-            adapter = UserAdapter(this, items, true, conversation)
+            adapter = UserAdapter(this, items, true)
             recyclerView.adapter = adapter
             return
         }
@@ -117,7 +118,7 @@ class ChatInfoActivity : BaseActivity() {
     private fun changeTitleName(title: String) {
         if (timer != null) return
 
-        val setter = VKApi.messages().editChat().chatId(VKConversation.toChatId(peerId)).title(title)
+        val setter = VKApi.messages().editChat().chatId(VKConversation.toChatId(conversation.peerId)).title(title)
 
         TaskManager.addProcedure(setter, Int::class.java, object : TaskManager.OnCompleteListener {
 
@@ -140,11 +141,11 @@ class ChatInfoActivity : BaseActivity() {
     }
 
     private fun loadAvatar() {
-        if (!TextUtils.isEmpty(if (chat == null) photo else chat!!.photo200)) {
+        if (!TextUtils.isEmpty(if (chat == null) conversation.photo200 else chat!!.photo200)) {
             TaskManager.execute {
                 runOnUiThread {
                     Picasso.get()
-                            .load(if (chat == null) photo else chat!!.photo200)
+                            .load(if (chat == null) conversation.photo200 else chat!!.photo200)
                             .placeholder(R.drawable.avatar_placeholder)
                             .into(chatAvatar)
                 }
@@ -152,11 +153,9 @@ class ChatInfoActivity : BaseActivity() {
         }
     }
 
-    private fun getIntentData() {
-        conversation = intent.getSerializableExtra("conversation") as VKConversation
-        title = intent.getStringExtra("title")
-        photo = intent.getStringExtra("photo")
-        peerId = intent.getIntExtra("peer_id", -1)
+    override fun onBackPressed() {
+        super.onBackPressed()
+        overridePendingTransition(-1, -1)
     }
 
     fun confirmKick(position: Int) {
