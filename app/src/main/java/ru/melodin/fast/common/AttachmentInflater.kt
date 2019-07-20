@@ -37,7 +37,6 @@ import ru.melodin.fast.view.CircleImageView
 import java.util.*
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 class AttachmentInflater(private val adapter: MessageAdapter?, private val context: Context) {
     private val inflater: LayoutInflater = LayoutInflater.from(context)
@@ -73,22 +72,27 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
     private fun loadImage(image: ImageView, smallSrc: String?, normalSrc: String?, placeholder: Drawable? = null) {
         if (TextUtils.isEmpty(smallSrc)) return
         try {
-            Picasso.get()
+            val request = Picasso.get()
                     .load(smallSrc)
                     .priority(Picasso.Priority.HIGH)
-                    .placeholder(placeholder ?: ColorDrawable(Color.TRANSPARENT))
-                    .into(image, object : Callback.EmptyCallback() {
-                        override fun onSuccess() {
-                            if (TextUtils.isEmpty(normalSrc))
-                                return
+                    .placeholder(placeholder ?: ColorDrawable(0))
 
-                            Picasso.get()
-                                    .load(normalSrc)
-                                    .placeholder(image.drawable)
-                                    .priority(Picasso.Priority.HIGH)
-                                    .into(image)
-                        }
-                    })
+            if (!TextUtils.isEmpty(normalSrc)) {
+                request.into(image, object : Callback.EmptyCallback() {
+                    override fun onSuccess() {
+                        if (TextUtils.isEmpty(normalSrc))
+                            return
+
+                        Picasso.get()
+                                .load(normalSrc)
+                                .placeholder(image.drawable)
+                                .priority(Picasso.Priority.HIGH)
+                                .into(image)
+                    }
+                })
+            } else {
+                request.into(image)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -96,8 +100,8 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
     }
 
     private fun getHeight(layoutMaxWidth: Int): Int {
-        val scale = max(320.0.toFloat(), layoutMaxWidth.toFloat()) / min(320.0.toFloat(), layoutMaxWidth.toFloat())
-        return (if (320.0.toFloat() < layoutMaxWidth) 240.0.toFloat() * scale else 240.0.toFloat() / scale.roundToInt()).roundToInt()
+        val scale = max(320, layoutMaxWidth) / min(320, layoutMaxWidth)
+        return (if (320 < layoutMaxWidth) 240 * scale else 240 / scale)
     }
 
     private fun getParams(width: Int, height: Int): LinearLayout.LayoutParams {
@@ -141,9 +145,10 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         textView.isFocusable = false
 
         parent.addView(textView)
+
     }
 
-    fun wall(item: VKMessage, parent: ViewGroup, source: VKWall) {
+    fun wall(item: VKMessage, parent: ViewGroup, wall: VKWall) {
         val v = inflater.inflate(R.layout.activity_messages_attach_doc, parent, false)
         v.setOnLongClickListener {
             simulateLongClick(item)
@@ -162,7 +167,7 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         title.maxWidth = metrics.widthPixels - metrics.widthPixels / 2
         body.maxWidth = metrics.widthPixels - metrics.widthPixels / 2
 
-        val drawable = ContextCompat.getDrawable(context, R.drawable.ic_assignment_black_24dp)
+        val drawable = ContextCompat.getDrawable(context, R.drawable.ic_newspaper_black_24dp)
         icon.setImageDrawable(drawable)
 
         parent.addView(v)
@@ -392,11 +397,11 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         play.setImageDrawable(if (playing) stop else start)
 
         play.setOnClickListener {
-            if (playing) {
-                EventBus.getDefault().postSticky(arrayOf<Any>(KEY_PAUSE_AUDIO, item.id))
-            } else {
-                EventBus.getDefault().postSticky(arrayOf<Any>(KEY_PLAY_AUDIO, item.id, source.linkMp3))
-            }
+            EventBus.getDefault().postSticky(arrayOf<Any>(
+                    if (playing) KEY_PAUSE_AUDIO else KEY_PLAY_AUDIO,
+                    item.id,
+                    if (!playing) source.linkMp3 else "")
+            )
         }
 
         title.maxWidth = metrics.widthPixels / 2
@@ -428,11 +433,11 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         play.setImageDrawable(if (playing) stop else start)
 
         play.setOnClickListener {
-            if (playing) {
-                EventBus.getDefault().postSticky(arrayOf<Any>(KEY_PAUSE_AUDIO, item.id))
-            } else {
-                EventBus.getDefault().postSticky(arrayOf<Any>(KEY_PLAY_AUDIO, item.id, source.url))
-            }
+            EventBus.getDefault().postSticky(arrayOf<Any>(
+                    if (playing) KEY_PAUSE_AUDIO else KEY_PLAY_AUDIO,
+                    item.id,
+                    if (!playing) source.url else "")
+            )
         }
 
         val duration = String.format(AppGlobal.locale, "%d:%02d", source.duration / 60, source.duration % 60)
