@@ -2,7 +2,6 @@ package ru.melodin.fast.util
 
 import androidx.collection.ArrayMap
 import androidx.collection.SparseArrayCompat
-import org.jetbrains.annotations.Contract
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -12,7 +11,6 @@ object ArrayUtil {
 
     private const val VALUE_NOT_FOUND = -1
 
-    @Contract(pure = true)
     @JvmOverloads
     fun linearSearch(array: ByteArray, value: Byte, start: Int = 0, end: Int = array.size): Int {
         for (i in start until end) {
@@ -23,7 +21,6 @@ object ArrayUtil {
         return VALUE_NOT_FOUND
     }
 
-    @Contract(pure = true)
     @JvmOverloads
     fun linearSearch(array: CharArray, value: Char, start: Int = 0, end: Int = array.size): Int {
         for (i in start until end) {
@@ -34,7 +31,6 @@ object ArrayUtil {
         return VALUE_NOT_FOUND
     }
 
-    @Contract(pure = true)
     @JvmOverloads
     fun linearSearch(array: ShortArray, value: Short, start: Int = 0, end: Int = array.size): Int {
         for (i in start until end) {
@@ -45,7 +41,6 @@ object ArrayUtil {
         return VALUE_NOT_FOUND
     }
 
-    @Contract(pure = true)
     @JvmOverloads
     fun linearSearch(array: IntArray, value: Int, start: Int = 0, end: Int = array.size): Int {
         for (i in start until end) {
@@ -56,7 +51,6 @@ object ArrayUtil {
         return VALUE_NOT_FOUND
     }
 
-    @Contract(pure = true)
     @JvmOverloads
     fun linearSearch(array: LongArray, value: Long, start: Int = 0, end: Int = array.size): Int {
         for (i in start until end) {
@@ -80,14 +74,13 @@ object ArrayUtil {
     @JvmOverloads
     fun linearSearch(array: DoubleArray, value: Double, start: Int = 0, end: Int = array.size): Int {
         for (i in start until end) {
-            if (java.lang.Double.compare(array[i], value) == 0) {
+            if (array[i].compareTo(value) == 0) {
                 return i
             }
         }
         return VALUE_NOT_FOUND
     }
 
-    @Contract(pure = true)
     @JvmOverloads
     fun linearSearch(array: Array<Any>, value: Any, start: Int = 0, end: Int = array.size): Int {
         for (i in start until end) {
@@ -132,63 +125,52 @@ object ArrayUtil {
         return list
     }
 
-    @Contract("null -> true")
     fun isEmpty(array: SparseArrayCompat<*>?): Boolean {
         return array == null || array.isEmpty
     }
 
-    @Contract("null -> true")
     fun isEmpty(array: JSONArray?): Boolean {
         return array == null || array.length() == 0
     }
 
-    @Contract(value = "null -> true", pure = true)
     fun isEmpty(array: ByteArray?): Boolean {
         return array == null || array.isEmpty()
     }
 
-    @Contract(value = "null -> true", pure = true)
     fun isEmpty(array: CharArray?): Boolean {
         return array == null || array.isEmpty()
     }
 
-    @Contract(value = "null -> true", pure = true)
     fun isEmpty(array: ShortArray?): Boolean {
         return array == null || array.isEmpty()
     }
 
-    @Contract(value = "null -> true", pure = true)
     fun isEmpty(array: IntArray?): Boolean {
         return array == null || array.isEmpty()
     }
 
-    @Contract(value = "null -> true", pure = true)
     fun isEmpty(array: LongArray?): Boolean {
         return array == null || array.isEmpty()
     }
 
-    @Contract(value = "null -> true", pure = true)
     fun isEmpty(array: FloatArray?): Boolean {
         return array == null || array.isEmpty()
     }
 
-    @Contract(value = "null -> true", pure = true)
     fun isEmpty(array: DoubleArray?): Boolean {
         return array == null || array.isEmpty()
     }
 
-    @Contract(value = "null -> true", pure = true)
     fun isEmpty(array: Array<Any>?): Boolean {
         return array == null || array.isEmpty()
     }
 
-    @Contract(value = "null -> true", pure = true)
     fun isEmpty(collection: Collection<*>?): Boolean {
         return collection == null || collection.isEmpty()
     }
 
-    fun isEmpty(`object`: JSONObject?): Boolean {
-        return `object` == null || `object`.length() == 0
+    fun isEmpty(o: JSONObject?): Boolean {
+        return o == null || o.length() == 0
     }
 
     fun isEmpty(array: ArrayMap<*, *>?): Boolean {
