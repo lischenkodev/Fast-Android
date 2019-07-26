@@ -118,16 +118,16 @@ class VKConversation : VKModel, Serializable {
                         user.photo200
                     }
                 }
-                Type.CHAT -> if (isGroupChannel) {
+                Type.CHAT -> return if (isGroupChannel) {
                     group = CacheStorage.getGroup(VKGroup.toGroupId(peerId))
-                    return if (group == null) {
+                    if (group == null) {
                         EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
                         null
                     } else {
                         group.photo200
                     }
                 } else {
-                    return photo200
+                    photo200
                 }
             }
 

@@ -1,6 +1,7 @@
 package ru.melodin.fast.api.method
 
 import androidx.collection.ArrayMap
+import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.util.ArrayUtil
@@ -88,7 +89,7 @@ open class MethodSetter(private val name: String) {
         return VKApi.execute(signedUrl, cls)
     }
 
-    fun execute(cls: Class<*>?, listener: VKApi.OnResponseListener) {
+    fun execute(cls: Class<*>?, listener: OnCompleteListener) {
         VKApi.execute(signedUrl, cls, listener)
     }
 

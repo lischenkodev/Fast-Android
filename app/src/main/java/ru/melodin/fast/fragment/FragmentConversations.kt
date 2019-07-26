@@ -19,6 +19,7 @@ import ru.melodin.fast.MessagesActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.ConversationAdapter
 import ru.melodin.fast.adapter.RecyclerAdapter
+import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKConversation
 import ru.melodin.fast.api.model.VKGroup
@@ -127,8 +128,8 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
                     .fields(VKUser.FIELDS_DEFAULT + ", " + VKGroup.FIELDS_DEFAULT)
                     .count(count)
                     .offset(offset)
-                    .execute(VKConversation::class.java, object : VKApi.OnResponseListener {
-                        override fun onSuccess(models: ArrayList<*>?) {
+                    .execute(VKConversation::class.java, object : OnCompleteListener {
+                        override fun onComplete(models: ArrayList<*>?) {
                             if (ArrayUtil.isEmpty(models)) return
                             models ?: return
 
@@ -272,8 +273,8 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
             VKApi.messages()
                     .deleteConversation()
                     .peerId(peerId)
-                    .execute(null, object : VKApi.OnResponseListener {
-                        override fun onSuccess(models: ArrayList<*>?) {
+                    .execute(null, object : OnCompleteListener {
+                        override fun onComplete(models: ArrayList<*>?) {
                             CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE, DatabaseHelper.PEER_ID, peerId)
                             adapter!!.remove(position)
                             adapter!!.notifyItemRemoved(position)

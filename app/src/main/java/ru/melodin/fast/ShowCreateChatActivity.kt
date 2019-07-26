@@ -15,6 +15,7 @@ import kotlinx.android.synthetic.main.activity_show_create.*
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.adapter.UserAdapter
+import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.TaskManager
@@ -86,7 +87,6 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
 
     private fun createChat() {
         TaskManager.execute {
-
             val builder: StringBuilder = StringBuilder(chatTitle.text.toString().trim())
 
             val ids = ArrayList<Int>()
@@ -104,15 +104,15 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
                 }
             }
 
-            VKApi.messages().createChat().title(builder.toString()).userIds(ids).execute(Int::class.java, object : VKApi.OnResponseListener {
-                override fun onSuccess(models: ArrayList<*>?) {
+            VKApi.messages().createChat().title(builder.toString()).userIds(ids).execute(Int::class.java, object : OnCompleteListener {
+                override fun onComplete(models: ArrayList<*>?) {
                     if (ArrayUtil.isEmpty(models)) return
                     models ?: return
 
                     val peerId = 2_000_000_000 + models[0] as Int
 
                     setResult(Activity.RESULT_OK, Intent().apply {
-                        putExtra("title", title.toString())
+                        putExtra("title", title)
                         putExtra("peer_id", peerId)
                     })
                     finish()
@@ -124,7 +124,6 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
                 }
             })
         }
-
     }
 
     override fun onBackPressed() {

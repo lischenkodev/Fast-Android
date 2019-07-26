@@ -62,8 +62,8 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         if (ArrayUtil.isEmpty(data)) return
 
         when (data[0] as String) {
-            Keys.KEY_USER_OFFLINE -> setUserOnline(online = false, mobile = false, userId = data[1] as Int, time = data[2] as Long)
-            Keys.KEY_USER_ONLINE -> setUserOnline(true, data[3] as Boolean, data[1] as Int, data[2] as Long)
+            Keys.KEY_USER_OFFLINE -> setUserOnline(online = false, mobile = false, userId = data[1] as Int, time = data[2] as Int)
+            Keys.KEY_USER_ONLINE -> setUserOnline(true, data[3] as Boolean, data[1] as Int, data[2] as Int)
             Keys.KEY_MESSAGE_CLEAR_FLAGS -> handleClearFlags(data)
             Keys.KEY_MESSAGE_NEW -> {
                 addMessage(data[1] as VKConversation)
@@ -227,20 +227,41 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 notifyItemChanged(0, -1)
             }
 
-
+            CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
+            CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last!!)
         } else {
             if (!conversation.last!!.isOut)
                 conversation.unread = conversation.unread + 1
+
             add(0, conversation)
             notifyItemInserted(0)
             notifyItemRangeChanged(0, itemCount, -1)
 
             if (firstVisiblePosition <= 1)
                 manager.scrollToPosition(0)
-        }
 
-        CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
-        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last!!)
+            CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
+            CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last!!)
+
+            //TODO: доделотб
+//            if (conversation.last!!.action == VKMessage.Action.CREATE) {
+//                TaskManager.loadConversation(conversation.peerId, true, object : TaskManager.OnCompleteListener {
+//                    override fun onComplete(models: ArrayList<*>?) {
+//                        if (ArrayUtil.isEmpty(models)) return
+//                        models ?: return
+//
+//                        val dialog = models[0] as VKConversation
+//
+//                        CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, dialog)
+//                        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, dialog.last!!)
+//
+//                        addMessage(dialog)
+//                    }
+//
+//                    override fun onError(e: Exception) {}
+//                })
+//            }
+        }
     }
 
     private fun readMessage(id: Int) {
@@ -269,7 +290,7 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         notifyItemChanged(position, -1)
     }
 
-    private fun setUserOnline(online: Boolean, mobile: Boolean, userId: Int, time: Long) {
+    private fun setUserOnline(online: Boolean, mobile: Boolean, userId: Int, time: Int) {
         for (i in 0 until itemCount) {
             val conversation = getItem(i)
             if (conversation.type == VKConversation.Type.USER) {
@@ -277,7 +298,7 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 user.isOnline = online
                 if (mobile)
                     user.isOnlineMobile = mobile
-                user.lastSeen = time
+                user.lastSeen = time.toLong()
                 notifyItemChanged(i, -1)
                 break
             }

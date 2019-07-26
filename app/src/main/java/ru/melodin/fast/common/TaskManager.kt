@@ -4,6 +4,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.jetbrains.annotations.Contract
+import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.method.MessageMethodSetter
 import ru.melodin.fast.api.method.MethodSetter
@@ -19,25 +20,16 @@ class TaskManager {
 
     @Subscribe(threadMode = ThreadMode.ASYNC, sticky = true)
     fun onReceive(data: Array<Any>) {
-        val key = data[0] as String
-        when (key) {
+        when (data[0] as String) {
             Keys.NEED_LOAD_ID -> {
                 val id = data[1] as Int
-                if (VKConversation.isChatId(id)) {
-                    loadConversation(id, false, null)
-                } else if (id < 0) {
-                    loadGroup(id * -1, null)
-                } else {
-                    loadUser(id, null)
+                when {
+                    VKConversation.isChatId(id) -> loadConversation(id, false, null)
+                    id < 0 -> loadGroup(id * -1, null)
+                    else -> loadUser(id, null)
                 }
             }
         }
-    }
-
-    interface OnCompleteListener {
-        fun onComplete(models: ArrayList<*>?)
-
-        fun onError(e: Exception)
     }
 
     private class Task internal constructor(internal val setter: MethodSetter, internal val listener: OnCompleteListener?)
@@ -104,8 +96,8 @@ class TaskManager {
             }
 
             execute {
-                setter.execute(cls, object : VKApi.OnResponseListener {
-                    override fun onSuccess(models: ArrayList<*>?) {
+                setter.execute(cls, object : OnCompleteListener {
+                    override fun onComplete(models: ArrayList<*>?) {
                         if (exists(task)) {
                             tasks.remove(task)
                         }
@@ -153,7 +145,7 @@ class TaskManager {
         }
 
         fun execute(runnable: () -> Unit) {
-            LowThread(Runnable {runnable()}).start()
+            LowThread(Runnable { runnable() }).start()
         }
     }
 }

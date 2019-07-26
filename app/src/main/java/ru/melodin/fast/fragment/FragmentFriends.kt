@@ -16,6 +16,7 @@ import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.MessagesActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.UserAdapter
+import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKConversation
@@ -115,8 +116,8 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
             lateinit var users: ArrayList<VKUser>
 
-            VKApi.friends().get().userId(UserConfig.userId).order("hints").fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java, object : VKApi.OnResponseListener {
-                override fun onSuccess(models: ArrayList<*>?) {
+            VKApi.friends().get().userId(UserConfig.userId).order("hints").fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java, object : OnCompleteListener {
+                override fun onComplete(models: ArrayList<*>?) {
 
                     if (ArrayUtil.isEmpty(models)) return
                     models ?: return

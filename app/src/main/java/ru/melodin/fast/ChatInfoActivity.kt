@@ -11,6 +11,7 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_chat_info.*
 import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.adapter.UserAdapter
+import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKChat
@@ -79,10 +80,6 @@ class ChatInfoActivity : BaseActivity() {
         val list = arrayListOf(*resources.getStringArray(R.array.chat_photo_functions))
         val removeList = arrayListOf<String>()
 
-        if (!loaded) {
-            removeList.add(string(R.string.delete))
-        }
-
         list.removeAll(removeList)
 
         val items = arrayOfNulls<String>(list.size)
@@ -90,12 +87,48 @@ class ChatInfoActivity : BaseActivity() {
             items[i] = list[i]
 
         val builder = AlertDialog.Builder(this)
-        builder.setItems(items) { _, _ ->
-
+        builder.setItems(items) { _, i ->
+            when (items[i]) {
+                string(R.string.delete) -> showDeletePhotoAlert()
+            }
         }
 
-        if (!ArrayUtil.isEmpty(items))
-            builder.show()
+        builder.show()
+    }
+
+    private fun showDeletePhotoAlert() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(R.string.confirmation)
+        builder.setMessage(R.string.are_you_sure)
+        builder.setNegativeButton(R.string.no, null)
+        builder.setPositiveButton(R.string.yes) { _, _ ->
+            deletePhoto()
+        }
+        builder.show()
+    }
+
+    private fun deletePhoto() {
+        TaskManager.execute {
+            VKApi.messages().deleteChatPhoto().chatId(chat!!.id).execute(null, object : OnCompleteListener {
+                override fun onComplete(models: ArrayList<*>?) {
+                    chatAvatar.setImageResource(R.drawable.avatar_placeholder)
+
+                    chat!!.apply {
+                        photo50 = null
+                        photo100 = null
+                        photo200 = null
+                    }
+
+                    CacheStorage.insert(DatabaseHelper.CHATS_TABLE, chat!!)
+
+                    Toast.makeText(this@ChatInfoActivity, R.string.success, Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onError(e: Exception) {
+                    Toast.makeText(this@ChatInfoActivity, R.string.error, Toast.LENGTH_LONG).show()
+                }
+            })
+        }
     }
 
     private fun getCachedChat() {
@@ -110,7 +143,7 @@ class ChatInfoActivity : BaseActivity() {
     }
 
     private fun getChat() {
-        TaskManager.loadChat(VKConversation.toChatId(conversation.peerId), VKUser.FIELDS_DEFAULT, object : TaskManager.OnCompleteListener {
+        TaskManager.loadChat(VKConversation.toChatId(conversation.peerId), VKUser.FIELDS_DEFAULT, object : OnCompleteListener {
 
             override fun onComplete(models: ArrayList<*>?) {
                 if (ArrayUtil.isEmpty(models)) return
@@ -153,7 +186,7 @@ class ChatInfoActivity : BaseActivity() {
 
         val setter = VKApi.messages().editChat().chatId(VKConversation.toChatId(conversation.peerId)).title(title)
 
-        TaskManager.addProcedure(setter, Int::class.java, object : TaskManager.OnCompleteListener {
+        TaskManager.addProcedure(setter, Int::class.java, object : OnCompleteListener {
 
             override fun onComplete(models: ArrayList<*>?) {
                 ViewUtil.hideKeyboard(chatTitle)
@@ -202,17 +235,19 @@ class ChatInfoActivity : BaseActivity() {
 
     private fun kickUser(userId: Int) {
         TaskManager.execute {
-            VKApi.messages().removeChatUser().chatId(VKConversation.toChatId(conversation.peerId)).userId(userId).execute(null, object : VKApi.OnResponseListener {
-                override fun onSuccess(models: ArrayList<*>?) {
+            VKApi.messages().removeChatUser().chatId(VKConversation.toChatId(conversation.peerId)).userId(userId).execute(null, object : OnCompleteListener {
+                override fun onComplete(models: ArrayList<*>?) {
                     if (userId == UserConfig.userId) {
+                        chat!!.users = arrayListOf()
                         finish()
                     } else {
                         val position = adapter!!.searchUser(userId)
                         adapter!!.remove(position)
-                        adapter!!.notifyItemRemoved(position)
-                        adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
+                        adapter!!.notifyDataSetChanged()
+                        chat!!.users = adapter!!.values!!
                     }
 
+                    CacheStorage.insert(DatabaseHelper.CHATS_TABLE, chat!!)
                     Toast.makeText(this@ChatInfoActivity, R.string.success, Toast.LENGTH_SHORT).show()
                 }
 

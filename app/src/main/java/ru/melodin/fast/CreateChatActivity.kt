@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.adapter.CreateChatAdapter
 import ru.melodin.fast.adapter.RecyclerAdapter
+import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKUser
@@ -124,8 +125,8 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
 
             lateinit var friends: ArrayList<VKUser>
 
-            VKApi.friends().get().userId(UserConfig.userId).order("hints").fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java, object : VKApi.OnResponseListener {
-                override fun onSuccess(models: ArrayList<*>?) {
+            VKApi.friends().get().userId(UserConfig.userId).order("hints").fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java, object : OnCompleteListener {
+                override fun onComplete(models: ArrayList<*>?) {
                     if (ArrayUtil.isEmpty(models)) return
                     models ?: return
 
@@ -190,7 +191,7 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
 
         intent.putExtra("title", title)
         intent.putExtra("peer_id", peerId)
-        intent.putExtra("can_write", true)
+        intent.putExtra("members_count", adapter!!.selectedCount + 1)
 
         finish()
         startActivity(intent)

@@ -64,7 +64,7 @@ class FastToolbar : FrameLayout {
         if (onMenuItemClickListener == null || menu!!.size() == 0) return
 
         for (i in 0 until menu!!.size()) {
-            menuLayout.getChildAt(i).setOnClickListener { onMenuItemClickListener!!.onMenuItemClick(menu!!.getItem(i)) }
+            menuLayout.getChildAt(if (menu!!.size() == 1) 1 else i).setOnClickListener { onMenuItemClickListener!!.onMenuItemClick(menu!!.getItem(if (menu!!.size() == 1) 0 else i)) }
         }
     }
 
@@ -91,15 +91,20 @@ class FastToolbar : FrameLayout {
             }
         }
 
-        if (menu!!.size() == 0) {
-            menuLayout.visibility = View.GONE
-            return
-        } else {
-            menuLayout.visibility = View.VISIBLE
-        }
-
-        for (i in 0 until menu!!.size()) {
-            addMenuItem(i)
+        when {
+            menu!!.size() == 0 -> {
+                menuLayout.visibility = View.GONE
+                return
+            }
+            menu!!.size() == 1 -> {
+                addMenuItem(1)
+            }
+            else -> {
+                menuLayout.visibility = View.VISIBLE
+                for (i in 0 until menu!!.size()) {
+                    addMenuItem(i)
+                }
+            }
         }
     }
 
@@ -127,12 +132,12 @@ class FastToolbar : FrameLayout {
     private fun addMenuItem(i: Int) {
         val menuButton = menuLayout.getChildAt(i) as ImageButton
         menuButton.visibility = View.VISIBLE
-        menuButton.setImageDrawable(menu!!.getItem(i).icon)
+        menuButton.setImageDrawable(menu!!.getItem(if (menu!!.size() == 1) 0 else i).icon)
     }
 
     fun setItemVisible(i: Int, visible: Boolean) {
         if (i > 1) return
-        menuLayout.getChildAt(i).visibility = if (visible) View.VISIBLE else View.GONE
+        menuLayout.getChildAt(i).visibility = if (visible) View.VISIBLE else View.INVISIBLE
     }
 
     private fun setAvatar(drawable: Drawable?) {

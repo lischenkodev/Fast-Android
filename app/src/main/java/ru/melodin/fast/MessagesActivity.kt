@@ -33,6 +33,7 @@ import kotlinx.android.synthetic.main.toolbar_action.*
 import ru.melodin.fast.adapter.MessageAdapter
 import ru.melodin.fast.adapter.PopupAdapter
 import ru.melodin.fast.adapter.RecyclerAdapter
+import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.VKUtil
@@ -350,11 +351,17 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
     private fun getConversation(peerId: Int) {
         if (!Util.hasConnection()) return
-        TaskManager.loadConversation(peerId, true, object : TaskManager.OnCompleteListener {
+        TaskManager.loadConversation(peerId, true, object : OnCompleteListener {
             override fun onComplete(models: ArrayList<*>?) {
                 if (ArrayUtil.isEmpty(models)) return
+                models ?: return
 
-                conversation = models!![0] as VKConversation
+                conversation = models[0] as VKConversation
+
+                if (VKConversation.isChatId(peerId)) {
+                    tb.setTitle(conversation!!.title)
+                    updateToolbar()
+                }
 
                 popupAdapter!!.changeItems(createItems())
                 getMessage(conversation!!.lastMessageId)
@@ -367,7 +374,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     private fun getMessage(messageId: Int) {
         if (messageId == 0) return
 
-        TaskManager.loadMessage(messageId, true, object : TaskManager.OnCompleteListener {
+        TaskManager.loadMessage(messageId, true, object : OnCompleteListener {
             override fun onComplete(models: ArrayList<*>?) {
                 if (!ArrayUtil.isEmpty(models)) {
                     val message = models!![0] as VKMessage
@@ -402,18 +409,19 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     }
 
     private fun getIntentData() {
-        val intent = intent
         conversation = intent.getSerializableExtra("conversation") as VKConversation?
         chatTitle = intent.getStringExtra("title")
         peerId = intent.getIntExtra("peer_id", -1)
         photo = intent.getStringExtra("photo")
         cantWriteReason = intent.getIntExtra("reason", -1)
-        canWrite = intent.getBooleanExtra("can_write", false)
+        canWrite = intent.getBooleanExtra("can_write", true)
         reason = VKConversation.getReason(cantWriteReason)
 
         if (conversation != null) {
             membersCount = conversation!!.membersCount
             pinned = conversation!!.pinned
+        } else {
+            membersCount = intent.getIntExtra("members_count", -1)
         }
     }
 
@@ -532,8 +540,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
     private fun unpinMessage() {
         TaskManager.execute {
-            VKApi.messages().unpin().peerId(peerId).execute(null, object : VKApi.OnResponseListener {
-                override fun onSuccess(models: ArrayList<*>?) {
+            VKApi.messages().unpin().peerId(peerId).execute(null, object : OnCompleteListener {
+                override fun onComplete(models: ArrayList<*>?) {
                     pinned = null
                     conversation!!.pinned = null
                     showPinned(null)
@@ -550,8 +558,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
     private fun pinMessage(message: VKMessage) {
         TaskManager.execute {
-            VKApi.messages().pin().messageId(message.id).peerId(peerId).execute(null, object : VKApi.OnResponseListener {
-                override fun onSuccess(models: ArrayList<*>?) {
+            VKApi.messages().pin().messageId(message.id).peerId(peerId).execute(null, object : OnCompleteListener {
+                override fun onComplete(models: ArrayList<*>?) {
                     pinned = message
                     showPinned(pinned)
 
@@ -574,8 +582,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         typing = true
         TaskManager.execute {
             VKApi.messages().setActivity().type(true).peerId(peerId)
-                    .execute(null, object : VKApi.OnResponseListener {
-                        override fun onSuccess(models: ArrayList<*>?) {
+                    .execute(null, object : OnCompleteListener {
+                        override fun onComplete(models: ArrayList<*>?) {
                             timer = Timer()
                             timer!!.schedule(object : TimerTask() {
 
@@ -626,7 +634,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                 }
             }
 
-            TaskManager.sendMessage(VKApi.messages().send().randomId(msg.randomId).text(messageText!!.trim()).peerId(peerId), object : TaskManager.OnCompleteListener {
+            TaskManager.sendMessage(VKApi.messages().send().randomId(msg.randomId).text(messageText!!.trim()).peerId(peerId), object : OnCompleteListener {
                 override fun onComplete(models: ArrayList<*>?) {
                     if (ArrayUtil.isEmpty(models)) return
                     models ?: return
@@ -726,8 +734,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                     .fields(VKUser.FIELDS_DEFAULT)
                     .offset(offset)
                     .count(count)
-                    .execute(VKMessage::class.java, object : VKApi.OnResponseListener {
-                        override fun onSuccess(models: ArrayList<*>?) {
+                    .execute(VKMessage::class.java, object : OnCompleteListener {
+                        override fun onComplete(models: ArrayList<*>?) {
                             if (ArrayUtil.isEmpty(models)) return
 
                             messages = models as ArrayList<VKMessage>
@@ -785,7 +793,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     }
 
     private fun loadUser(id: Int) {
-        TaskManager.loadUser(id, object : TaskManager.OnCompleteListener {
+        TaskManager.loadUser(id, object : OnCompleteListener {
             override fun onComplete(models: ArrayList<*>?) {
                 updateToolbar()
             }
@@ -840,8 +848,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                         .userId(UserConfig.userId)
             }
 
-            setter.execute(Int::class.java, object : VKApi.OnResponseListener {
-                override fun onSuccess(models: ArrayList<*>?) {
+            setter.execute(Int::class.java, object : OnCompleteListener {
+                override fun onComplete(models: ArrayList<*>?) {
                     conversation!!.state = if (leave) VKConversation.State.LEFT else VKConversation.State.IN
                     CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation!!)
                     updateToolbar()
@@ -879,8 +887,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                     .peerId(peerId)
                     .time(if (on) 0 else -1)
                     .sound(on)
-                    .execute(null, object : VKApi.OnResponseListener {
-                        override fun onSuccess(models: ArrayList<*>?) {
+                    .execute(null, object : OnCompleteListener {
+                        override fun onComplete(models: ArrayList<*>?) {
                             conversation!!.isDisabledForever = !on
                             conversation!!.disabledUntil = if (on) 0 else -1
                             conversation!!.isNoSound = !on
@@ -976,8 +984,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     }
 
     private fun showAlert(position: Int) {
-        conversation?: return
-        conversation!!.last?: return
+        conversation ?: return
+        conversation!!.last ?: return
         val item = adapter!!.getItem(position)
 
         val list = arrayListOf(*resources.getStringArray(R.array.message_functions))
@@ -1052,7 +1060,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     private fun copyMessageText(item: VKMessage) {
         val clipService = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipService.setPrimaryClip(ClipData.newPlainText("msg id: ${item.id}", item.text))
-        
+
         Toast.makeText(this, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()
     }
 
@@ -1115,8 +1123,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                         .keepForwardMessages(true)
                         .keepSnippets(true)
                         .peerId(peerId)
-                        .execute(Int::class.java, object : VKApi.OnResponseListener {
-                            override fun onSuccess(models: ArrayList<*>?) {
+                        .execute(Int::class.java, object : OnCompleteListener {
+                            override fun onComplete(models: ArrayList<*>?) {
                                 val editedMessage = adapter!!.getItem(editingPosition)
                                 editedMessage.text = edited.text
                                 editedMessage.status = VKMessage.Status.SENT
@@ -1254,8 +1262,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                     .deleteConversation()
                     .peerId(peerId)
                     .offset(0)
-                    .execute(Int::class.java, object : VKApi.OnResponseListener {
-                        override fun onSuccess(models: ArrayList<*>?) {
+                    .execute(Int::class.java, object : OnCompleteListener {
+                        override fun onComplete(models: ArrayList<*>?) {
                             CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE, DatabaseHelper.PEER_ID, peerId)
                             adapter!!.values!!.clear()
                             adapter!!.notifyDataSetChanged()

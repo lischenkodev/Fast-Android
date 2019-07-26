@@ -165,12 +165,12 @@ object VKApi {
     }
 
     fun execute(url: String, cls: Class<*>?,
-                listener: OnResponseListener?) {
+                listener: OnCompleteListener?) {
         TaskManager.execute {
             try {
                 val models = execute(url, cls)
                 if (listener != null) {
-                    AppGlobal.handler.post { listener.onSuccess(models as ArrayList<*>?) }
+                    AppGlobal.handler.post { listener.onComplete(models as ArrayList<*>?) }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -254,12 +254,6 @@ object VKApi {
 
     fun stats(): VKStats {
         return VKStats()
-    }
-
-    interface OnResponseListener {
-        fun onSuccess(models: ArrayList<*>?)
-
-        fun onError(e: Exception)
     }
 
     class VKStats internal constructor() {
@@ -378,6 +372,10 @@ object VKApi {
 
         fun removeChatUser(): MessageMethodSetter {
             return MessageMethodSetter("removeChatUser")
+        }
+
+        fun deleteChatPhoto(): MessageMethodSetter {
+            return MessageMethodSetter("deleteChatPhoto")
         }
     }
 

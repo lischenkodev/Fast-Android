@@ -24,11 +24,12 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_login.*
 import org.json.JSONObject
 import org.jsoup.Jsoup
+import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.Scopes
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKUser
-import ru.melodin.fast.common.TaskManager
+import ru.melodin.fast.common.TaskManager.Companion.execute
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
@@ -144,7 +145,7 @@ class LoginActivity : AppCompatActivity() {
             }
         }
 
-        TaskManager.execute {
+        execute {
             val manager = CookieManager.getInstance()
             manager.removeAllCookies(null)
             manager.flush()
@@ -161,7 +162,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     fun authorize(jsonObject: String) {
-        TaskManager.execute {
+        execute {
 
             lateinit var response: JSONObject
 
@@ -278,11 +279,11 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun getCurrentUser(id: Int) {
-        TaskManager.execute {
+        execute {
             var user: VKUser?
 
-            VKApi.users().get().userIds(id).fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java, object : VKApi.OnResponseListener {
-                override fun onSuccess(models: ArrayList<*>?) {
+            VKApi.users().get().userIds(id).fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java, object : OnCompleteListener {
+                override fun onComplete(models: ArrayList<*>?) {
                     if (ArrayUtil.isEmpty(models)) return
                     models ?: return
 

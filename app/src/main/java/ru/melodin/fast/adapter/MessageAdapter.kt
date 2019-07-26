@@ -23,6 +23,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import ru.melodin.fast.MessagesActivity
 import ru.melodin.fast.R
+import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.*
 import ru.melodin.fast.api.model.attachment.VKAudio
@@ -195,8 +196,8 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
             VKApi.messages()
                     .markAsRead()
                     .messageIds(message.id)
-                    .execute(Int::class.java, object : VKApi.OnResponseListener {
-                        override fun onSuccess(models: ArrayList<*>?) {
+                    .execute(Int::class.java, object : OnCompleteListener {
+                        override fun onComplete(models: ArrayList<*>?) {
                             readMessage(message.id)
                         }
 
