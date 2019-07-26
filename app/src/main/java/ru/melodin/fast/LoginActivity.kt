@@ -47,7 +47,7 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(ThemeManager.loginTheme)
-        //ViewUtil.applyWindowStyles(window, ThemeManager.background)
+        ViewUtil.applyWindowStyles(window, ThemeManager.background)
         setContentView(R.layout.activity_login)
 
         progress.visibility = View.INVISIBLE
