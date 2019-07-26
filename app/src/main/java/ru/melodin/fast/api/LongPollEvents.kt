@@ -15,6 +15,7 @@ import ru.melodin.fast.util.StringUtils
 class LongPollEvents {
 
     private fun messageEvent(item: JSONArray) {
+        Log.d("FVK New Message", item.toString())
         val mId = item.optInt(1)
         val flags = item.optInt(2)
         val peerId = item.optInt(3)
@@ -29,14 +30,17 @@ class LongPollEvents {
         val updateTime = item.optInt(10)
 
         val conversation = VKConversation()
-
         val last = VKMessage()
+
+        conversation.peerId = peerId
+
         last.id = mId
         last.flags = flags
         last.peerId = peerId
         last.date = date.toLong()
         last.conversationMessageId = conversationMessageId
         last.updateTime = updateTime.toLong()
+
         conversation.isRead = last.flags and VKMessage.UNREAD == 0
 
         last.isRead = conversation.isRead
@@ -68,7 +72,6 @@ class LongPollEvents {
         conversation.last = last
 
         EventBus.getDefault().postSticky(arrayOf<Any>(Keys.KEY_MESSAGE_NEW, conversation))
-        Log.d("FVK New Message", item.toString())
     }
 
     private fun messageSetFlags(item: JSONArray) {
@@ -215,18 +218,17 @@ class LongPollEvents {
         EventBus.getDefault().postSticky(arrayOf(Keys.KEY_USER_ONLINE, userId, time, platform > 0))
     }
 
-    companion object {
 
-        @get:Synchronized
+    companion object {
         private var instance: LongPollEvents? = null
 
-        fun getInstance(): LongPollEvents? {
-            return when (instance) {
-                null -> LongPollEvents()
-                else -> instance
+        @Synchronized
+        fun getInstance(): LongPollEvents {
+            if (instance == null) {
+                instance = LongPollEvents()
             }
+
+            return instance as LongPollEvents
         }
     }
-
-
 }

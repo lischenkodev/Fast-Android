@@ -35,7 +35,6 @@ class ThemeManager {
             background = getColor(if (isDark) R.color.dark_background else R.color.background)
             main = if (isDark) Color.WHITE else Color.BLACK
             secondary = if (isDark) Color.LTGRAY else Color.DKGRAY
-
         }
 
         fun switchTheme(dark: Boolean) {

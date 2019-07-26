@@ -1,6 +1,4 @@
 <resources>
-    <!-- Default screen margins, per the Android Design guidelines. -->
-    <!-- Default screen margins, per the Android Design guidelines. -->
-
     <dimen name="avatar_chat_size">40dp</dimen>
+    <dimen name="default_corners_radius">8dp</dimen>
 </resources>

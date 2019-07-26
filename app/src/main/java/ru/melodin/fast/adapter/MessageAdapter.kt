@@ -122,7 +122,7 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
                 val lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition()
 
                 if (lastVisibleItem >= itemCount - 4) {
-                    activity.getRecyclerView().scrollToPosition(itemCount - 1)
+                    activity.getRecyclerView().scrollToPosition(lastPosition + 1)
                 }
 
                 if (!last.isOut && last.peerId == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {

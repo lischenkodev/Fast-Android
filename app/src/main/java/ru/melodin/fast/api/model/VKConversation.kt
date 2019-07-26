@@ -1,5 +1,6 @@
 package ru.melodin.fast.api.model
 
+import android.util.Log
 import org.greenrobot.eventbus.EventBus
 import org.jetbrains.annotations.Contract
 import org.json.JSONException
@@ -142,9 +143,6 @@ class VKConversation : VKModel, Serializable {
     val isGroup: Boolean
         get() = type == Type.GROUP && !isGroupChannel
 
-    val isUser: Boolean
-        get() = !isGroup && !isChat && !isGroupChannel
-
     val isFromUser: Boolean
         get() = !isFromGroup
 
@@ -155,6 +153,7 @@ class VKConversation : VKModel, Serializable {
 
     @Throws(JSONException::class)
     constructor(o: JSONObject, msg: JSONObject?) {
+        Log.d("FVKConversation", o.toString())
 
         if (msg != null)
             last = VKMessage(msg)
@@ -179,11 +178,11 @@ class VKConversation : VKModel, Serializable {
             this.reason = canWrite.optInt("reason", -1)
         }
 
-        val push_settings = o.optJSONObject("push_settings")
-        if (push_settings != null) {
-            this.disabledUntil = push_settings.optInt("disabled_until", -1)
-            this.isDisabledForever = push_settings.optBoolean("disabled_forever", false)
-            this.isNoSound = push_settings.optBoolean("no_sound")
+        val pushSettings = o.optJSONObject("push_settings")
+        if (pushSettings != null) {
+            this.disabledUntil = pushSettings.optInt("disabled_until", -1)
+            this.isDisabledForever = pushSettings.optBoolean("disabled_forever", false)
+            this.isNoSound = pushSettings.optBoolean("no_sound")
         }
 
         val ch = o.optJSONObject("chat_settings")

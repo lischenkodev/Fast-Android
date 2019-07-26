@@ -115,32 +115,32 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
             lateinit var users: ArrayList<VKUser>
 
-                VKApi.friends().get().userId(UserConfig.userId).order("hints").fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java, object : VKApi.OnResponseListener {
-                    override fun onSuccess(models: ArrayList<*>?) {
+            VKApi.friends().get().userId(UserConfig.userId).order("hints").fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java, object : VKApi.OnResponseListener {
+                override fun onSuccess(models: ArrayList<*>?) {
 
-                        if (ArrayUtil.isEmpty(models)) return
-                        models?: return
+                    if (ArrayUtil.isEmpty(models)) return
+                    models ?: return
 
-                        users = models as ArrayList<VKUser>
+                    users = models as ArrayList<VKUser>
 
-                        if (offset == 0) {
-                            CacheStorage.delete(DatabaseHelper.FRIENDS_TABLE)
-                            CacheStorage.insert(DatabaseHelper.FRIENDS_TABLE, users)
-                        }
-
-                        CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
-
-                        createAdapter(users, offset)
-                        isLoading = true
-                        refresh.isRefreshing = false
+                    if (offset == 0) {
+                        CacheStorage.delete(DatabaseHelper.FRIENDS_TABLE)
+                        CacheStorage.insert(DatabaseHelper.FRIENDS_TABLE, users)
                     }
 
-                    override fun onError(e: Exception) {
-                        refresh.isRefreshing = false
-                        Toast.makeText(activity, getString(R.string.error), Toast.LENGTH_LONG).show()
+                    CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
 
-                    }
-                })
+                    createAdapter(users, offset)
+                    isLoading = true
+                    refresh.isRefreshing = false
+                }
+
+                override fun onError(e: Exception) {
+                    refresh.isRefreshing = false
+                    Toast.makeText(activity, getString(R.string.error), Toast.LENGTH_LONG).show()
+
+                }
+            })
         }
     }
 

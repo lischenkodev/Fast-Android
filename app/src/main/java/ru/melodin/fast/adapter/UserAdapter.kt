@@ -77,6 +77,13 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
         }
     }
 
+    fun searchUser(userId: Int): Int {
+        values!!.forEach {
+            if (it.id == userId) return values!!.indexOf(it)
+        }
+        return -1
+    }
+
     private fun setUserOnline(online: Boolean, userId: Int, time: Long) {
         for (i in 0 until itemCount) {
             val user = getItem(i)

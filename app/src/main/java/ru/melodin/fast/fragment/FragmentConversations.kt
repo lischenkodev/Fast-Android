@@ -222,7 +222,7 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
 
         adb.setTitle(conversation.fullTitle)
 
-        val list = ArrayList(Arrays.asList(*resources.getStringArray(R.array.conversation_functions)))
+        val list = arrayListOf<String>(*resources.getStringArray(R.array.conversation_functions))
         val remove = ArrayList<String>()
 
         if (conversation.last == null || conversation.lastMessageId == -1 || conversation.last!!.isOut || conversation.isRead || conversation.last!!.isRead) {

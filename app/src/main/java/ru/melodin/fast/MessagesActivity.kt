@@ -2,6 +2,9 @@ package ru.melodin.fast
 
 import android.annotation.SuppressLint
 import android.app.AlarmManager
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -24,11 +27,9 @@ import androidx.core.text.HtmlCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.checkbox.MaterialCheckBox
-import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_messages.*
 import kotlinx.android.synthetic.main.toolbar_action.*
-import org.jetbrains.annotations.Contract
 import ru.melodin.fast.adapter.MessageAdapter
 import ru.melodin.fast.adapter.PopupAdapter
 import ru.melodin.fast.adapter.RecyclerAdapter
@@ -174,6 +175,9 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
         recyclerView.layoutManager = layoutManager
 
+        if (VKConversation.isChatId(peerId))
+            tb.setOnAvatarClickListener { openChatInfo() }
+
         updateToolbar()
         initPopupWindow()
         loadAvatar()
@@ -239,7 +243,6 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         }
     }
 
-    @Contract(" -> new")
     private fun createItems(): ArrayList<ListItem> {
         val chatInfo = ListItem(PopupAdapter.ID_CHAT_INFO, getString(R.string.chat_info), drawable(R.drawable.ic_info_black_24dp))
         val disableNotifications = ListItem(PopupAdapter.ID_NOTIFICATIONS, getString(R.string.disable_notifications), drawable(R.drawable.ic_volume_off_black_24dp))
@@ -295,12 +298,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                     Picasso.get()
                             .load(photo)
                             .placeholder(R.drawable.avatar_placeholder)
-                            .into(tb.avatar, object : Callback.EmptyCallback() {
-                                override fun onSuccess() {
-                                    if (VKConversation.isChatId(peerId))
-                                        tb.setOnAvatarClickListener { openChatInfo() }
-                                }
-                            })
+                            .into(tb.avatar)
                 }
             }
         } else {
@@ -517,7 +515,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     private fun showPinnedAlert(pinned: VKMessage) {
         val adb = AlertDialog.Builder(this)
 
-        val v = AttachmentInflater.getInstance(null, this).message(null, null, pinned, false, false)
+        val v = AttachmentInflater.getInstance(null, this).message(null, null, pinned, isReply = false, withStyles = false)
         adb.setView(v)
         adb.setPositiveButton(android.R.string.ok, null)
         adb.show()
@@ -614,7 +612,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         val msg = adapter!!.getItem(position)
 
         adapter!!.notifyDataSetChanged()
-        recyclerView.scrollToPosition(position)
+        recyclerView.scrollToPosition(position + 1)
 
         val size = adapter!!.itemCount
 
@@ -676,8 +674,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
             adapter!!.setOnItemLongClickListener(this)
             recyclerView.adapter = adapter
 
-            recyclerView.scrollToPosition(adapter!!.itemCount)
-            recyclerView.smoothScrollToPosition(adapter!!.itemCount)
+            recyclerView.scrollToPosition(adapter!!.itemCount + 1)
+            recyclerView.smoothScrollToPosition(adapter!!.itemCount + 1)
             return
         }
 
@@ -693,8 +691,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
 
         if (empty) {
-            recyclerView.scrollToPosition(adapter!!.itemCount)
-            recyclerView.smoothScrollToPosition(adapter!!.itemCount)
+            recyclerView.scrollToPosition(adapter!!.itemCount + 1)
+            recyclerView.smoothScrollToPosition(adapter!!.itemCount + 1)
         }
     }
 
@@ -978,11 +976,12 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     }
 
     private fun showAlert(position: Int) {
-        if (conversation == null) return
+        conversation?: return
+        conversation!!.last?: return
         val item = adapter!!.getItem(position)
 
-        val list = ArrayList(listOf(*resources.getStringArray(R.array.message_functions)))
-        val remove = ArrayList<String>()
+        val list = arrayListOf(*resources.getStringArray(R.array.message_functions))
+        val remove = arrayListOf<String>()
 
         if (!ArrayUtil.isEmpty(item.attachments)) {
             for (model in item.attachments) {
@@ -993,6 +992,10 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                     }
                 }
             }
+        }
+
+        if (TextUtils.isEmpty(conversation!!.last!!.text)) {
+            remove.add(getString(R.string.copy))
         }
 
         if (item.status == VKMessage.Status.ERROR) {
@@ -1023,6 +1026,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
         adb.setItems(items) { _, i ->
             when (items[i]) {
+                getString(R.string.copy) -> copyMessageText(item)
                 getString(R.string.retry) -> TaskManager.resendMessage(item.randomId.toLong())
                 getString(R.string.delete) -> showConfirmDeleteMessages(ArrayList(listOf(item)))
                 getString(R.string.pin_message) -> showConfirmPinDialog(item)
@@ -1043,6 +1047,13 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
             }
         }
         adb.show()
+    }
+
+    private fun copyMessageText(item: VKMessage) {
+        val clipService = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipService.setPrimaryClip(ClipData.newPlainText("msg id: ${item.id}", item.text))
+        
+        Toast.makeText(this, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()
     }
 
     private fun showEdit() {

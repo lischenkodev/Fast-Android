@@ -93,13 +93,13 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
         if (!UserConfig.isLoggedIn) {
             startLoginActivity()
         } else {
-            if (savedInstanceState == null) {
-                startLongPoll()
+            if (savedInstanceState != null) return
 
-                selectedFragment = fragmentConversations
-                selectedId = R.id.conversations
-            } else
-                return
+            startLongPoll()
+
+            selectedFragment = fragmentConversations
+            selectedId = R.id.conversations
+
 
             replaceFragment(selectedFragment)
         }

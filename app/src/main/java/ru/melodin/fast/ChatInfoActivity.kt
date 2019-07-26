@@ -4,12 +4,14 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_chat_info.*
 import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.adapter.UserAdapter
+import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKChat
 import ru.melodin.fast.api.model.VKConversation
@@ -33,6 +35,7 @@ class ChatInfoActivity : BaseActivity() {
     private lateinit var conversation: VKConversation
 
     private var timer: Timer? = null
+    private var loaded: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,10 +62,40 @@ class ChatInfoActivity : BaseActivity() {
         tb.setTitle(R.string.chat)
         tb.setBackVisible(true)
 
+        chatLeave.setOnClickListener {
+            confirmKick(UserConfig.userId)
+        }
+
         loadAvatar()
+        chatAvatar.setOnClickListener {
+            showPhotoAlert()
+        }
 
         getCachedChat()
         if (Util.hasConnection()) getChat()
+    }
+
+    private fun showPhotoAlert() {
+        val list = arrayListOf(*resources.getStringArray(R.array.chat_photo_functions))
+        val removeList = arrayListOf<String>()
+
+        if (!loaded) {
+            removeList.add(string(R.string.delete))
+        }
+
+        list.removeAll(removeList)
+
+        val items = arrayOfNulls<String>(list.size)
+        for (i in list.indices)
+            items[i] = list[i]
+
+        val builder = AlertDialog.Builder(this)
+        builder.setItems(items) { _, _ ->
+
+        }
+
+        if (!ArrayUtil.isEmpty(items))
+            builder.show()
     }
 
     private fun getCachedChat() {
@@ -142,14 +175,10 @@ class ChatInfoActivity : BaseActivity() {
 
     private fun loadAvatar() {
         if (!TextUtils.isEmpty(if (chat == null) conversation.photo200 else chat!!.photo200)) {
-            TaskManager.execute {
-                runOnUiThread {
-                    Picasso.get()
-                            .load(if (chat == null) conversation.photo200 else chat!!.photo200)
-                            .placeholder(R.drawable.avatar_placeholder)
-                            .into(chatAvatar)
-                }
-            }
+            Picasso.get()
+                    .load(if (chat == null) conversation.photo200 else chat!!.photo200)
+                    .placeholder(R.drawable.avatar_placeholder)
+                    .into(chatAvatar)
         }
     }
 
@@ -159,6 +188,38 @@ class ChatInfoActivity : BaseActivity() {
     }
 
     fun confirmKick(position: Int) {
+        val user = adapter!!.getItem(position)
 
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle(R.string.confirmation)
+        builder.setMessage(R.string.are_you_sure)
+        builder.setPositiveButton(R.string.yes) { _, _ ->
+            kickUser(user.id)
+        }
+        builder.setNegativeButton(R.string.no, null)
+        builder.show()
+    }
+
+    private fun kickUser(userId: Int) {
+        TaskManager.execute {
+            VKApi.messages().removeChatUser().chatId(VKConversation.toChatId(conversation.peerId)).userId(userId).execute(null, object : VKApi.OnResponseListener {
+                override fun onSuccess(models: ArrayList<*>?) {
+                    if (userId == UserConfig.userId) {
+                        finish()
+                    } else {
+                        val position = adapter!!.searchUser(userId)
+                        adapter!!.remove(position)
+                        adapter!!.notifyItemRemoved(position)
+                        adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
+                    }
+
+                    Toast.makeText(this@ChatInfoActivity, R.string.success, Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onError(e: Exception) {
+                    Toast.makeText(this@ChatInfoActivity, R.string.error, Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
     }
 }

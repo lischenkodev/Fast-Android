@@ -120,7 +120,7 @@
     <string name="fast_messenger" translatable="false"><b>Fast</b> Messenger</string>
     <string name="captcha">Captcha</string>
     <string name="all_necessary_data">Input all necessary data</string>
-    <string name="login_via_webview">Login via WebView</string>
+    <string name="login_via_webview">Login via WebView\n(Recommended)</string>
     <string name="are_you_sure">Are you sure?</string>
     <string name="delete">Delete</string>
     <string name="for_everyone">For everyone</string>
@@ -162,4 +162,6 @@
     <string name="title">Title</string>
     <string name="chat_info">Chat info</string>
     <string name="title_changed">Title has been changed</string>
+    <string name="success">Success</string>
+    <string name="copied_to_clipboard">Copied to clipboard</string>
 </resources>

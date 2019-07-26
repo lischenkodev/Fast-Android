@@ -177,6 +177,14 @@ object ArrayUtil {
         return array == null || array.isEmpty
     }
 
+    fun isEmpty(array: Array<File>?): Boolean {
+        return array == null || array.isEmpty()
+    }
+
+    fun isEmpty(array: Array<String?>?): Boolean {
+        return array == null || array.isEmpty()
+    }
+
     fun toString(ids: Collection<Int>): String? {
         val builder = StringBuilder()
         val list = mutableListOf(ids)
@@ -188,10 +196,5 @@ object ArrayUtil {
         }
 
         return builder.toString()
-    }
-
-    fun isEmpty(array: Array<File>?): Boolean {
-        return array == null || array.isEmpty()
-
     }
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -11,7 +11,7 @@
         android:layout_gravity="center"
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp"
-        app:cardCornerRadius="12dp"
+        app:cardCornerRadius="@dimen/default_corners_radius"
         app:cardElevation="6dp">
 
         <LinearLayout
@@ -111,7 +111,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="30dp"
-                    android:paddingBottom="16dp">
+                    android:paddingBottom="20dp">
 
                     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
                         android:id="@+id/buttonLogin"
@@ -122,7 +122,7 @@
                         android:gravity="center"
                         android:text="@string/login"
                         android:textColor="?android:textColorPrimaryInverse"
-                        app:cornerRadius="24dp"
+                        app:cornerRadius="@dimen/default_corners_radius"
                         app:icon="@drawable/md_done"
                         app:iconTint="?android:textColorPrimaryInverse"
                         app:rippleColor="@android:color/white" />
@@ -148,4 +148,4 @@
         android:text="@string/login_via_webview"
         android:textColor="?colorAccent" />
 
-</FrameLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

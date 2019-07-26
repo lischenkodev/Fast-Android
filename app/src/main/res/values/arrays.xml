@@ -5,11 +5,16 @@
         <item>@string/retry</item>
         <item>@string/pin_message</item>
         <item>@string/edit</item>
+        <item>@string/copy</item>
         <item>@string/delete</item>
     </string-array>
 
     <string-array name="conversation_functions">
         <item>@string/read</item>
         <item>@string/clear_messages_history</item>
+    </string-array>
+
+    <string-array name="chat_photo_functions">
+        <item>@string/delete</item>
     </string-array>
 </resources>

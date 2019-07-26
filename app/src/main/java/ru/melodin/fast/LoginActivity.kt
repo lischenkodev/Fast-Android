@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -15,6 +16,8 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.squareup.picasso.Picasso
@@ -27,7 +30,6 @@ import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
-import ru.melodin.fast.current.BaseActivity
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.util.ArrayUtil
@@ -36,17 +38,15 @@ import ru.melodin.fast.util.Util
 import ru.melodin.fast.util.ViewUtil
 import java.util.*
 
-class LoginActivity : BaseActivity() {
+class LoginActivity : AppCompatActivity() {
 
     private var login: String? = null
     private var password: String? = null
 
-    private var timer: Timer? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTheme(ThemeManager.loginTheme)
-        ViewUtil.applyWindowStyles(window, ThemeManager.background)
+        //ViewUtil.applyWindowStyles(window, ThemeManager.background)
         setContentView(R.layout.activity_login)
 
         progress.visibility = View.INVISIBLE
@@ -55,11 +55,12 @@ class LoginActivity : BaseActivity() {
         buttonLogin.shrink()
         buttonLogin.extend()
 
+        buttonLogin.rootView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN and View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+
         buttonLogin.setOnClickListener {
             if (!buttonLogin.isExtended) {
                 toggleButton()
             } else {
-                startTick()
                 login(false)
             }
         }
@@ -96,18 +97,6 @@ class LoginActivity : BaseActivity() {
             webLogin!!.isEnabled = false
             startWebLogin()
         }
-    }
-
-    private fun startTick() {
-        timer = Timer()
-        timer!!.schedule(object : TimerTask() {
-            override fun run() {
-                runOnUiThread {
-                    if (!buttonLogin.isExtended) toggleButton()
-                    ViewUtil.snackbar(buttonLogin, R.string.error).show()
-                }
-            }
-        }, 15000)
     }
 
     private fun login(fromKeyboard: Boolean) {
@@ -180,8 +169,6 @@ class LoginActivity : BaseActivity() {
                 response = JSONObject(jsonObject)
                 runOnUiThread {
                     toggleButton()
-
-                    timer?.cancel()
 
                     if (response.has("error")) {
                         val errorDescription = response.optString("error_description")
@@ -274,7 +261,7 @@ class LoginActivity : BaseActivity() {
         if (!webLogin!!.isEnabled)
             webLogin!!.isEnabled = true
 
-        if ((requestCode == REQUEST_VALIDATE || requestCode == REQUEST_WEB_LOGIN) && resultCode == Activity.RESULT_OK) {
+        if ((requestCode == REQUEST_VALIDATE or REQUEST_WEB_LOGIN) and (resultCode == Activity.RESULT_OK)) {
             data ?: return
             val token = data.getStringExtra("token")
             val id = data.getIntExtra("id", -1)
@@ -323,7 +310,7 @@ class LoginActivity : BaseActivity() {
         applyStyles()
     }
 
-    override fun applyStyles() {
+    private fun applyStyles() {
         finish()
         startActivity(intent.putExtra("data", createBundle(Bundle())).putExtra("show_anim", false))
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
@@ -339,6 +326,10 @@ class LoginActivity : BaseActivity() {
             buttonLogin.extend(true)
             buttonLogin.icon = drawable(R.drawable.md_done)
         }
+    }
+
+    private fun drawable(resId: Int): Drawable? {
+        return ContextCompat.getDrawable(this, resId)
     }
 
     private inner class HandlerInterface {

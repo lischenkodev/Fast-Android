@@ -69,11 +69,13 @@ class FastToolbar : FrameLayout {
     }
 
     private fun validateVisibility() {
-        val title = this.title.text.toString().trim { it <= ' ' }
-        val subtitle = this.subtitle.text.toString().trim { it <= ' ' }
+        val title = this.title.text.toString().trim()
+        val subtitle = this.subtitle.text.toString().trim()
 
         this.title.visibility = if (title.isEmpty()) View.GONE else View.VISIBLE
         this.subtitle.visibility = if (subtitle.isEmpty()) View.GONE else View.VISIBLE
+
+        validateTitleGravity()
     }
 
     fun inflateMenu(@MenuRes resId: Int) {
@@ -87,6 +89,13 @@ class FastToolbar : FrameLayout {
             for (i in 2 until menu!!.size()) {
                 menu!!.removeItem(i)
             }
+        }
+
+        if (menu!!.size() == 0) {
+            menuLayout.visibility = View.GONE
+            return
+        } else {
+            menuLayout.visibility = View.VISIBLE
         }
 
         for (i in 0 until menu!!.size()) {
@@ -108,8 +117,11 @@ class FastToolbar : FrameLayout {
         }
     }
 
-    fun setOnBackClickListener(target: () -> Unit) {
-        back.setOnClickListener { target() }
+    private fun validateTitleGravity() {
+        val gravity = if (this.avatar.visibility == View.VISIBLE) Gravity.START else Gravity.CENTER
+
+        this.title.gravity = gravity
+        this.subtitle.gravity = gravity
     }
 
     private fun addMenuItem(i: Int) {
@@ -126,6 +138,7 @@ class FastToolbar : FrameLayout {
     private fun setAvatar(drawable: Drawable?) {
         avatar.setImageDrawable(drawable)
         avatar.visibility = if (drawable == null) View.GONE else View.VISIBLE
+        validateTitleGravity()
     }
 
     fun setAvatar(resId: Int) {

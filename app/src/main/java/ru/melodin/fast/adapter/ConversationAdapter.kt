@@ -62,12 +62,11 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         if (ArrayUtil.isEmpty(data)) return
 
         when (data[0] as String) {
-            Keys.KEY_USER_OFFLINE -> setUserOnline(false, false, data[1] as Int, data[2] as Long)
+            Keys.KEY_USER_OFFLINE -> setUserOnline(online = false, mobile = false, userId = data[1] as Int, time = data[2] as Long)
             Keys.KEY_USER_ONLINE -> setUserOnline(true, data[3] as Boolean, data[1] as Int, data[2] as Long)
             Keys.KEY_MESSAGE_CLEAR_FLAGS -> handleClearFlags(data)
             Keys.KEY_MESSAGE_NEW -> {
-                val conversation = data[1] as VKConversation
-                addMessage(conversation)
+                addMessage(data[1] as VKConversation)
             }
             Keys.KEY_MESSAGE_EDIT -> {
                 val message = data[1] as VKMessage
@@ -183,8 +182,8 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
     private fun addMessage(conversation: VKConversation) {
         val firstVisiblePosition = manager.findFirstVisibleItemPosition()
 
-
         val index = findConversationPosition(conversation.peerId)
+
         if (index >= 0) {
             val current = getItem(index)
 
@@ -286,18 +285,15 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
     }
 
     private fun findConversationPosition(peerId: Int): Int {
-        for (i in 0 until itemCount) {
-            val conversation = getItem(i)
-            conversation.last ?: continue
-            if (conversation.last!!.peerId == peerId)
-                return i
+        values!!.forEach {
+            if (it.peerId == peerId) return values!!.indexOf(it)
         }
 
         return -1
     }
 
-    private fun searchUser(userId: Int?): VKUser {
-        val user = MemoryCache.getUser(userId!!)
+    private fun searchUser(userId: Int): VKUser {
+        val user = MemoryCache.getUser(userId)
         if (user == null) {
             if (!loadingIds.contains(userId)) {
                 loadingIds.add(userId)
@@ -321,11 +317,8 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
     }
 
     private fun searchMessagePosition(mId: Int): Int {
-        for (i in 0 until itemCount) {
-            val m = getItem(i).last
-            if (m != null && m.id == mId) {
-                return i
-            }
+        values!!.forEach {
+            if (it.last != null && it.last!!.id == mId) return values!!.indexOf(it)
         }
 
         return -1
@@ -351,7 +344,7 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         private var container: LinearLayout
         private var counterContainer: FrameLayout
 
-        private var placeholder: Drawable = this@ConversationAdapter.getDrawable(R.drawable.avatar_placeholder)!!
+        private var placeholder: Drawable = getDrawable(R.drawable.avatar_placeholder)!!
 
         @ColorInt
         private var pushesEnabled: Int = 0
