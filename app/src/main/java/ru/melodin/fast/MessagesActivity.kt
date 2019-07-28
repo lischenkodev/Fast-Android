@@ -38,10 +38,7 @@ import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.VKUtil
 import ru.melodin.fast.api.method.MethodSetter
-import ru.melodin.fast.api.model.VKConversation
-import ru.melodin.fast.api.model.VKLink
-import ru.melodin.fast.api.model.VKMessage
-import ru.melodin.fast.api.model.VKUser
+import ru.melodin.fast.api.model.*
 import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.common.AttachmentInflater
 import ru.melodin.fast.common.TaskManager
@@ -60,6 +57,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
 
     var isLoading: Boolean = false
+
     private var resumed: Boolean = false
     private var editing: Boolean = false
     private var canWrite: Boolean = false
@@ -124,7 +122,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
             if (conversation!!.last != null && conversation!!.isChat && conversation!!.state != VKConversation.State.IN) {
                 val kicked = conversation!!.state == VKConversation.State.KICKED
 
-                return getString(if (kicked) R.string.kicked_out_text else R.string.leave_from_chat_text)
+                return string(if (kicked) R.string.kicked_out_text else R.string.leave_from_chat_text)
             } else
                 return when (conversation!!.type) {
                     null -> null
@@ -135,7 +133,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                         getUserSubtitle(currentUser)
                     }
                     VKConversation.Type.CHAT -> if (conversation!!.isGroupChannel) {
-                        getString(R.string.channel) + " • " + getString(R.string.members_count, membersCount)
+                        string(R.string.channel) + " • " + getString(R.string.members_count, membersCount)
                     } else {
                         if (membersCount > 0) resources.getQuantityString(R.plurals.members, membersCount, membersCount) else ""
                     }
@@ -777,6 +775,24 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         }
     }
 
+    fun updateChat(chat: VKChat) {
+        chatTitle = chat.title
+        photo = chat.photo200
+        membersCount = chat.users.size
+
+        conversation ?: return
+        conversation!!.apply {
+            title = chat.title
+            photo50 = chat.photo50
+            photo100 = chat.photo100
+            photo200 = chat.photo200
+        }
+
+        tb.setTitle(chatTitle)
+        updateToolbar()
+        loadAvatar()
+    }
+
     fun updateToolbar() {
         invalidateOptionsMenu()
 
@@ -788,8 +804,10 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
     private fun getUserSubtitle(user: VKUser?): String {
         if (user == null) return ""
-        return if (user.isOnline) getString(if (user.isOnlineMobile) R.string.online_mobile else R.string.online) else getString(if (user.sex == VKUser.Sex.MALE) R.string.last_seen_m else R.string.last_seen_w, Util.dateFormatter.format(user.lastSeen * 1000))
-
+        return when {
+            user.isOnline -> getString(if (user.isOnlineMobile) R.string.online_mobile else R.string.online)
+            else -> getString(if (user.sex == VKUser.Sex.MALE) R.string.last_seen_m else R.string.last_seen_w, Util.dateFormatter.format(user.lastSeen * 1000))
+        }
     }
 
     private fun loadUser(id: Int) {

@@ -23,10 +23,7 @@ import org.jetbrains.annotations.Contract
 import ru.melodin.fast.R
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKUtil
-import ru.melodin.fast.api.model.VKConversation
-import ru.melodin.fast.api.model.VKGroup
-import ru.melodin.fast.api.model.VKMessage
-import ru.melodin.fast.api.model.VKUser
+import ru.melodin.fast.api.model.*
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
@@ -62,13 +59,13 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         if (ArrayUtil.isEmpty(data)) return
 
         when (data[0] as String) {
-            Keys.KEY_USER_OFFLINE -> setUserOnline(online = false, mobile = false, userId = data[1] as Int, time = data[2] as Int)
-            Keys.KEY_USER_ONLINE -> setUserOnline(true, data[3] as Boolean, data[1] as Int, data[2] as Int)
-            Keys.KEY_MESSAGE_CLEAR_FLAGS -> handleClearFlags(data)
-            Keys.KEY_MESSAGE_NEW -> {
+            Keys.USER_OFFLINE -> setUserOnline(online = false, mobile = false, userId = data[1] as Int, time = data[2] as Int)
+            Keys.USER_ONLINE -> setUserOnline(true, data[3] as Boolean, data[1] as Int, data[2] as Int)
+            Keys.MESSAGE_CLEAR_FLAGS -> handleClearFlags(data)
+            Keys.MESSAGE_NEW -> {
                 addMessage(data[1] as VKConversation)
             }
-            Keys.KEY_MESSAGE_EDIT -> {
+            Keys.MESSAGE_EDIT -> {
                 val message = data[1] as VKMessage
                 editMessage(message)
             }
@@ -78,7 +75,7 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 notifyDataSetChanged()
                 fragment.onRefresh()
             }
-            Keys.KEY_NOTIFICATIONS_CHANGE -> changeNotifications(data[1] as Int, data[2] as Boolean, data[3] as Int)
+            Keys.NOTIFICATIONS_CHANGE -> changeNotifications(data[1] as Int, data[2] as Boolean, data[3] as Int)
             Keys.UPDATE_USER -> {
                 val userId = data[1] as Int
 
@@ -101,6 +98,29 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
 
                 fragment.onRefresh()
             }
+            Keys.UPDATE_CHAT -> {
+                val chat = data[1] as VKChat
+                updateChat(chat)
+            }
+        }
+    }
+
+    private fun updateChat(chat: VKChat) {
+        values!!.forEach {
+            if (it.peerId > 2_000_000_000 && VKConversation.toChatId(it.peerId) == chat.id) {
+                it.apply {
+                    photo50 = chat.photo50
+                    photo100 = chat.photo100
+                    photo200 = chat.photo200
+                    title = chat.title
+                    membersCount = chat.users.size
+                    state = chat.state
+                }
+
+                val position = values!!.indexOf(it)
+                notifyItemChanged(position, -1)
+                return
+            }
         }
     }
 
@@ -108,10 +128,11 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         val position = findConversationPosition(peerId)
         if (position == -1) return
 
-        val conversation = getItem(position)
-        conversation.isNoSound = noSound
-        conversation.disabledUntil = disabledUntil
-        conversation.isDisabledForever = disabledUntil == -1
+        val conversation = getItem(position).apply {
+            this.isNoSound = noSound
+            this.disabledUntil = disabledUntil
+            this.isDisabledForever = disabledUntil == -1
+        }
 
         notifyItemChanged(position, -1)
 
@@ -187,30 +208,32 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         if (index >= 0) {
             val current = getItem(index)
 
-            conversation.peerId = current.peerId
-            conversation.photo50 = current.photo50
-            conversation.photo100 = current.photo100
-            conversation.photo200 = current.photo200
-            conversation.pinned = current.pinned
-            conversation.title = current.title
-            conversation.isCanWrite = current.isCanWrite
-            conversation.type = current.type
-            conversation.unread = current.unread + 1
-            conversation.isDisabledForever = current.isDisabledForever
-            conversation.disabledUntil = current.disabledUntil
-            conversation.isNoSound = current.isNoSound
-            conversation.isGroupChannel = current.isGroupChannel
-            conversation.isCanChangeInfo = current.isCanChangeInfo
-            conversation.isCanChangeInviteLink = current.isCanChangeInviteLink
-            conversation.isCanChangePin = current.isCanChangePin
-            conversation.isCanInvite = current.isCanInvite
-            conversation.isCanPromoteUsers = current.isCanPromoteUsers
-            conversation.isCanSeeInviteLink = current.isCanSeeInviteLink
-            conversation.membersCount = current.membersCount
+            conversation.apply {
+                this.peerId = current.peerId
+                this.photo50 = current.photo50
+                this.photo100 = current.photo100
+                this.photo200 = current.photo200
+                this.pinned = current.pinned
+                this.title = current.title
+                this.isCanWrite = current.isCanWrite
+                this.type = current.type
+                this.unread = current.unread + 1
+                this.isDisabledForever = current.isDisabledForever
+                this.disabledUntil = current.disabledUntil
+                this.isNoSound = current.isNoSound
+                this.isGroupChannel = current.isGroupChannel
+                this.isCanChangeInfo = current.isCanChangeInfo
+                this.isCanChangeInviteLink = current.isCanChangeInviteLink
+                this.isCanChangePin = current.isCanChangePin
+                this.isCanInvite = current.isCanInvite
+                this.isCanPromoteUsers = current.isCanPromoteUsers
+                this.isCanSeeInviteLink = current.isCanSeeInviteLink
+                this.membersCount = current.membersCount
 
-            if (conversation.last!!.isOut) {
-                conversation.unread = 0
-                conversation.isRead = false
+                if (last!!.isOut) {
+                    unread = 0
+                    isRead = false
+                }
             }
 
             if (index > 0) {
@@ -280,12 +303,12 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         val position = searchMessagePosition(edited.id)
         if (position == -1) return
 
-        val current = getItem(position)
-        val last = current.last
-        last!!.flags = edited.flags
-        last.text = edited.text
-        last.updateTime = edited.updateTime
-        last.attachments = edited.attachments
+        getItem(position).last!!.apply {
+            this.flags = edited.flags
+            this.text = edited.text
+            this.updateTime = edited.updateTime
+            this.attachments = edited.attachments
+        }
 
         notifyItemChanged(position, -1)
     }
@@ -429,6 +452,11 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
             time.text = Util.dateFormatter.format(last.date * 1000)
 
             counter.background.setTint(if (item.isNotificationsDisabled) pushesDisabled else pushesEnabled)
+            if (item.isNotificationsDisabled) {
+                counter.setTextColor(Color.WHITE)
+            } else {
+                counter.setTextColor(if (ThemeManager.isDark) Color.DKGRAY else Color.WHITE)
+            }
 
             if (item.isChat || last.isOut) {
                 avatarSmall.visibility = View.VISIBLE

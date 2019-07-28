@@ -18,6 +18,7 @@ import ru.melodin.fast.ChatInfoActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.ShowCreateChatActivity
 import ru.melodin.fast.api.model.VKConversation
+import ru.melodin.fast.api.model.VKGroup
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.database.MemoryCache
@@ -66,8 +67,8 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
         if (ArrayUtil.isEmpty(data)) return
 
         when (data[0] as String) {
-            Keys.KEY_USER_OFFLINE -> setUserOnline(false, data[1] as Int, data[2] as Int)
-            Keys.KEY_USER_ONLINE -> setUserOnline(true, data[1] as Int, data[2] as Int)
+            Keys.USER_OFFLINE -> setUserOnline(false, data[1] as Int, data[2] as Int)
+            Keys.USER_ONLINE -> setUserOnline(true, data[1] as Int, data[2] as Int)
             Keys.CONNECTED -> {
                 fragment ?: return
                 if (fragment!!.isLoading)
@@ -160,12 +161,19 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
 
             online.setImageDrawable(getOnlineIndicator(user))
 
-            if (user.isOnline) {
-                lastSeen.visibility = View.GONE
-                online.visibility = View.VISIBLE
-            } else {
-                lastSeen.visibility = View.VISIBLE
-                online.visibility = View.GONE
+            when {
+                VKGroup.isGroupId(user.id) -> {
+                    lastSeen.visibility = View.GONE
+                    online.visibility = View.GONE
+                }
+                user.isOnline -> {
+                    lastSeen.visibility = View.GONE
+                    online.visibility = View.VISIBLE
+                }
+                else -> {
+                    lastSeen.visibility = View.VISIBLE
+                    online.visibility = View.GONE
+                }
             }
 
             if (conversation != null) {

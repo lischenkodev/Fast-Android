@@ -207,7 +207,6 @@ object CacheStorage {
         return if (cursor.moveToFirst()) {
             parseChat(cursor)
         } else null
-
     }
 
     fun getConversation(peerId: Int): VKConversation? {

@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -16,8 +15,6 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.squareup.picasso.Picasso
@@ -31,6 +28,7 @@ import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.TaskManager.Companion.execute
 import ru.melodin.fast.common.ThemeManager
+import ru.melodin.fast.current.BaseActivity
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.util.ArrayUtil
@@ -39,7 +37,7 @@ import ru.melodin.fast.util.Util
 import ru.melodin.fast.util.ViewUtil
 import java.util.*
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BaseActivity() {
 
     private var login: String? = null
     private var password: String? = null
@@ -311,7 +309,7 @@ class LoginActivity : AppCompatActivity() {
         applyStyles()
     }
 
-    private fun applyStyles() {
+    override fun applyStyles() {
         finish()
         startActivity(intent.putExtra("data", createBundle(Bundle())).putExtra("show_anim", false))
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
@@ -327,10 +325,6 @@ class LoginActivity : AppCompatActivity() {
             buttonLogin.extend(true)
             buttonLogin.icon = drawable(R.drawable.md_done)
         }
-    }
-
-    private fun drawable(resId: Int): Drawable? {
-        return ContextCompat.getDrawable(this, resId)
     }
 
     private inner class HandlerInterface {

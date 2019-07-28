@@ -98,7 +98,7 @@ class LongPollService : Service() {
 
                     server!!.ts = tsResponse
                     if ((if (!ArrayUtil.isEmpty(updates)) updates.length() else 0) != 0) {
-                        LongPollEvents.getInstance().process(updates)
+                        LongPollEvents.process(updates)
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error: $e    Log below...")

@@ -12,7 +12,7 @@ import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Keys
 import ru.melodin.fast.util.StringUtils
 
-class LongPollEvents {
+object LongPollEvents {
 
     private fun messageEvent(item: JSONArray) {
         Log.d("FVK New Message", item.toString())
@@ -71,7 +71,7 @@ class LongPollEvents {
 
         conversation.last = last
 
-        EventBus.getDefault().postSticky(arrayOf<Any>(Keys.KEY_MESSAGE_NEW, conversation))
+        EventBus.getDefault().postSticky(arrayOf<Any>(Keys.MESSAGE_NEW, conversation))
     }
 
     private fun messageSetFlags(item: JSONArray) {
@@ -94,7 +94,7 @@ class LongPollEvents {
             CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID, mId)
         }
 
-        EventBus.getDefault().postSticky(arrayOf(Keys.KEY_MESSAGE_SET_FLAGS, mId, flags, peerId))
+        EventBus.getDefault().postSticky(arrayOf(Keys.MESSAGE_SET_FLAGS, mId, flags, peerId))
         Log.d("FVK Message Edit", item.toString())
     }
 
@@ -118,7 +118,7 @@ class LongPollEvents {
             CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID, mId)
         }
 
-        EventBus.getDefault().postSticky(arrayOf(Keys.KEY_MESSAGE_CLEAR_FLAGS, mId, flags, peerId))
+        EventBus.getDefault().postSticky(arrayOf(Keys.MESSAGE_CLEAR_FLAGS, mId, flags, peerId))
 
         Log.d("FVK Message Edit", item.toString())
     }
@@ -148,7 +148,7 @@ class LongPollEvents {
 
         CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, message)
 
-        EventBus.getDefault().postSticky(arrayOf<Any>(Keys.KEY_MESSAGE_EDIT, message))
+        EventBus.getDefault().postSticky(arrayOf<Any>(Keys.MESSAGE_EDIT, message))
     }
 
     fun process(updates: JSONArray) {
@@ -185,7 +185,7 @@ class LongPollEvents {
         val sound = o.optInt("sound", -1) == 1
         val disabledUntil = o.optInt("disabled_until", -2)
 
-        EventBus.getDefault().postSticky(arrayOf(Keys.KEY_NOTIFICATIONS_CHANGE, peerId, !sound, disabledUntil))
+        EventBus.getDefault().postSticky(arrayOf(Keys.NOTIFICATIONS_CHANGE, peerId, !sound, disabledUntil))
     }
 
     private fun userOffline(item: JSONArray) {
@@ -200,7 +200,7 @@ class LongPollEvents {
             user.lastSeen = time.toLong()
         }
 
-        EventBus.getDefault().postSticky(arrayOf(Keys.KEY_USER_OFFLINE, userId, time, timeout))
+        EventBus.getDefault().postSticky(arrayOf(Keys.USER_OFFLINE, userId, time, timeout))
     }
 
     private fun userOnline(item: JSONArray) {
@@ -215,20 +215,6 @@ class LongPollEvents {
             user.lastSeen = time.toLong()
         }
 
-        EventBus.getDefault().postSticky(arrayOf(Keys.KEY_USER_ONLINE, userId, time, platform > 0))
-    }
-
-
-    companion object {
-        private var instance: LongPollEvents? = null
-
-        @Synchronized
-        fun getInstance(): LongPollEvents {
-            if (instance == null) {
-                instance = LongPollEvents()
-            }
-
-            return instance as LongPollEvents
-        }
+        EventBus.getDefault().postSticky(arrayOf(Keys.USER_ONLINE, userId, time, platform > 0))
     }
 }

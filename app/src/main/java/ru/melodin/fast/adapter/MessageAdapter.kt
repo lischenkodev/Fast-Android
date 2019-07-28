@@ -98,10 +98,10 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
                 val mId = data[1] as Int
                 setPlaying(mId, false)
             }
-            Keys.KEY_USER_OFFLINE, Keys.KEY_USER_ONLINE -> activity.setUserOnline(data[1] as Int)
-            Keys.KEY_MESSAGE_CLEAR_FLAGS -> handleClearFlags(data)
-            Keys.KEY_MESSAGE_SET_FLAGS -> handleSetFlags(data)
-            Keys.KEY_MESSAGE_NEW -> {
+            Keys.USER_OFFLINE, Keys.USER_ONLINE -> activity.setUserOnline(data[1] as Int)
+            Keys.MESSAGE_CLEAR_FLAGS -> handleClearFlags(data)
+            Keys.MESSAGE_SET_FLAGS -> handleSetFlags(data)
+            Keys.MESSAGE_NEW -> {
                 val conversation = data[1] as VKConversation
                 conversation.last ?: return
 
@@ -134,12 +134,13 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
                     }
                 }
             }
-            Keys.KEY_MESSAGE_EDIT -> editMessage(data[1] as VKMessage)
+            Keys.MESSAGE_EDIT -> editMessage(data[1] as VKMessage)
             Keys.UPDATE_MESSAGE -> updateMessage(data[1] as Int)
             Keys.CONNECTED -> {
             }
             Keys.UPDATE_GROUP -> updateGroup(data[1] as Int)
             Keys.UPDATE_USER -> updateUser(data[1] as Int)
+            Keys.UPDATE_CHAT -> activity.updateChat(data[1] as VKChat)
         }
     }
 

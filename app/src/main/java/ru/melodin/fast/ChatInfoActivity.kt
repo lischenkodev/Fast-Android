@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_chat_info.*
 import kotlinx.android.synthetic.main.toolbar.*
+import org.greenrobot.eventbus.EventBus
 import ru.melodin.fast.adapter.UserAdapter
 import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.UserConfig
@@ -20,9 +21,9 @@ import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.current.BaseActivity
 import ru.melodin.fast.database.CacheStorage
-import ru.melodin.fast.database.CacheStorage.getChat
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.util.ArrayUtil
+import ru.melodin.fast.util.Keys
 import ru.melodin.fast.util.Util
 import ru.melodin.fast.util.ViewUtil
 import java.util.*
@@ -119,7 +120,7 @@ class ChatInfoActivity : BaseActivity() {
                         photo200 = null
                     }
 
-                    CacheStorage.insert(DatabaseHelper.CHATS_TABLE, chat!!)
+                    saveChat()
 
                     Toast.makeText(this@ChatInfoActivity, R.string.success, Toast.LENGTH_SHORT).show()
                 }
@@ -131,15 +132,16 @@ class ChatInfoActivity : BaseActivity() {
         }
     }
 
-    private fun getCachedChat() {
-        chat = getChat(VKConversation.toChatId(conversation.peerId))
+    private fun saveChat() {
+        CacheStorage.insert(DatabaseHelper.CHATS_TABLE, chat!!)
+        EventBus.getDefault().postSticky(arrayOf<Any>(Keys.UPDATE_CHAT, chat!!))
+    }
 
+    private fun getCachedChat() {
+        chat = CacheStorage.getChat(VKConversation.toChatId(conversation.peerId))
         chat ?: return
 
-        setMembersCount(chat!!.users.size)
-        chatTitle.setText(chat!!.title)
-        loadAvatar()
-        createAdapter(chat!!.users)
+        initChat()
     }
 
     private fun getChat() {
@@ -149,18 +151,22 @@ class ChatInfoActivity : BaseActivity() {
                 if (ArrayUtil.isEmpty(models)) return
 
                 chat = models?.get(0) as VKChat
-                CacheStorage.insert(DatabaseHelper.CHATS_TABLE, chat!!)
 
-                setMembersCount(chat!!.users.size)
-                chatTitle.setText(chat!!.title)
-                loadAvatar()
-                createAdapter(chat!!.users)
+                saveChat()
+                initChat()
             }
 
             override fun onError(e: Exception) {
             }
 
         })
+    }
+
+    private fun initChat() {
+        createAdapter(chat!!.users)
+        setMembersCount(chat!!.users.size)
+        chatTitle.setText(chat!!.title)
+        loadAvatar()
     }
 
     private fun createAdapter(items: ArrayList<VKUser>) {
