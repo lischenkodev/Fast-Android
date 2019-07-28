@@ -44,9 +44,10 @@ class ValidationActivity : AppCompatActivity() {
             if (url.startsWith("https://oauth.vk.com/blank.html#success=1")) {
                 if (!url.contains("error=")) {
                     val auth = Auth.parseRedirectUrl(url)
-                    val intent = Intent()
-                    intent.putExtra("token", auth[0])
-                    intent.putExtra("id", Integer.parseInt(auth[1]))
+                    val intent = Intent().apply {
+                        putExtra("token", auth[0])
+                        putExtra("id", Integer.parseInt(auth[1]))
+                    }
                     setResult(Activity.RESULT_OK, intent)
                     finish()
                 }
@@ -58,8 +59,9 @@ class ValidationActivity : AppCompatActivity() {
     }
 
     private inner class VKWebClient : WebViewClient() {
-        override fun onPageStarted(view: WebView, url: String, favicon: Bitmap) {
+        override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
             super.onPageStarted(view, url, favicon)
+            url ?: return
             parseUrl(url)
         }
     }

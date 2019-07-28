@@ -21,9 +21,11 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.jetbrains.annotations.Contract
 import ru.melodin.fast.R
+import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKUtil
 import ru.melodin.fast.api.model.*
+import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
@@ -249,9 +251,6 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 add(0, conversation)
                 notifyItemChanged(0, -1)
             }
-
-            CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
-            CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last!!)
         } else {
             if (!conversation.last!!.isOut)
                 conversation.unread = conversation.unread + 1
@@ -263,28 +262,28 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
             if (firstVisiblePosition <= 1)
                 manager.scrollToPosition(0)
 
-            CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
-            CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last!!)
 
-            //TODO: доделотб
-//            if (conversation.last!!.action == VKMessage.Action.CREATE) {
-//                TaskManager.loadConversation(conversation.peerId, true, object : TaskManager.OnCompleteListener {
-//                    override fun onComplete(models: ArrayList<*>?) {
-//                        if (ArrayUtil.isEmpty(models)) return
-//                        models ?: return
-//
-//                        val dialog = models[0] as VKConversation
-//
-//                        CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, dialog)
-//                        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, dialog.last!!)
-//
-//                        addMessage(dialog)
-//                    }
-//
-//                    override fun onError(e: Exception) {}
-//                })
-//            }
+            if (conversation.last!!.action == VKMessage.Action.CREATE) {
+                TaskManager.loadConversation(conversation.peerId, true, object : OnCompleteListener {
+                    override fun onComplete(models: ArrayList<*>?) {
+                        if (ArrayUtil.isEmpty(models)) return
+                        models ?: return
+
+                        val dialog = models[0] as VKConversation
+
+                        CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, dialog)
+                        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, dialog.last!!)
+
+                        addMessage(dialog)
+                    }
+
+                    override fun onError(e: Exception) {}
+                })
+            }
         }
+
+        CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
+        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last!!)
     }
 
     private fun readMessage(id: Int) {

@@ -27,7 +27,6 @@
         <item name="colorPrimary">@color/dark_accent</item>
         <item name="colorSecondary">?colorAccent</item>
         <item name="colorPrimaryDark">@color/dark_background</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowBackground">@color/dark_background</item>
         <item name="alertDialogTheme">@style/AlertDialog.Theme.Dark</item>
     </style>
@@ -37,7 +36,6 @@
         <item name="colorPrimary">@color/accent</item>
         <item name="colorSecondary">?colorAccent</item>
         <item name="colorPrimaryDark">@color/background</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowBackground">@color/background</item>
         <item name="alertDialogTheme">@style/AlertDialog.Theme.Light</item>
     </style>

@@ -17,7 +17,6 @@ import android.text.TextWatcher
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.*
-import android.view.animation.DecelerateInterpolator
 import android.widget.LinearLayout
 import android.widget.PopupWindow
 import android.widget.Toast
@@ -164,7 +163,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         scrollToBottom.setOnClickListener {
             scrollToBottom.hide()
             if (adapter != null)
-                recyclerView.smoothScrollToPosition(adapter!!.lastPosition)
+                recyclerView.smoothScrollToPosition(adapter!!.lastPosition + 1)
         }
 
         initListScrollListener()
@@ -230,15 +229,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         popupWindow!!.inputMethodMode = PopupWindow.INPUT_METHOD_NOT_NEEDED
         popupWindow!!.width = resources.displayMetrics.widthPixels
 
-        popupWindow!!.setOnDismissListener {
-            if (pinned != null)
-                showPinned(DURATION_DEFAULT)
-        }
-
         tb.setOnClickListener {
             popupWindow!!.showAsDropDown(tb)
-            if (pinned != null)
-                hidePinned(DURATION_DEFAULT)
         }
     }
 
@@ -321,9 +313,6 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (dy > 0) {
                     scrollToBottom.hide()
-
-                    if (pinned == null) return
-                    showPinned(DURATION_DEFAULT)
                 } else {
                     if (adapter != null && layoutManager.findLastVisibleItemPosition() < adapter!!.itemCount - 10 && !scrollToBottom.isShown)
                         scrollToBottom.show()
@@ -332,9 +321,6 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
                 if (dy < 0) {
                     if (message.isFocused && AppGlobal.preferences.getBoolean(FragmentSettings.KEY_HIDE_KEYBOARD_ON_SCROLL, true))
                         ViewUtil.hideKeyboard(message)
-
-                    if (pinned == null) return
-                    hidePinned(DURATION_DEFAULT)
                 }
             }
 
@@ -446,18 +432,6 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         }
     }
 
-    private fun showPinned(duration: Int) {
-        if (animating) return
-        animating = true
-        pinnedContainer.animate().translationY(0f).setDuration(duration.toLong()).setInterpolator(DecelerateInterpolator()).withEndAction { animating = false }.start()
-    }
-
-    private fun hidePinned(duration: Int) {
-        if (animating) return
-        animating = true
-        pinnedContainer.animate().translationY(Util.px(56f) * -1).setDuration(duration.toLong()).setInterpolator(DecelerateInterpolator()).withEndAction { animating = false }.start()
-    }
-
     fun chooseMessage(message: VKMessage?) {
         if (adapter == null) return
         if (adapter!!.contains(message!!.id)) {
@@ -488,11 +462,11 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
     fun showPinned(pinned: VKMessage?) {
         if (pinned == null) {
-            hidePinned(0)
+            pinnedContainer.visibility = View.GONE
             return
         }
 
-        showPinned(0)
+        pinnedContainer.visibility = View.VISIBLE
 
         pinnedContainer.setOnClickListener { chooseMessage(pinned) }
 
@@ -504,7 +478,6 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
         pinnedText.text = pinned.text
 
-        unpin.visibility = if (conversation!!.isCanChangePin) View.VISIBLE else View.GONE
         unpin.setOnClickListener { showConfirmUnpinMessage() }
 
         if (TextUtils.isEmpty(pinned.text) && !ArrayUtil.isEmpty(pinned.attachments)) {
@@ -528,6 +501,11 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     }
 
     private fun showConfirmUnpinMessage() {
+        if (!conversation!!.isCanChangePin) {
+            pinnedContainer.visibility = View.GONE
+            return
+        }
+
         val adb = AlertDialog.Builder(this)
         adb.setTitle(R.string.confirmation)
         adb.setMessage(R.string.are_you_sure)
@@ -798,8 +776,8 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
 
         tb.setSubtitle(if (isLoading) getString(R.string.loading) else subtitle)
 
-        if (!editing && adapter != null && !adapter!!.isSelected && pinned != null)
-            showPinned(DURATION_DEFAULT)
+        if (!editing && adapter != null && !adapter!!.isSelected && pinned != null && conversation!!.isCanChangePin)
+            pinnedContainer.visibility = View.VISIBLE
     }
 
     private fun getUserSubtitle(user: VKUser?): String {
@@ -845,7 +823,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
         adb.setMessage(R.string.are_you_sure)
         adb.setPositiveButton(R.string.yes) { _, _ ->
             val leave = conversation!!.state == VKConversation.State.IN
-            val chatId = conversation!!.last!!.peerId - 2000000000
+            val chatId = VKConversation.toChatId(conversation!!.last!!.peerId)
             setChatState(chatId, leave)
         }
         adb.setNegativeButton(R.string.no, null)
@@ -1254,7 +1232,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
             adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
         } else {
             if (pinned != null)
-                hidePinned(DURATION_DEFAULT)
+                pinnedContainer.visibility = View.GONE
             adapter!!.setSelected(position, true)
         }
 

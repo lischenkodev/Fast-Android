@@ -54,8 +54,6 @@ class LoginActivity : BaseActivity() {
         buttonLogin.shrink()
         buttonLogin.extend()
 
-        buttonLogin.rootView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN and View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-
         buttonLogin.setOnClickListener {
             if (!buttonLogin.isExtended) {
                 toggleButton()
@@ -260,7 +258,7 @@ class LoginActivity : BaseActivity() {
         if (!webLogin!!.isEnabled)
             webLogin!!.isEnabled = true
 
-        if ((requestCode == REQUEST_VALIDATE or REQUEST_WEB_LOGIN) and (resultCode == Activity.RESULT_OK)) {
+        if ((requestCode == REQUEST_VALIDATE || requestCode == REQUEST_WEB_LOGIN) && (resultCode == Activity.RESULT_OK)) {
             data ?: return
             val token = data.getStringExtra("token")
             val id = data.getIntExtra("id", -1)

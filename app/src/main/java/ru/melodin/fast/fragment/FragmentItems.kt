@@ -84,18 +84,14 @@ class FragmentItems : BaseFragment() {
         adb.setTitle(R.string.warning)
         adb.setMessage(R.string.exit_message)
         adb.setPositiveButton(R.string.yes) { _, _ ->
-            startLoginActivity()
             activity!!.stopService(Intent(activity!!, LongPollService::class.java))
+            activity!!.finishAffinity()
+            startActivity(Intent(activity!!, LoginActivity::class.java))
             UserConfig.clear()
             DatabaseHelper.getInstance().dropTables(AppGlobal.database)
             DatabaseHelper.getInstance().onCreate(AppGlobal.database)
         }
         adb.setNegativeButton(R.string.no, null)
         adb.create().show()
-    }
-
-    private fun startLoginActivity() {
-        startActivity(Intent(activity!!, LoginActivity::class.java))
-        activity!!.finish()
     }
 }

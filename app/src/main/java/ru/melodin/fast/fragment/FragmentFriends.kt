@@ -2,6 +2,7 @@ package ru.melodin.fast.fragment
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -28,7 +29,6 @@ import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Util
-import java.util.*
 
 class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
@@ -132,14 +132,13 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
                     CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
 
                     createAdapter(users, offset)
-                    isLoading = true
+                    isLoading = false
                     refresh.isRefreshing = false
                 }
 
                 override fun onError(e: Exception) {
                     refresh.isRefreshing = false
                     Toast.makeText(activity, getString(R.string.error), Toast.LENGTH_LONG).show()
-
                 }
             })
         }
@@ -193,29 +192,25 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
         val user = adapter!!.getItem(position)
         val userId = user.id
-/*
-        TaskManager.execute(object : AsyncCallback(activity) {
 
-            @Throws(Exception::class)
-            override fun ready() {
-                VKApi.friends().delete().userId(userId).execute()
-            }
+        TaskManager.execute {
+            VKApi.friends().delete().userId(userId).execute(null, object : OnCompleteListener {
+                override fun onComplete(models: ArrayList<*>?) {
+                    adapter!!.remove(position)
+                    adapter!!.notifyItemRemoved(position)
+                    adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
+                    refresh.isRefreshing = false
 
-            override fun done() {
-                adapter!!.remove(position)
-                adapter!!.notifyItemRemoved(position)
-                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
-                refresh.isRefreshing = false
+                    CacheStorage.delete(DatabaseHelper.FRIENDS_TABLE, DatabaseHelper.USER_ID, userId)
+                }
 
-                CacheStorage.delete(DatabaseHelper.FRIENDS_TABLE, DatabaseHelper.USER_ID, userId)
-            }
-
-            override fun error(e: Exception) {
-                Log.e("Error delete friend", Log.getStackTraceString(e))
-                refresh.isRefreshing = false
-                Toast.makeText(activity, R.string.error, Toast.LENGTH_SHORT).show()
-            }
-        })*/
+                override fun onError(e: Exception) {
+                    Log.e("Error delete friend", Log.getStackTraceString(e))
+                    refresh.isRefreshing = false
+                    Toast.makeText(activity, R.string.error, Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
     }
 
     companion object {

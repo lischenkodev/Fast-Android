@@ -12,7 +12,7 @@ import ru.melodin.fast.api.LongPollEvents
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKLongPollServer
-import ru.melodin.fast.common.TaskManager
+import ru.melodin.fast.concurrent.LowThread
 import ru.melodin.fast.net.HttpRequest
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Keys
@@ -20,10 +20,9 @@ import ru.melodin.fast.util.Util
 
 class LongPollService : Service() {
 
-    var isRunning: Boolean = false
-
+    private var isRunning: Boolean = false
     private var needRefresh: Boolean = false
-
+    private var updater: LowThread? = null
     private var server: VKLongPollServer? = null
 
     override fun onCreate() {
@@ -40,6 +39,11 @@ class LongPollService : Service() {
 
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
+
+        if (updater != null)
+            try {
+                updater!!.interrupt()
+            } catch (e: Exception) {}
         super.onDestroy()
     }
 
@@ -51,7 +55,9 @@ class LongPollService : Service() {
         if (!isRunning) {
             isRunning = true
         }
-        TaskManager.execute { MessageUpdater().run() }
+
+        updater = LowThread(MessageUpdater())
+        updater!!.start()
     }
 
     private inner class MessageUpdater : Runnable {
