@@ -17,7 +17,7 @@ class ThemeManager {
 
         @ColorInt
         private fun getColor(@ColorRes resId: Int): Int {
-            return ContextCompat.getColor(AppGlobal.context, resId)
+            return AppGlobal.res.getColor(resId)
         }
 
         internal fun init() {

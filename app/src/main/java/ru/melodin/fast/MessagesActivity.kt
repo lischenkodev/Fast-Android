@@ -54,14 +54,12 @@ import java.util.*
 
 class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener, TextWatcher {
 
-
     var isLoading: Boolean = false
 
     private var resumed: Boolean = false
     private var editing: Boolean = false
     private var canWrite: Boolean = false
     private var typing: Boolean = false
-    private var animating: Boolean = false
     private var notRead: VKMessage? = null
 
     private val random = Random()

@@ -16,5 +16,6 @@ object Keys {
     const val USER_OFFLINE = "user_offline"
     const val NOTIFICATIONS_CHANGE = "notifications_change"
     const val UPDATE_CHAT = "update_chat"
+    const val AUTHORIZATION_FAILED = "authorization_failed"
 
 }

@@ -130,11 +130,14 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 .setMessage(R.string.clear_cache_confirm)
                 .setPositiveButton(R.string.yes) { _, _ ->
                     TaskManager.execute {
+                        val helper = DatabaseHelper.getInstance(activity!!)
+                        val db = AppGlobal.database
+
                         when {
-                            users -> DatabaseHelper.getInstance().dropUsersTable(AppGlobal.database)
-                            groups -> DatabaseHelper.getInstance().dropGroupsTable(AppGlobal.database)
+                            users -> helper.dropUsersTable(db)
+                            groups -> helper.dropGroupsTable(db)
                             else -> {
-                                DatabaseHelper.getInstance().dropMessagesTable(AppGlobal.database)
+                                helper.dropMessagesTable(db)
                                 EventBus.getDefault().postSticky(arrayOf<Any>(KEY_MESSAGES_CLEAR_CACHE))
                             }
                         }
@@ -159,7 +162,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         private const val KEY_SHOW_CACHED_GROUPS = "show_cached_groups"
         private const val KEY_SHOW_CACHED_USERS = "show_cached_users"
 
-        const val KEY_CRASHLOG = "crashLog"
+        const val KEY_CRASH_LOG = "crashLog"
         const val KEY_CRASHED = "isCrashed"
     }
 

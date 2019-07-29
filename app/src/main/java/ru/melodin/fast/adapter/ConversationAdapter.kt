@@ -253,6 +253,12 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 add(0, conversation)
                 notifyItemChanged(0, -1)
             }
+
+            CacheStorage.update(DatabaseHelper.CONVERSATIONS_TABLE, conversation, DatabaseHelper.PEER_ID, conversation.peerId)
+
+            conversation.last ?: return
+
+            CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, conversation.last!!, DatabaseHelper.MESSAGE_ID, conversation.last!!.id)
         } else {
             if (!conversation.last!!.isOut)
                 conversation.unread = conversation.unread + 1
@@ -271,15 +277,21 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                         models ?: return
 
                         val dialog = models[0] as VKConversation
+                        addMessage(dialog)
 
                         CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, dialog)
-                        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, dialog.last!!)
 
-                        addMessage(dialog)
+                        dialog.last ?: return
+
+                        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, dialog.last!!)
                     }
 
                     override fun onError(e: Exception) {}
                 })
+            } else {
+                CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
+                conversation.last ?: return
+                CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last!!)
             }
         }
     }
@@ -517,16 +529,11 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 if (user == null) user = VKUser.EMPTY
 
                 online.visibility = if (user.isOnline) View.VISIBLE else View.GONE
-                online.setImageDrawable(getOnlineIndicator(user))
+                online.setImageDrawable(UserAdapter.getOnlineIndicator(context, user))
             } else {
                 online.visibility = View.GONE
                 online.setImageDrawable(null)
             }
-        }
-
-        @Contract("null -> null")
-        private fun getOnlineIndicator(user: VKUser): Drawable? {
-            return if (!user.isOnline) null else getDrawable(if (user.isOnlineMobile) R.drawable.ic_online_mobile else R.drawable.ic_online)
         }
     }
 }

@@ -199,8 +199,7 @@ class MessageMethodSetter(name: String) : MethodSetter("messages.$name") {
 
     @Contract("_ -> this")
     fun type(typing: Boolean): MessageMethodSetter {
-        put("type", if (typing) "type" else "audiomessage")
-        return this
+        return put("type", if (typing) "typing" else "audiomessage") as MessageMethodSetter
     }
 
     @Contract("_ -> this")

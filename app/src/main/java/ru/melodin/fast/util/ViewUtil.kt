@@ -13,7 +13,7 @@ import ru.melodin.fast.common.ThemeManager
 
 object ViewUtil {
 
-    private val keyboard = AppGlobal.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    private val keyboard = AppGlobal.inputService
 
     fun showKeyboard(v: View) {
         keyboard.showSoftInput(v, 0)

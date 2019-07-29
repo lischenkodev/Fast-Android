@@ -1,10 +1,16 @@
 package ru.melodin.fast.common
 
 import android.app.Application
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.content.res.Resources
 import android.database.sqlite.SQLiteDatabase
+import android.net.ConnectivityManager
 import android.os.Handler
+import android.telecom.ConnectionService
+import android.view.inputmethod.InputMethodManager
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.preference.PreferenceManager
 import ru.melodin.fast.database.DatabaseHelper
@@ -14,14 +20,13 @@ class AppGlobal : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        context = this
+        res = resources
         handler = Handler(mainLooper)
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
-        database = DatabaseHelper.getInstance().writableDatabase
+        database = DatabaseHelper.getInstance(this).writableDatabase
         locale = Locale.getDefault()
 
         try {
-
             val pInfo = packageManager.getPackageInfo(packageName, 0)
             app_version_name = pInfo.versionName
             app_version_code = PackageInfoCompat.getLongVersionCode(pInfo).toInt()
@@ -29,9 +34,16 @@ class AppGlobal : Application() {
             e.printStackTrace()
         }
 
+        initServices()
         CrashManager.init()
         TaskManager.init()
         ThemeManager.init()
+    }
+
+    private fun initServices() {
+        inputService = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        connectionService = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        clipService = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     }
 
     companion object {
@@ -49,12 +61,21 @@ class AppGlobal : Application() {
         lateinit var preferences: SharedPreferences
 
         @Volatile
-        lateinit var app_version_name: String
+        var app_version_name = ""
 
         @Volatile
-        var app_version_code: Int = -1
+        var app_version_code = -1
 
-        @get:Synchronized
-        lateinit var context: AppGlobal
+        @Volatile
+        lateinit var clipService: ClipboardManager
+
+        @Volatile
+        lateinit var connectionService: ConnectivityManager
+
+        @Volatile
+        lateinit var inputService: InputMethodManager
+
+        @Volatile
+        lateinit var res: Resources
     }
 }

@@ -17,12 +17,14 @@ import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.current.BaseActivity
 import ru.melodin.fast.current.BaseFragment
+import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.fragment.FragmentConversations
 import ru.melodin.fast.fragment.FragmentFriends
 import ru.melodin.fast.fragment.FragmentItems
 import ru.melodin.fast.fragment.FragmentSettings
 import ru.melodin.fast.service.LongPollService
 import ru.melodin.fast.util.ArrayUtil
+import ru.melodin.fast.util.Keys
 import ru.melodin.fast.util.Util
 import ru.melodin.fast.util.ViewUtil
 import java.util.*
@@ -76,10 +78,19 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
     fun onReceive(data: Array<Any>) {
         if (ArrayUtil.isEmpty(data)) return
 
-        val key = data[0] as String
-        if (key == ThemeManager.KEY_THEME_UPDATE) {
-            fromRecreate = true
-            applyStyles()
+        when (data[0] as String) {
+            ThemeManager.KEY_THEME_UPDATE -> {
+                fromRecreate = true
+                applyStyles()
+            }
+            Keys.AUTHORIZATION_FAILED -> {
+                val helper = DatabaseHelper.getInstance(this)
+                val db = AppGlobal.database
+
+                helper.dropTables(db)
+                helper.onCreate(db)
+                finishAffinity()
+            }
         }
     }
 
@@ -122,10 +133,10 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
 
     private fun checkCrash() {
         if (AppGlobal.preferences.getBoolean(FragmentSettings.KEY_CRASHED, false)) {
-            val trace = AppGlobal.preferences.getString(FragmentSettings.KEY_CRASHLOG, "")
+            val trace = AppGlobal.preferences.getString(FragmentSettings.KEY_CRASH_LOG, "")
             AppGlobal.preferences.edit()
                     .putBoolean(FragmentSettings.KEY_CRASHED, false)
-                    .putString(FragmentSettings.KEY_CRASHLOG, "")
+                    .putString(FragmentSettings.KEY_CRASH_LOG, "")
                     .apply()
 
 

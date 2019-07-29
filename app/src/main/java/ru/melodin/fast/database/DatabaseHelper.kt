@@ -1,11 +1,12 @@
 package ru.melodin.fast.database
 
+import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 import ru.melodin.fast.common.AppGlobal
 
-class DatabaseHelper private constructor() : SQLiteOpenHelper(AppGlobal.context, DATABASE_NAME, null, DATABASE_VERSION) {
+class DatabaseHelper private constructor(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(SQL_CREATE_TABLE_USERS)
@@ -139,7 +140,7 @@ class DatabaseHelper private constructor() : SQLiteOpenHelper(AppGlobal.context,
 
         private const val SQL_CREATE_TABLE_FRIENDS = "CREATE TABLE " + FRIENDS_TABLE +
                 " (" + USER_ID + " INTEGER UNIQUE ON CONFLICT REPLACE, " +
-                " [" + FRIEND_ID + "] INTEGER UNIQUE ON CONFLICT REPLACE " +
+                " [" + FRIEND_ID + "] INTEGER PRIMARY KEY ON CONFLICT REPLACE " +
                 ");"
 
         private const val SQL_CREATE_TABLE_CHATS = "CREATE TABLE " + CHATS_TABLE +
@@ -219,9 +220,9 @@ class DatabaseHelper private constructor() : SQLiteOpenHelper(AppGlobal.context,
         private var instance: DatabaseHelper? = null
 
         @Synchronized
-        fun getInstance(): DatabaseHelper {
+        fun getInstance(context: Context): DatabaseHelper {
             if (instance == null) {
-                instance = DatabaseHelper()
+                instance = DatabaseHelper(context)
             }
 
             return instance as DatabaseHelper

@@ -10,8 +10,8 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import android.widget.ImageView
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.fragment.app.Fragment
 import com.squareup.picasso.Picasso
 import org.jetbrains.annotations.Contract
@@ -39,7 +39,7 @@ class FragmentPhotoView(private var photo: VKPhoto?) : Fragment() {
 
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    val lParams = view.layoutParams as FrameLayout.LayoutParams
+                    val lParams = view.layoutParams as CoordinatorLayout.LayoutParams
                     yDelta = y - lParams.topMargin
 
                     getView()!!.invalidate()
@@ -57,7 +57,7 @@ class FragmentPhotoView(private var photo: VKPhoto?) : Fragment() {
                         Log.d("swipeInfo", swipeInfo)
                     }
 
-                    val params = view.layoutParams as FrameLayout.LayoutParams
+                    val params = view.layoutParams as CoordinatorLayout.LayoutParams
                     params.topMargin = 0
                     view.layoutParams = params
 
@@ -80,7 +80,7 @@ class FragmentPhotoView(private var photo: VKPhoto?) : Fragment() {
                 }
 
                 MotionEvent.ACTION_MOVE -> {
-                    val layoutParams = view.layoutParams as FrameLayout.LayoutParams
+                    val layoutParams = view.layoutParams as CoordinatorLayout.LayoutParams
                     layoutParams.topMargin = y - yDelta
                     view.layoutParams = layoutParams
 
@@ -91,18 +91,19 @@ class FragmentPhotoView(private var photo: VKPhoto?) : Fragment() {
             }
         }
 
-    override fun getView(): FrameLayout? {
-        return super.getView() as FrameLayout?
+    override fun getView(): CoordinatorLayout? {
+        return super.getView() as CoordinatorLayout?
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val layout = FrameLayout(context!!)
+        val layout = CoordinatorLayout(context!!)
         layout.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
         layout.fitsSystemWindows = true
 
         val image = ImageView(context)
-        image.layoutParams = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        image.layoutParams = CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.MATCH_PARENT)
         image.adjustViewBounds = true
+        image.fitsSystemWindows = true
 
         layout.addView(image)
         return layout

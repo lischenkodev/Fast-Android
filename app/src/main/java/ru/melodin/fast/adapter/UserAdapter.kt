@@ -10,6 +10,7 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import com.squareup.picasso.Picasso
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -143,11 +144,13 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
                 contactContainer.visibility = View.GONE
             }
 
+            val user = getItem(position)
+
             if (withKick) {
                 kick.visibility = View.VISIBLE
                 kick.setOnClickListener {
                     if (context is ChatInfoActivity) {
-                        (context as ChatInfoActivity).confirmKick(position)
+                        (context as ChatInfoActivity).confirmKick(user.id)
                     } else if (context is ShowCreateChatActivity) {
                         (context as ShowCreateChatActivity).confirmKick(position)
                     }
@@ -156,11 +159,9 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
                 kick.visibility = View.GONE
             }
 
-            val user = getItem(position)
-
             name.text = user.toString()
 
-            online.setImageDrawable(getOnlineIndicator(user))
+            online.setImageDrawable(getOnlineIndicator(context, user))
 
             when {
                 VKGroup.isGroupId(user.id) -> {
@@ -212,9 +213,11 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
                         .into(avatar)
             }
         }
+    }
 
-        private fun getOnlineIndicator(user: VKUser): Drawable? {
-            return if (!user.isOnline) null else getDrawable(if (user.isOnlineMobile) R.drawable.ic_online_mobile else R.drawable.ic_online)
+    companion object {
+        fun getOnlineIndicator(context: Context, user: VKUser): Drawable? {
+            return if (!user.isOnline) null else ContextCompat.getDrawable(context, if (user.isOnlineMobile) R.drawable.ic_online_mobile else R.drawable.ic_online_pc)
         }
     }
 }

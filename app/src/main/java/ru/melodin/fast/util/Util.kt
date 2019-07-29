@@ -16,6 +16,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.ln
+import kotlin.math.pow
 
 object Util {
 
@@ -45,16 +47,15 @@ object Util {
     }
 
     fun copyText(text: String) {
-        val cm = AppGlobal.context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        cm.setPrimaryClip(ClipData.newPlainText(null, text))
+        AppGlobal.clipService.setPrimaryClip(ClipData.newPlainText(null, text))
     }
 
     fun parseSize(sizeInBytes: Long): String {
         val unit: Long = 1024
         if (sizeInBytes < unit) return "$sizeInBytes B"
-        val exp = (Math.log(sizeInBytes.toDouble()) / Math.log(unit.toDouble())).toInt()
-        val pre = "KMGTPE"[exp - 1] + ""// + ("i");
-        return String.format(Locale.US, "%.1f %sB", sizeInBytes / Math.pow(unit.toDouble(), exp.toDouble()), pre)
+        val exp = (ln(sizeInBytes.toDouble()) / ln(unit.toDouble())).toInt()
+        val pre = "KMGTPE"[exp - 1] + ""
+        return String.format(Locale.US, "%.1f %sB", sizeInBytes / unit.toDouble().pow(exp.toDouble()), pre)
     }
 
     fun serialize(source: Any?): ByteArray? {
@@ -93,15 +94,15 @@ object Util {
     }
 
     fun dp(px: Float): Float {
-        return px / AppGlobal.context.resources.displayMetrics.density
+        return px / AppGlobal.res.displayMetrics.density
     }
 
     fun px(dp: Float): Float {
-        return dp * AppGlobal.context.resources.displayMetrics.density
+        return dp * AppGlobal.res.displayMetrics.density
     }
 
     fun hasConnection(): Boolean {
-        val cm = AppGlobal.context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val cm = AppGlobal.connectionService
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val network = cm.activeNetwork
             val capabilities = cm.getNetworkCapabilities(network)
@@ -151,10 +152,6 @@ object Util {
         var bufferLength: Int
 
         inputStream.read(buffer)
-
-        while (inputStream.read(buffer) > 0) {
-
-        }
 
         do {
             bufferLength = inputStream.read(buffer)

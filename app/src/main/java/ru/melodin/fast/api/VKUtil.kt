@@ -108,7 +108,7 @@ object VKUtil {
     }
 
     private fun getString(res: Int): String {
-        return AppGlobal.context.getString(res)
+        return AppGlobal.res.getString(res)
     }
 
     fun getPhoto100(conversation: VKConversation, user: VKUser?, group: VKGroup?): String? {

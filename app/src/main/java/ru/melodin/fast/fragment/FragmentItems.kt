@@ -127,8 +127,7 @@ class FragmentItems : BaseFragment() {
 
             TaskManager.execute {
                 UserConfig.clear()
-                DatabaseHelper.getInstance().dropTables(AppGlobal.database)
-                DatabaseHelper.getInstance().onCreate(AppGlobal.database)
+                EventBus.getDefault().postSticky(arrayOf<Any>(Keys.AUTHORIZATION_FAILED))
             }
         }
         adb.setNegativeButton(R.string.no, null)

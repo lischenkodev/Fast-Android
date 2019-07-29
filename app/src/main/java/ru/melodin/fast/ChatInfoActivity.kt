@@ -226,14 +226,12 @@ class ChatInfoActivity : BaseActivity() {
         overridePendingTransition(-1, -1)
     }
 
-    fun confirmKick(position: Int) {
-        val user = adapter!!.getItem(position)
-
+    fun confirmKick(userId: Int) {
         val builder = AlertDialog.Builder(this)
         builder.setTitle(R.string.confirmation)
         builder.setMessage(R.string.are_you_sure)
         builder.setPositiveButton(R.string.yes) { _, _ ->
-            kickUser(user.id)
+            kickUser(userId)
         }
         builder.setNegativeButton(R.string.no, null)
         builder.show()

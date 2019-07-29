@@ -106,7 +106,7 @@ class VKAttachments : VKModel(), Serializable {
         }
 
         private fun getString(@StringRes resId: Int): String {
-            return AppGlobal.context.getString(resId)
+            return AppGlobal.res.getString(resId)
         }
     }
 }

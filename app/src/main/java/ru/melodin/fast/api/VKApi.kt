@@ -3,6 +3,7 @@ package ru.melodin.fast.api
 import android.app.Activity
 import android.content.Intent
 import android.util.Log
+import org.greenrobot.eventbus.EventBus
 import org.json.JSONArray
 import org.json.JSONObject
 import ru.melodin.fast.BuildConfig
@@ -18,9 +19,11 @@ import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.net.HttpRequest
 import ru.melodin.fast.service.LongPollService
 import ru.melodin.fast.util.ArrayUtil
+import ru.melodin.fast.util.Keys
 import java.util.*
 
 object VKApi {
+
     private const val TAG = "Fast.VKApi"
 
     const val BASE_URL = "https://api.vk.com/method/"
@@ -199,12 +202,10 @@ object VKApi {
     fun checkError(activity: Activity, e: Exception) {
         if (e !is VKException) return
         if (e.code == ErrorCodes.USER_AUTHORIZATION_FAILED) {
-            activity.finishAffinity()
+            EventBus.getDefault().postSticky(arrayOf<Any>(Keys.AUTHORIZATION_FAILED))
             activity.startActivity(Intent(activity, LoginActivity::class.java))
             activity.stopService(Intent(activity, LongPollService::class.java))
             UserConfig.clear()
-            DatabaseHelper.getInstance().dropTables(AppGlobal.database)
-            DatabaseHelper.getInstance().onCreate(AppGlobal.database)
         }
     }
 

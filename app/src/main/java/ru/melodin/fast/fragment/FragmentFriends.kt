@@ -85,12 +85,12 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
         if (offset != 0) {
             adapter!!.values!!.addAll(friends)
-            adapter!!.notifyItemRangeInserted(adapter!!.itemCount - friends.size - 1, friends.size)
+            adapter!!.notifyDataSetChanged()
             return
         }
 
         adapter!!.changeItems(friends)
-        adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
+        adapter!!.notifyDataSetChanged()
     }
 
     private fun getCachedFriends() {

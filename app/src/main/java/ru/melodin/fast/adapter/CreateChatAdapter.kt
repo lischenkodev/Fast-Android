@@ -113,7 +113,7 @@ class CreateChatAdapter(context: Context, users: ArrayList<VKUser>) : RecyclerAd
                 online.visibility = View.GONE
             }
 
-            online.setImageDrawable(getOnlineIndicator(user))
+            online.setImageDrawable(UserAdapter.getOnlineIndicator(context, user))
 
             selected.isChecked = user.isSelected
 
@@ -136,10 +136,6 @@ class CreateChatAdapter(context: Context, users: ArrayList<VKUser>) : RecyclerAd
                         .placeholder(placeholder!!)
                         .into(avatar)
             }
-        }
-
-        private fun getOnlineIndicator(user: VKUser): Drawable? {
-            return if (!user.isOnline) null else getDrawable(if (user.isOnlineMobile) R.drawable.ic_online_mobile else R.drawable.ic_online)
         }
     }
 }
