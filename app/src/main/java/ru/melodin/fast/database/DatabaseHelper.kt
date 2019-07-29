@@ -26,6 +26,8 @@ class DatabaseHelper private constructor() : SQLiteOpenHelper(AppGlobal.context,
         db.execSQL(SQL_DELETE_MESSAGES)
         db.execSQL(SQL_CREATE_TABLE_DIALOGS)
         db.execSQL(SQL_CREATE_TABLE_MESSAGES)
+        db.execSQL(SQL_DELETE_CHATS)
+        db.execSQL(SQL_CREATE_TABLE_CHATS)
     }
 
     fun dropUsersTable(db: SQLiteDatabase) {
@@ -111,13 +113,12 @@ class DatabaseHelper private constructor() : SQLiteOpenHelper(AppGlobal.context,
         private const val IS_FRIEND = "is_friend"
         private const val PHOTO_MAX = "photo_max"
         private const val GROUPS = "groups"
-        private const val ID = "id"
 
-        private const val DATABASE_VERSION = 45
+        private const val DATABASE_VERSION = 46
         private const val DATABASE_NAME = "cache.db"
 
         private const val SQL_CREATE_TABLE_USERS = "CREATE TABLE " + USERS_TABLE +
-                " (" + USER_ID + " INTEGER PRIMARY KEY ON CONFLICT REPLACE, " +
+                " (" + USER_ID + " INTEGER UNIQUE PRIMARY KEY ON CONFLICT REPLACE, " +
                 " [" + FIRST_NAME + "] VARCHAR(255), " +
                 " [" + LAST_NAME + "] VARCHAR(255), " +
                 " [" + SCREEN_NAME + "] VARCHAR(255), " +
@@ -137,14 +138,12 @@ class DatabaseHelper private constructor() : SQLiteOpenHelper(AppGlobal.context,
                 ");"
 
         private const val SQL_CREATE_TABLE_FRIENDS = "CREATE TABLE " + FRIENDS_TABLE +
-                " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                " [" + USER_ID + "] INTEGER, " +
-                " [" + FRIEND_ID + "] INTEGER " +
+                " (" + USER_ID + " INTEGER UNIQUE ON CONFLICT REPLACE, " +
+                " [" + FRIEND_ID + "] INTEGER UNIQUE ON CONFLICT REPLACE " +
                 ");"
 
         private const val SQL_CREATE_TABLE_CHATS = "CREATE TABLE " + CHATS_TABLE +
-                " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                " [" + CHAT_ID + "] INTEGER, " +
+                " (" + CHAT_ID + " INTEGER UNIQUE ON CONFLICT REPLACE, " +
                 " [" + TITLE + "] VARCHAR(255), " +
                 " [" + ADMIN_ID + "] INTEGER, " +
                 " [" + USERS + "] BLOB, " +
@@ -156,8 +155,7 @@ class DatabaseHelper private constructor() : SQLiteOpenHelper(AppGlobal.context,
                 ");"
 
         private const val SQL_CREATE_TABLE_DIALOGS = "CREATE TABLE " + CONVERSATIONS_TABLE +
-                " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                " [" + PEER_ID + "] INTEGER UNIQUE ON CONFLICT REPLACE, " +
+                " (" + PEER_ID + " INTEGER UNIQUE ON CONFLICT REPLACE, " +
                 " [" + TYPE + "] VARCHAR(255), " +
                 " [" + TITLE + "] VARCHAR(255), " +
                 " [" + READ_STATE + "] INTEGER, " +
@@ -177,8 +175,7 @@ class DatabaseHelper private constructor() : SQLiteOpenHelper(AppGlobal.context,
                 ");"
 
         private const val SQL_CREATE_TABLE_MESSAGES = "CREATE TABLE " + MESSAGES_TABLE +
-                " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                " [" + MESSAGE_ID + "] INTEGER UNIQUE ON CONFLICT REPLACE, " +
+                " (" + MESSAGE_ID + " INTEGER UNIQUE ON CONFLICT REPLACE, " +
                 " [" + PEER_ID + "] INTEGER, " +
                 " [" + FROM_ID + "] INTEGER, " +
                 " [" + TEXT + "] VARCHAR(255), " +

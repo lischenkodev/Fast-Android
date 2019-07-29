@@ -32,6 +32,12 @@
 
     <SwitchPreference
         android:defaultValue="false"
+        android:key="offline"
+        android:summary="@string/offline_summary"
+        android:title="@string/offline" />
+
+    <SwitchPreference
+        android:defaultValue="false"
         android:key="hide_typing"
         android:title="@string/hide_typing_title" />
 

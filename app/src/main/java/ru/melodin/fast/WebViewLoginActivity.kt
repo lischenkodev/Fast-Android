@@ -47,7 +47,7 @@ class WebViewLoginActivity : AppCompatActivity() {
         manager.setAcceptCookie(true)
 
         try {
-            web!!.loadUrl(Auth.getUrl(AppIds.FAST_ID, Scopes.allInt()))
+            web!!.loadUrl(Auth.getUrl(AppIds.FAST, Scopes.allInt()))
         } catch (ignored: Exception) {
         }
 

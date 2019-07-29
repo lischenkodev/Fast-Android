@@ -1,33 +1,20 @@
 package ru.melodin.fast.api.model.attachment
 
 import android.text.TextUtils
-
 import org.json.JSONObject
-
-import java.io.Serializable
-
 import ru.melodin.fast.api.model.VKModel
+import java.io.Serializable
 
 
 class VKAudio(source: JSONObject) : VKModel(), Serializable {
 
-    val id: Long
-    val ownerId: Long
-    val artist: String
-    val title: String
-    val duration: Int
-    val url: String
-    val accessKey: String
-
-    init {
-        this.id = source.optLong("id")
-        this.ownerId = source.optLong("owner_id")
-        this.artist = source.optString("artist")
-        this.title = source.optString("title")
-        this.duration = source.optInt("duration")
-        this.url = source.optString("url")
-        this.accessKey = source.optString("access_key")
-    }
+    val id = source.optLong("id")
+    val ownerId = source.optLong("owner_id")
+    val artist = source.optString("artist")
+    val title = source.optString("title")
+    val duration = source.optInt("duration")
+    val url = source.optString("url")
+    val accessKey = source.optString("access_key")
 
     private fun toAttachmentString(): String {
         val result = StringBuilder("audio").append(ownerId).append('_').append(id)
@@ -43,7 +30,6 @@ class VKAudio(source: JSONObject) : VKModel(), Serializable {
     }
 
     companion object {
-
         private const val serialVersionUID = 1L
     }
 }

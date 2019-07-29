@@ -251,6 +251,10 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
             removeItems.add(chatInfo)
         }
 
+        if (conversation != null && conversation!!.isGroupChannel) {
+            removeItems.add(chatInfo)
+        }
+
         items.removeAll(removeItems)
         return items
     }
@@ -283,7 +287,7 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
     private fun loadAvatar() {
         tb.setAvatar(R.drawable.avatar_placeholder)
 
-        if (!TextUtils.isEmpty(photo) && Util.hasConnection()) {
+        if (photo != null && photo!!.trim().isNotEmpty() && Util.hasConnection()) {
             TaskManager.execute {
                 runOnUiThread {
                     Picasso.get()
@@ -659,7 +663,6 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
             recyclerView.adapter = adapter
 
             recyclerView.scrollToPosition(adapter!!.itemCount + 1)
-            recyclerView.smoothScrollToPosition(adapter!!.itemCount + 1)
             return
         }
 
@@ -669,15 +672,10 @@ class MessagesActivity : BaseActivity(), RecyclerAdapter.OnItemClickListener, Re
             return
         }
 
-        val empty = adapter!!.isEmpty || adapter!!.values!!.size == 1
-
         adapter!!.changeItems(messages)
         adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
 
-        if (empty) {
-            recyclerView.scrollToPosition(adapter!!.itemCount + 1)
-            recyclerView.smoothScrollToPosition(adapter!!.itemCount + 1)
-        }
+        recyclerView.scrollToPosition(adapter!!.itemCount - 1)
     }
 
     private fun getCachedHistory() {

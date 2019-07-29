@@ -6,22 +6,24 @@ import org.jetbrains.annotations.Contract
 import org.json.JSONException
 import org.json.JSONObject
 import ru.melodin.fast.database.CacheStorage
+import ru.melodin.fast.database.MemoryCache
 import ru.melodin.fast.util.Keys
 import java.io.Serializable
 import java.util.*
 
 class VKConversation : VKModel, Serializable {
 
-    var peerId: Int = 0
-    var localId: Int = 0
-    var readIn: Int = 0
-    var readOut: Int = 0
-    var lastMessageId: Int = 0
-    var unread: Int = 0
-    var membersCount: Int = 0
+    var peerId = 0
+    var ownerId = 0
+    var localId = 0
+    var readIn = 0
+    var readOut = 0
+    var lastMessageId = 0
+    var unread = 0
+    var membersCount = 0
 
     var isCanWrite: Boolean = false
-    var reason: Int = 0
+    var reason = 0
 
     var isRead: Boolean = false
     var isGroupChannel: Boolean = false
@@ -77,7 +79,7 @@ class VKConversation : VKModel, Serializable {
                     }
                 }
                 Type.CHAT -> return if (isGroupChannel) {
-                    group = CacheStorage.getGroup(VKGroup.toGroupId(peerId))
+                    group = CacheStorage.getGroup(VKGroup.toGroupId(ownerId))
                     if (group == null) {
                         EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
                         null
@@ -101,7 +103,7 @@ class VKConversation : VKModel, Serializable {
 
             when (type) {
                 Type.GROUP -> {
-                    group = CacheStorage.getGroup(VKGroup.toGroupId(peerId))
+                    group = MemoryCache.getGroup(VKGroup.toGroupId(peerId))
                     return if (group == null) {
                         EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
                         null
@@ -110,7 +112,7 @@ class VKConversation : VKModel, Serializable {
                     }
                 }
                 Type.USER -> {
-                    user = CacheStorage.getUser(peerId)
+                    user = MemoryCache.getUser(peerId)
                     return if (user == null) {
                         EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
                         null
@@ -119,7 +121,7 @@ class VKConversation : VKModel, Serializable {
                     }
                 }
                 Type.CHAT -> return if (isGroupChannel) {
-                    group = CacheStorage.getGroup(VKGroup.toGroupId(peerId))
+                    group = MemoryCache.getGroup(VKGroup.toGroupId(ownerId))
                     if (group == null) {
                         EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
                         null
@@ -187,6 +189,7 @@ class VKConversation : VKModel, Serializable {
 
         val ch = o.optJSONObject("chat_settings")
         if (ch != null) {
+            this.ownerId = ch.optInt("owner_id", -1)
             this.title = ch.optString("title")
             this.membersCount = ch.optInt("members_count")
             this.state = getState(ch.optString("state"))

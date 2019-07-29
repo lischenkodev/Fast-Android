@@ -72,6 +72,11 @@ object LongPollEvents {
         conversation.last = last
 
         EventBus.getDefault().postSticky(arrayOf<Any>(Keys.MESSAGE_NEW, conversation))
+
+        CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
+
+        conversation.last ?: return
+        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last!!)
     }
 
     private fun messageSetFlags(item: JSONArray) {
@@ -193,12 +198,15 @@ object LongPollEvents {
         val timeout = item.optInt(2) == 1
         val time = item.optInt(3)
 
-        val user = CacheStorage.getUser(userId)
-        if (user != null) {
-            user.isOnline = false
-            user.isOnlineMobile = false
-            user.lastSeen = time.toLong()
+        val user = CacheStorage.getUser(userId) ?: return
+
+        user.apply {
+            isOnline = false
+            isOnlineMobile = false
+            lastSeen = time.toLong()
         }
+
+        CacheStorage.update(DatabaseHelper.USERS_TABLE, user, DatabaseHelper.USER_ID, userId)
 
         EventBus.getDefault().postSticky(arrayOf(Keys.USER_OFFLINE, userId, time, timeout))
     }
@@ -208,12 +216,15 @@ object LongPollEvents {
         val platform = item.optInt(2)
         val time = item.optInt(3)
 
-        val user = CacheStorage.getUser(userId)
-        if (user != null) {
-            user.isOnline = true
-            user.isOnlineMobile = platform > 0
-            user.lastSeen = time.toLong()
+        val user = CacheStorage.getUser(userId) ?: return
+
+        user.apply {
+            isOnline = true
+            isOnlineMobile = platform > 0
+            lastSeen = time.toLong()
         }
+
+        CacheStorage.update(DatabaseHelper.USERS_TABLE, user, DatabaseHelper.USER_ID, userId)
 
         EventBus.getDefault().postSticky(arrayOf(Keys.USER_ONLINE, userId, time, platform > 0))
     }

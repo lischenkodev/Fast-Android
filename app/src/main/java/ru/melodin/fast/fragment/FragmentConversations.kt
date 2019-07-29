@@ -83,7 +83,9 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
         list.layoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
 
         getCachedConversations()
-        savedInstanceState ?: getConversations(CONVERSATIONS_COUNT, 0)
+
+        if (savedInstanceState == null && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_OFFLINE, false))
+            getConversations(CONVERSATIONS_COUNT, 0)
     }
 
     private fun createAdapter(conversations: ArrayList<VKConversation>?) {

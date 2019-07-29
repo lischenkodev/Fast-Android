@@ -153,6 +153,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         const val DEFAULT_TEMPLATE_VALUE = "¯\\_(ツ)_/¯"
         const val KEY_MESSAGES_CLEAR_CACHE = "clear_messages_cache"
         const val KEY_HIDE_KEYBOARD_ON_SCROLL = "hide_keyboard_on_scroll"
+        const val KEY_OFFLINE = "offline"
 
         private const val KEY_ABOUT = "about"
         private const val KEY_SHOW_CACHED_GROUPS = "show_cached_groups"

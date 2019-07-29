@@ -67,8 +67,8 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
         if (ArrayUtil.isEmpty(data)) return
 
         when (data[0] as String) {
-            Keys.USER_OFFLINE -> setUserOnline(false, data[1] as Int, data[2] as Int)
-            Keys.USER_ONLINE -> setUserOnline(true, data[1] as Int, data[2] as Int)
+            Keys.USER_OFFLINE -> setUserOnline(online = false, mobile = false, userId = data[1] as Int, time = data[2] as Int)
+            Keys.USER_ONLINE -> setUserOnline(true, data[3] as Boolean, data[1] as Int, data[2] as Int)
             Keys.CONNECTED -> {
                 fragment ?: return
                 if (fragment!!.isLoading)
@@ -85,11 +85,12 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
         return -1
     }
 
-    private fun setUserOnline(online: Boolean, userId: Int, time: Int) {
+    private fun setUserOnline(online: Boolean, mobile: Boolean, userId: Int, time: Int) {
         for (i in 0 until itemCount) {
             val user = getItem(i)
             if (user.id == userId) {
                 user.isOnline = online
+                user.isOnlineMobile = mobile
                 user.lastSeen = time.toLong()
                 notifyItemChanged(i, -1)
             }

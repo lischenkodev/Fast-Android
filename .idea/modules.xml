@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/Desktop-Workspace-Fast-Android-Fast.iml" filepath="$PROJECT_DIR$/Desktop-Workspace-Fast-Android-Fast.iml" />
       <module fileurl="file://$PROJECT_DIR$/Fast.iml" filepath="$PROJECT_DIR$/Fast.iml" />
       <module fileurl="file://$PROJECT_DIR$/Fast-Android-Fast.iml" filepath="$PROJECT_DIR$/Fast-Android-Fast.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/Fast-Android-app.iml" filepath="$PROJECT_DIR$/app/Fast-Android-app.iml" />

@@ -1,5 +1,6 @@
 package ru.melodin.fast.api.model
 
+import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import org.json.JSONArray
 import org.json.JSONObject
@@ -17,21 +18,22 @@ class VKAttachments : VKModel(), Serializable {
     companion object {
 
         private const val TYPE_PHOTO = "photo"
-         private const val TYPE_VIDEO = "video"
-         private const val TYPE_AUDIO = "audio"
-         private const val TYPE_DOC = "doc"
-         private const val TYPE_WALL = "wall"
-         private const val TYPE_POSTED_PHOTO = "posted_photo"
-         private const val TYPE_LINK = "link"
-         private const val TYPE_NOTE = "note"
-         private const val TYPE_APP = "app"
-         private const val TYPE_POLL = "poll"
-         private const val TYPE_WIKI_PAGE = "page"
-         private const val TYPE_ALBUM = "album"
-         private const val TYPE_STICKER = "sticker"
-         private const val TYPE_GIFT = "gift"
-         private const val TYPE_AUDIO_MESSAGE = "audio_message"
-         private const val TYPE_GRAFFITI = "graffiti"
+        private const val TYPE_VIDEO = "video"
+        private const val TYPE_AUDIO = "audio"
+        private const val TYPE_DOC = "doc"
+        private const val TYPE_WALL = "wall"
+        private const val TYPE_POSTED_PHOTO = "posted_photo"
+        private const val TYPE_LINK = "link"
+        private const val TYPE_NOTE = "note"
+        private const val TYPE_APP = "app"
+        private const val TYPE_POLL = "poll"
+        private const val TYPE_WIKI_PAGE = "page"
+        private const val TYPE_ALBUM = "album"
+        private const val TYPE_STICKER = "sticker"
+        private const val TYPE_STORY = "story"
+        private const val TYPE_GIFT = "gift"
+        private const val TYPE_AUDIO_MESSAGE = "audio_message"
+        private const val TYPE_GRAFFITI = "graffiti"
 
         fun parse(array: JSONArray): ArrayList<VKModel> {
             val attachments = ArrayList<VKModel>(array.length())
@@ -43,25 +45,27 @@ class VKAttachments : VKModel(), Serializable {
                 }
 
                 val type = attachment!!.optString("type")
-                val `object` = attachment.optJSONObject(type) ?: return attachments
+                val source = attachment.optJSONObject(type) ?: return attachments
 
                 when (type) {
-                    TYPE_PHOTO -> attachments.add(VKPhoto(`object`))
-                    TYPE_AUDIO -> attachments.add(VKAudio(`object`))
-                    TYPE_VIDEO -> attachments.add(VKVideo(`object`))
-                    TYPE_DOC -> attachments.add(VKDoc(`object`))
-                    TYPE_STICKER -> attachments.add(VKSticker(`object`))
-                    TYPE_LINK -> attachments.add(VKLink(`object`))
-                    TYPE_GIFT -> attachments.add(VKGift(`object`))
-                    TYPE_AUDIO_MESSAGE -> attachments.add(VKVoice(`object`))
-                    TYPE_GRAFFITI -> attachments.add(VKGraffiti(`object`))
-                    TYPE_WALL -> attachments.add(VKWall(`object`))
+                    TYPE_STORY -> attachments.add(VKStory(source))
+                    TYPE_PHOTO -> attachments.add(VKPhoto(source))
+                    TYPE_AUDIO -> attachments.add(VKAudio(source))
+                    TYPE_VIDEO -> attachments.add(VKVideo(source))
+                    TYPE_DOC -> attachments.add(VKDoc(source))
+                    TYPE_STICKER -> attachments.add(VKSticker(source))
+                    TYPE_LINK -> attachments.add(VKLink(source))
+                    TYPE_GIFT -> attachments.add(VKGift(source))
+                    TYPE_AUDIO_MESSAGE -> attachments.add(VKVoice(source))
+                    TYPE_GRAFFITI -> attachments.add(VKGraffiti(source))
+                    TYPE_WALL -> attachments.add(VKWall(source))
                 }
             }
 
             return attachments
         }
 
+        @SuppressLint("DefaultLocale")
         fun getAttachmentString(attachments: ArrayList<VKModel>): String {
             if (ArrayUtil.isEmpty(attachments)) return ""
             val b = StringBuilder()

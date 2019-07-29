@@ -25,6 +25,7 @@ import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKUtil
 import ru.melodin.fast.api.model.*
+import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.database.CacheStorage
@@ -98,7 +99,8 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 if (fragment.isLoading)
                     fragment.isLoading = false
 
-                fragment.onRefresh()
+                if (!AppGlobal.preferences.getBoolean(FragmentSettings.KEY_OFFLINE, false))
+                    fragment.onRefresh()
             }
             Keys.UPDATE_CHAT -> {
                 val chat = data[1] as VKChat
@@ -262,7 +264,6 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
             if (firstVisiblePosition <= 1)
                 manager.scrollToPosition(0)
 
-
             if (conversation.last!!.action == VKMessage.Action.CREATE) {
                 TaskManager.loadConversation(conversation.peerId, true, object : OnCompleteListener {
                     override fun onComplete(models: ArrayList<*>?) {
@@ -281,9 +282,6 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 })
             }
         }
-
-        CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
-        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last!!)
     }
 
     private fun readMessage(id: Int) {
@@ -302,7 +300,8 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         val position = searchMessagePosition(edited.id)
         if (position == -1) return
 
-        getItem(position).last!!.apply {
+        val message = getItem(position).last ?: return
+        message.apply {
             this.flags = edited.flags
             this.text = edited.text
             this.updateTime = edited.updateTime
@@ -315,21 +314,26 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
     private fun setUserOnline(online: Boolean, mobile: Boolean, userId: Int, time: Int) {
         for (i in 0 until itemCount) {
             val conversation = getItem(i)
-            if (conversation.type == VKConversation.Type.USER) {
-                val user = CacheStorage.getUser(userId) ?: break
-                user.isOnline = online
-                if (mobile)
-                    user.isOnlineMobile = mobile
-                user.lastSeen = time.toLong()
+            if (conversation.type != VKConversation.Type.USER) continue
+
+            conversation.last ?: return
+
+            val user = MemoryCache.getUser(conversation.last!!.peerId) ?: return
+            if (user.id == userId) {
+                user.apply {
+                    isOnline = online
+                    isOnlineMobile = mobile
+                    lastSeen = time.toLong()
+                }
+
                 notifyItemChanged(i, -1)
-                break
             }
         }
     }
 
     private fun findConversationPosition(peerId: Int): Int {
-        values!!.forEach {
-            if (it.peerId == peerId) return values!!.indexOf(it)
+        for (i in 0 until itemCount) {
+            if (getItem(i).peerId == peerId) return i
         }
 
         return -1

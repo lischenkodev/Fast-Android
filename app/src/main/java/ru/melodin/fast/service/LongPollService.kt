@@ -6,13 +6,12 @@ import android.os.IBinder
 import android.util.Log
 import androidx.collection.ArrayMap
 import org.greenrobot.eventbus.EventBus
-import org.jetbrains.annotations.Contract
 import org.json.JSONObject
 import ru.melodin.fast.api.LongPollEvents
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKLongPollServer
-import ru.melodin.fast.concurrent.LowThread
+import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.net.HttpRequest
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Keys
@@ -22,7 +21,6 @@ class LongPollService : Service() {
 
     private var isRunning: Boolean = false
     private var needRefresh: Boolean = false
-    private var updater: LowThread? = null
     private var server: VKLongPollServer? = null
 
     override fun onCreate() {
@@ -40,10 +38,8 @@ class LongPollService : Service() {
     override fun onDestroy() {
         Log.d(TAG, "onDestroy")
 
-        if (updater != null)
-            try {
-                updater!!.interrupt()
-            } catch (e: Exception) {}
+        isRunning = false
+        server = null
         super.onDestroy()
     }
 
@@ -52,20 +48,18 @@ class LongPollService : Service() {
     }
 
     private fun launchLongPoll() {
-        if (!isRunning) {
-            isRunning = true
-        }
+        isRunning = true
 
-        updater = LowThread(MessageUpdater())
-        updater!!.start()
+        TaskManager.execute {
+            MessageUpdater().run()
+        }
     }
 
     private inner class MessageUpdater : Runnable {
         override fun run() {
-            if (!isRunning) {
-                isRunning = true
-            }
+            if (!isRunning) return
             while (isRunning) {
+                if (!isRunning) break
                 if (!Util.hasConnection()) {
                     needRefresh = true
                     Log.e(TAG, "no connection")
@@ -110,7 +104,7 @@ class LongPollService : Service() {
                     Log.e(TAG, "Error: $e    Log below...")
                     e.printStackTrace()
                     server = null
-                    run()
+                    continue
                 }
 
             }
@@ -122,10 +116,8 @@ class LongPollService : Service() {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-
         }
 
-        @Contract("_ -> new")
         @Throws(Exception::class)
         private fun getResponse(server: VKLongPollServer): JSONObject {
             val params = ArrayMap<String, String>()
