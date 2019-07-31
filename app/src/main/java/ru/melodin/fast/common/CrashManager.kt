@@ -41,10 +41,8 @@ internal object CrashManager {
         val file = File(path)
         if (!file.exists()) file.mkdirs()
 
-
         val name = "log_" + System.currentTimeMillis() + ".txt"
         createFile(file, name, text)
-
     }
 
     private fun createFile(path: File, name: String, trace: String) {
