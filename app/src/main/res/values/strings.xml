@@ -166,4 +166,9 @@
     <string name="copied_to_clipboard">Copied to clipboard</string>
     <string name="offline_summary">Do not update conversations list on app\'s start</string>
     <string name="offline">Offline</string>
+    <string name="forward">Forward</string>
+    <string name="reply">Reply</string>
+    <string name="message">Message</string>
+    <string name="send">Send</string>
+    <string name="in_progress">In progress</string>
 </resources>

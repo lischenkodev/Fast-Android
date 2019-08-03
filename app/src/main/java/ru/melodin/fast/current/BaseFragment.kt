@@ -1,6 +1,12 @@
 package ru.melodin.fast.current
 
+import android.graphics.drawable.Drawable
+import androidx.annotation.ColorInt
+import androidx.annotation.ColorRes
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
 import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 
@@ -12,7 +18,7 @@ abstract class BaseFragment : Fragment() {
 
     protected var title: CharSequence? = null
 
-    var recyclerView: RecyclerView? = null
+    var recyclerList: RecyclerView? = null
     var toolbar: FastToolbar? = null
 
     protected fun setTitle(title: String) {
@@ -20,8 +26,8 @@ abstract class BaseFragment : Fragment() {
     }
 
     fun scrollToTop() {
-        if (recyclerView != null)
-            recyclerView!!.smoothScrollToPosition(0)
+        if (recyclerList != null)
+            recyclerList!!.smoothScrollToPosition(0)
 
         if (toolbar != null)
             expandToolbar()
@@ -35,5 +41,22 @@ abstract class BaseFragment : Fragment() {
             behavior.topAndBottomOffset = 0
             behavior.onNestedPreScroll(appBar.parent as CoordinatorLayout, appBar, appBar, 0, 1, IntArray(2))
         }
+    }
+
+    fun drawable(@DrawableRes resId: Int): Drawable {
+        return ContextCompat.getDrawable(activity!!, resId)!!
+    }
+
+    @ColorInt
+    fun color(@ColorRes resId: Int): Int {
+        return ContextCompat.getColor(activity!!, resId)
+    }
+
+    fun string(@StringRes resId: Int): String {
+        return getString(resId)
+    }
+
+    fun string(@StringRes resId: Int, vararg args: Any): String {
+        return getString(resId, *args)
     }
 }

@@ -8,8 +8,11 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.fragment_items.*
 import kotlinx.android.synthetic.main.toolbar.*
@@ -17,25 +20,32 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import ru.melodin.fast.LoginActivity
+import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
-import ru.melodin.fast.SettingsActivity
+import ru.melodin.fast.adapter.ItemsAdapter
+import ru.melodin.fast.adapter.RecyclerAdapter
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.model.VKUser
-import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.current.BaseFragment
-import ru.melodin.fast.database.DatabaseHelper
+import ru.melodin.fast.model.ListItem
 import ru.melodin.fast.service.LongPollService
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Keys
 import ru.melodin.fast.view.FastToolbar
 
 
-class FragmentItems : BaseFragment() {
+class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
 
     private var user: VKUser? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    private var fragmentSettings = FragmentSettings()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         return inflater.inflate(R.layout.fragment_items, container, false)
     }
 
@@ -43,7 +53,10 @@ class FragmentItems : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         toolbar = tb
-        recyclerView = list
+        recyclerList = list
+
+        list.setHasFixedSize(true)
+        list.layoutManager = LinearLayoutManager(activity!!, RecyclerView.VERTICAL, false)
 
         initUser()
 
@@ -51,15 +64,36 @@ class FragmentItems : BaseFragment() {
         tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
             override fun onMenuItemClick(item: MenuItem) {
                 if (item.itemId == R.id.menu) {
-                    startActivity(Intent(context, SettingsActivity::class.java))
+                    (activity!! as MainActivity).replaceFragment(fragmentSettings)
                 }
             }
-
         })
 
         logout.setOnClickListener { showExitDialog() }
 
         EventBus.getDefault().register(this)
+
+        createItems()
+    }
+
+    private fun createItems() {
+        val items = arrayListOf(
+            ListItem(ID_FRIENDS, string(R.string.fragment_friends), drawable(R.drawable.md_people)),
+            ListItem(ID_GROUPS, string(R.string.groups), drawable(R.drawable.md_groups))
+        )
+
+        val adapter = ItemsAdapter(activity!!, items)
+        adapter.setOnItemClickListener(this)
+        list.adapter = adapter
+    }
+
+    override fun onItemClick(position: Int) {
+        val item = (list.adapter as ItemsAdapter).getItem(position)
+
+        when (item.id) {
+            ID_FRIENDS -> (activity!! as MainActivity).replaceFragment(MainActivity.fragmentFriends)
+            ID_GROUPS -> Toast.makeText(activity!!, R.string.in_progress, Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun initUser() {
@@ -67,19 +101,30 @@ class FragmentItems : BaseFragment() {
 
         userName.text = user.toString()
 
+        userAvatar ?: return
+
         if (user != null && !TextUtils.isEmpty(user!!.photo200))
-            TaskManager.execute {
-                activity!!.runOnUiThread {
-                    Picasso.get()
-                            .load(user!!.photo200)
-                            .priority(Picasso.Priority.HIGH)
-                            .placeholder(R.drawable.avatar_placeholder)
-                            .into(userAvatar)
-                }
-            }
+            Picasso.get()
+                .load(user!!.photo200)
+                .priority(Picasso.Priority.HIGH)
+                .placeholder(R.drawable.avatar_placeholder)
+                .into(userAvatar)
 
         userOnline.visibility = View.VISIBLE
         userOnline.setImageDrawable(getOnlineIndicator(user))
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        when (hidden) {
+            true -> (activity!! as MainActivity).hideNavMenu()
+            else -> (activity!! as MainActivity).showNavMenu()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        onHiddenChanged(false)
     }
 
     override fun onDestroy() {
@@ -92,8 +137,18 @@ class FragmentItems : BaseFragment() {
         if (ArrayUtil.isEmpty(data)) return
 
         when (data[0] as String) {
-            Keys.USER_ONLINE -> setUserOnline(online = true, mobile = data[3] as Boolean, userId = data[1] as Int, time = data[2] as Int)
-            Keys.USER_OFFLINE -> setUserOnline(online = false, mobile = false, userId = data[1] as Int, time = data[2] as Int)
+            Keys.USER_ONLINE -> setUserOnline(
+                online = true,
+                mobile = data[3] as Boolean,
+                userId = data[1] as Int,
+                time = data[2] as Int
+            )
+            Keys.USER_OFFLINE -> setUserOnline(
+                online = false,
+                mobile = false,
+                userId = data[1] as Int,
+                time = data[2] as Int
+            )
         }
     }
 
@@ -132,5 +187,10 @@ class FragmentItems : BaseFragment() {
         }
         adb.setNegativeButton(R.string.no, null)
         adb.create().show()
+    }
+
+    companion object {
+        const val ID_FRIENDS = 0
+        const val ID_GROUPS = 1
     }
 }

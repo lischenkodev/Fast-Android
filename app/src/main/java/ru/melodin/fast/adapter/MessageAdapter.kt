@@ -1,6 +1,5 @@
 package ru.melodin.fast.adapter
 
-import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -21,7 +20,6 @@ import com.squareup.picasso.Picasso
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import ru.melodin.fast.MessagesActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.VKApi
@@ -35,6 +33,7 @@ import ru.melodin.fast.common.AttachmentInflater
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.database.CacheStorage
+import ru.melodin.fast.fragment.FragmentMessages
 import ru.melodin.fast.fragment.FragmentSettings
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.ColorUtil
@@ -45,15 +44,16 @@ import ru.melodin.fast.view.CircleImageView
 import java.io.IOException
 import java.util.*
 
-class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private val peerId: Int) : RecyclerAdapter<VKMessage, MessageAdapter.ViewHolder>(context, R.layout.item_message, messages) {
+class MessageAdapter(private val fragment: FragmentMessages, messages: ArrayList<VKMessage>, private val peerId: Int) : RecyclerAdapter<VKMessage, MessageAdapter.ViewHolder>(fragment.activity!!, R.layout.item_message, messages) {
+
+
 
     private var mediaPlayer: MediaPlayer? = null
     private var playingId = -1
 
     private val attachmentInflater: AttachmentInflater = AttachmentInflater(this, context)
     private val metrics: DisplayMetrics = context.resources.displayMetrics
-    private val activity: MessagesActivity = context as MessagesActivity
-    private val layoutManager: LinearLayoutManager = activity.getRecyclerView().layoutManager as LinearLayoutManager
+    private val layoutManager: LinearLayoutManager = fragment.getRecyclerView().layoutManager as LinearLayoutManager
 
     init {
         EventBus.getDefault().register(this)
@@ -98,7 +98,7 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
                 val mId = data[1] as Int
                 setPlaying(mId, false)
             }
-            Keys.USER_OFFLINE, Keys.USER_ONLINE -> activity.setUserOnline(data[1] as Int)
+            Keys.USER_OFFLINE, Keys.USER_ONLINE -> fragment.setUserOnline(data[1] as Int)
             Keys.MESSAGE_CLEAR_FLAGS -> handleClearFlags(data)
             Keys.MESSAGE_SET_FLAGS -> handleSetFlags(data)
             Keys.MESSAGE_NEW -> {
@@ -112,9 +112,9 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
                 if (last!!.action == VKMessage.Action.PIN_MESSAGE) {
                     val position = findPosition(last.actionId)
                     if (position != -1)
-                        activity.showPinned(getItem(position))
+                        fragment.showPinned(getItem(position))
                 } else if (last.action == VKMessage.Action.UNPIN_MESSAGE) {
-                    activity.showPinned(null)
+                    fragment.showPinned(null)
                 }
 
                 addMessage(last)
@@ -123,12 +123,12 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
                 val lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition()
 
                 if (lastVisibleItem >= itemCount - 4) {
-                    activity.getRecyclerView().scrollToPosition(lastPosition + 1)
+                    fragment.getRecyclerView().scrollToPosition(lastPosition + 1)
                 }
 
                 if (!last.isOut && last.peerId == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
-                    if (!activity.isRunning()) {
-                        activity.setNotRead(last)
+                    if (!fragment.isRunning()) {
+                        fragment.setNotRead(last)
                     } else {
                         readNewMessage(last)
                     }
@@ -140,7 +140,7 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
             }
             Keys.UPDATE_GROUP -> updateGroup(data[1] as Int)
             Keys.UPDATE_USER -> updateUser(data[1] as Int)
-            Keys.UPDATE_CHAT -> activity.updateChat(data[1] as VKChat)
+            Keys.UPDATE_CHAT -> fragment.updateChat(data[1] as VKChat)
         }
     }
 
@@ -628,8 +628,8 @@ class MessageAdapter(context: Context, messages: ArrayList<VKMessage>, private v
         }
     }
 
-    fun getActivity(): MessagesActivity {
-        return context as MessagesActivity
+    fun getActivity(): FragmentMessages {
+        return context as FragmentMessages
     }
 
     companion object {

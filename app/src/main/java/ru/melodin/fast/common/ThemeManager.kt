@@ -4,16 +4,14 @@ import android.graphics.Color
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.IntegerRes
-import androidx.core.content.ContextCompat
 import org.greenrobot.eventbus.EventBus
-import org.jetbrains.annotations.Contract
 import ru.melodin.fast.R
 import ru.melodin.fast.fragment.FragmentSettings
+import ru.melodin.fast.util.Keys
 
 class ThemeManager {
 
     companion object {
-        const val KEY_THEME_UPDATE = "theme_update"
 
         @ColorInt
         private fun getColor(@ColorRes resId: Int): Int {
@@ -40,60 +38,55 @@ class ThemeManager {
         fun switchTheme(dark: Boolean) {
             AppGlobal.preferences.edit().putBoolean(FragmentSettings.KEY_DARK_STYLE, dark).apply()
             init()
-            EventBus.getDefault().post(arrayOf<Any>(Companion.KEY_THEME_UPDATE))
+            EventBus.getDefault().post(arrayOf<Any>(Keys.KEY_THEME_UPDATE))
         }
 
         fun toggleTheme() {
             switchTheme(!isDark)
         }
 
-
-        @get:Contract
         var isDark: Boolean = false
 
-
         @IntegerRes
-        @get:Contract(pure = true)
         var currentTheme: Int = 0
             private set
+
         @IntegerRes
-        @get:Contract(pure = true)
         var popupTheme: Int = 0
             private set
+
         @IntegerRes
-        @get:Contract(pure = true)
         var loginTheme: Int = 0
             private set
+
         @IntegerRes
-        @get:Contract(pure = true)
         var alertTheme: Int = 0
             private set
+
         @ColorInt
-        @get:Contract(pure = true)
         var primary: Int = 0
             private set
+
         @ColorInt
-        @get:Contract(pure = true)
         var primaryInverse: Int = 0
             private set
+
         @ColorInt
-        @get:Contract(pure = true)
         var primaryDark: Int = 0
             private set
+
         @ColorInt
-        @get:Contract(pure = true)
         var accent: Int = 0
             private set
+
         @ColorInt
-        @get:Contract(pure = true)
         var main: Int = 0
             private set
         @ColorInt
-        @get:Contract(pure = true)
         var secondary: Int = 0
             private set
+
         @ColorInt
-        @get:Contract(pure = true)
         var background: Int = 0
             private set
 

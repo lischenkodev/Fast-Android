@@ -38,7 +38,11 @@ class FastToolbar : FrameLayout {
         init()
     }
 
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(
+        context,
+        attrs,
+        defStyleAttr
+    ) {
         init()
     }
 
@@ -64,7 +68,8 @@ class FastToolbar : FrameLayout {
         if (onMenuItemClickListener == null || menu!!.size() == 0) return
 
         for (i in 0 until menu!!.size()) {
-            menuLayout.getChildAt(if (menu!!.size() == 1) 1 else i).setOnClickListener { onMenuItemClickListener!!.onMenuItemClick(menu!!.getItem(if (menu!!.size() == 1) 0 else i)) }
+            menuLayout.getChildAt(if (menu!!.size() == 1) 1 else i)
+                .setOnClickListener { onMenuItemClickListener!!.onMenuItemClick(menu!!.getItem(if (menu!!.size() == 1) 0 else i)) }
         }
     }
 
@@ -120,6 +125,10 @@ class FastToolbar : FrameLayout {
         } else {
             back.setOnClickListener(null)
         }
+    }
+
+    fun setOnBackClickListener(listener: () -> Unit) {
+        back.setOnClickListener { listener() }
     }
 
     private fun validateTitleGravity() {

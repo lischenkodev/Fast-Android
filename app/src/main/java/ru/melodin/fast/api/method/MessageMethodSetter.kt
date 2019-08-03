@@ -1,6 +1,5 @@
 package ru.melodin.fast.api.method
 
-import org.jetbrains.annotations.Contract
 import ru.melodin.fast.api.model.VKModel
 import ru.melodin.fast.util.ArrayUtil
 import java.util.*
@@ -129,7 +128,7 @@ class MessageMethodSetter(name: String) : MethodSetter("messages.$name") {
         return this
     }
 
-    fun text(message: String): MessageMethodSetter {
+    fun message(message: String): MessageMethodSetter {
         put("message", message)
         return this
     }
@@ -149,68 +148,61 @@ class MessageMethodSetter(name: String) : MethodSetter("messages.$name") {
         return this
     }
 
-    @Contract("_ -> this")
     fun attachment(attachments: ArrayList<VKModel>): MessageMethodSetter {
         put("attachment", ArrayUtil.toString(attachments))
         return this
     }
 
-    @Contract("_ -> this")
     fun forwardMessages(vararg ids: Int): MessageMethodSetter {
         put("forward_messages", ArrayUtil.toString(*ids))
         return this
     }
 
-    @Contract("_ -> this")
     fun stickerId(value: Int): MessageMethodSetter {
         put("sticker_id", value)
         return this
     }
 
-    @Contract("_ -> this")
     fun messageId(value: Int): MessageMethodSetter {
         put("message_id", value)
         return this
     }
 
-    @Contract("_ -> this")
     fun important(value: Boolean): MessageMethodSetter {
         put("important", value)
         return this
     }
 
-    @Contract("_ -> this")
     fun ts(value: Long): MessageMethodSetter {
         put("ts", value)
         return this
     }
 
-    @Contract("_ -> this")
     fun pts(value: Int): MessageMethodSetter {
         put("pts", value)
         return this
     }
 
-    @Contract("_ -> this")
     fun title(title: String): MessageMethodSetter {
         put("title", title)
         return this
     }
 
-    @Contract("_ -> this")
     fun type(typing: Boolean): MessageMethodSetter {
         return put("type", if (typing) "typing" else "audiomessage") as MessageMethodSetter
     }
 
-    @Contract("_ -> this")
     fun mediaType(type: String): MessageMethodSetter {
         put("media_type", type)
         return this
     }
 
-    @Contract("_ -> this")
     fun photoSizes(value: Boolean): MessageMethodSetter {
         put("photo_sizes", value)
         return this
+    }
+
+    fun replyTo(value: Int) : MessageMethodSetter {
+        return put("reply_to", value) as MessageMethodSetter
     }
 }

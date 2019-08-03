@@ -10,6 +10,7 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.greenrobot.eventbus.EventBus
+import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.GroupAdapter
 import ru.melodin.fast.adapter.UserAdapter
@@ -42,9 +43,14 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         hideTyping!!.summary = hideTypingSummary
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        (activity!! as MainActivity).hideNavMenu()
+    }
+
     private fun switchTheme(dark: Boolean) {
         ThemeManager.switchTheme(dark)
-        (activity as BaseActivity).applyStyles()
+        (activity as BaseActivity).recreate()
     }
 
     override fun onPreferenceChange(preference: Preference, newValue: Any): Boolean {

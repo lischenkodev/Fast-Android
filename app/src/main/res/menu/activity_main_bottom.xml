@@ -10,11 +10,6 @@
             android:visible="false" />
 
         <item
-            android:id="@+id/friends"
-            android:icon="@drawable/md_people"
-            android:title="@string/fragment_friends" />
-
-        <item
             android:id="@+id/conversations"
             android:icon="@drawable/md_mail"
             android:title="@string/fragment_messages" />

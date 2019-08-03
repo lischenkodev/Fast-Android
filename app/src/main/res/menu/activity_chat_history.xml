@@ -3,6 +3,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/reply"
+        android:icon="@drawable/ic_reply_black_24dp"
+        android:title="@string/reply"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/forward"
+        android:icon="@drawable/ic_arrow_forward_black_24dp"
+        android:title="@string/forward"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/delete"
         android:icon="@drawable/ic_trash"
         android:title="@string/delete"

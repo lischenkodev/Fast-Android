@@ -3,6 +3,8 @@ package ru.melodin.fast
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -29,11 +31,8 @@ import ru.melodin.fast.util.Util
 import ru.melodin.fast.util.ViewUtil
 import java.util.*
 
-class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelectedListener, BottomNavigationView.OnNavigationItemReselectedListener {
-
-    private lateinit var fragmentConversations: FragmentConversations
-    private lateinit var fragmentFriends: FragmentFriends
-    private lateinit var fragmentItems: FragmentItems
+class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelectedListener,
+    BottomNavigationView.OnNavigationItemReselectedListener {
 
     private var selectedId = -1
     private var selectedFragment: BaseFragment? = null
@@ -47,7 +46,6 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        initFragments()
 
         navigationView.selectedItemId = R.id.conversations
         navigationView.setOnNavigationItemSelectedListener(this)
@@ -63,10 +61,12 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
         EventBus.getDefault().register(this)
     }
 
-    private fun initFragments() {
-        fragmentConversations = FragmentConversations()
-        fragmentFriends = FragmentFriends()
-        fragmentItems = FragmentItems()
+    fun showNavMenu() {
+        navigationView?.visibility = VISIBLE
+    }
+
+    fun hideNavMenu() {
+        navigationView?.visibility = GONE
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -79,7 +79,7 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
         if (ArrayUtil.isEmpty(data)) return
 
         when (data[0] as String) {
-            ThemeManager.KEY_THEME_UPDATE -> {
+            Keys.KEY_THEME_UPDATE -> {
                 fromRecreate = true
                 applyStyles()
             }
@@ -135,9 +135,9 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
         if (AppGlobal.preferences.getBoolean(FragmentSettings.KEY_CRASHED, false)) {
             val trace = AppGlobal.preferences.getString(FragmentSettings.KEY_CRASH_LOG, "")
             AppGlobal.preferences.edit()
-                    .putBoolean(FragmentSettings.KEY_CRASHED, false)
-                    .putString(FragmentSettings.KEY_CRASH_LOG, "")
-                    .apply()
+                .putBoolean(FragmentSettings.KEY_CRASHED, false)
+                .putString(FragmentSettings.KEY_CRASH_LOG, "")
+                .apply()
 
 
             if (!AppGlobal.preferences.getBoolean(FragmentSettings.KEY_SHOW_ERROR, false))
@@ -161,7 +161,7 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
         }
     }
 
-    private fun replaceFragment(fragment: Fragment?) {
+    fun replaceFragment(fragment: Fragment?) {
         if (fragment == null) return
 
         val manager = supportFragmentManager
@@ -190,6 +190,10 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
                 transaction.add(containerViewId, fragment, fragment.javaClass.simpleName)
             }
         }
+
+        if (fragment !is FragmentConversations && fragment !is FragmentItems)
+            transaction.addToBackStack("")
+
         transaction.commit()
     }
 
@@ -206,7 +210,6 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
         selectedId = item.itemId
         when (item.itemId) {
             R.id.conversations -> selectedFragment = fragmentConversations
-            R.id.friends -> selectedFragment = fragmentFriends
             R.id.menu -> selectedFragment = fragmentItems
         }
 
@@ -216,5 +219,11 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
 
     override fun onNavigationItemReselected(item: MenuItem) {
         selectedFragment?.scrollToTop()
+    }
+
+    companion object {
+        val fragmentFriends = FragmentFriends()
+        val fragmentConversations = FragmentConversations()
+        val fragmentItems = FragmentItems()
     }
 }

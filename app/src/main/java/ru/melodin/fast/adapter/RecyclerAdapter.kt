@@ -12,7 +12,11 @@ import androidx.recyclerview.widget.RecyclerView
 import ru.melodin.fast.model.Model
 
 
-abstract class RecyclerAdapter<T : Model, VH : RecyclerHolder> internal constructor(protected var context: Context, var viewRes: Int, values: ArrayList<T>) : RecyclerView.Adapter<RecyclerHolder>() {
+abstract class RecyclerAdapter<T : Model, VH : RecyclerHolder> internal constructor(
+    protected var context: Context,
+    private var viewRes: Int,
+    values: ArrayList<T>
+) : RecyclerView.Adapter<RecyclerHolder>() {
 
 
     var values: ArrayList<T>? = null
@@ -25,8 +29,7 @@ abstract class RecyclerAdapter<T : Model, VH : RecyclerHolder> internal construc
 
     private val selectedItems = SparseArrayCompat<Model>()
 
-    val isSelected: Boolean
-        get() = selectedCount > 0
+    var isSelected = false
 
     val selectedMessages: ArrayList<T>
         get() {
@@ -50,8 +53,21 @@ abstract class RecyclerAdapter<T : Model, VH : RecyclerHolder> internal construc
 
     init {
         this.values = values
-
         this.inflater = LayoutInflater.from(context)
+    }
+
+    private fun setSelecting(value: Boolean) {
+        isSelected = value
+    }
+
+    fun selectItem(position: Int) {
+        getItem(position).isSelected = true
+        notifyItemChanged(position, -1)
+    }
+
+    fun unSelectItem(position: Int) {
+        getItem(position).isSelected = false
+        notifyItemChanged(position, -1)
     }
 
     fun setSelected(position: Int, selected: Boolean) {
@@ -59,9 +75,12 @@ abstract class RecyclerAdapter<T : Model, VH : RecyclerHolder> internal construc
         item.isSelected = selected
 
         if (selected) {
+            if (!isSelected) setSelecting(true)
             selectedItems.append(position, item)
         } else {
             selectedItems.remove(position)
+            if (selectedItems.size() == 0)
+                setSelecting(false)
         }
 
         notifyItemChanged(position, -1)
@@ -74,21 +93,13 @@ abstract class RecyclerAdapter<T : Model, VH : RecyclerHolder> internal construc
         }
 
         selectedItems.clear()
+        isSelected = false
     }
 
     open fun toggleSelected(position: Int) {
         val item = getItem(position)
-
-        val selected = !item.isSelected
-        item.isSelected = selected
-
-        if (selected) {
-            selectedItems.append(position, item)
-        } else {
-            selectedItems.remove(position)
-        }
+        setSelected(position, !item.isSelected)
     }
-
 
     @ColorInt
     protected fun getColor(resId: Int): Int {

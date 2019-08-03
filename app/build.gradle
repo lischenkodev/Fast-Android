@@ -10,9 +10,8 @@ android {
         applicationId "ru.melodin.fast"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 10
-        versionName "0.8 Alpha 2"
-
+        versionCode 11
+        versionName "0.8 Alpha 4"
     }
 
     buildTypes {
@@ -30,9 +29,10 @@ android {
 
 dependencies {
     implementation 'androidx.legacy:legacy-preference-v14:1.0.0'
-    implementation 'com.google.android.material:material:1.1.0-alpha08'
+    implementation 'com.google.android.material:material:1.1.0-alpha09'
     implementation 'androidx.appcompat:appcompat:1.1.0-rc01'
     implementation 'androidx.preference:preference:1.1.0-rc01'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
 
     implementation 'com.squareup.picasso:picasso:2.71828'
 
@@ -44,6 +44,8 @@ dependencies {
 
     implementation "androidx.core:core-ktx:1.0.2"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.9'
 }
 
 repositories {

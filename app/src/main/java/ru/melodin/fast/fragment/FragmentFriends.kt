@@ -2,6 +2,7 @@ package ru.melodin.fast.fragment
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Parcelable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
-import ru.melodin.fast.MessagesActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.UserAdapter
 import ru.melodin.fast.api.OnCompleteListener
@@ -33,6 +33,7 @@ import ru.melodin.fast.util.Util
 class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
     private var adapter: UserAdapter? = null
+    private var listState: Parcelable? = null
 
     var isLoading: Boolean = false
 
@@ -50,15 +51,20 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
         setTitle(getString(R.string.fragment_friends))
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.fragment, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         toolbar = tb
-        recyclerView = list
+        recyclerList = list
 
         tb.setTitle(title)
+        tb.setBackVisible(true)
 
         refresh.setOnRefreshListener(this)
         refresh.setColorSchemeColors(ThemeManager.accent)
@@ -71,6 +77,28 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
         getCachedFriends()
         if (savedInstanceState == null)
             getFriends(FRIENDS_COUNT, 0)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        listState = list.layoutManager?.onSaveInstanceState()
+        outState.putParcelable("list_state", listState)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+
+        listState = savedInstanceState?.getParcelable("list_state")
+        listState ?: return
+        list.layoutManager?.onRestoreInstanceState(listState)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        listState ?: return
+        list.layoutManager?.onRestoreInstanceState(listState)
     }
 
     private fun createAdapter(friends: ArrayList<VKUser>?, offset: Int) {
@@ -116,38 +144,41 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
             lateinit var users: ArrayList<VKUser>
 
-            VKApi.friends().get().userId(UserConfig.userId).order("hints").fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java, object : OnCompleteListener {
-                override fun onComplete(models: ArrayList<*>?) {
+            VKApi.friends().get().userId(UserConfig.userId).order("hints")
+                .fields(VKUser.FIELDS_DEFAULT)
+                .execute(VKUser::class.java, object : OnCompleteListener {
+                    override fun onComplete(models: ArrayList<*>?) {
 
-                    if (ArrayUtil.isEmpty(models)) return
-                    models ?: return
+                        if (ArrayUtil.isEmpty(models)) return
+                        models ?: return
 
-                    users = models as ArrayList<VKUser>
+                        users = models as ArrayList<VKUser>
 
-                    if (offset == 0) {
-                        CacheStorage.delete(DatabaseHelper.FRIENDS_TABLE)
-                        CacheStorage.insert(DatabaseHelper.FRIENDS_TABLE, users)
+                        if (offset == 0) {
+                            CacheStorage.delete(DatabaseHelper.FRIENDS_TABLE)
+                            CacheStorage.insert(DatabaseHelper.FRIENDS_TABLE, users)
+                        }
+
+                        CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
+
+                        createAdapter(users, offset)
+                        isLoading = false
+                        refresh.isRefreshing = false
                     }
 
-                    CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
-
-                    createAdapter(users, offset)
-                    isLoading = false
-                    refresh.isRefreshing = false
-                }
-
-                override fun onError(e: Exception) {
-                    refresh.isRefreshing = false
-                    Toast.makeText(activity, getString(R.string.error), Toast.LENGTH_LONG).show()
-                }
-            })
+                    override fun onError(e: Exception) {
+                        refresh.isRefreshing = false
+                        Toast.makeText(activity, getString(R.string.error), Toast.LENGTH_LONG)
+                            .show()
+                    }
+                })
         }
     }
 
     fun openChat(position: Int) {
         val user = adapter!!.getItem(position)
 
-        val intent = Intent(activity, MessagesActivity::class.java)
+        val intent = Intent(activity, FragmentMessages::class.java)
         intent.putExtra("title", user.toString())
         intent.putExtra("photo", user.photo200)
         intent.putExtra("peer_id", user.id)
@@ -201,7 +232,11 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
                     adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
                     refresh.isRefreshing = false
 
-                    CacheStorage.delete(DatabaseHelper.FRIENDS_TABLE, DatabaseHelper.USER_ID, userId)
+                    CacheStorage.delete(
+                        DatabaseHelper.FRIENDS_TABLE,
+                        DatabaseHelper.USER_ID,
+                        userId
+                    )
                 }
 
                 override fun onError(e: Exception) {

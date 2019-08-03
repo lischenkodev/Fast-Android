@@ -2,6 +2,7 @@ package ru.melodin.fast.fragment
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Parcelable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -15,7 +16,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.CreateChatActivity
-import ru.melodin.fast.MessagesActivity
+import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.ConversationAdapter
 import ru.melodin.fast.adapter.RecyclerAdapter
@@ -36,11 +37,15 @@ import ru.melodin.fast.util.Util
 import ru.melodin.fast.view.FastToolbar
 import java.util.*
 
-class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener {
+class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListener,
+    RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener {
 
     private var adapter: ConversationAdapter? = null
+    private var bundle: Bundle? = null
 
     var isLoading: Boolean = false
+
+    private var listState: Parcelable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,15 +58,21 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
         super.onDestroy()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.fragment, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        bundle = savedInstanceState
+
         toolbar = tb
-        recyclerView = list
+        recyclerList = list
 
         tb.setTitle(title)
 
@@ -84,7 +95,11 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
 
         getCachedConversations()
 
-        if (savedInstanceState == null && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_OFFLINE, false))
+        if (savedInstanceState == null && !AppGlobal.preferences.getBoolean(
+                FragmentSettings.KEY_OFFLINE,
+                false
+            )
+        )
             getConversations(CONVERSATIONS_COUNT, 0)
     }
 
@@ -95,13 +110,35 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
             adapter = ConversationAdapter(this, conversations!!)
             adapter!!.setOnItemClickListener(this)
             adapter!!.setOnItemLongClickListener(this)
-            list!!.adapter = adapter
-            list!!.scrollToPosition(0)
+            list.adapter = adapter
+            list.scrollToPosition(0)
             return
         }
 
         adapter!!.changeItems(conversations!!)
         adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        listState = list.layoutManager?.onSaveInstanceState()
+        outState.putParcelable("list_state", listState)
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+
+        listState = savedInstanceState?.getParcelable("list_state")
+        listState ?: return
+        list.layoutManager?.onRestoreInstanceState(listState)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        listState ?: return
+        list.layoutManager?.onRestoreInstanceState(listState)
     }
 
     private fun getCachedConversations() {
@@ -122,49 +159,59 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
         }
 
         isLoading = true
-        refresh!!.isRefreshing = true
+
+        if (bundle != null)
+            refresh!!.isRefreshing = true
+
         TaskManager.execute {
             VKApi.messages().conversations
-                    .filter("all")
-                    .extended(true)
-                    .fields(VKUser.FIELDS_DEFAULT + ", " + VKGroup.FIELDS_DEFAULT)
-                    .count(count)
-                    .offset(offset)
-                    .execute(VKConversation::class.java, object : OnCompleteListener {
-                        override fun onComplete(models: ArrayList<*>?) {
-                            if (ArrayUtil.isEmpty(models)) return
-                            models ?: return
+                .filter("all")
+                .extended(true)
+                .fields(VKUser.FIELDS_DEFAULT + ", " + VKGroup.FIELDS_DEFAULT)
+                .count(count)
+                .offset(offset)
+                .execute(VKConversation::class.java, object : OnCompleteListener {
+                    override fun onComplete(models: ArrayList<*>?) {
+                        if (ArrayUtil.isEmpty(models)) return
+                        models ?: return
 
-                            val conversations = models as ArrayList<VKConversation>
+                        val conversations = models as ArrayList<VKConversation>
 
-                            CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE)
-                            CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversations as ArrayList<*>)
+                        CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE)
+                        CacheStorage.insert(
+                            DatabaseHelper.CONVERSATIONS_TABLE,
+                            conversations as ArrayList<*>
+                        )
 
-                            val users = VKConversation.users
-                            val groups = VKConversation.groups
-                            val messages = ArrayList<VKMessage>()
+                        val users = VKConversation.users
+                        val groups = VKConversation.groups
+                        val messages = ArrayList<VKMessage>()
 
-                            for (conversation in conversations) {
-                                conversation.last ?: continue
-                                messages.add(conversation.last!!)
-                            }
-
-                            CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
-                            CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, groups)
-                            CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, messages)
-
-                            createAdapter(conversations)
-                            refresh!!.isRefreshing = false
-
-                            isLoading = false
+                        for (conversation in conversations) {
+                            conversation.last ?: continue
+                            messages.add(conversation.last!!)
                         }
 
-                        override fun onError(e: Exception) {
-                            isLoading = false
-                            refresh!!.isRefreshing = false
-                            Toast.makeText(context, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show()
-                        }
-                    })
+                        CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
+                        CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, groups)
+                        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, messages)
+
+                        createAdapter(conversations)
+                        refresh!!.isRefreshing = false
+
+                        isLoading = false
+                    }
+
+                    override fun onError(e: Exception) {
+                        isLoading = false
+                        refresh!!.isRefreshing = false
+                        Toast.makeText(
+                            context,
+                            getString(R.string.error) + ": " + e.toString(),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                })
         }
     }
 
@@ -173,18 +220,18 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
 
         val peerId = conversation.peerId
 
-        val intent = Intent(activity, MessagesActivity::class.java)
-        intent.putExtra("title", conversation.fullTitle)
-        intent.putExtra("photo", conversation.photo)
-        intent.putExtra("conversation", conversation)
-        intent.putExtra("peer_id", peerId)
-        intent.putExtra("can_write", conversation.isCanWrite)
+        val args = Bundle()
+        args.putString("title", conversation.fullTitle)
+        args.putString("photo", conversation.photo)
+        args.putInt("peer_id", peerId)
+        args.putBoolean("can_write", conversation.isCanWrite)
+        args.putSerializable("conversation", conversation)
 
         if (!conversation.isCanWrite) {
-            intent.putExtra("reason", conversation.reason)
+            args.putInt("reason", conversation.reason)
         }
 
-        startActivity(intent)
+        (activity!! as MainActivity).replaceFragment(FragmentMessages.newInstance(args))
     }
 
     private fun readConversation(peerId: Int) {
@@ -198,6 +245,14 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
         }
     }
 
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        when (hidden) {
+            true -> (activity!! as MainActivity).hideNavMenu()
+            else -> (activity!! as MainActivity).showNavMenu()
+        }
+    }
+
     override fun onRefresh() {
         getConversations(CONVERSATIONS_COUNT, 0)
     }
@@ -207,7 +262,11 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
 
         val conversation = adapter!!.getItem(position)
 
-        if (!conversation.isRead && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
+        if (!conversation.isRead && !AppGlobal.preferences.getBoolean(
+                FragmentSettings.KEY_NOT_READ_MESSAGES,
+                false
+            )
+        ) {
             readConversation(conversation.peerId)
         }
     }
@@ -273,23 +332,27 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
 
         TaskManager.execute {
             VKApi.messages()
-                    .deleteConversation()
-                    .peerId(peerId)
-                    .execute(null, object : OnCompleteListener {
-                        override fun onComplete(models: ArrayList<*>?) {
-                            CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE, DatabaseHelper.PEER_ID, peerId)
-                            adapter!!.remove(position)
-                            adapter!!.notifyItemRemoved(position)
-                            adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
-                            refresh!!.isRefreshing = false
-                        }
+                .deleteConversation()
+                .peerId(peerId)
+                .execute(null, object : OnCompleteListener {
+                    override fun onComplete(models: ArrayList<*>?) {
+                        CacheStorage.delete(
+                            DatabaseHelper.CONVERSATIONS_TABLE,
+                            DatabaseHelper.PEER_ID,
+                            peerId
+                        )
+                        adapter!!.remove(position)
+                        adapter!!.notifyItemRemoved(position)
+                        adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
+                        refresh!!.isRefreshing = false
+                    }
 
-                        override fun onError(e: Exception) {
-                            refresh!!.isRefreshing = false
-                            Log.e("Error delete dialog", Log.getStackTraceString(e))
-                            Toast.makeText(activity, R.string.error, Toast.LENGTH_SHORT).show()
-                        }
-                    })
+                    override fun onError(e: Exception) {
+                        refresh!!.isRefreshing = false
+                        Log.e("Error delete dialog", Log.getStackTraceString(e))
+                        Toast.makeText(activity, R.string.error, Toast.LENGTH_SHORT).show()
+                    }
+                })
         }
     }
 

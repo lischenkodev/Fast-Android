@@ -15,7 +15,6 @@ import com.squareup.picasso.Picasso
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import ru.melodin.fast.ChatInfoActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.ShowCreateChatActivity
 import ru.melodin.fast.api.model.VKConversation
@@ -149,9 +148,7 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
             if (withKick) {
                 kick.visibility = View.VISIBLE
                 kick.setOnClickListener {
-                    if (context is ChatInfoActivity) {
-                        (context as ChatInfoActivity).confirmKick(user.id)
-                    } else if (context is ShowCreateChatActivity) {
+                    if (context is ShowCreateChatActivity) {
                         (context as ShowCreateChatActivity).confirmKick(position)
                     }
                 }

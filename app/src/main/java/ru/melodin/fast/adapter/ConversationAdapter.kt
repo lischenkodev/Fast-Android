@@ -19,7 +19,6 @@ import com.squareup.picasso.Picasso
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.jetbrains.annotations.Contract
 import ru.melodin.fast.R
 import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.UserConfig
@@ -42,7 +41,7 @@ import java.util.*
 class ConversationAdapter(private val fragment: FragmentConversations, values: ArrayList<VKConversation>) :
         RecyclerAdapter<VKConversation, ConversationAdapter.ViewHolder>(fragment.context!!, R.layout.item_conversation, values) {
 
-    private val manager: LinearLayoutManager = (fragment.recyclerView!!.layoutManager as LinearLayoutManager?)!!
+    private val manager: LinearLayoutManager = (fragment.recyclerList!!.layoutManager as LinearLayoutManager?)!!
 
     private var lastUpdateId: Int = 0
 
@@ -261,7 +260,7 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
             CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, conversation.last!!, DatabaseHelper.MESSAGE_ID, conversation.last!!.id)
         } else {
             if (!conversation.last!!.isOut)
-                conversation.unread = conversation.unread + 1
+                conversation.unread++
 
             add(0, conversation)
             notifyItemInserted(0)

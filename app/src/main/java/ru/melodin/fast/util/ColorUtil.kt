@@ -10,6 +10,7 @@ import androidx.annotation.IntRange
 
 
 object ColorUtil {
+
     private const val MIN_ALPHA_SEARCH_MAX_ITERATIONS = 10
     private const val MIN_ALPHA_SEARCH_PRECISION = 1
 

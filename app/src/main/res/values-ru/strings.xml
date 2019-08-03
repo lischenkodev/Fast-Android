@@ -155,4 +155,11 @@
     <string name="retry">Повторить</string>
     <string name="title">Название</string>
     <string name="title_changed">Название было изменено</string>
+    <string name="copied_to_clipboard">Скопировано в буфер обмена</string>
+    <string name="forward">Переслать</string>
+    <string name="message">Сообщение</string>
+    <string name="offline">Офлайн</string>
+    <string name="offline_summary">Не обновлять список сообщений при входе в приложение</string>
+    <string name="reply">Ответить</string>
+    <string name="success">Успешно</string>
 </resources>

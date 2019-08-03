@@ -45,7 +45,10 @@ object LongPollEvents {
 
         last.isRead = conversation.isRead
         last.isOut = last.flags and VKMessage.OUTBOX != 0
-        last.fromId = if (fromActions != null && fromActions.has("from")) fromActions.optInt("from", -1) else if (last.isOut) UserConfig.userId else peerId
+        last.fromId = if (fromActions != null && fromActions.has("from")) fromActions.optInt(
+            "from",
+            -1
+        ) else if (last.isOut) UserConfig.userId else peerId
 
         if (fromActions != null) {
             val actionType = fromActions.optString("source_act")
@@ -59,7 +62,8 @@ object LongPollEvents {
             }
         }
 
-        last.text = if (fromActions != null && fromActions.optInt("source_mid", -1) != -1) "" else text
+        last.text =
+            if (fromActions != null && fromActions.optInt("source_mid", -1) != -1) "" else text
 
         if (!ArrayUtil.isEmpty(attachments)) {
             TaskManager.loadMessage(last.id, true, null)
@@ -72,11 +76,6 @@ object LongPollEvents {
         conversation.last = last
 
         EventBus.getDefault().postSticky(arrayOf<Any>(Keys.MESSAGE_NEW, conversation))
-
-        CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
-
-        conversation.last ?: return
-        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last!!)
     }
 
     private fun messageSetFlags(item: JSONArray) {
@@ -96,7 +95,12 @@ object LongPollEvents {
             if (VKMessage.isUnread(flags))
                 message.isRead = false
 
-            CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID, mId)
+            CacheStorage.update(
+                DatabaseHelper.MESSAGES_TABLE,
+                message,
+                DatabaseHelper.MESSAGE_ID,
+                mId
+            )
         }
 
         EventBus.getDefault().postSticky(arrayOf(Keys.MESSAGE_SET_FLAGS, mId, flags, peerId))
@@ -120,7 +124,12 @@ object LongPollEvents {
             if (VKMessage.isUnread(flags))
                 message.isRead = true
 
-            CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID, mId)
+            CacheStorage.update(
+                DatabaseHelper.MESSAGES_TABLE,
+                message,
+                DatabaseHelper.MESSAGE_ID,
+                mId
+            )
         }
 
         EventBus.getDefault().postSticky(arrayOf(Keys.MESSAGE_CLEAR_FLAGS, mId, flags, peerId))
@@ -135,7 +144,6 @@ object LongPollEvents {
         val date = item.optInt(4).toLong()
         val text = StringUtils.unescape(item.optString(5))
         val fromActions = item.optJSONObject(6)
-        //JSONObject attachments = item.optJSONObject(7);
         val randomId = item.optInt(8)
         val conversationMessageId = item.optInt(9)
         val updateTime = item.optInt(10)
@@ -146,14 +154,37 @@ object LongPollEvents {
         message.peerId = peerId
         message.date = date
         message.text = text
-        message.fromId = if (fromActions != null && fromActions.has("from")) fromActions.optInt("from") else if (message.isOut) UserConfig.userId else peerId
+        message.fromId =
+            if (fromActions != null && fromActions.has("from")) fromActions.optInt("from") else if (message.isOut) UserConfig.userId else peerId
         message.randomId = randomId
         message.conversationMessageId = conversationMessageId
         message.updateTime = updateTime.toLong()
 
-        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, message)
+        CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, message, DatabaseHelper.MESSAGE_ID, id)
 
         EventBus.getDefault().postSticky(arrayOf<Any>(Keys.MESSAGE_EDIT, message))
+
+        val attachments = item.optJSONObject(7)
+        if (!ArrayUtil.isEmpty(attachments) ||
+            (!ArrayUtil.isEmpty(message.attachments) && ArrayUtil.isEmpty(attachments))
+        ) {
+            TaskManager.loadMessage(id, true, object : OnCompleteListener {
+                override fun onComplete(models: ArrayList<*>?) {
+                    models ?: return
+
+                    CacheStorage.update(
+                        DatabaseHelper.MESSAGES_TABLE,
+                        models[0] as VKMessage,
+                        DatabaseHelper.MESSAGE_ID,
+                        id
+                    )
+                }
+
+                override fun onError(e: Exception) {
+                    e.printStackTrace()
+                }
+            })
+        }
     }
 
     fun process(updates: JSONArray) {
@@ -190,7 +221,8 @@ object LongPollEvents {
         val sound = o.optInt("sound", -1) == 1
         val disabledUntil = o.optInt("disabled_until", -2)
 
-        EventBus.getDefault().postSticky(arrayOf(Keys.NOTIFICATIONS_CHANGE, peerId, !sound, disabledUntil))
+        EventBus.getDefault()
+            .postSticky(arrayOf(Keys.NOTIFICATIONS_CHANGE, peerId, !sound, disabledUntil))
     }
 
     private fun userOffline(item: JSONArray) {

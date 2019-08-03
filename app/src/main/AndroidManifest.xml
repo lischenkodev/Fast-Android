@@ -28,15 +28,10 @@
 
         <activity android:name=".LoginActivity" />
         <activity android:name=".SettingsActivity" />
-        <activity android:name=".ChatInfoActivity" />
         <activity android:name=".ValidationActivity" />
         <activity android:name=".CreateChatActivity" />
         <activity android:name=".ShowCreateChatActivity" />
 
-        <activity
-            android:name=".MessagesActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".WebViewLoginActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
@@ -49,7 +44,7 @@
         <service
             android:name=".service.LongPollService"
             android:exported="true"
-            android:enabled="true"/>
+            android:enabled="true" />
     </application>
 
 </manifest>
