@@ -131,7 +131,8 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
 
     override fun onResume() {
         super.onResume()
-        onHiddenChanged(false)
+        if (!chooseConversation)
+            onHiddenChanged(false)
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
