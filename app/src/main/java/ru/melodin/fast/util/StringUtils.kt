@@ -1,5 +1,7 @@
 package ru.melodin.fast.util
 
+import android.text.Editable
+
 object StringUtils {
 
     fun unescape(input: String): String {
@@ -14,5 +16,9 @@ object StringUtils {
 
     fun isEmpty(input: String?): Boolean {
         return input == null || input.trim().isEmpty()
+    }
+
+    fun isEmpty(input: Editable?): Boolean {
+        return input == null || input.toString().trim().isEmpty()
     }
 }

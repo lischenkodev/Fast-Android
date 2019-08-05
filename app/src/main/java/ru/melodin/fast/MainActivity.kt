@@ -68,7 +68,7 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
         if (ArrayUtil.isEmpty(data)) return
 
         when (data[0] as String) {
-            Keys.KEY_THEME_UPDATE -> {
+            Keys.THEME_UPDATE -> {
                 fromRecreate = true
                 applyStyles()
             }

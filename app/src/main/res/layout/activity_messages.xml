@@ -108,9 +108,7 @@
         android:layout_width="match_parent"
         android:layout_height="56dp" />
 
-    <include
-        layout="@layout/toolbar_action"
-        android:visibility="gone" />
+    <include layout="@layout/toolbar_action" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/scrollToBottom"

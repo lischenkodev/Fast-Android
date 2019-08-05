@@ -40,7 +40,7 @@ class ThemeManager {
         fun switchTheme(dark: Boolean) {
             AppGlobal.preferences.edit().putBoolean(FragmentSettings.KEY_DARK_STYLE, dark).apply()
             init()
-            EventBus.getDefault().post(arrayOf<Any>(Keys.KEY_THEME_UPDATE))
+            EventBus.getDefault().post(arrayOf<Any>(Keys.THEME_UPDATE))
         }
 
         fun toggleTheme() {

@@ -1,10 +1,12 @@
 package ru.melodin.fast.fragment
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AlarmManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
@@ -49,6 +51,7 @@ import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.model.ListItem
 import ru.melodin.fast.util.ArrayUtil
+import ru.melodin.fast.util.StringUtils
 import ru.melodin.fast.util.Util
 import ru.melodin.fast.util.ViewUtil
 import java.util.*
@@ -166,6 +169,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         iconTrash = ContextCompat.getDrawable(activity!!, R.drawable.ic_trash)
 
         getIntentData()
+        updateToolbar()
         showPinned(pinned)
         getConversation(peerId)
         checkCanWrite()
@@ -174,7 +178,9 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         tb.setBackVisible(true)
 
         actionTb.navigationIcon!!.setTint(ThemeManager.main)
+        actionTb.setNavigationOnClickListener { onBackPressed() }
         actionTb.inflateMenu(R.menu.activity_chat_history)
+        actionTb.setOnMenuItemClickListener(this)
         onPrepareMenu()
         for (i in 0 until actionTb.menu.size()) {
             val item = actionTb.menu[i]
@@ -197,7 +203,6 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         if (VKConversation.isChatId(peerId))
             tb.setOnAvatarClickListener { openChatInfo() }
 
-        updateToolbar()
         initPopupWindow()
         loadAvatar()
 
@@ -208,7 +213,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                 FragmentSettings.KEY_MESSAGE_TEMPLATE,
                 FragmentSettings.DEFAULT_TEMPLATE_VALUE
             )
-            if (message.text!!.toString().trim().isEmpty()) {
+            if (StringUtils.isEmpty(message!!.text)) {
                 message.setText(template)
             } else {
                 message.append(template)
@@ -243,7 +248,6 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
                 popupWindow!!.dismiss()
             }
-
         })
 
         list.adapter = popupAdapter
@@ -336,6 +340,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                 adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
                 updateToolbar()
             }
+            R.id.forward -> confirmForward(adapter!!.selectedMessages)
             R.id.delete -> showConfirmDeleteMessages(adapter!!.selectedMessages)
             R.id.reply -> confirmReply(adapter!!.selectedMessages)
         }
@@ -905,6 +910,45 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         }
     }
 
+    private fun confirmForward(messages: ArrayList<VKMessage>) {
+        FragmentSelector.addFragment(
+            fragmentManager!!,
+            FragmentConversations(true).apply {
+                setTargetFragment(this@FragmentMessages, REQUEST_CHOOSE_MESSAGE)
+            },
+            Bundle().apply { putSerializable("fwd_messages", messages) },
+            true
+        )
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CHOOSE_MESSAGE && resultCode == Activity.RESULT_OK) {
+            data ?: return
+
+            val forwardingMessages = data.getSerializableExtra("fwd_messages") as ArrayList<VKMessage>? ?: return
+
+            val conversation =
+                data.getSerializableExtra("conversation") as VKConversation? ?: return
+
+            val text = AppCompatEditText(activity!!)
+            text.hint = getString(R.string.message)
+
+            val builder = AlertDialog.Builder(activity!!)
+            builder.setTitle(R.string.reply)
+            builder.setView(text)
+            builder.setNegativeButton(android.R.string.cancel, null)
+            builder.setPositiveButton(R.string.send) { _, _ ->
+                forwardMessages(
+                    conversation.peerId,
+                    text.text.toString().trim(),
+                    forwardingMessages
+                )
+            }
+            builder.show()
+        }
+    }
+
     private fun forwardMessages(peerId: Int, text: String, messages: ArrayList<VKMessage>) {
         if (ArrayUtil.isEmpty(messages)) return
 
@@ -1146,6 +1190,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         if (item.status == VKMessage.Status.ERROR) {
             remove.add(getString(R.string.pin_message))
             remove.add(getString(R.string.edit))
+            remove.add(getString(R.string.forward))
         } else {
             remove.add(getString(R.string.retry))
             if (!conversation!!.isCanChangePin) {
@@ -1171,6 +1216,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
         adb.setItems(items) { _, i ->
             when (items[i]) {
+                getString(R.string.forward) -> confirmForward(arrayListOf(item))
                 getString(R.string.reply) -> confirmReply(arrayListOf(item))
                 getString(R.string.copy) -> copyMessageText(item)
                 getString(R.string.retry) -> TaskManager.resendMessage(item.randomId.toLong())
@@ -1346,7 +1392,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         send.setImageDrawable(iconTrash)
     }
 
-    fun onBackPressed() {
+    private fun onBackPressed() {
         when {
             editing -> {
                 editing = false
@@ -1365,6 +1411,8 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         val item = adapter!!.getItem(position)
 
         if (item.action != null) return
+
+        if (adapter!!.isSelected && !editing && selectTimer == null && adapter!!.selectedCount == 100) return
 
         if (adapter!!.isSelected && !editing && selectTimer == null) {
             adapter!!.toggleSelected(position)
@@ -1437,7 +1485,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         selecting ?: return
 
         tb.visibility = if (selecting) View.GONE else View.VISIBLE
-        actionTb.visibility = if (selecting) View.VISIBLE else View.GONE
+        actionTb.visibility = if (tb.visibility == View.VISIBLE) View.GONE else View.VISIBLE
         actionTb.title = if (selecting) adapter!!.selectedCount.toString() else ""
 
         val delete = menu.findItem(R.id.delete)
@@ -1458,5 +1506,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
     companion object {
         private const val MESSAGES_COUNT = 30
+
+        const val REQUEST_CHOOSE_MESSAGE = 1
     }
 }

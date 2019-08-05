@@ -192,12 +192,11 @@ object ArrayUtil {
 
     fun toString(ids: Collection<Int>): String? {
         val builder = StringBuilder()
-        val list = mutableListOf(ids)
 
-        builder.append(list[0])
-        list.forEach {
+        builder.append(mutableListOf(ids)[0])
+        for (i in ids) {
             builder.append(',')
-            builder.append(it.toString())
+            builder.append(i)
         }
 
         return builder.toString()

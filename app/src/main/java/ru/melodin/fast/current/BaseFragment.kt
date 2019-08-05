@@ -16,14 +16,10 @@ import ru.melodin.fast.view.FastToolbar
 
 abstract class BaseFragment : Fragment() {
 
-    protected var title: CharSequence? = null
+    internal var title: CharSequence? = null
 
     var recyclerList: RecyclerView? = null
     var toolbar: FastToolbar? = null
-
-    protected fun setTitle(title: String) {
-        this.title = title
-    }
 
     fun scrollToTop() {
         if (recyclerList != null)

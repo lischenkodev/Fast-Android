@@ -55,4 +55,33 @@ object FragmentSelector {
     fun selectFragment(manager: FragmentManager, fragment: Fragment) {
         selectFragment(manager, fragment, null)
     }
+
+    fun addFragment(
+        manager: FragmentManager,
+        fragment: Fragment,
+        args: Bundle?,
+        withBackStack: Boolean
+    ) {
+        fragment.arguments = args ?: Bundle()
+
+        val transaction = manager.beginTransaction()
+        transaction.add(FRAGMENT_CONTAINER, fragment, fragment.javaClass.simpleName)
+
+        if (withBackStack)
+            transaction.addToBackStack(null)
+
+        transaction.commit()
+    }
+
+    fun addFragment(manager: FragmentManager, fragment: Fragment, args: Bundle?) {
+        addFragment(manager, fragment, args, false)
+    }
+
+    fun addFragment(manager: FragmentManager, fragment: Fragment, withBackStack: Boolean) {
+        addFragment(manager, fragment, null, withBackStack)
+    }
+
+    fun addFragment(manager: FragmentManager, fragment: Fragment) {
+        addFragment(manager, fragment, null, false)
+    }
 }

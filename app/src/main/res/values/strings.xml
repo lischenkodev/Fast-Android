@@ -172,4 +172,5 @@
     <string name="send">Send</string>
     <string name="in_progress">In progress</string>
     <string name="report_bug">Report a bug</string>
+    <string name="choose_conversation">Choose an conversation</string>
 </resources>

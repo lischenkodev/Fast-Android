@@ -261,6 +261,22 @@ class ConversationAdapter(
                 }
             }
 
+            CacheStorage.delete(
+                DatabaseHelper.CONVERSATIONS_TABLE,
+                DatabaseHelper.PEER_ID,
+                conversation.peerId
+            )
+
+            CacheStorage.insert(
+                DatabaseHelper.CONVERSATIONS_TABLE,
+                conversation
+            )
+
+            CacheStorage.insert(
+                DatabaseHelper.MESSAGES_TABLE,
+                conversation.last!!
+            )
+
             if (index > 0) {
                 remove(index)
                 add(0, conversation)
@@ -275,21 +291,6 @@ class ConversationAdapter(
                 notifyItemChanged(0, -1)
             }
 
-            CacheStorage.update(
-                DatabaseHelper.CONVERSATIONS_TABLE,
-                conversation,
-                DatabaseHelper.PEER_ID,
-                conversation.peerId
-            )
-
-            conversation.last ?: return
-
-            CacheStorage.update(
-                DatabaseHelper.MESSAGES_TABLE,
-                conversation.last!!,
-                DatabaseHelper.MESSAGE_ID,
-                conversation.last!!.id
-            )
         } else {
             if (!conversation.last!!.isOut)
                 conversation.unread++
@@ -311,13 +312,15 @@ class ConversationAdapter(
                             models ?: return
 
                             val dialog = models[0] as VKConversation
-                            addMessage(dialog)
 
+                            CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE, DatabaseHelper.PEER_ID, dialog.peerId)
                             CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, dialog)
 
                             dialog.last ?: return
 
                             CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, dialog.last!!)
+
+                            addMessage(dialog)
                         }
 
                         override fun onError(e: Exception) {}

@@ -4,6 +4,7 @@
     <string-array name="message_functions">
         <item>@string/retry</item>
         <item>@string/reply</item>
+        <item>@string/forward</item>
         <item>@string/pin_message</item>
         <item>@string/edit</item>
         <item>@string/copy</item>

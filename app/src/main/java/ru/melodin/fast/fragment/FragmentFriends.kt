@@ -48,7 +48,7 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
-        setTitle(getString(R.string.fragment_friends))
+        title = getString(R.string.fragment_friends)
     }
 
     override fun onResume() {

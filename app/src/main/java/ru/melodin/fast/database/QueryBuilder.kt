@@ -5,11 +5,10 @@ import android.database.sqlite.SQLiteDatabase
 
 class QueryBuilder private constructor() {
 
-    private val buffer: StringBuilder = StringBuilder()
-
+    private val builder: StringBuilder = StringBuilder()
 
     fun select(column: String): QueryBuilder {
-        this.buffer.append("SELECT ")
+        this.builder.append("SELECT ")
             .append(column)
             .append(" ")
         return this
@@ -17,28 +16,35 @@ class QueryBuilder private constructor() {
 
 
     fun from(table: String): QueryBuilder {
-        this.buffer.append("FROM ")
+        this.builder.append("FROM ")
             .append(table)
             .append(" ")
         return this
     }
 
     fun where(clause: String): QueryBuilder {
-        this.buffer.append("WHERE ")
+        this.builder.append("WHERE ")
             .append(clause)
             .append(" ")
         return this
     }
 
+    fun orderBy(table: String): QueryBuilder {
+        this.builder.append("ORDER BY ")
+            .append(table)
+            .append(" ")
+        return this
+    }
+
     fun leftJoin(table: String): QueryBuilder {
-        this.buffer.append("LEFT JOIN ")
+        this.builder.append("LEFT JOIN ")
             .append(table)
             .append(" ")
         return this
     }
 
     fun on(where: String): QueryBuilder {
-        this.buffer.append("ON ")
+        this.builder.append("ON ")
             .append(where)
             .append(" ")
         return this
@@ -46,13 +52,13 @@ class QueryBuilder private constructor() {
 
 
     fun and(): QueryBuilder {
-        this.buffer.append("AND ")
+        this.builder.append("AND ")
         return this
     }
 
 
     fun or(): QueryBuilder {
-        this.buffer.append("OR ")
+        this.builder.append("OR ")
         return this
     }
 
@@ -62,7 +68,7 @@ class QueryBuilder private constructor() {
     }
 
     override fun toString(): String {
-        return buffer.toString().trim()
+        return builder.toString().trim()
     }
 
     companion object {

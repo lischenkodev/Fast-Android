@@ -1,5 +1,6 @@
 package ru.melodin.fast.fragment
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -37,7 +38,7 @@ import ru.melodin.fast.util.Util
 import ru.melodin.fast.view.FastToolbar
 import java.util.*
 
-class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListener,
+class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshListener,
     RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener {
 
     private var adapter: ConversationAdapter? = null
@@ -47,16 +48,20 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
 
     var isLoading: Boolean = false
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setTitle(getString(R.string.fragment_messages))
-
-        chooseConversation = savedInstanceState?.getBoolean("choose_conversation")!!
-    }
-
     override fun onDestroy() {
         adapter?.destroy()
         super.onDestroy()
+    }
+
+    constructor(chooseConversation: Boolean) : this() {
+        this.chooseConversation = chooseConversation
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        title =
+            (getString(if (chooseConversation) R.string.choose_conversation else R.string.fragment_messages))
     }
 
     override fun onCreateView(
@@ -136,7 +141,8 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
     }
 
     private fun getCachedConversations() {
-        val conversations = CacheStorage.conversations
+        val conversations = CacheStorage.conversations ?: return
+        conversations.reverse()
 
         if (!ArrayUtil.isEmpty(conversations)) {
             createAdapter(conversations)
@@ -170,6 +176,7 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
                         models ?: return
 
                         val conversations = models as ArrayList<VKConversation>
+                        conversations.reverse()
 
                         CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE)
                         CacheStorage.insert(
@@ -190,6 +197,8 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
                         CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, groups)
                         CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, messages)
 
+                        conversations.reverse()
+
                         createAdapter(conversations)
                         refresh!!.isRefreshing = false
 
@@ -209,8 +218,7 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
         }
     }
 
-    private fun openChat(position: Int) {
-        val conversation = adapter!!.getItem(position)
+    private fun openChat(conversation: VKConversation) {
 
         val peerId = conversation.peerId
 
@@ -245,10 +253,22 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
     }
 
     override fun onItemClick(position: Int) {
-
-        openChat(position)
-
         val conversation = adapter!!.getItem(position)
+
+        if (chooseConversation) {
+            fragmentManager!!.popBackStack()
+            targetFragment!!.onActivityResult(
+                FragmentMessages.REQUEST_CHOOSE_MESSAGE,
+                Activity.RESULT_OK,
+                Intent().apply {
+                    putExtras(arguments!!.apply {
+                        putSerializable("conversation", conversation)
+                    })
+                })
+            return
+        }
+
+        openChat(conversation)
 
         if (!conversation.isRead && !AppGlobal.preferences.getBoolean(
                 FragmentSettings.KEY_NOT_READ_MESSAGES,
@@ -260,7 +280,8 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
     }
 
     override fun onItemLongClick(position: Int) {
-        showAlert(position)
+        if (!chooseConversation)
+            showAlert(position)
     }
 
     private fun showAlert(position: Int) {
