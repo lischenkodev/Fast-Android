@@ -9,7 +9,11 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 
-class HttpRequest(private val url: String, private val method: String, private val params: ArrayMap<String, String>?) {
+class HttpRequest(
+    private val url: String,
+    private val method: String,
+    private val params: ArrayMap<String, String>?
+) {
 
     private var connection: HttpURLConnection? = null
 

@@ -56,12 +56,18 @@ object ColorUtil {
         val fgAlpha = Color.alpha(foreground)
         val a = compositeAlpha(fgAlpha, bgAlpha)
 
-        val r = compositeComponent(Color.red(foreground), fgAlpha,
-                Color.red(background), bgAlpha, a)
-        val g = compositeComponent(Color.green(foreground), fgAlpha,
-                Color.green(background), bgAlpha, a)
-        val b = compositeComponent(Color.blue(foreground), fgAlpha,
-                Color.blue(background), bgAlpha, a)
+        val r = compositeComponent(
+            Color.red(foreground), fgAlpha,
+            Color.red(background), bgAlpha, a
+        )
+        val g = compositeComponent(
+            Color.green(foreground), fgAlpha,
+            Color.green(background), bgAlpha, a
+        )
+        val b = compositeComponent(
+            Color.blue(foreground), fgAlpha,
+            Color.blue(background), bgAlpha, a
+        )
 
         return Color.argb(a, r, g, b)
     }
@@ -92,7 +98,11 @@ object ColorUtil {
     private fun calculateContrast(@ColorInt foreground: Int, @ColorInt background: Int): Double {
         var color = foreground
         if (Color.alpha(background) != 255) {
-            throw IllegalArgumentException("background can not be translucent: #" + Integer.toHexString(background))
+            throw IllegalArgumentException(
+                "background can not be translucent: #" + Integer.toHexString(
+                    background
+                )
+            )
         }
         if (Color.alpha(color) < 255) {
             color = compositeColors(color, background)
@@ -104,10 +114,16 @@ object ColorUtil {
         return Math.max(luminance1, luminance2) / Math.min(luminance1, luminance2)
     }
 
-    fun calculateMinimumAlpha(@ColorInt foreground: Int, @ColorInt background: Int,
-                              minContrastRatio: Float): Int {
+    fun calculateMinimumAlpha(
+        @ColorInt foreground: Int, @ColorInt background: Int,
+        minContrastRatio: Float
+    ): Int {
         if (Color.alpha(background) != 255) {
-            throw IllegalArgumentException("background can not be translucent: #" + Integer.toHexString(background))
+            throw IllegalArgumentException(
+                "background can not be translucent: #" + Integer.toHexString(
+                    background
+                )
+            )
         }
 
         // First lets check that a fully opaque foreground has sufficient contrast
@@ -141,9 +157,11 @@ object ColorUtil {
         return maxAlpha
     }
 
-    private fun rgbToHsl(@IntRange(from = 0x0, to = 0xFF) r: Int,
-                         @IntRange(from = 0x0, to = 0xFF) g: Int, @IntRange(from = 0x0, to = 0xFF) b: Int,
-                         hsl: FloatArray) {
+    private fun rgbToHsl(
+        @IntRange(from = 0x0, to = 0xFF) r: Int,
+        @IntRange(from = 0x0, to = 0xFF) g: Int, @IntRange(from = 0x0, to = 0xFF) b: Int,
+        hsl: FloatArray
+    ) {
         val rf = r / 255f
         val gf = g / 255f
         val bf = b / 255f
@@ -240,8 +258,10 @@ object ColorUtil {
     }
 
     @ColorInt
-    fun setAlphaComponent(@ColorInt color: Int,
-                          @IntRange(from = 0x0, to = 0xFF) alpha: Int): Int {
+    fun setAlphaComponent(
+        @ColorInt color: Int,
+        @IntRange(from = 0x0, to = 0xFF) alpha: Int
+    ): Int {
         if (alpha < 0 || alpha > 255) {
             throw IllegalArgumentException("alpha must be between 0 and 255.")
         }

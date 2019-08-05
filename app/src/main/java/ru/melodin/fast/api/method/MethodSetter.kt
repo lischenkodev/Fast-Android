@@ -72,8 +72,8 @@ open class MethodSetter(private val name: String) {
                 if (StringUtils.isEmpty(value)) continue
 
                 buffer.append(key)
-                        .append("=")
-                        .append(URLEncoder.encode(value, "UTF-8"))
+                    .append("=")
+                    .append(URLEncoder.encode(value, "UTF-8"))
             }
         } catch (e: UnsupportedEncodingException) {
             e.printStackTrace()

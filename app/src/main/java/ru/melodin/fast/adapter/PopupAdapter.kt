@@ -9,7 +9,12 @@ import ru.melodin.fast.R
 import ru.melodin.fast.model.ListItem
 import java.util.*
 
-class PopupAdapter(context: Context, values: ArrayList<ListItem>) : RecyclerAdapter<ListItem, PopupAdapter.ViewHolder>(context, R.layout.activity_messages_popup_item, values) {
+class PopupAdapter(context: Context, values: ArrayList<ListItem>) :
+    RecyclerAdapter<ListItem, PopupAdapter.ViewHolder>(
+        context,
+        R.layout.activity_messages_popup_item,
+        values
+    ) {
 
     override fun changeItems(items: ArrayList<ListItem>) {
         super.changeItems(items)

@@ -20,4 +20,6 @@ object Keys {
     const val AUTHORIZATION_FAILED = "authorization_failed"
 
     const val KEY_THEME_UPDATE = "theme_update"
+
+    const val KEY_CHOOSE_MESSAGE = "choose_message"
 }

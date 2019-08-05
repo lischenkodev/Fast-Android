@@ -51,7 +51,13 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         }
     }
 
-    private fun inflateAttachments(item: VKMessage, parent: ViewGroup, images: ViewGroup, maxWidth: Int, forwarded: Boolean) {
+    private fun inflateAttachments(
+        item: VKMessage,
+        parent: ViewGroup,
+        images: ViewGroup,
+        maxWidth: Int,
+        forwarded: Boolean
+    ) {
         val attachments = item.attachments
         for (i in attachments.indices) {
             when (val attachment = attachments[i]) {
@@ -69,13 +75,18 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         }
     }
 
-    private fun loadImage(image: ImageView, smallSrc: String?, normalSrc: String?, placeholder: Drawable? = null) {
+    private fun loadImage(
+        image: ImageView,
+        smallSrc: String?,
+        normalSrc: String?,
+        placeholder: Drawable? = null
+    ) {
         if (TextUtils.isEmpty(smallSrc)) return
         try {
             val request = Picasso.get()
-                    .load(smallSrc)
-                    .priority(Picasso.Priority.HIGH)
-                    .placeholder(placeholder ?: ColorDrawable(0))
+                .load(smallSrc)
+                .priority(Picasso.Priority.HIGH)
+                .placeholder(placeholder ?: ColorDrawable(0))
 
             if (!TextUtils.isEmpty(normalSrc)) {
                 request.into(image, object : Callback.EmptyCallback() {
@@ -84,10 +95,10 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
                             return
 
                         Picasso.get()
-                                .load(normalSrc)
-                                .placeholder(image.drawable)
-                                .priority(Picasso.Priority.HIGH)
-                                .into(image)
+                            .load(normalSrc)
+                            .placeholder(image.drawable)
+                            .priority(Picasso.Priority.HIGH)
+                            .into(image)
                     }
                 })
             } else {
@@ -111,12 +122,14 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
     private fun getParams(layoutWidth: Int): LinearLayout.LayoutParams {
         return if (layoutWidth == -1)
             LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT)
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
         else
             LinearLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    getHeight(layoutWidth))
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                getHeight(layoutWidth)
+            )
     }
 
     private fun getFrameParams(width: Int, height: Int): FrameLayout.LayoutParams {
@@ -126,11 +139,12 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
     private fun getFrameParams(layoutWidth: Int): FrameLayout.LayoutParams {
         return if (layoutWidth == -1) {
             FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT)
-        } else FrameLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                getHeight(layoutWidth)
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        } else FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            getHeight(layoutWidth)
         )
     }
 
@@ -174,7 +188,8 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
     }
 
     fun graffiti(item: VKMessage, parent: ViewGroup, source: VKGraffiti) {
-        val image = inflater.inflate(R.layout.activity_messages_attach_photo, parent, false) as ImageView
+        val image =
+            inflater.inflate(R.layout.activity_messages_attach_photo, parent, false) as ImageView
         image.setOnLongClickListener {
             simulateLongClick(item)
             true
@@ -192,7 +207,8 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
     }
 
     fun sticker(item: VKMessage, parent: ViewGroup, source: VKSticker) {
-        val image = inflater.inflate(R.layout.activity_messages_attach_photo, parent, false) as ImageView
+        val image =
+            inflater.inflate(R.layout.activity_messages_attach_photo, parent, false) as ImageView
         image.setOnLongClickListener {
             simulateLongClick(item)
             true
@@ -201,7 +217,11 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         image.setOnClickListener { isSelected(item) }
 
         image.layoutParams = getParams(400, 400)
-        loadImage(image, if (ThemeManager.isDark) source.maxBackgroundSize else source.maxSize, null)
+        loadImage(
+            image,
+            if (ThemeManager.isDark) source.maxBackgroundSize else source.maxSize,
+            null
+        )
 
         image.isClickable = false
         image.isFocusable = false
@@ -228,19 +248,27 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         val image = v.findViewById<ImageView>(R.id.image)
         val time = v.findViewById<TextView>(R.id.time)
 
-        val duration = String.format(AppGlobal.locale, "%d:%02d", source.duration / 60, source.duration % 60)
+        val duration =
+            String.format(AppGlobal.locale, "%d:%02d", source.duration / 60, source.duration % 60)
         time.text = duration
 
-        image.layoutParams = if (maxWidth == -1) getFrameParams(source.maxWidth, FrameLayout.LayoutParams.WRAP_CONTENT) else getFrameParams(maxWidth)
+        image.layoutParams = if (maxWidth == -1) getFrameParams(
+            source.maxWidth,
+            FrameLayout.LayoutParams.WRAP_CONTENT
+        ) else getFrameParams(maxWidth)
 
         loadImage(image, source.maxSize, null)
         parent.addView(v)
     }
 
     fun photo(item: VKMessage, parent: ViewGroup, source: VKPhoto, maxWidth: Int) {
-        val image = inflater.inflate(R.layout.activity_messages_attach_photo, parent, false) as ImageView
+        val image =
+            inflater.inflate(R.layout.activity_messages_attach_photo, parent, false) as ImageView
 
-        image.layoutParams = if (maxWidth == -1) getParams(source.maxWidth, source.maxHeight) else getParams(maxWidth)
+        image.layoutParams = if (maxWidth == -1) getParams(
+            source.maxWidth,
+            source.maxHeight
+        ) else getParams(maxWidth)
         image.setOnClickListener {
             if (isSelected(item)) return@setOnClickListener
 
@@ -275,7 +303,13 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         parent.addView(v)
     }
 
-    fun message(item: VKMessage?, parent: ViewGroup?, source: VKMessage, isReply: Boolean, withStyles: Boolean): View {
+    fun message(
+        item: VKMessage?,
+        parent: ViewGroup?,
+        source: VKMessage,
+        isReply: Boolean,
+        withStyles: Boolean
+    ): View {
         val v = inflater.inflate(R.layout.activity_messages_attach_message, parent, false)
         v.isClickable = false
         v.isFocusable = false
@@ -306,10 +340,10 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         } else {
             avatar.visibility = View.VISIBLE
             Picasso.get()
-                    .load(user.photo100)
-                    .priority(Picasso.Priority.HIGH)
-                    .placeholder(R.drawable.avatar_placeholder)
-                    .into(avatar)
+                .load(user.photo100)
+                .priority(Picasso.Priority.HIGH)
+                .placeholder(R.drawable.avatar_placeholder)
+                .into(avatar)
         }
 
         line.setBackgroundColor(if (withStyles) ThemeManager.accent else Color.TRANSPARENT)
@@ -386,7 +420,8 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
 
         val play = v.findViewById<ImageButton>(R.id.play)
 
-        val duration = String.format(AppGlobal.locale, "%d:%02d", source.duration / 60, source.duration % 60)
+        val duration =
+            String.format(AppGlobal.locale, "%d:%02d", source.duration / 60, source.duration % 60)
         title.text = context.getString(R.string.voice_message)
         body.text = duration
 
@@ -397,10 +432,12 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         play.setImageDrawable(if (playing) stop else start)
 
         play.setOnClickListener {
-            EventBus.getDefault().postSticky(arrayOf<Any>(
+            EventBus.getDefault().postSticky(
+                arrayOf<Any>(
                     if (playing) KEY_PAUSE_AUDIO else KEY_PLAY_AUDIO,
                     item.id,
-                    if (!playing) source.linkMp3 else "")
+                    if (!playing) source.linkMp3 else ""
+                )
             )
         }
 
@@ -433,14 +470,17 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         play.setImageDrawable(if (playing) stop else start)
 
         play.setOnClickListener {
-            EventBus.getDefault().postSticky(arrayOf<Any>(
+            EventBus.getDefault().postSticky(
+                arrayOf<Any>(
                     if (playing) KEY_PAUSE_AUDIO else KEY_PLAY_AUDIO,
                     item.id,
-                    if (!playing) source.url else "")
+                    if (!playing) source.url else ""
+                )
             )
         }
 
-        val duration = String.format(AppGlobal.locale, "%d:%02d", source.duration / 60, source.duration % 60)
+        val duration =
+            String.format(AppGlobal.locale, "%d:%02d", source.duration / 60, source.duration % 60)
         title.text = source.title
         body.text = source.artist
         time.text = duration
@@ -466,7 +506,8 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
 
         title.text = source.title
 
-        val body = if (TextUtils.isEmpty(source.caption)) if (TextUtils.isEmpty(source.description)) "" else source.description else source.caption
+        val body =
+            if (TextUtils.isEmpty(source.caption)) if (TextUtils.isEmpty(source.description)) "" else source.description else source.caption
 
         if (body.isEmpty()) {
             description.visibility = View.GONE
@@ -484,8 +525,8 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
             icon.visibility = View.GONE
 
             Picasso.get()
-                    .load(source.photo!!.maxSize)
-                    .into(photo)
+                .load(source.photo!!.maxSize)
+                .into(photo)
         }
 
         title.maxWidth = metrics.widthPixels - metrics.widthPixels / 2

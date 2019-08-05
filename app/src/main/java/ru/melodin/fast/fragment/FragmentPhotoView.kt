@@ -53,7 +53,8 @@ class FragmentPhotoView(private var photo: VKPhoto?) : Fragment() {
                     val max = resources.displayMetrics.heightPixels / 6
 
                     if (BuildConfig.DEBUG) {
-                        val swipeInfo = " \ntop: " + top + "\nheight: " + resources.displayMetrics.heightPixels + "\nmax: " + max
+                        val swipeInfo =
+                            " \ntop: " + top + "\nheight: " + resources.displayMetrics.heightPixels + "\nmax: " + max
                         Log.d("swipeInfo", swipeInfo)
                     }
 
@@ -95,13 +96,23 @@ class FragmentPhotoView(private var photo: VKPhoto?) : Fragment() {
         return super.getView() as CoordinatorLayout?
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         val layout = CoordinatorLayout(context!!)
-        layout.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        layout.layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
         layout.fitsSystemWindows = true
 
         val image = ImageView(context)
-        image.layoutParams = CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.MATCH_PARENT)
+        image.layoutParams = CoordinatorLayout.LayoutParams(
+            CoordinatorLayout.LayoutParams.MATCH_PARENT,
+            CoordinatorLayout.LayoutParams.MATCH_PARENT
+        )
         image.adjustViewBounds = true
         image.fitsSystemWindows = true
 
@@ -125,7 +136,8 @@ class FragmentPhotoView(private var photo: VKPhoto?) : Fragment() {
 
     private fun loadPhoto(url: String?) {
         try {
-            Picasso.get().load(url).placeholder(ColorDrawable(Color.GRAY)).into(view!!.getChildAt(0) as ImageView)
+            Picasso.get().load(url).placeholder(ColorDrawable(Color.GRAY))
+                .into(view!!.getChildAt(0) as ImageView)
         } catch (e: Exception) {
             Log.e("Error load photo", Log.getStackTraceString(e))
         }

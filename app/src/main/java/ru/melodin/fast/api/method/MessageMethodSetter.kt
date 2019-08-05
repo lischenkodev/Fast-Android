@@ -1,8 +1,8 @@
 package ru.melodin.fast.api.method
 
+import ru.melodin.fast.api.model.VKMessage
 import ru.melodin.fast.api.model.VKModel
 import ru.melodin.fast.util.ArrayUtil
-import java.util.*
 
 
 class MessageMethodSetter(name: String) : MethodSetter("messages.$name") {
@@ -154,8 +154,11 @@ class MessageMethodSetter(name: String) : MethodSetter("messages.$name") {
     }
 
     fun forwardMessages(vararg ids: Int): MessageMethodSetter {
-        put("forward_messages", ArrayUtil.toString(*ids))
-        return this
+        return put("forward_messages", ArrayUtil.toString(*ids)) as MessageMethodSetter
+    }
+
+    fun forwardMessages(messages: ArrayList<VKMessage>): MessageMethodSetter {
+        return put("forward_messages", ArrayUtil.toString(messages)) as MessageMethodSetter
     }
 
     fun stickerId(value: Int): MessageMethodSetter {
@@ -202,7 +205,7 @@ class MessageMethodSetter(name: String) : MethodSetter("messages.$name") {
         return this
     }
 
-    fun replyTo(value: Int) : MessageMethodSetter {
+    fun replyTo(value: Int): MessageMethodSetter {
         return put("reply_to", value) as MessageMethodSetter
     }
 }

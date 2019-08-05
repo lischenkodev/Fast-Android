@@ -18,7 +18,8 @@ class SettingsActivity : BaseActivity() {
         tb.setTitle(R.string.settings)
         tb.setBackVisible(true)
 
-        supportFragmentManager.beginTransaction().add(R.id.fragment_container, FragmentSettings()).commit()
+        supportFragmentManager.beginTransaction().add(R.id.fragment_container, FragmentSettings())
+            .commit()
     }
 
     override fun applyStyles() {

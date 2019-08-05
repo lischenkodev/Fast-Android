@@ -41,7 +41,11 @@ object VKUtil {
 
         when (msg.action) {
             null -> return null
-            VKMessage.Action.CREATE -> return String.format(getString(R.string.created_chat_m), name, "«" + msg.actionText + "»")
+            VKMessage.Action.CREATE -> return String.format(
+                getString(R.string.created_chat_m),
+                name,
+                "«" + msg.actionText + "»"
+            )
             VKMessage.Action.INVITE_USER -> return if (msg.actionId == msg.fromId) {
                 String.format(getString(R.string.returned_to_chat_m), name!!)
             } else {
@@ -52,12 +56,31 @@ object VKUtil {
             } else {
                 String.format(getString(R.string.kicked_from_chat_m), name, actionName)
             }
-            VKMessage.Action.PHOTO_REMOVE -> return String.format(getString(R.string.remove_chat_photo_m), name!!)
-            VKMessage.Action.PHOTO_UPDATE -> return String.format(getString(R.string.updated_chat_photo_m), name!!)
-            VKMessage.Action.TITLE_UPDATE -> return String.format(getString(R.string.updated_title_m), name, "«" + msg.actionText + "»")
-            VKMessage.Action.INVITE_USER_BY_LINK -> return String.format(getString(R.string.invited_by_link_m), name!!)
-            VKMessage.Action.PIN_MESSAGE -> return String.format(getString(R.string.pinned_message_m), name!!)
-            VKMessage.Action.UNPIN_MESSAGE -> return String.format(getString(R.string.unpinned_message_m), name!!)
+            VKMessage.Action.PHOTO_REMOVE -> return String.format(
+                getString(R.string.remove_chat_photo_m),
+                name!!
+            )
+            VKMessage.Action.PHOTO_UPDATE -> return String.format(
+                getString(R.string.updated_chat_photo_m),
+                name!!
+            )
+            VKMessage.Action.TITLE_UPDATE -> return String.format(
+                getString(R.string.updated_title_m),
+                name,
+                "«" + msg.actionText + "»"
+            )
+            VKMessage.Action.INVITE_USER_BY_LINK -> return String.format(
+                getString(R.string.invited_by_link_m),
+                name!!
+            )
+            VKMessage.Action.PIN_MESSAGE -> return String.format(
+                getString(R.string.pinned_message_m),
+                name!!
+            )
+            VKMessage.Action.UNPIN_MESSAGE -> return String.format(
+                getString(R.string.unpinned_message_m),
+                name!!
+            )
         }
 
     }

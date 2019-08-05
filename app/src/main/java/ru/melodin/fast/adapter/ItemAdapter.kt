@@ -21,7 +21,13 @@ class ItemAdapter(context: Context, values: ArrayList<ListItem>) :
         return when (viewType) {
             ListItem.TYPE_ITEM -> ViewHolder(getView(parent)!!)
             ListItem.TYPE_DIVIDER -> Holder(inflater.inflate(R.layout.view_divider, parent, false))
-            ListItem.TYPE_SHADOW_PADDING -> Holder(inflater.inflate(R.layout.view_shadow_padding, parent, false))
+            ListItem.TYPE_SHADOW_PADDING -> Holder(
+                inflater.inflate(
+                    R.layout.view_shadow_padding,
+                    parent,
+                    false
+                )
+            )
             else -> Holder(View(context))
         }
     }

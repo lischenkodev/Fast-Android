@@ -57,7 +57,8 @@ open class VKGroup : VKModel, Serializable {
 
     companion object {
 
-        const val FIELDS_DEFAULT = "city,country,place,description,wiki_page,market,members_count,counters,start_date,finish_date,can_post,can_see_all_posts,activity,status,contacts,links,fixed_post,verified,site,ban_info,cover"
+        const val FIELDS_DEFAULT =
+            "city,country,place,description,wiki_page,market,members_count,counters,start_date,finish_date,can_post,can_see_all_posts,activity,status,contacts,links,fixed_post,verified,site,ban_info,cover"
 
         val EMPTY: VKGroup = object : VKGroup() {
             override fun toString(): String {

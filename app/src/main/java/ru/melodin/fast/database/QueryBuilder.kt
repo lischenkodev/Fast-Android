@@ -10,37 +10,37 @@ class QueryBuilder private constructor() {
 
     fun select(column: String): QueryBuilder {
         this.buffer.append("SELECT ")
-                .append(column)
-                .append(" ")
+            .append(column)
+            .append(" ")
         return this
     }
 
 
     fun from(table: String): QueryBuilder {
         this.buffer.append("FROM ")
-                .append(table)
-                .append(" ")
+            .append(table)
+            .append(" ")
         return this
     }
 
     fun where(clause: String): QueryBuilder {
         this.buffer.append("WHERE ")
-                .append(clause)
-                .append(" ")
+            .append(clause)
+            .append(" ")
         return this
     }
 
     fun leftJoin(table: String): QueryBuilder {
         this.buffer.append("LEFT JOIN ")
-                .append(table)
-                .append(" ")
+            .append(table)
+            .append(" ")
         return this
     }
 
     fun on(where: String): QueryBuilder {
         this.buffer.append("ON ")
-                .append(where)
-                .append(" ")
+            .append(where)
+            .append(" ")
         return this
     }
 

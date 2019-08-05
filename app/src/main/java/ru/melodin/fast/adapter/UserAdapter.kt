@@ -37,12 +37,21 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
     private var withKick: Boolean = false
     private var conversation: VKConversation? = null
 
-    constructor(context: FragmentFriends, friends: ArrayList<VKUser>) : super(context.context!!, R.layout.item_user, friends) {
+    constructor(context: FragmentFriends, friends: ArrayList<VKUser>) : super(
+        context.context!!,
+        R.layout.item_user,
+        friends
+    ) {
         this.fragment = context
         EventBus.getDefault().register(this)
     }
 
-    constructor(context: Context, users: ArrayList<VKUser>, withUpdates: Boolean = false, conversation: VKConversation? = null) : super(context, R.layout.item_user, users) {
+    constructor(
+        context: Context,
+        users: ArrayList<VKUser>,
+        withUpdates: Boolean = false,
+        conversation: VKConversation? = null
+    ) : super(context, R.layout.item_user, users) {
         if (conversation != null) {
             this.conversation = conversation
             this.withKick = conversation.isCanModerate
@@ -52,7 +61,11 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
             EventBus.getDefault().register(this)
     }
 
-    constructor(context: Context, users: ArrayList<VKUser>, withKick: Boolean) : super(context, R.layout.item_user, users) {
+    constructor(context: Context, users: ArrayList<VKUser>, withKick: Boolean) : super(
+        context,
+        R.layout.item_user,
+        users
+    ) {
         this.withKick = withKick
 
         EventBus.getDefault().register(this)
@@ -67,8 +80,18 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
         if (ArrayUtil.isEmpty(data)) return
 
         when (data[0] as String) {
-            Keys.USER_OFFLINE -> setUserOnline(online = false, mobile = false, userId = data[1] as Int, time = data[2] as Int)
-            Keys.USER_ONLINE -> setUserOnline(true, data[3] as Boolean, data[1] as Int, data[2] as Int)
+            Keys.USER_OFFLINE -> setUserOnline(
+                online = false,
+                mobile = false,
+                userId = data[1] as Int,
+                time = data[2] as Int
+            )
+            Keys.USER_ONLINE -> setUserOnline(
+                true,
+                data[3] as Boolean,
+                data[1] as Int,
+                data[2] as Int
+            )
             Keys.CONNECTED -> {
                 fragment ?: return
                 if (fragment!!.isLoading)
@@ -182,17 +205,22 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
                     EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, user.invitedBy))
                 }
 
-                val text = if (invitedUser.id == user.id) getString(R.string.chat_creator) else getString(R.string.invited_by, invitedUser.toString())
+                val text =
+                    if (invitedUser.id == user.id) getString(R.string.chat_creator) else getString(
+                        R.string.invited_by,
+                        invitedUser.toString()
+                    )
                 lastSeen.text = text
                 lastSeen.visibility = View.VISIBLE
             } else {
                 if (lastSeen.visibility == View.VISIBLE) {
                     val seen = getString(
-                            if (user.sex == VKUser.Sex.MALE)
-                                R.string.last_seen_m
-                            else
-                                R.string.last_seen_w,
-                            Util.dateFormatter.format(user.lastSeen * 1000))
+                        if (user.sex == VKUser.Sex.MALE)
+                            R.string.last_seen_m
+                        else
+                            R.string.last_seen_w,
+                        Util.dateFormatter.format(user.lastSeen * 1000)
+                    )
 
                     lastSeen.text = seen
                 } else {
@@ -201,20 +229,30 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
             }
 
             if (TextUtils.isEmpty(user.photo200)) {
-                avatar.setImageDrawable(ColorDrawable(ColorUtil.alphaColor(ThemeManager.primary, 0.5f)))
+                avatar.setImageDrawable(
+                    ColorDrawable(
+                        ColorUtil.alphaColor(
+                            ThemeManager.primary,
+                            0.5f
+                        )
+                    )
+                )
             } else {
                 Picasso.get()
-                        .load(user.photo200)
-                        .priority(Picasso.Priority.HIGH)
-                        .placeholder(placeholder!!)
-                        .into(avatar)
+                    .load(user.photo200)
+                    .priority(Picasso.Priority.HIGH)
+                    .placeholder(placeholder!!)
+                    .into(avatar)
             }
         }
     }
 
     companion object {
         fun getOnlineIndicator(context: Context, user: VKUser): Drawable? {
-            return if (!user.isOnline) null else ContextCompat.getDrawable(context, if (user.isOnlineMobile) R.drawable.ic_online_mobile else R.drawable.ic_online_pc)
+            return if (!user.isOnline) null else ContextCompat.getDrawable(
+                context,
+                if (user.isOnlineMobile) R.drawable.ic_online_mobile else R.drawable.ic_online_pc
+            )
         }
     }
 }

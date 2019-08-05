@@ -72,7 +72,12 @@ object ArrayUtil {
     }
 
     @JvmOverloads
-    fun linearSearch(array: DoubleArray, value: Double, start: Int = 0, end: Int = array.size): Int {
+    fun linearSearch(
+        array: DoubleArray,
+        value: Double,
+        start: Int = 0,
+        end: Int = array.size
+    ): Int {
         for (i in start until end) {
             if (array[i].compareTo(value) == 0) {
                 return i

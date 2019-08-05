@@ -16,7 +16,8 @@ internal object CrashManager {
     }
 
     private fun report(ex: Throwable) {
-        val s = "Fast \nVersion: " + AppGlobal.app_version_name + "\nBuild: " + AppGlobal.app_version_code + "\n\n"
+        val s =
+            "Fast \nVersion: " + AppGlobal.app_version_name + "\nBuild: " + AppGlobal.app_version_code + "\n\n"
 
         val text = s +
                 "Android SDK: " + Build.VERSION.SDK_INT +
@@ -34,7 +35,8 @@ internal object CrashManager {
                 "\n" + "Log below:" + "\n" + "\n" +
                 Log.getStackTraceString(ex)
 
-        AppGlobal.preferences.edit().putBoolean("isCrashed", true).putString("crashLog", text).apply()
+        AppGlobal.preferences.edit().putBoolean("isCrashed", true).putString("crashLog", text)
+            .apply()
 
         val path = Environment.getExternalStorageDirectory().toString() + "/Fast/crash_logs"
 

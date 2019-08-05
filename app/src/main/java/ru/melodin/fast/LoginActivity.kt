@@ -49,7 +49,8 @@ class LoginActivity : BaseActivity() {
         setContentView(R.layout.activity_login)
 
         progress.visibility = View.INVISIBLE
-        progress.indeterminateTintList = ColorStateList.valueOf(ColorUtil.saturateColor(ThemeManager.accent, 2f))
+        progress.indeterminateTintList =
+            ColorStateList.valueOf(ColorUtil.saturateColor(ThemeManager.accent, 2f))
 
         buttonLogin.shrink()
         buttonLogin.extend()
@@ -78,7 +79,9 @@ class LoginActivity : BaseActivity() {
         val anim = intent.getBooleanExtra("show_anim", true)
 
         if (anim)
-            card.animate().translationY(200f).setDuration(0).withEndAction { card.animate().translationY(0f).setDuration(500).start() }.start()
+            card.animate().translationY(200f).setDuration(0).withEndAction {
+                card.animate().translationY(0f).setDuration(500).start()
+            }.start()
 
         val bundle = intent.getBundleExtra("data")
         if (bundle != null)
@@ -131,7 +134,11 @@ class LoginActivity : BaseActivity() {
 
         webView.addJavascriptInterface(HandlerInterface(), "HtmlHandler")
         webView.webViewClient = object : WebViewClient() {
-            override fun onReceivedError(view: WebView, request: WebResourceRequest, error: WebResourceError) {
+            override fun onReceivedError(
+                view: WebView,
+                request: WebResourceRequest,
+                error: WebResourceError
+            ) {
                 if (Util.hasConnection())
                     view.reload()
             }
@@ -147,11 +154,12 @@ class LoginActivity : BaseActivity() {
             manager.flush()
             manager.setAcceptCookie(false)
 
-            val url = "https://oauth.vk.com/token?grant_type=password&client_id=2274003&scope=" + Scopes.all() + "&client_secret=hHbZxrka2uZ6jB1inYsH" +
-                    "&username=" + login +
-                    "&password=" + password +
-                    captcha +
-                    "&v=5.68"
+            val url =
+                "https://oauth.vk.com/token?grant_type=password&client_id=2274003&scope=" + Scopes.all() + "&client_secret=hHbZxrka2uZ6jB1inYsH" +
+                        "&username=" + login +
+                        "&password=" + password +
+                        captcha +
+                        "&v=5.68"
 
             runOnUiThread { webView.loadUrl(url) }
         }
@@ -173,7 +181,8 @@ class LoginActivity : BaseActivity() {
                         when (response.optString("error", getString(R.string.error))) {
                             "need_validation" -> {
                                 val redirectUri = response.optString("redirect_uri")
-                                val intent = Intent(this@LoginActivity, ValidationActivity::class.java)
+                                val intent =
+                                    Intent(this@LoginActivity, ValidationActivity::class.java)
                                 intent.putExtra("url", redirectUri)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                                 startActivityForResult(intent, REQUEST_VALIDATE)
@@ -183,7 +192,11 @@ class LoginActivity : BaseActivity() {
                                 val captchaSid = response.optString("captcha_sid")
                                 showCaptchaDialog(captchaSid, captchaImg)
                             }
-                            else -> Snackbar.make(buttonLogin, errorDescription, Snackbar.LENGTH_LONG).show()
+                            else -> Snackbar.make(
+                                buttonLogin,
+                                errorDescription,
+                                Snackbar.LENGTH_LONG
+                            ).show()
                         }
                     } else {
                         UserConfig.userId = response.optInt("user_id", -1)
@@ -195,7 +208,13 @@ class LoginActivity : BaseActivity() {
                     }
                 }
             } catch (e: Exception) {
-                runOnUiThread { Toast.makeText(this@LoginActivity, R.string.error, Toast.LENGTH_SHORT).show() }
+                runOnUiThread {
+                    Toast.makeText(
+                        this@LoginActivity,
+                        R.string.error,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
@@ -204,14 +223,20 @@ class LoginActivity : BaseActivity() {
         val metrics = resources.displayMetrics
 
         val image = ImageView(this@LoginActivity)
-        image.layoutParams = ViewGroup.LayoutParams((metrics.widthPixels / 3.5).toInt(), resources.displayMetrics.heightPixels / 7)
+        image.layoutParams = ViewGroup.LayoutParams(
+            (metrics.widthPixels / 3.5).toInt(),
+            resources.displayMetrics.heightPixels / 7
+        )
 
         Picasso.get().load(captcha_img).priority(Picasso.Priority.HIGH).into(image)
 
         val input = TextInputEditText(this@LoginActivity)
 
         input.hint = getString(R.string.captcha)
-        input.layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        input.layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
+        )
 
         val adb = AlertDialog.Builder(this@LoginActivity)
 
@@ -278,27 +303,34 @@ class LoginActivity : BaseActivity() {
         execute {
             var user: VKUser?
 
-            VKApi.users().get().userIds(id).fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java, object : OnCompleteListener {
-                override fun onComplete(models: ArrayList<*>?) {
-                    if (ArrayUtil.isEmpty(models)) return
-                    models ?: return
+            VKApi.users().get().userIds(id).fields(VKUser.FIELDS_DEFAULT)
+                .execute(VKUser::class.java, object : OnCompleteListener {
+                    override fun onComplete(models: ArrayList<*>?) {
+                        if (ArrayUtil.isEmpty(models)) return
+                        models ?: return
 
-                    user = models[0] as VKUser?
+                        user = models[0] as VKUser?
 
-                    CacheStorage.insert(DatabaseHelper.USERS_TABLE, user!!)
-                    UserConfig.getUser()
-                }
+                        CacheStorage.insert(DatabaseHelper.USERS_TABLE, user!!)
+                        UserConfig.getUser()
+                    }
 
-                override fun onError(e: Exception) {
-                    Toast.makeText(this@LoginActivity, R.string.error, Toast.LENGTH_LONG).show()
-                }
+                    override fun onError(e: Exception) {
+                        Toast.makeText(this@LoginActivity, R.string.error, Toast.LENGTH_LONG).show()
+                    }
 
-            })
+                })
         }
     }
 
     private fun createBundle(savedInstanceState: Bundle): Bundle {
-        savedInstanceState.putStringArray("fields", arrayOf(inputLogin.editText!!.text.toString().trim(), inputPassword.editText!!.text.toString().trim()))
+        savedInstanceState.putStringArray(
+            "fields",
+            arrayOf(
+                inputLogin.editText!!.text.toString().trim(),
+                inputPassword.editText!!.text.toString().trim()
+            )
+        )
         return savedInstanceState
     }
 
@@ -330,7 +362,9 @@ class LoginActivity : BaseActivity() {
         @JavascriptInterface
         fun handleHtml(html: String) {
             val doc = Jsoup.parse(html)
-            val response = doc.select("pre[style=\"word-wrap: break-word; white-space: pre-wrap;\"]").first().text()
+            val response =
+                doc.select("pre[style=\"word-wrap: break-word; white-space: pre-wrap;\"]").first()
+                    .text()
             runOnUiThread { authorize(response) }
         }
     }

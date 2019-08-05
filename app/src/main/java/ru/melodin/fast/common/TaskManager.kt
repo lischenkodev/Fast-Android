@@ -32,7 +32,10 @@ class TaskManager {
         }
     }
 
-    private class Task internal constructor(internal val setter: MethodSetter, internal val listener: OnCompleteListener?)
+    private class Task internal constructor(
+        internal val setter: MethodSetter,
+        internal val listener: OnCompleteListener?
+    )
 
     companion object {
 
@@ -54,16 +57,29 @@ class TaskManager {
 
         fun loadConversation(peerId: Int, extended: Boolean, listener: OnCompleteListener?) {
             if (loadingIds.indexOf(peerId) != -1) return
-            val setter = VKApi.messages().conversationsById.extended(extended).peerIds(peerId).extended(true).fields(VKUser.FIELDS_DEFAULT)
+            val setter =
+                VKApi.messages().conversationsById.extended(extended).peerIds(peerId).extended(true)
+                    .fields(VKUser.FIELDS_DEFAULT)
             loadingIds.add(peerId)
-            addProcedure(setter, VKConversation::class.java, listener, arrayOf(Keys.UPDATE_CONVERSATION, peerId))
+            addProcedure(
+                setter,
+                VKConversation::class.java,
+                listener,
+                arrayOf(Keys.UPDATE_CONVERSATION, peerId)
+            )
         }
 
         fun loadMessage(messageId: Int, extended: Boolean, listener: OnCompleteListener?) {
             if (loadingIds.contains(messageId)) return
-            val setter = VKApi.messages().byId.messageIds(messageId).extended(extended).fields(if (extended) VKUser.FIELDS_DEFAULT else "")
+            val setter = VKApi.messages().byId.messageIds(messageId).extended(extended)
+                .fields(if (extended) VKUser.FIELDS_DEFAULT else "")
             loadingIds.add(messageId)
-            addProcedure(setter, VKMessage::class.java, listener, arrayOf(Keys.UPDATE_MESSAGE, messageId))
+            addProcedure(
+                setter,
+                VKMessage::class.java,
+                listener,
+                arrayOf(Keys.UPDATE_MESSAGE, messageId)
+            )
         }
 
         fun loadUser(userId: Int, listener: OnCompleteListener?) {
@@ -87,7 +103,12 @@ class TaskManager {
             addProcedure(setter, VKChat::class.java, listener, null)
         }
 
-        fun addProcedure(setter: MethodSetter, cls: Class<*>?, listener: OnCompleteListener?, pushData: Array<Any>?) {
+        fun addProcedure(
+            setter: MethodSetter,
+            cls: Class<*>?,
+            listener: OnCompleteListener?,
+            pushData: Array<Any>?
+        ) {
             val task = Task(setter, listener)
 
 
@@ -106,13 +127,26 @@ class TaskManager {
                             val key = pushData!![0] as String
 
                             if (!ArrayUtil.isEmpty(models)) {
-                                val id = pushData[1] as Int * if (key == Keys.UPDATE_GROUP) -1 else 1
+                                val id =
+                                    pushData[1] as Int * if (key == Keys.UPDATE_GROUP) -1 else 1
                                 loadingIds.remove(id)
                                 when (key) {
-                                    Keys.UPDATE_GROUP -> CacheStorage.insert(DatabaseHelper.GROUPS_TABLE, models!![0])
-                                    Keys.UPDATE_USER -> CacheStorage.insert(DatabaseHelper.USERS_TABLE, models!![0])
-                                    Keys.UPDATE_CONVERSATION -> CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, models!![0])
-                                    Keys.UPDATE_MESSAGE -> CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, models!![0])
+                                    Keys.UPDATE_GROUP -> CacheStorage.insert(
+                                        DatabaseHelper.GROUPS_TABLE,
+                                        models!![0]
+                                    )
+                                    Keys.UPDATE_USER -> CacheStorage.insert(
+                                        DatabaseHelper.USERS_TABLE,
+                                        models!![0]
+                                    )
+                                    Keys.UPDATE_CONVERSATION -> CacheStorage.insert(
+                                        DatabaseHelper.CONVERSATIONS_TABLE,
+                                        models!![0]
+                                    )
+                                    Keys.UPDATE_MESSAGE -> CacheStorage.insert(
+                                        DatabaseHelper.MESSAGES_TABLE,
+                                        models!![0]
+                                    )
                                 }
 
                                 EventBus.getDefault().postSticky(pushData)

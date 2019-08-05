@@ -2,7 +2,8 @@ package ru.melodin.fast.api
 
 import java.io.IOException
 
-class VKException(val url: String, override val message: String, val code: Int) : IOException(message) {
+class VKException(val url: String, override val message: String, val code: Int) :
+    IOException(message) {
 
     var captchaSid: String? = null
     var captchaImg: String? = null

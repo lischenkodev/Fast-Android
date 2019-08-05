@@ -81,7 +81,7 @@ class LongPollService : Service() {
                 try {
                     if (server == null) {
                         server = VKApi.messages().longPollServer
-                                .execute(VKLongPollServer::class.java)!![0] as VKLongPollServer?
+                            .execute(VKLongPollServer::class.java)!![0] as VKLongPollServer?
                     }
 
                     val response = getResponse(server!!)

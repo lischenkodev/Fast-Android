@@ -44,8 +44,15 @@ import ru.melodin.fast.view.CircleImageView
 import java.io.IOException
 import java.util.*
 
-class MessageAdapter(private val fragment: FragmentMessages, messages: ArrayList<VKMessage>, private val peerId: Int) : RecyclerAdapter<VKMessage, MessageAdapter.ViewHolder>(fragment.activity!!, R.layout.item_message, messages) {
-
+class MessageAdapter(
+    private val fragment: FragmentMessages,
+    messages: ArrayList<VKMessage>,
+    private val peerId: Int
+) : RecyclerAdapter<VKMessage, MessageAdapter.ViewHolder>(
+    fragment.activity!!,
+    R.layout.item_message,
+    messages
+) {
 
 
     private var mediaPlayer: MediaPlayer? = null
@@ -53,7 +60,8 @@ class MessageAdapter(private val fragment: FragmentMessages, messages: ArrayList
 
     private val attachmentInflater: AttachmentInflater = AttachmentInflater(this, context)
     private val metrics: DisplayMetrics = context.resources.displayMetrics
-    private val layoutManager: LinearLayoutManager = fragment.getRecyclerView().layoutManager as LinearLayoutManager
+    private val layoutManager: LinearLayoutManager =
+        fragment.getRecyclerView().layoutManager as LinearLayoutManager
 
     init {
         EventBus.getDefault().register(this)
@@ -126,7 +134,11 @@ class MessageAdapter(private val fragment: FragmentMessages, messages: ArrayList
                     fragment.getRecyclerView().scrollToPosition(lastPosition + 1)
                 }
 
-                if (!last.isOut && last.peerId == peerId && !AppGlobal.preferences.getBoolean(FragmentSettings.KEY_NOT_READ_MESSAGES, false)) {
+                if (!last.isOut && last.peerId == peerId && !AppGlobal.preferences.getBoolean(
+                        FragmentSettings.KEY_NOT_READ_MESSAGES,
+                        false
+                    )
+                ) {
                     if (!fragment.isRunning()) {
                         fragment.setNotRead(last)
                     } else {
@@ -191,20 +203,23 @@ class MessageAdapter(private val fragment: FragmentMessages, messages: ArrayList
     }
 
     fun readNewMessage(message: VKMessage) {
-        if (message.isOut || layoutManager.findLastCompletelyVisibleItemPosition() < searchPosition(message.id))
+        if (message.isOut || layoutManager.findLastCompletelyVisibleItemPosition() < searchPosition(
+                message.id
+            )
+        )
             return
         TaskManager.execute {
             VKApi.messages()
-                    .markAsRead()
-                    .messageIds(message.id)
-                    .execute(Int::class.java, object : OnCompleteListener {
-                        override fun onComplete(models: ArrayList<*>?) {
-                            readMessage(message.id)
-                        }
+                .markAsRead()
+                .messageIds(message.id)
+                .execute(Int::class.java, object : OnCompleteListener {
+                    override fun onComplete(models: ArrayList<*>?) {
+                        readMessage(message.id)
+                    }
 
-                        override fun onError(e: Exception) {
-                        }
-                    })
+                    override fun onError(e: Exception) {
+                    }
+                })
         }
     }
 
@@ -335,7 +350,13 @@ class MessageAdapter(private val fragment: FragmentMessages, messages: ArrayList
         val group = CacheStorage.getGroup(if (id < 0) id * -1 else id)
 
         if (group == null) {
-            EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, if (id < 0) id else id * -1, javaClass.simpleName))
+            EventBus.getDefault().postSticky(
+                arrayOf(
+                    Keys.NEED_LOAD_ID,
+                    if (id < 0) id else id * -1,
+                    javaClass.simpleName
+                )
+            )
             return VKGroup.EMPTY
         }
 
@@ -376,12 +397,17 @@ class MessageAdapter(private val fragment: FragmentMessages, messages: ArrayList
         footer.visibility = View.INVISIBLE
         footer.isEnabled = false
         footer.isClickable = false
-        footer.layoutParams = RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Util.px(66f).toInt())
+        footer.layoutParams =
+            RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Util.px(66f).toInt())
 
         return footer
     }
 
-    private fun inflateAttachments(item: VKMessage, parent: ViewGroup, bubble: BoundedLinearLayout) {
+    private fun inflateAttachments(
+        item: VKMessage,
+        parent: ViewGroup,
+        bubble: BoundedLinearLayout
+    ) {
         val background = bubble.background
         val attachments = item.attachments
         for (i in attachments.indices) {
@@ -551,10 +577,10 @@ class MessageAdapter(private val fragment: FragmentMessages, messages: ArrayList
                     avatar.setImageDrawable(placeholder)
                 } else {
                     Picasso.get()
-                            .load(avatarSrc)
-                            .priority(Picasso.Priority.HIGH)
-                            .placeholder(placeholder!!)
-                            .into(avatar)
+                        .load(avatarSrc)
+                        .priority(Picasso.Priority.HIGH)
+                        .placeholder(placeholder!!)
+                        .into(avatar)
                 }
             } else {
                 avatar.setImageDrawable(null)

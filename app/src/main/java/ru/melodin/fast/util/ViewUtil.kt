@@ -1,10 +1,8 @@
 package ru.melodin.fast.util
 
-import android.content.Context
 import android.os.Build
 import android.view.View
 import android.view.Window
-import android.view.inputmethod.InputMethodManager
 import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
 import com.google.android.material.snackbar.Snackbar

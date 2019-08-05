@@ -266,7 +266,11 @@ class FragmentChatInfo : BaseFragment() {
                             chat!!.users = adapter!!.values!!
                         }
 
-                        CacheStorage.update(DatabaseHelper.CHATS_TABLE, DatabaseHelper.CHAT_ID, chat!!)
+                        CacheStorage.update(
+                            DatabaseHelper.CHATS_TABLE,
+                            DatabaseHelper.CHAT_ID,
+                            chat!!
+                        )
                         Toast.makeText(activity!!, R.string.success, Toast.LENGTH_SHORT)
                             .show()
                     }

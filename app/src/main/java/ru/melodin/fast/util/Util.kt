@@ -2,10 +2,7 @@ package ru.melodin.fast.util
 
 import android.app.Activity
 import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Environment
 import ru.melodin.fast.R
@@ -55,7 +52,12 @@ object Util {
         if (sizeInBytes < unit) return "$sizeInBytes B"
         val exp = (ln(sizeInBytes.toDouble()) / ln(unit.toDouble())).toInt()
         val pre = "KMGTPE"[exp - 1] + ""
-        return String.format(Locale.US, "%.1f %sB", sizeInBytes / unit.toDouble().pow(exp.toDouble()), pre)
+        return String.format(
+            Locale.US,
+            "%.1f %sB",
+            sizeInBytes / unit.toDouble().pow(exp.toDouble()),
+            pre
+        )
     }
 
     fun serialize(source: Any?): ByteArray? {

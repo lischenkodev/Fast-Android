@@ -2,12 +2,10 @@ package ru.melodin.fast.api.model.attachment
 
 import android.text.TextUtils
 import org.json.JSONObject
-
-import java.io.Serializable
-import java.util.ArrayList
-
 import ru.melodin.fast.api.model.VKModel
 import ru.melodin.fast.util.ArrayUtil
+import java.io.Serializable
+import java.util.*
 
 class VKPhoto(source: JSONObject) : VKModel(), Serializable {
 

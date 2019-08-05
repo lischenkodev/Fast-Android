@@ -75,7 +75,8 @@ open class VKUser : VKModel, Serializable {
 
     companion object {
 
-        const val FIELDS_DEFAULT = "photo_50,photo_100,photo_200,status,screen_name,online,online_mobile,last_seen,verified,sex"
+        const val FIELDS_DEFAULT =
+            "photo_50,photo_100,photo_200,status,screen_name,online,online_mobile,last_seen,verified,sex"
 
         val EMPTY: VKUser = object : VKUser() {
             override fun toString(): String {

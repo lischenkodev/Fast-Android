@@ -43,11 +43,15 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
     private var adapter: ConversationAdapter? = null
     private var bundle: Bundle? = null
 
+    private var chooseConversation = false
+
     var isLoading: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTitle(getString(R.string.fragment_messages))
+
+        chooseConversation = savedInstanceState?.getBoolean("choose_conversation")!!
     }
 
     override fun onDestroy() {
@@ -241,6 +245,7 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
     }
 
     override fun onItemClick(position: Int) {
+
         openChat(position)
 
         val conversation = adapter!!.getItem(position)

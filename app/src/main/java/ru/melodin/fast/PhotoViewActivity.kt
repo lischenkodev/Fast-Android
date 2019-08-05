@@ -65,7 +65,11 @@ class PhotoViewActivity : AppCompatActivity() {
             }
 
         pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
-            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+            override fun onPageScrolled(
+                position: Int,
+                positionOffset: Float,
+                positionOffsetPixels: Int
+            ) {
 
             }
 
@@ -121,7 +125,11 @@ class PhotoViewActivity : AppCompatActivity() {
         }
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
         if (requestCode == REQUEST_PERMISSIONS) {
@@ -133,7 +141,13 @@ class PhotoViewActivity : AppCompatActivity() {
         TaskManager.execute {
             try {
                 val path = Util.saveFileByUrl(url)
-                runOnUiThread { Toast.makeText(this@PhotoViewActivity, getString(R.string.saved_into, path), Toast.LENGTH_SHORT).show() }
+                runOnUiThread {
+                    Toast.makeText(
+                        this@PhotoViewActivity,
+                        getString(R.string.saved_into, path),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             } catch (e: Exception) {
             }
         }

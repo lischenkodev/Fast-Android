@@ -9,7 +9,6 @@ import android.content.res.Resources
 import android.database.sqlite.SQLiteDatabase
 import android.net.ConnectivityManager
 import android.os.Handler
-import android.telecom.ConnectionService
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.pm.PackageInfoCompat
 import androidx.preference.PreferenceManager

@@ -26,7 +26,10 @@ class ValidationActivity : AppCompatActivity() {
         webView.webViewClient = VKWebClient()
         webView.settings.domStorageEnabled = true
         webView.clearCache(true)
-        webView.layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
+        webView.layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
 
         val manager = CookieManager.getInstance()
         manager.removeAllCookies(null)

@@ -38,10 +38,18 @@ import ru.melodin.fast.util.Keys
 import ru.melodin.fast.util.Util
 import java.util.*
 
-class ConversationAdapter(private val fragment: FragmentConversations, values: ArrayList<VKConversation>) :
-        RecyclerAdapter<VKConversation, ConversationAdapter.ViewHolder>(fragment.context!!, R.layout.item_conversation, values) {
+class ConversationAdapter(
+    private val fragment: FragmentConversations,
+    values: ArrayList<VKConversation>
+) :
+    RecyclerAdapter<VKConversation, ConversationAdapter.ViewHolder>(
+        fragment.context!!,
+        R.layout.item_conversation,
+        values
+    ) {
 
-    private val manager: LinearLayoutManager = (fragment.recyclerList!!.layoutManager as LinearLayoutManager?)!!
+    private val manager: LinearLayoutManager =
+        (fragment.recyclerList!!.layoutManager as LinearLayoutManager?)!!
 
     private var lastUpdateId: Int = 0
 
@@ -61,8 +69,18 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         if (ArrayUtil.isEmpty(data)) return
 
         when (data[0] as String) {
-            Keys.USER_OFFLINE -> setUserOnline(online = false, mobile = false, userId = data[1] as Int, time = data[2] as Int)
-            Keys.USER_ONLINE -> setUserOnline(true, data[3] as Boolean, data[1] as Int, data[2] as Int)
+            Keys.USER_OFFLINE -> setUserOnline(
+                online = false,
+                mobile = false,
+                userId = data[1] as Int,
+                time = data[2] as Int
+            )
+            Keys.USER_ONLINE -> setUserOnline(
+                true,
+                data[3] as Boolean,
+                data[1] as Int,
+                data[2] as Int
+            )
             Keys.MESSAGE_CLEAR_FLAGS -> handleClearFlags(data)
             Keys.MESSAGE_NEW -> {
                 addMessage(data[1] as VKConversation)
@@ -77,7 +95,11 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 notifyDataSetChanged()
                 fragment.onRefresh()
             }
-            Keys.NOTIFICATIONS_CHANGE -> changeNotifications(data[1] as Int, data[2] as Boolean, data[3] as Int)
+            Keys.NOTIFICATIONS_CHANGE -> changeNotifications(
+                data[1] as Int,
+                data[2] as Boolean,
+                data[3] as Int
+            )
             Keys.UPDATE_USER -> {
                 val userId = data[1] as Int
 
@@ -253,11 +275,21 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 notifyItemChanged(0, -1)
             }
 
-            CacheStorage.update(DatabaseHelper.CONVERSATIONS_TABLE, conversation, DatabaseHelper.PEER_ID, conversation.peerId)
+            CacheStorage.update(
+                DatabaseHelper.CONVERSATIONS_TABLE,
+                conversation,
+                DatabaseHelper.PEER_ID,
+                conversation.peerId
+            )
 
             conversation.last ?: return
 
-            CacheStorage.update(DatabaseHelper.MESSAGES_TABLE, conversation.last!!, DatabaseHelper.MESSAGE_ID, conversation.last!!.id)
+            CacheStorage.update(
+                DatabaseHelper.MESSAGES_TABLE,
+                conversation.last!!,
+                DatabaseHelper.MESSAGE_ID,
+                conversation.last!!.id
+            )
         } else {
             if (!conversation.last!!.isOut)
                 conversation.unread++
@@ -270,23 +302,26 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 manager.scrollToPosition(0)
 
             if (conversation.last!!.action == VKMessage.Action.CREATE) {
-                TaskManager.loadConversation(conversation.peerId, true, object : OnCompleteListener {
-                    override fun onComplete(models: ArrayList<*>?) {
-                        if (ArrayUtil.isEmpty(models)) return
-                        models ?: return
+                TaskManager.loadConversation(
+                    conversation.peerId,
+                    true,
+                    object : OnCompleteListener {
+                        override fun onComplete(models: ArrayList<*>?) {
+                            if (ArrayUtil.isEmpty(models)) return
+                            models ?: return
 
-                        val dialog = models[0] as VKConversation
-                        addMessage(dialog)
+                            val dialog = models[0] as VKConversation
+                            addMessage(dialog)
 
-                        CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, dialog)
+                            CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, dialog)
 
-                        dialog.last ?: return
+                            dialog.last ?: return
 
-                        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, dialog.last!!)
-                    }
+                            CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, dialog.last!!)
+                        }
 
-                    override fun onError(e: Exception) {}
-                })
+                        override fun onError(e: Exception) {}
+                    })
             } else {
                 CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
                 conversation.last ?: return
@@ -355,7 +390,8 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         if (user == null) {
             if (!loadingIds.contains(userId)) {
                 loadingIds.add(userId)
-                EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, userId, javaClass.simpleName))
+                EventBus.getDefault()
+                    .postSticky(arrayOf(Keys.NEED_LOAD_ID, userId, javaClass.simpleName))
             }
             return VKUser.EMPTY
         }
@@ -367,7 +403,13 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         if (group == null) {
             if (loadingIds.indexOf(groupId) == -1) {
                 loadingIds.add(groupId)
-                EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, if (groupId < 0) groupId else groupId * -1, javaClass.simpleName))
+                EventBus.getDefault().postSticky(
+                    arrayOf(
+                        Keys.NEED_LOAD_ID,
+                        if (groupId < 0) groupId else groupId * -1,
+                        javaClass.simpleName
+                    )
+                )
             }
             return VKGroup.EMPTY
         }
@@ -414,7 +456,10 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
         init {
             accentColor = ThemeManager.accent
             pushesEnabled = accentColor
-            pushesDisabled = if (ThemeManager.isDark) ColorUtil.lightenColor(ThemeManager.primary, 2f) else Color.GRAY
+            pushesDisabled = if (ThemeManager.isDark) ColorUtil.lightenColor(
+                ThemeManager.primary,
+                2f
+            ) else Color.GRAY
 
             avatar = v.findViewById(R.id.userAvatar)
             avatarSmall = v.findViewById(R.id.avatar_small)
@@ -478,14 +523,15 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 avatarSmall.visibility = View.GONE
             }
 
-            (avatarSmall.parent as LinearLayout).gravity = if (avatar.visibility == View.VISIBLE) Gravity.CENTER_VERTICAL else Gravity.START or Gravity.TOP
+            (avatarSmall.parent as LinearLayout).gravity =
+                if (avatar.visibility == View.VISIBLE) Gravity.CENTER_VERTICAL else Gravity.START or Gravity.TOP
 
             if (!TextUtils.isEmpty(peerAvatar)) {
                 Picasso.get()
-                        .load(peerAvatar)
-                        .priority(Picasso.Priority.HIGH)
-                        .placeholder(placeholder)
-                        .into(avatar)
+                    .load(peerAvatar)
+                    .priority(Picasso.Priority.HIGH)
+                    .placeholder(placeholder)
+                    .into(avatar)
             } else {
                 avatar.setImageDrawable(placeholder)
             }
@@ -493,17 +539,18 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
             if (avatarSmall.visibility == View.VISIBLE)
                 if (!TextUtils.isEmpty(fromAvatar)) {
                     Picasso.get()
-                            .load(fromAvatar)
-                            .priority(Picasso.Priority.HIGH)
-                            .placeholder(placeholder)
-                            .into(avatarSmall)
+                        .load(fromAvatar)
+                        .priority(Picasso.Priority.HIGH)
+                        .placeholder(placeholder)
+                        .into(avatarSmall)
                 } else {
                     avatarSmall.setImageDrawable(placeholder)
                 }
 
             if (last.action == null) {
                 if (TextUtils.isEmpty(last.text)) {
-                    val body = VKUtil.getAttachmentBody(item.last!!.attachments, item.last!!.fwdMessages)
+                    val body =
+                        VKUtil.getAttachmentBody(item.last!!.attachments, item.last!!.fwdMessages)
 
                     val span = SpannableString(body)
                     span.setSpan(ForegroundColorSpan(accentColor), 0, body.length, 0)
@@ -519,7 +566,8 @@ class ConversationAdapter(private val fragment: FragmentConversations, values: A
                 this.body.text = span
             }
 
-            counter.visibility = if (TextUtils.isEmpty(counter.text.toString())) View.GONE else View.VISIBLE
+            counter.visibility =
+                if (TextUtils.isEmpty(counter.text.toString())) View.GONE else View.VISIBLE
             out.visibility = if (last.isOut && !item.isRead) View.VISIBLE else View.GONE
             counterContainer.visibility = if (item.isRead) View.GONE else View.VISIBLE
 

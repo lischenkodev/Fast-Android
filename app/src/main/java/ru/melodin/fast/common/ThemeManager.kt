@@ -22,9 +22,11 @@ class ThemeManager {
             isDark = AppGlobal.preferences.getBoolean(FragmentSettings.KEY_DARK_STYLE, false)
 
             currentTheme = if (isDark) R.style.AppTheme_Dark else R.style.AppTheme_Light
-            popupTheme = if (isDark) R.style.ThemeOverlay_AppCompat else R.style.ThemeOverlay_AppCompat_Light
+            popupTheme =
+                if (isDark) R.style.ThemeOverlay_AppCompat else R.style.ThemeOverlay_AppCompat_Light
             loginTheme = if (isDark) R.style.AppTheme_Login_Dark else R.style.AppTheme_Login_Light
-            alertTheme = if (isDark) R.style.AlertDialog_Theme_Dark else R.style.AlertDialog_Theme_Light
+            alertTheme =
+                if (isDark) R.style.AlertDialog_Theme_Dark else R.style.AlertDialog_Theme_Light
 
             primary = getColor(if (isDark) R.color.dark_primary else R.color.primary)
             primaryInverse = getColor(if (isDark) R.color.primary else R.color.dark_primary)

@@ -104,25 +104,30 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
                 }
             }
 
-            VKApi.messages().createChat().title(builder.toString()).userIds(ids).execute(Int::class.java, object : OnCompleteListener {
-                override fun onComplete(models: ArrayList<*>?) {
-                    if (ArrayUtil.isEmpty(models)) return
-                    models ?: return
+            VKApi.messages().createChat().title(builder.toString()).userIds(ids)
+                .execute(Int::class.java, object : OnCompleteListener {
+                    override fun onComplete(models: ArrayList<*>?) {
+                        if (ArrayUtil.isEmpty(models)) return
+                        models ?: return
 
-                    val peerId = 2_000_000_000 + models[0] as Int
+                        val peerId = 2_000_000_000 + models[0] as Int
 
-                    setResult(Activity.RESULT_OK, Intent().apply {
-                        putExtra("title", title)
-                        putExtra("peer_id", peerId)
-                    })
-                    finish()
-                }
+                        setResult(Activity.RESULT_OK, Intent().apply {
+                            putExtra("title", title)
+                            putExtra("peer_id", peerId)
+                        })
+                        finish()
+                    }
 
-                override fun onError(e: Exception) {
-                    Log.e("Error create chat", Log.getStackTraceString(e))
-                    Toast.makeText(this@ShowCreateChatActivity, getString(R.string.error) + ": " + e.toString(), Toast.LENGTH_SHORT).show()
-                }
-            })
+                    override fun onError(e: Exception) {
+                        Log.e("Error create chat", Log.getStackTraceString(e))
+                        Toast.makeText(
+                            this@ShowCreateChatActivity,
+                            getString(R.string.error) + ": " + e.toString(),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                })
         }
     }
 

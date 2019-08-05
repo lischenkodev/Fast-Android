@@ -94,13 +94,25 @@ class CircleImageView : AppCompatImageView {
     }
 
     @JvmOverloads
-    constructor(context: Context, attrs: AttributeSet, defStyle: Int = 0) : super(context, attrs, defStyle) {
+    constructor(context: Context, attrs: AttributeSet, defStyle: Int = 0) : super(
+        context,
+        attrs,
+        defStyle
+    ) {
 
-        val attributes = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView, defStyle, 0)
+        val attributes =
+            context.obtainStyledAttributes(attrs, R.styleable.CircleImageView, defStyle, 0)
 
-        mBorderWidth = attributes.getDimensionPixelSize(R.styleable.CircleImageView_border_width, DEFAULT_BORDER_WIDTH)
-        mBorderColor = attributes.getColor(R.styleable.CircleImageView_border_color, DEFAULT_BORDER_COLOR)
-        mBorderOverlay = attributes.getBoolean(R.styleable.CircleImageView_border_overlay, DEFAULT_BORDER_OVERLAY)
+        mBorderWidth = attributes.getDimensionPixelSize(
+            R.styleable.CircleImageView_border_width,
+            DEFAULT_BORDER_WIDTH
+        )
+        mBorderColor =
+            attributes.getColor(R.styleable.CircleImageView_border_color, DEFAULT_BORDER_COLOR)
+        mBorderOverlay = attributes.getBoolean(
+            R.styleable.CircleImageView_border_overlay,
+            DEFAULT_BORDER_OVERLAY
+        )
         mFillColor = attributes.getColor(R.styleable.CircleImageView_fill_color, DEFAULT_FILL_COLOR)
 
         attributes.recycle()
@@ -208,7 +220,11 @@ class CircleImageView : AppCompatImageView {
             val bitmap: Bitmap = if (drawable is ColorDrawable) {
                 Bitmap.createBitmap(COLORDRAWABLE_DIMENSION, COLORDRAWABLE_DIMENSION, BITMAP_CONFIG)
             } else {
-                Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, BITMAP_CONFIG)
+                Bitmap.createBitmap(
+                    drawable.intrinsicWidth,
+                    drawable.intrinsicHeight,
+                    BITMAP_CONFIG
+                )
             }
 
             val canvas = Canvas(bitmap)
@@ -255,7 +271,10 @@ class CircleImageView : AppCompatImageView {
         mBitmapWidth = mBitmap!!.width
 
         mBorderRect.set(0f, 0f, width.toFloat(), height.toFloat())
-        mBorderRadius = min((mBorderRect.height() - mBorderWidth) / 2.0f, (mBorderRect.width() - mBorderWidth) / 2.0f)
+        mBorderRadius = min(
+            (mBorderRect.height() - mBorderWidth) / 2.0f,
+            (mBorderRect.width() - mBorderWidth) / 2.0f
+        )
 
         mDrawableRect.set(mBorderRect)
         if (!mBorderOverlay) {
@@ -283,7 +302,10 @@ class CircleImageView : AppCompatImageView {
         }
 
         mShaderMatrix.setScale(scale, scale)
-        mShaderMatrix.postTranslate((dx + 0.5f).toInt() + mDrawableRect.left, (dy + 0.5f).toInt() + mDrawableRect.top)
+        mShaderMatrix.postTranslate(
+            (dx + 0.5f).toInt() + mDrawableRect.left,
+            (dy + 0.5f).toInt() + mDrawableRect.top
+        )
 
         mBitmapShader!!.setLocalMatrix(mShaderMatrix)
     }

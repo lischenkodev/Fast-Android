@@ -12,7 +12,8 @@ import ru.melodin.fast.api.model.VKGroup
 import ru.melodin.fast.view.CircleImageView
 import java.util.*
 
-class GroupAdapter(context: Context, values: ArrayList<VKGroup>) : RecyclerAdapter<VKGroup, GroupAdapter.ViewHolder>(context, R.layout.item_group, values) {
+class GroupAdapter(context: Context, values: ArrayList<VKGroup>) :
+    RecyclerAdapter<VKGroup, GroupAdapter.ViewHolder>(context, R.layout.item_group, values) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerHolder {
         return ViewHolder(getView(parent)!!)
@@ -29,14 +30,17 @@ class GroupAdapter(context: Context, values: ArrayList<VKGroup>) : RecyclerAdapt
 
             name.text = group.name
 
-            val text = VKUtil.getGroupStringType(context, group.type) + " • " + getString(R.string.members_count, group.membersCount)
+            val text = VKUtil.getGroupStringType(
+                context,
+                group.type
+            ) + " • " + getString(R.string.members_count, group.membersCount)
             description.text = text
 
             if (!TextUtils.isEmpty(group.photo200)) {
                 Picasso.get()
-                        .load(group.photo200)
-                        .priority(Picasso.Priority.HIGH)
-                        .into(avatar)
+                    .load(group.photo200)
+                    .priority(Picasso.Priority.HIGH)
+                    .into(avatar)
             }
         }
     }

@@ -18,7 +18,6 @@ class UserConfig {
     constructor()
 
 
-
     companion object {
 
         private const val ACCESS_TOKEN = "access_token"
@@ -38,7 +37,6 @@ class UserConfig {
             get() = userId > 0 && accessToken != null && !TextUtils.isEmpty(accessToken!!.trim())
 
 
-
         fun restore(): UserConfig {
             val userId = AppGlobal.preferences.getInt(USER_ID, -1)
             val apiId = AppGlobal.preferences.getInt(API_ID, -1)
@@ -50,20 +48,20 @@ class UserConfig {
 
         fun clear() {
             AppGlobal.preferences.edit()
-                    .remove(ACCESS_TOKEN)
-                    .remove(API_ID)
-                    .remove(USER_ID)
-                    .remove(EMAIL)
-                    .apply()
+                .remove(ACCESS_TOKEN)
+                .remove(API_ID)
+                .remove(USER_ID)
+                .remove(EMAIL)
+                .apply()
         }
 
         fun save() {
             AppGlobal.preferences.edit()
-                    .putInt(USER_ID, userId)
-                    .putInt(API_ID, apiId)
-                    .putString(ACCESS_TOKEN, accessToken)
-                    .putString(EMAIL, email)
-                    .apply()
+                .putInt(USER_ID, userId)
+                .putInt(API_ID, apiId)
+                .putString(ACCESS_TOKEN, accessToken)
+                .putString(EMAIL, email)
+                .apply()
 
         }
 

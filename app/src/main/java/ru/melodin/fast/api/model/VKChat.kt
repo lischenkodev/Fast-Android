@@ -32,7 +32,8 @@ class VKChat : VKModel, Serializable {
         this.photo50 = o.optString("photo_50")
         this.photo100 = o.optString("photo_100")
         this.photo200 = o.optString("photo_200")
-        this.state = if (o.has("left")) VKConversation.State.LEFT else if (o.has("kicked")) VKConversation.State.KICKED else VKConversation.State.IN
+        this.state =
+            if (o.has("left")) VKConversation.State.LEFT else if (o.has("kicked")) VKConversation.State.KICKED else VKConversation.State.IN
         this.type = VKConversation.getType(o.optString("type"))
     }
 

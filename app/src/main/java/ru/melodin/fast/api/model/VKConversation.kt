@@ -63,7 +63,8 @@ class VKConversation : VKModel, Serializable {
                 Type.GROUP -> {
                     group = CacheStorage.getGroup(VKGroup.toGroupId(peerId))
                     return if (group == null) {
-                        EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
+                        EventBus.getDefault()
+                            .postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
                         null
                     } else {
                         group.toString()
@@ -72,7 +73,8 @@ class VKConversation : VKModel, Serializable {
                 Type.USER -> {
                     user = CacheStorage.getUser(peerId)
                     return if (user == null) {
-                        EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
+                        EventBus.getDefault()
+                            .postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
                         null
                     } else {
                         user.toString()
@@ -81,7 +83,8 @@ class VKConversation : VKModel, Serializable {
                 Type.CHAT -> return if (isGroupChannel) {
                     group = CacheStorage.getGroup(VKGroup.toGroupId(ownerId))
                     if (group == null) {
-                        EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
+                        EventBus.getDefault()
+                            .postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
                         null
                     } else {
                         group.toString()
@@ -105,7 +108,8 @@ class VKConversation : VKModel, Serializable {
                 Type.GROUP -> {
                     group = MemoryCache.getGroup(VKGroup.toGroupId(peerId))
                     return if (group == null) {
-                        EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
+                        EventBus.getDefault()
+                            .postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
                         null
                     } else {
                         group.photo200
@@ -114,7 +118,8 @@ class VKConversation : VKModel, Serializable {
                 Type.USER -> {
                     user = MemoryCache.getUser(peerId)
                     return if (user == null) {
-                        EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
+                        EventBus.getDefault()
+                            .postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
                         null
                     } else {
                         user.photo200
@@ -123,7 +128,8 @@ class VKConversation : VKModel, Serializable {
                 Type.CHAT -> return if (isGroupChannel) {
                     group = MemoryCache.getGroup(VKGroup.toGroupId(ownerId))
                     if (group == null) {
-                        EventBus.getDefault().postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
+                        EventBus.getDefault()
+                            .postSticky(arrayOf(Keys.NEED_LOAD_ID, peerId, javaClass.simpleName))
                         null
                     } else {
                         group.photo200
@@ -172,7 +178,8 @@ class VKConversation : VKModel, Serializable {
         this.lastMessageId = o.optInt("last_message_id", -1)
         this.unread = o.optInt("unread_count")
 
-        this.isRead = this.last == null || this.last!!.isOut && this.readOut == this.lastMessageId || !this.last!!.isOut && this.readIn == this.lastMessageId
+        this.isRead =
+            this.last == null || this.last!!.isOut && this.readOut == this.lastMessageId || !this.last!!.isOut && this.readIn == this.lastMessageId
 
         val canWrite = o.optJSONObject("can_write")
         this.isCanWrite = canWrite!!.optBoolean("allowed")

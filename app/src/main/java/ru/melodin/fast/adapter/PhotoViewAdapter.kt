@@ -7,7 +7,8 @@ import ru.melodin.fast.api.model.attachment.VKPhoto
 import ru.melodin.fast.fragment.FragmentPhotoView
 import java.util.*
 
-class PhotoViewAdapter(fm: FragmentManager, private val items: ArrayList<VKPhoto>) : FragmentStatePagerAdapter(fm) {
+class PhotoViewAdapter(fm: FragmentManager, private val items: ArrayList<VKPhoto>) :
+    FragmentStatePagerAdapter(fm) {
 
     var fragments: ArrayList<Fragment>? = arrayListOf()
 

@@ -876,7 +876,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     private fun confirmReply(messages: ArrayList<VKMessage>) {
-        if (messages.size == 1) { // reply
+        if (messages.size == 1) {
             val replyId = messages[0].id
 
             val text = AppCompatEditText(activity!!)
@@ -887,18 +887,60 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
             builder.setView(text)
             builder.setNegativeButton(android.R.string.cancel, null)
             builder.setPositiveButton(R.string.send) { _, _ ->
-                replyMessage(replyId, text.text.toString())
+                replyMessage(replyId, text.text.toString().trim())
             }
             builder.show()
-        } else { // forward here
+        } else {
+            val text = AppCompatEditText(activity!!)
+            text.hint = getString(R.string.message)
 
+            val builder = AlertDialog.Builder(activity!!)
+            builder.setTitle(R.string.reply)
+            builder.setView(text)
+            builder.setNegativeButton(android.R.string.cancel, null)
+            builder.setPositiveButton(R.string.send) { _, _ ->
+                forwardMessages(peerId, text.text.toString().trim(), messages)
+            }
+            builder.show()
+        }
+    }
+
+    private fun forwardMessages(peerId: Int, text: String, messages: ArrayList<VKMessage>) {
+        if (ArrayUtil.isEmpty(messages)) return
+
+        TaskManager.execute {
+            VKApi.messages().send().randomId(random.nextInt()).forwardMessages(messages)
+                .message(text).peerId(peerId).execute(null, object : OnCompleteListener {
+                    override fun onComplete(models: ArrayList<*>?) {
+
+                    }
+
+                    override fun onError(e: Exception) {
+                        Toast.makeText(
+                            activity!!,
+                            getString(R.string.error) + ": $e",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                })
         }
     }
 
     private fun replyMessage(replyId: Int, text: String) {
         TaskManager.execute {
             VKApi.messages().send().randomId(random.nextInt()).replyTo(replyId).message(text)
-                .peerId(peerId).execute()
+                .peerId(peerId).execute(null, object : OnCompleteListener {
+                    override fun onComplete(models: ArrayList<*>?) {
+                    }
+
+                    override fun onError(e: Exception) {
+                        Toast.makeText(
+                            activity!!,
+                            getString(R.string.error) + ": $e",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                })
         }
     }
 

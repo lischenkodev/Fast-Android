@@ -28,7 +28,8 @@ import ru.melodin.fast.util.ViewUtil
 import ru.melodin.fast.view.FastToolbar
 import java.util.*
 
-class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener, RecyclerAdapter.OnItemClickListener {
+class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
+    RecyclerAdapter.OnItemClickListener {
 
     private var adapter: CreateChatAdapter? = null
 
@@ -126,28 +127,31 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
 
             lateinit var friends: ArrayList<VKUser>
 
-            VKApi.friends().get().userId(UserConfig.userId).order("hints").fields(VKUser.FIELDS_DEFAULT).execute(VKUser::class.java, object : OnCompleteListener {
-                override fun onComplete(models: ArrayList<*>?) {
-                    if (ArrayUtil.isEmpty(models)) return
-                    models ?: return
+            VKApi.friends().get().userId(UserConfig.userId).order("hints")
+                .fields(VKUser.FIELDS_DEFAULT)
+                .execute(VKUser::class.java, object : OnCompleteListener {
+                    override fun onComplete(models: ArrayList<*>?) {
+                        if (ArrayUtil.isEmpty(models)) return
+                        models ?: return
 
-                    friends = models as ArrayList<VKUser>
-                    CacheStorage.delete(DatabaseHelper.FRIENDS_TABLE)
-                    CacheStorage.insert(DatabaseHelper.FRIENDS_TABLE, friends)
-                    CacheStorage.insert(DatabaseHelper.USERS_TABLE, friends)
+                        friends = models as ArrayList<VKUser>
+                        CacheStorage.delete(DatabaseHelper.FRIENDS_TABLE)
+                        CacheStorage.insert(DatabaseHelper.FRIENDS_TABLE, friends)
+                        CacheStorage.insert(DatabaseHelper.USERS_TABLE, friends)
 
-                    createAdapter(friends)
-                    refresh.isRefreshing = false
+                        createAdapter(friends)
+                        refresh.isRefreshing = false
 
-                    changeTitle()
-                }
+                        changeTitle()
+                    }
 
-                override fun onError(e: Exception) {
-                    changeTitle()
-                    refresh.isRefreshing = false
-                    Toast.makeText(this@CreateChatActivity, R.string.error, Toast.LENGTH_LONG).show()
-                }
-            })
+                    override fun onError(e: Exception) {
+                        changeTitle()
+                        refresh.isRefreshing = false
+                        Toast.makeText(this@CreateChatActivity, R.string.error, Toast.LENGTH_LONG)
+                            .show()
+                    }
+                })
         }
     }
 
@@ -155,7 +159,10 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
         adapter ?: return
         val selected = adapter!!.selectedCount
 
-        val subtitle = if (selected > 0) String.format(getString(R.string.selected_count), selected.toString()) else ""
+        val subtitle = if (selected > 0) String.format(
+            getString(R.string.selected_count),
+            selected.toString()
+        ) else ""
 
         tb.setSubtitle(subtitle)
     }
@@ -180,7 +187,8 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
         val intent = Intent(this, ShowCreateChatActivity::class.java)
         intent.putExtra("users", users)
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-        startActivityForResult(intent,
+        startActivityForResult(
+            intent,
             REQUEST_CREATE_CHAT
         )
 

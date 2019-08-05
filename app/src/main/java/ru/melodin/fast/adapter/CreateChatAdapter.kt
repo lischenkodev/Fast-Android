@@ -17,9 +17,14 @@ import ru.melodin.fast.util.Util
 import ru.melodin.fast.view.CircleImageView
 import java.util.*
 
-class CreateChatAdapter(context: Context, users: ArrayList<VKUser>) : RecyclerAdapter<VKUser, CreateChatAdapter.ViewHolder>(context, R.layout.activity_create_chat_list, users) {
+class CreateChatAdapter(context: Context, users: ArrayList<VKUser>) :
+    RecyclerAdapter<VKUser, CreateChatAdapter.ViewHolder>(
+        context,
+        R.layout.activity_create_chat_list,
+        users
+    ) {
 
-    val selectedPositions: SparseArray<VKUser> ?
+    val selectedPositions: SparseArray<VKUser>?
         get() {
             val selected = SparseArray<VKUser>()
 
@@ -117,7 +122,8 @@ class CreateChatAdapter(context: Context, users: ArrayList<VKUser>) : RecyclerAd
 
             selected.isChecked = user.isSelected
 
-            val seenText = getString(if (user.sex == VKUser.Sex.MALE) R.string.last_seen_m else R.string.last_seen_w)
+            val seenText =
+                getString(if (user.sex == VKUser.Sex.MALE) R.string.last_seen_m else R.string.last_seen_w)
 
             val seen = String.format(seenText, Util.dateFormatter.format(user.lastSeen * 1000))
 
@@ -131,10 +137,10 @@ class CreateChatAdapter(context: Context, users: ArrayList<VKUser>) : RecyclerAd
                 avatar.setImageDrawable(placeholder)
             } else {
                 Picasso.get()
-                        .load(user.photo200)
-                        .priority(Picasso.Priority.HIGH)
-                        .placeholder(placeholder!!)
-                        .into(avatar)
+                    .load(user.photo200)
+                    .priority(Picasso.Priority.HIGH)
+                    .placeholder(placeholder!!)
+                    .into(avatar)
             }
         }
     }

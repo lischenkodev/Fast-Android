@@ -39,7 +39,14 @@ abstract class BaseFragment : Fragment() {
         val behavior = params.behavior as AppBarLayout.Behavior?
         if (behavior != null) {
             behavior.topAndBottomOffset = 0
-            behavior.onNestedPreScroll(appBar.parent as CoordinatorLayout, appBar, appBar, 0, 1, IntArray(2))
+            behavior.onNestedPreScroll(
+                appBar.parent as CoordinatorLayout,
+                appBar,
+                appBar,
+                0,
+                1,
+                IntArray(2)
+            )
         }
     }
 

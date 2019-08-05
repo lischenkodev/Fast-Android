@@ -15,7 +15,6 @@ import ru.melodin.fast.api.method.UserMethodSetter
 import ru.melodin.fast.api.model.*
 import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.common.TaskManager
-import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.net.HttpRequest
 import ru.melodin.fast.service.LongPollService
 import ru.melodin.fast.util.ArrayUtil
@@ -167,8 +166,10 @@ object VKApi {
         return models
     }
 
-    fun execute(url: String, cls: Class<*>?,
-                listener: OnCompleteListener?) {
+    fun execute(
+        url: String, cls: Class<*>?,
+        listener: OnCompleteListener?
+    ) {
         TaskManager.execute {
             try {
                 val models = execute(url, cls)
