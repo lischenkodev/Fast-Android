@@ -1,7 +1,6 @@
 package ru.melodin.fast.fragment
 
 import android.os.Bundle
-import android.os.Parcelable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -33,7 +32,6 @@ import ru.melodin.fast.util.Util
 class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
     private var adapter: UserAdapter? = null
-    private var listState: Parcelable? = null
 
     var isLoading: Boolean = false
 
@@ -48,6 +46,7 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        retainInstance = true
         setTitle(getString(R.string.fragment_friends))
     }
 
@@ -80,21 +79,10 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
         getCachedFriends()
         if (savedInstanceState == null)
             getFriends(FRIENDS_COUNT, 0)
-    }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-
-        listState = list.layoutManager!!.onSaveInstanceState()
-        outState.putParcelable("list_state", listState)
-    }
-
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
-
-        listState = savedInstanceState?.getParcelable("list_state")
-        listState ?: return
-        list.layoutManager!!.onRestoreInstanceState(listState)
+        if (adapter != null && list?.adapter == null) {
+            list?.adapter = adapter
+        }
     }
 
     override fun onPause() {
@@ -104,13 +92,9 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
     override fun onResume() {
         super.onResume()
-
-        listState ?: return
-        onViewStateRestored(arguments)
     }
 
-    private fun createAdapter(friends: ArrayList<VKUser>?, offset: Int) {
-        friends ?: return
+    private fun createAdapter(friends: ArrayList<VKUser>, offset: Int) {
         if (ArrayUtil.isEmpty(friends)) return
 
         if (adapter == null) {
@@ -158,8 +142,6 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         if (ArrayUtil.isEmpty(models)) return
                         models ?: return
-
-                        Log.d("getFriends", "onComplete")
 
                         users = models as ArrayList<VKUser>
 
