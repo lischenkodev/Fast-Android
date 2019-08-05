@@ -18,6 +18,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import ru.melodin.fast.LoginActivity
+import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.ItemAdapter
 import ru.melodin.fast.adapter.RecyclerAdapter
@@ -27,10 +28,12 @@ import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.FragmentSelector
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.current.BaseFragment
+import ru.melodin.fast.database.MemoryCache
 import ru.melodin.fast.model.ListItem
 import ru.melodin.fast.model.ShadowPaddingItem
 import ru.melodin.fast.service.LongPollService
 import ru.melodin.fast.util.ArrayUtil
+import ru.melodin.fast.util.Constants
 import ru.melodin.fast.util.Keys
 import ru.melodin.fast.view.FastToolbar
 
@@ -115,10 +118,30 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
         builder.setTitle(R.string.warning)
         builder.setMessage(R.string.are_you_sure)
         builder.setPositiveButton(R.string.yes) { _, _ ->
-
+            openChatWithCreator()
         }
         builder.setNegativeButton(R.string.no, null)
         builder.show()
+    }
+
+    private fun openChatWithCreator() {
+        val peerId = Constants.CREATOR_ID
+
+        val user = MemoryCache.getUser(peerId)
+
+        val args = Bundle().apply {
+            putString("title", user?.toString())
+            putString("photo", user?.photo200)
+            putInt("peer_id", peerId)
+            //putBoolean("can_write", conversation.isCanWrite)
+            //putSerializable("conversation", conversation)
+        }
+
+//        if (!conversation.isCanWrite) {
+//            args.putInt("reason", conversation.reason)
+//        }
+
+        FragmentSelector.selectFragment(fragmentManager!!, FragmentMessages(), args, true)
     }
 
     private fun initUser() {
@@ -143,6 +166,12 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
     override fun onResume() {
         super.onResume()
         onHiddenChanged(false)
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (!hidden)
+            (activity!! as MainActivity).showBottomView()
     }
 
     override fun onDestroy() {

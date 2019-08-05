@@ -2,7 +2,6 @@ package ru.melodin.fast.fragment
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Parcelable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -16,6 +15,7 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.CreateChatActivity
+import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.ConversationAdapter
 import ru.melodin.fast.adapter.RecyclerAdapter
@@ -45,16 +45,13 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
 
     var isLoading: Boolean = false
 
-    private var listState: Parcelable? = null
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setTitle(getString(R.string.fragment_messages))
     }
 
     override fun onDestroy() {
-        if (adapter != null)
-            adapter!!.destroy()
+        adapter?.destroy()
         super.onDestroy()
     }
 
@@ -101,6 +98,10 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
             )
         )
             getConversations(CONVERSATIONS_COUNT, 0)
+
+        if (adapter != null && list?.adapter == null) {
+            list?.adapter = adapter
+        }
     }
 
     private fun createAdapter(conversations: ArrayList<VKConversation>?) {
@@ -119,26 +120,15 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
         adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-
-        listState = list.layoutManager?.onSaveInstanceState()
-        outState.putParcelable("list_state", listState)
-    }
-
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
-
-        listState = savedInstanceState?.getParcelable("list_state")
-        listState ?: return
-        list.layoutManager?.onRestoreInstanceState(listState)
-    }
-
     override fun onResume() {
         super.onResume()
+        onHiddenChanged(false)
+    }
 
-        listState ?: return
-        list.layoutManager?.onRestoreInstanceState(listState)
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (!hidden)
+            (activity!! as MainActivity).showBottomView()
     }
 
     private fun getCachedConversations() {

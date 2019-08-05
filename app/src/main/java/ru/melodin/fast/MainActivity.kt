@@ -3,6 +3,7 @@ package ru.melodin.fast
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_main.*
@@ -171,6 +172,14 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
 
     override fun onNavigationItemReselected(item: MenuItem) {
         selectedFragment?.scrollToTop()
+    }
+
+    fun showBottomView() {
+        navigationView.visibility = View.VISIBLE
+    }
+
+    fun hideBottomView() {
+        navigationView.visibility = View.GONE
     }
 
     companion object {

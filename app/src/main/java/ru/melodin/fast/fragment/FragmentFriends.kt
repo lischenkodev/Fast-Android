@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
+import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.UserAdapter
 import ru.melodin.fast.api.OnCompleteListener
@@ -40,7 +41,7 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
     }
 
     override fun onDestroy() {
-        if (adapter != null) adapter!!.destroy()
+        adapter?.destroy()
         super.onDestroy()
     }
 
@@ -48,6 +49,11 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
         super.onCreate(savedInstanceState)
         retainInstance = true
         setTitle(getString(R.string.fragment_friends))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity!! as MainActivity).hideBottomView()
     }
 
     override fun onCreateView(
@@ -83,15 +89,6 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
         if (adapter != null && list?.adapter == null) {
             list?.adapter = adapter
         }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        onSaveInstanceState(arguments!!)
-    }
-
-    override fun onResume() {
-        super.onResume()
     }
 
     private fun createAdapter(friends: ArrayList<VKUser>, offset: Int) {

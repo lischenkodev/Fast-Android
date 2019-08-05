@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.toolbar.*
 import org.greenrobot.eventbus.EventBus
+import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.GroupAdapter
 import ru.melodin.fast.adapter.UserAdapter
@@ -46,6 +47,11 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             user.surname!!.substring(0, 1) + "."
         )
         hideTyping!!.summary = hideTypingSummary
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity!! as MainActivity).hideBottomView()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

@@ -32,6 +32,7 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_messages.*
 import kotlinx.android.synthetic.main.toolbar_action.*
 import ru.melodin.fast.BuildConfig
+import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.MessageAdapter
 import ru.melodin.fast.adapter.PopupAdapter
@@ -452,6 +453,8 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
             adapter!!.readNewMessage(notRead!!)
             notRead = null
         }
+
+        (activity!! as MainActivity).hideBottomView()
     }
 
     fun setUserOnline(userId: Int) {
