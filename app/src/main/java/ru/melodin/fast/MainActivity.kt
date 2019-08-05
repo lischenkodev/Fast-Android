@@ -129,7 +129,7 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
                 .apply()
 
 
-            if (!AppGlobal.preferences.getBoolean(FragmentSettings.KEY_SHOW_ERROR, false))
+            if (!AppGlobal.preferences.getBoolean(FragmentSettings.KEY_SHOW_ERROR, true))
                 return
 
             val adb = AlertDialog.Builder(this)
