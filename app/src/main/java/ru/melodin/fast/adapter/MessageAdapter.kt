@@ -628,8 +628,8 @@ class MessageAdapter(private val fragment: FragmentMessages, messages: ArrayList
         }
     }
 
-    fun getActivity(): FragmentMessages {
-        return context as FragmentMessages
+    fun getFragment(): FragmentMessages {
+        return fragment
     }
 
     companion object {

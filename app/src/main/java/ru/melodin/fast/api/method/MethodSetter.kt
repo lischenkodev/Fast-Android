@@ -5,6 +5,7 @@ import ru.melodin.fast.api.OnCompleteListener
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.util.ArrayUtil
+import ru.melodin.fast.util.StringUtils
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
 import java.util.*
@@ -67,6 +68,8 @@ open class MethodSetter(private val name: String) {
                 if (buffer.isNotEmpty()) {
                     buffer.append("&")
                 }
+
+                if (StringUtils.isEmpty(value)) continue
 
                 buffer.append(key)
                         .append("=")

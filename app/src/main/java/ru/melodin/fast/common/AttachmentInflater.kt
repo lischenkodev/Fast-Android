@@ -271,7 +271,7 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
 
     fun reply(item: VKMessage, parent: ViewGroup, withStyles: Boolean) {
         val v = message(item, null, item.reply!!.asMessage(), true, withStyles)
-        v.setOnClickListener { adapter!!.getActivity().chooseMessage(item.reply!!.asMessage()) }
+        v.setOnClickListener { adapter!!.getFragment().chooseMessage(item.reply!!.asMessage()) }
         parent.addView(v)
     }
 
@@ -525,7 +525,7 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         val position = adapter.searchPosition(item.id)
         if (position == -1) return
 
-        adapter.getActivity().onItemClick(position)
+        adapter.getFragment().onItemClick(position)
     }
 
     private fun simulateLongClick(item: VKMessage?) {
@@ -534,7 +534,7 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         val position = adapter.searchPosition(item!!.id)
         if (position == -1) return
 
-        adapter.getActivity().onItemLongClick(position)
+        adapter.getFragment().onItemLongClick(position)
     }
 
     companion object {

@@ -115,7 +115,7 @@ class DatabaseHelper private constructor(context: Context) : SQLiteOpenHelper(co
 
         private const val ID = "_id"
 
-        private const val DATABASE_VERSION = 49
+        private const val DATABASE_VERSION = 50
         private const val DATABASE_NAME = "cache.db"
 
         private const val SQL_CREATE_TABLE_USERS = "CREATE TABLE " + USERS_TABLE +
@@ -198,8 +198,7 @@ class DatabaseHelper private constructor(context: Context) : SQLiteOpenHelper(co
                 ");"
 
         private const val SQL_CREATE_TABLE_GROUPS = "CREATE TABLE " + GROUPS_TABLE +
-                " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                " [" + GROUP_ID + "] INTEGER UNIQUE ON CONFLICT REPLACE, " +
+                " (" + GROUP_ID + " INTEGER PRIMARY KEY ON CONFLICT REPLACE, " +
                 " [" + NAME + "] VARCHAR(255), " +
                 " [" + SCREEN_NAME + "] VARCHAR(255), " +
                 " [" + DESCRIPTION + "] VARCHAR(255), " +

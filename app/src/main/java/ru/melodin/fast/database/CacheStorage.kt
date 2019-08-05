@@ -85,13 +85,15 @@ object CacheStorage {
         get() {
             val cursor = selectCursor(CONVERSATIONS_TABLE)
             if (cursor.count <= 0) {
-                return null
+                return arrayListOf()
             }
 
             val dialogs = ArrayList<VKConversation>(cursor.count)
-            while (cursor.moveToNext()) {
-                dialogs.add(parseConversation(cursor))
-            }
+
+            if (cursor.moveToFirst())
+                do {
+                    dialogs.add(parseConversation(cursor))
+                } while (cursor.moveToNext())
 
             cursor.close()
             return dialogs
@@ -115,21 +117,21 @@ object CacheStorage {
 
     private fun selectCursor(table: String, column: String, value: Any): Cursor {
         return QueryBuilder.query()
-                .select("*").from(table)
-                .where("$column = $value")
-                .asCursor(database)
+            .select("*").from(table)
+            .where("$column = $value")
+            .asCursor(database)
     }
 
     private fun selectCursor(table: String, where: String): Cursor {
         return QueryBuilder.query()
-                .select("*").from(table).where(where)
-                .asCursor(database)
+            .select("*").from(table).where(where)
+            .asCursor(database)
     }
 
     private fun selectCursor(table: String): Cursor {
         return QueryBuilder.query()
-                .select("*").from(table)
-                .asCursor(database)
+            .select("*").from(table)
+            .asCursor(database)
     }
 
     private fun getInt(cursor: Cursor, columnName: String): Int {
@@ -179,12 +181,12 @@ object CacheStorage {
 
     fun getFriends(userId: Int, onlyOnline: Boolean): ArrayList<VKUser> {
         val cursor = QueryBuilder.query()
-                .select("*")
-                .from(FRIENDS_TABLE)
-                .leftJoin(USERS_TABLE)
-                .on("friends.friend_id = users.user_id")
-                .where("friends.user_id = $userId")
-                .asCursor(database)
+            .select("*")
+            .from(FRIENDS_TABLE)
+            .leftJoin(USERS_TABLE)
+            .on("friends.friend_id = users.user_id")
+            .where("friends.user_id = $userId")
+            .asCursor(database)
 
         val users = ArrayList<VKUser>(cursor.count)
 
@@ -229,7 +231,10 @@ object CacheStorage {
     }
 
     fun getMessage(mId: Int): VKMessage? {
-        val cursor = selectCursor(MESSAGES_TABLE, String.format(AppGlobal.locale, "%s = %d", MESSAGE_ID, mId))
+        val cursor = selectCursor(
+            MESSAGES_TABLE,
+            String.format(AppGlobal.locale, "%s = %d", MESSAGE_ID, mId)
+        )
 
         return if (cursor.moveToFirst()) parseMessage(cursor) else null
 
@@ -480,7 +485,10 @@ object CacheStorage {
             values.put(TITLE, dialog.title)
         }
 
-        if (TextUtils.isEmpty(dialog.photo50) && TextUtils.isEmpty(dialog.photo100) && TextUtils.isEmpty(dialog.photo200)) {
+        if (TextUtils.isEmpty(dialog.photo50) && TextUtils.isEmpty(dialog.photo100) && TextUtils.isEmpty(
+                dialog.photo200
+            )
+        ) {
             if (dialog.isGroup) {
                 val group = getGroup(dialog.peerId)
                 values.put(PHOTO_50, if (group == null) "" else group.photo50)

@@ -9,8 +9,8 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.toolbar.*
 import org.greenrobot.eventbus.EventBus
-import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.GroupAdapter
 import ru.melodin.fast.adapter.UserAdapter
@@ -23,7 +23,8 @@ import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.util.ArrayUtil
 
-class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
+class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener,
+    Preference.OnPreferenceChangeListener {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.prefs, rootKey)
@@ -39,13 +40,19 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         darkTheme!!.onPreferenceChangeListener = this
 
         val user = UserConfig.getUser() ?: return
-        val hideTypingSummary = String.format(getString(R.string.hide_typing_summary), user.name, user.surname!!.substring(0, 1) + ".")
+        val hideTypingSummary = String.format(
+            getString(R.string.hide_typing_summary),
+            user.name,
+            user.surname!!.substring(0, 1) + "."
+        )
         hideTyping!!.summary = hideTypingSummary
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        (activity!! as MainActivity).hideNavMenu()
+
+        tb.setBackVisible(true)
+        tb.setTitle(R.string.settings)
     }
 
     private fun switchTheme(dark: Boolean) {
@@ -62,7 +69,15 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
     override fun onPreferenceClick(preference: Preference): Boolean {
         when (preference.key) {
-            KEY_ABOUT -> Toast.makeText(context, String.format(getString(R.string.about_toast), AppGlobal.app_version_name, AppGlobal.app_version_code), Toast.LENGTH_LONG).show()
+            KEY_ABOUT -> Toast.makeText(
+                context,
+                String.format(
+                    getString(R.string.about_toast),
+                    AppGlobal.app_version_name,
+                    AppGlobal.app_version_code
+                ),
+                Toast.LENGTH_LONG
+            ).show()
             KEY_MESSAGES_CLEAR_CACHE -> showConfirmClearCacheDialog(users = false, groups = false)
             KEY_SHOW_CACHED_USERS -> showCachedUsers()
             KEY_SHOW_CACHED_GROUPS -> showCachedGroups()
@@ -75,7 +90,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         val v = layoutInflater.inflate(R.layout.recycler_list, null, false)
 
         v.findViewById<View>(R.id.refresh).isEnabled = false
-        v.findViewById<View>(R.id.no_items_layout).visibility = View.GONE
+        v.findViewById<View>(R.id.emptyView).visibility = View.GONE
         val list = v.findViewById<RecyclerView>(R.id.list)
 
         val manager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
@@ -96,7 +111,12 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
         adb.setView(v)
         adb.setPositiveButton(android.R.string.ok, null)
-        adb.setNeutralButton(R.string.clear) { _, _ -> showConfirmClearCacheDialog(users = false, groups = true) }
+        adb.setNeutralButton(R.string.clear) { _, _ ->
+            showConfirmClearCacheDialog(
+                users = false,
+                groups = true
+            )
+        }
         adb.show()
     }
 
@@ -105,7 +125,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         val v = layoutInflater.inflate(R.layout.recycler_list, null, false)
 
         v.findViewById<View>(R.id.refresh).isEnabled = false
-        v.findViewById<View>(R.id.no_items_layout).visibility = View.GONE
+        v.findViewById<View>(R.id.emptyView).visibility = View.GONE
         val list = v.findViewById<RecyclerView>(R.id.list)
 
         val manager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
@@ -126,31 +146,36 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
         adb.setView(v)
         adb.setPositiveButton(android.R.string.ok, null)
-        adb.setNeutralButton(R.string.clear) { _, _ -> showConfirmClearCacheDialog(users = true, groups = false) }
+        adb.setNeutralButton(R.string.clear) { _, _ ->
+            showConfirmClearCacheDialog(
+                users = true,
+                groups = false
+            )
+        }
         adb.show()
     }
 
     private fun showConfirmClearCacheDialog(users: Boolean, groups: Boolean) {
         AlertDialog.Builder(activity!!)
-                .setTitle(R.string.confirmation)
-                .setMessage(R.string.clear_cache_confirm)
-                .setPositiveButton(R.string.yes) { _, _ ->
-                    TaskManager.execute {
-                        val helper = DatabaseHelper.getInstance(activity!!)
-                        val db = AppGlobal.database
+            .setTitle(R.string.confirmation)
+            .setMessage(R.string.clear_cache_confirm)
+            .setPositiveButton(R.string.yes) { _, _ ->
+                TaskManager.execute {
+                    val helper = DatabaseHelper.getInstance(activity!!)
+                    val db = AppGlobal.database
 
-                        when {
-                            users -> helper.dropUsersTable(db)
-                            groups -> helper.dropGroupsTable(db)
-                            else -> {
-                                helper.dropMessagesTable(db)
-                                EventBus.getDefault().postSticky(arrayOf<Any>(KEY_MESSAGES_CLEAR_CACHE))
-                            }
+                    when {
+                        users -> helper.dropUsersTable(db)
+                        groups -> helper.dropGroupsTable(db)
+                        else -> {
+                            helper.dropMessagesTable(db)
+                            EventBus.getDefault().postSticky(arrayOf<Any>(KEY_MESSAGES_CLEAR_CACHE))
                         }
                     }
                 }
-                .setNegativeButton(R.string.no, null)
-                .show()
+            }
+            .setNegativeButton(R.string.no, null)
+            .show()
     }
 
     companion object {

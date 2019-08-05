@@ -3,10 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="?android:windowBackground"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?android:windowBackground">
 
-    <androidx.recyclerview.widget.RecyclerView
+    <ru.melodin.fast.view.FastRecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -123,7 +123,8 @@
         android:visibility="gone"
         app:backgroundTint="?colorPrimary"
         app:fabSize="mini"
-        app:tint="?android:textColorPrimary" />
+        app:tint="?android:textColorPrimary"
+        tools:visibility="visible" />
 
     <View
         android:layout_width="match_parent"

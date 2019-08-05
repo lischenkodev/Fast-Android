@@ -240,7 +240,7 @@ class FragmentChatInfo : BaseFragment() {
         }
     }
 
-    fun confirmKick(userId: Int) {
+    private fun confirmKick(userId: Int) {
         val builder = AlertDialog.Builder(activity!!)
         builder.setTitle(R.string.confirmation)
         builder.setMessage(R.string.are_you_sure)
@@ -258,7 +258,7 @@ class FragmentChatInfo : BaseFragment() {
                     override fun onComplete(models: ArrayList<*>?) {
                         if (userId == UserConfig.userId) {
                             chat!!.users = arrayListOf()
-                            //finish
+                            fragmentManager!!.popBackStack()
                         } else {
                             val position = adapter!!.searchUser(userId)
                             adapter!!.remove(position)
@@ -266,7 +266,7 @@ class FragmentChatInfo : BaseFragment() {
                             chat!!.users = adapter!!.values!!
                         }
 
-                        CacheStorage.insert(DatabaseHelper.CHATS_TABLE, chat!!)
+                        CacheStorage.update(DatabaseHelper.CHATS_TABLE, DatabaseHelper.CHAT_ID, chat!!)
                         Toast.makeText(activity!!, R.string.success, Toast.LENGTH_SHORT)
                             .show()
                     }
@@ -276,15 +276,6 @@ class FragmentChatInfo : BaseFragment() {
                             .show()
                     }
                 })
-        }
-    }
-
-    companion object {
-        fun newInstance(args: Bundle) : FragmentChatInfo {
-            val fragment = FragmentChatInfo()
-            fragment.arguments = args
-
-            return fragment
         }
     }
 }

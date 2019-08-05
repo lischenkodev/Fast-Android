@@ -3,10 +3,7 @@ package ru.melodin.fast
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import androidx.appcompat.app.AlertDialog
-import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.android.synthetic.main.activity_main.*
 import org.greenrobot.eventbus.EventBus
@@ -15,13 +12,13 @@ import org.greenrobot.eventbus.ThreadMode
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.common.AppGlobal
+import ru.melodin.fast.common.FragmentSelector
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.current.BaseActivity
 import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.fragment.FragmentConversations
-import ru.melodin.fast.fragment.FragmentFriends
 import ru.melodin.fast.fragment.FragmentItems
 import ru.melodin.fast.fragment.FragmentSettings
 import ru.melodin.fast.service.LongPollService
@@ -29,7 +26,6 @@ import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Keys
 import ru.melodin.fast.util.Util
 import ru.melodin.fast.util.ViewUtil
-import java.util.*
 
 class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelectedListener,
     BottomNavigationView.OnNavigationItemReselectedListener {
@@ -59,14 +55,6 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
         }
 
         EventBus.getDefault().register(this)
-    }
-
-    fun showNavMenu() {
-        navigationView?.visibility = VISIBLE
-    }
-
-    fun hideNavMenu() {
-        navigationView?.visibility = GONE
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -112,7 +100,7 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
             selectedId = R.id.conversations
 
 
-            replaceFragment(selectedFragment)
+            FragmentSelector.selectFragment(supportFragmentManager, selectedFragment!!)
         }
     }
 
@@ -161,42 +149,6 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
         }
     }
 
-    fun replaceFragment(fragment: Fragment?) {
-        if (fragment == null) return
-
-        val manager = supportFragmentManager
-        val transaction = manager.beginTransaction()
-
-        val fragments = manager.fragments
-        val classNames = ArrayList<String>(fragments.size)
-
-        val containerViewId = R.id.fragment_container
-
-        if (ArrayUtil.isEmpty(fragments)) {
-            transaction.add(containerViewId, fragment, fragment.javaClass.simpleName)
-        } else {
-            for (f in fragments) {
-                transaction.hide(f)
-                classNames.add(f.javaClass.simpleName)
-            }
-
-            if (classNames.contains(fragment.javaClass.simpleName)) {
-                for (f in fragments)
-                    if (f.javaClass.simpleName == fragment.javaClass.simpleName) {
-                        transaction.show(f)
-                        break
-                    }
-            } else {
-                transaction.add(containerViewId, fragment, fragment.javaClass.simpleName)
-            }
-        }
-
-        if (fragment !is FragmentConversations && fragment !is FragmentItems)
-            transaction.addToBackStack("")
-
-        transaction.commit()
-    }
-
     public override fun onDestroy() {
         super.onDestroy()
         if (!fromRecreate) {
@@ -213,7 +165,7 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
             R.id.menu -> selectedFragment = fragmentItems
         }
 
-        replaceFragment(selectedFragment)
+        FragmentSelector.selectFragment(supportFragmentManager, selectedFragment!!)
         return true
     }
 
@@ -222,7 +174,6 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
     }
 
     companion object {
-        val fragmentFriends = FragmentFriends()
         val fragmentConversations = FragmentConversations()
         val fragmentItems = FragmentItems()
     }

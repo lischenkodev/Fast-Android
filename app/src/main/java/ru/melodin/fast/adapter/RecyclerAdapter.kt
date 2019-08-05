@@ -22,7 +22,7 @@ abstract class RecyclerAdapter<T : Model, VH : RecyclerHolder> internal construc
     var values: ArrayList<T>? = null
         private set
 
-    private var inflater: LayoutInflater
+    var inflater: LayoutInflater
     private var cleanValues: ArrayList<T>? = null
     private var click: OnItemClickListener? = null
     private var longClick: OnItemLongClickListener? = null

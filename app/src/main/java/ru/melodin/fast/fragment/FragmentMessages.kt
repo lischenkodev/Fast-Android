@@ -21,15 +21,17 @@ import android.widget.PopupWindow
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatEditText
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.text.HtmlCompat
+import androidx.core.view.get
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_messages.*
+import kotlinx.android.synthetic.main.toolbar_action.*
 import ru.melodin.fast.BuildConfig
-import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.MessageAdapter
 import ru.melodin.fast.adapter.PopupAdapter
@@ -40,9 +42,7 @@ import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.VKUtil
 import ru.melodin.fast.api.method.MethodSetter
 import ru.melodin.fast.api.model.*
-import ru.melodin.fast.common.AppGlobal
-import ru.melodin.fast.common.AttachmentInflater
-import ru.melodin.fast.common.TaskManager
+import ru.melodin.fast.common.*
 import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
@@ -54,7 +54,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
-    RecyclerAdapter.OnItemLongClickListener, TextWatcher {
+    RecyclerAdapter.OnItemLongClickListener, TextWatcher, Toolbar.OnMenuItemClickListener {
 
     var isLoading: Boolean = false
 
@@ -156,6 +156,9 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        toolbar = tb
+        recyclerList = recyclerView
+
         iconSend = ContextCompat.getDrawable(activity!!, R.drawable.md_send)
         iconMic = ContextCompat.getDrawable(activity!!, R.drawable.md_mic)
         iconDone = ContextCompat.getDrawable(activity!!, R.drawable.md_done)
@@ -169,8 +172,13 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         tb.setTitle(chatTitle)
         tb.setBackVisible(true)
 
-        //setSupportActionBar(actionTb)
-        //supportActionBar!!.setDisplayShowTitleEnabled(false)
+        actionTb.navigationIcon!!.setTint(ThemeManager.main)
+        actionTb.inflateMenu(R.menu.activity_chat_history)
+        onPrepareMenu()
+        for (i in 0 until actionTb.menu.size()) {
+            val item = actionTb.menu[i]
+            item.icon?.setTint(ThemeManager.main)
+        }
 
         scrollToBottom.setOnClickListener {
             scrollToBottom.hide()
@@ -320,6 +328,20 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         }
     }
 
+    override fun onMenuItemClick(item: MenuItem?): Boolean {
+        when (item!!.itemId) {
+            android.R.id.home -> {
+                adapter!!.clearSelected()
+                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
+                updateToolbar()
+            }
+            R.id.delete -> showConfirmDeleteMessages(adapter!!.selectedMessages)
+            R.id.reply -> confirmReply(adapter!!.selectedMessages)
+        }
+
+        return true
+    }
+
     private fun loadAvatar() {
         tb.setAvatar(R.drawable.avatar_placeholder)
 
@@ -455,8 +477,12 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     private fun openChatInfo() {
-        arguments!!.putSerializable("conversation", conversation)
-        (activity!! as MainActivity).replaceFragment(FragmentChatInfo.newInstance(arguments!!))
+        FragmentSelector.selectFragment(
+            fragmentManager!!,
+            FragmentChatInfo(),
+            arguments!!.apply { putSerializable("conversation", conversation) },
+            true
+        )
     }
 
     private fun checkCanWrite() {
@@ -464,6 +490,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         smiles.isEnabled = true
         message.isEnabled = true
         message.setText("")
+
         if (cantWriteReason <= 0) return
         if (!canWrite) {
             chatPanel.isEnabled = false
@@ -487,10 +514,10 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
             if (selectTimer != null) selectTimer!!.cancel()
 
             selectTimer = Timer()
-            selectTimer!!.schedule(object : TimerTask() {
+            selectTimer?.schedule(object : TimerTask() {
                 override fun run() {
-                    activity!!.runOnUiThread {
-                        if (adapter!!.isSelected(position))
+                    activity?.runOnUiThread {
+                        if (adapter?.isSelected(position)!!)
                             adapter!!.unSelectItem(position)
 
                         selectTimer = null
@@ -816,7 +843,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     fun updateToolbar() {
-        //invalidateOptionsMenu()
+        onPrepareMenu()
 
         tb.setSubtitle(if (isLoading) getString(R.string.loading) else subtitle)
 
@@ -843,19 +870,6 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
             override fun onError(e: Exception) {}
         })
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                adapter!!.clearSelected()
-                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
-                updateToolbar()
-            }
-            R.id.delete -> showConfirmDeleteMessages(adapter!!.selectedMessages)
-            R.id.reply -> confirmReply(adapter!!.selectedMessages)
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     private fun confirmReply(messages: ArrayList<VKMessage>) {
@@ -1287,20 +1301,20 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         send.setImageDrawable(iconTrash)
     }
 
-//    override fun onBackPressed() {
-//        when {
-//            editing -> {
-//                editing = false
-//                updateStyles()
-//            }
-//            adapter?.isSelected!! -> {
-//                adapter!!.clearSelected()
-//                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
-//                updateToolbar()
-//            }
-//            else -> super.onBackPressed()
-//        }
-//    }
+    fun onBackPressed() {
+        when {
+            editing -> {
+                editing = false
+                updateStyles()
+            }
+            adapter?.isSelected!! -> {
+                adapter!!.clearSelected()
+                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
+                updateToolbar()
+            }
+            else -> fragmentManager!!.popBackStack()
+        }
+    }
 
     override fun onItemClick(position: Int) {
         val item = adapter!!.getItem(position)
@@ -1370,24 +1384,20 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         }
     }
 
-//    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-//        val selecting = adapter?.isSelected!!
-//
-//        tb.visibility = if (selecting) View.GONE else View.VISIBLE
-//        actionTb.visibility = if (selecting) View.VISIBLE else View.GONE
-//
-//        actionTb.title = if (selecting) adapter!!.selectedCount.toString() else ""
-//
-//        val delete = menu.findItem(R.id.delete)
-//        delete.isVisible = selecting
-//
-//        for (i in 0 until menu.size()) {
-//            val item = menu[i]
-//            item.icon?.setTint(ThemeManager.main)
-//        }
-//
-//        return super.onPrepareOptionsMenu(menu)
-//    }
+    private fun onPrepareMenu() {
+        val menu = actionTb.menu
+
+        val selecting = adapter?.isSelected
+
+        selecting ?: return
+
+        tb.visibility = if (selecting) View.GONE else View.VISIBLE
+        actionTb.visibility = if (selecting) View.VISIBLE else View.GONE
+        actionTb.title = if (selecting) adapter!!.selectedCount.toString() else ""
+
+        val delete = menu.findItem(R.id.delete)
+        delete.isVisible = selecting
+    }
 
     fun getRecyclerView(): RecyclerView {
         return recyclerView
@@ -1403,12 +1413,5 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
     companion object {
         private const val MESSAGES_COUNT = 30
-
-        fun newInstance(args: Bundle): FragmentMessages {
-            val fragment = FragmentMessages()
-            fragment.arguments = args
-
-            return fragment
-        }
     }
 }

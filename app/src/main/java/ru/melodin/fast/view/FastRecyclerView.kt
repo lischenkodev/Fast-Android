@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
+
 class FastRecyclerView : RecyclerView {
 
     private var mScrollPosition = -1

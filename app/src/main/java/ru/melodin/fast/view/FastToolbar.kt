@@ -149,7 +149,7 @@ class FastToolbar : FrameLayout {
         menuLayout.getChildAt(i).visibility = if (visible) View.VISIBLE else View.INVISIBLE
     }
 
-    private fun setAvatar(drawable: Drawable?) {
+    fun setAvatar(drawable: Drawable?) {
         avatar.setImageDrawable(drawable)
         avatar.visibility = if (drawable == null) View.GONE else View.VISIBLE
         validateTitleGravity()

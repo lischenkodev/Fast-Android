@@ -32,7 +32,7 @@ class LongPollService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         Log.d(TAG, "onStartCommand")
         super.onStartCommand(intent, flags, startId)
-        return START_STICKY
+        return START_STICKY_COMPATIBILITY
     }
 
     override fun onDestroy() {
@@ -96,7 +96,7 @@ class LongPollService : Service() {
                     val updates = response.optJSONArray("updates")
                     Log.i(TAG, "updates: " + updates!!)
 
-                    server!!.ts = tsResponse
+                    server?.ts = tsResponse
                     if ((if (!ArrayUtil.isEmpty(updates)) updates.length() else 0) != 0) {
                         LongPollEvents.process(updates)
                     }

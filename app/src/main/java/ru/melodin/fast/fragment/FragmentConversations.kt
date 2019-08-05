@@ -16,7 +16,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.CreateChatActivity
-import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.ConversationAdapter
 import ru.melodin.fast.adapter.RecyclerAdapter
@@ -27,6 +26,7 @@ import ru.melodin.fast.api.model.VKGroup
 import ru.melodin.fast.api.model.VKMessage
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.AppGlobal
+import ru.melodin.fast.common.FragmentSelector
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.current.BaseFragment
@@ -220,18 +220,19 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
 
         val peerId = conversation.peerId
 
-        val args = Bundle()
-        args.putString("title", conversation.fullTitle)
-        args.putString("photo", conversation.photo)
-        args.putInt("peer_id", peerId)
-        args.putBoolean("can_write", conversation.isCanWrite)
-        args.putSerializable("conversation", conversation)
+        val args = Bundle().apply {
+            putString("title", conversation.fullTitle)
+            putString("photo", conversation.photo)
+            putInt("peer_id", peerId)
+            putBoolean("can_write", conversation.isCanWrite)
+            putSerializable("conversation", conversation)
+        }
 
         if (!conversation.isCanWrite) {
             args.putInt("reason", conversation.reason)
         }
 
-        (activity!! as MainActivity).replaceFragment(FragmentMessages.newInstance(args))
+        FragmentSelector.selectFragment(fragmentManager!!, FragmentMessages(), args, true)
     }
 
     private fun readConversation(peerId: Int) {
@@ -242,14 +243,6 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
             } catch (e: Exception) {
                 e.printStackTrace()
             }
-        }
-    }
-
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        when (hidden) {
-            true -> (activity!! as MainActivity).hideNavMenu()
-            else -> (activity!! as MainActivity).showNavMenu()
         }
     }
 

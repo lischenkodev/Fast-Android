@@ -1,6 +1,5 @@
 package ru.melodin.fast.fragment
 
-import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
@@ -22,6 +21,7 @@ import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKConversation
 import ru.melodin.fast.api.model.VKUser
+import ru.melodin.fast.common.FragmentSelector
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.current.BaseFragment
@@ -60,11 +60,12 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        toolbar = tb
-        recyclerList = list
+        toolbar = tb.apply {
+            setTitle(title)
+            setBackVisible(true)
+        }
 
-        tb.setTitle(title)
-        tb.setBackVisible(true)
+        recyclerList = list
 
         refresh.setOnRefreshListener(this)
         refresh.setColorSchemeColors(ThemeManager.accent)
@@ -74,6 +75,8 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
         list.setHasFixedSize(true)
         list.layoutManager = manager
 
+        refresh.isEnabled = false
+
         getCachedFriends()
         if (savedInstanceState == null)
             getFriends(FRIENDS_COUNT, 0)
@@ -82,7 +85,7 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        listState = list.layoutManager?.onSaveInstanceState()
+        listState = list.layoutManager!!.onSaveInstanceState()
         outState.putParcelable("list_state", listState)
     }
 
@@ -91,14 +94,19 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
         listState = savedInstanceState?.getParcelable("list_state")
         listState ?: return
-        list.layoutManager?.onRestoreInstanceState(listState)
+        list.layoutManager!!.onRestoreInstanceState(listState)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        onSaveInstanceState(arguments!!)
     }
 
     override fun onResume() {
         super.onResume()
 
         listState ?: return
-        list.layoutManager?.onRestoreInstanceState(listState)
+        onViewStateRestored(arguments)
     }
 
     private fun createAdapter(friends: ArrayList<VKUser>?, offset: Int) {
@@ -148,9 +156,10 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
                 .fields(VKUser.FIELDS_DEFAULT)
                 .execute(VKUser::class.java, object : OnCompleteListener {
                     override fun onComplete(models: ArrayList<*>?) {
-
                         if (ArrayUtil.isEmpty(models)) return
                         models ?: return
+
+                        Log.d("getFriends", "onComplete")
 
                         users = models as ArrayList<VKUser>
 
@@ -172,26 +181,29 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
                             .show()
                     }
                 })
+
+            refresh.isRefreshing = false
         }
     }
 
     fun openChat(position: Int) {
         val user = adapter!!.getItem(position)
 
-        val intent = Intent(activity, FragmentMessages::class.java)
-        intent.putExtra("title", user.toString())
-        intent.putExtra("photo", user.photo200)
-        intent.putExtra("peer_id", user.id)
+        val args = Bundle().apply {
+            putString("title", user.toString())
+            putString("photo", user.photo200)
+            putInt("peer_id", user.id)
+        }
 
         val canWrite = !user.isDeactivated
 
-        intent.putExtra("can_write", canWrite)
+        args.putBoolean("can_write", canWrite)
 
         if (!canWrite) {
-            intent.putExtra("reason", VKConversation.getReason(VKConversation.Reason.USER_DELETED))
+            args.putInt("reason", VKConversation.getReason(VKConversation.Reason.USER_DELETED))
         }
 
-        startActivity(intent)
+        FragmentSelector.selectFragment(fragmentManager!!, FragmentMessages(), args, true)
     }
 
     fun showDialog(position: Int, v: View) {
@@ -210,7 +222,7 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
         adb.setMessage(R.string.confirm_delete_friend)
         adb.setPositiveButton(R.string.yes) { _, _ -> deleteFriend(position) }
         adb.setNegativeButton(R.string.no, null)
-        adb.create().show()
+        adb.show()
     }
 
     private fun deleteFriend(position: Int) {

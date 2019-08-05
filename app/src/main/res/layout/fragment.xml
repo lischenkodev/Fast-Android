@@ -4,7 +4,6 @@
     android:layout_height="match_parent">
 
     <include layout="@layout/toolbar" />
-
     <include layout="@layout/recycler_list" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

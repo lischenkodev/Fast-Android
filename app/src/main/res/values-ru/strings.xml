@@ -162,4 +162,7 @@
     <string name="offline_summary">Не обновлять список сообщений при входе в приложение</string>
     <string name="reply">Ответить</string>
     <string name="success">Успешно</string>
+    <string name="in_progress">В процессе</string>
+    <string name="report_bug">Сообщить о баге</string>
+    <string name="send">Отправить</string>
 </resources>
