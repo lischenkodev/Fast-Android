@@ -87,7 +87,10 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
         tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
             override fun onMenuItemClick(item: MenuItem) {
                 if (item.itemId == R.id.create_chat) {
-                    startActivity(Intent(activity, CreateChatActivity::class.java))
+                    activity!!.startActivityForResult(
+                        Intent(activity, CreateChatActivity::class.java),
+                        REQUEST_CREATE_CHAT
+                    )
                 }
             }
         })
@@ -368,5 +371,7 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
 
     companion object {
         private const val CONVERSATIONS_COUNT = 30
+
+        const val REQUEST_CREATE_CHAT = 1
     }
 }

@@ -1,5 +1,6 @@
 package ru.melodin.fast
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
@@ -21,6 +22,7 @@ import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.fragment.FragmentConversations
 import ru.melodin.fast.fragment.FragmentItems
+import ru.melodin.fast.fragment.FragmentMessages
 import ru.melodin.fast.fragment.FragmentSettings
 import ru.melodin.fast.service.LongPollService
 import ru.melodin.fast.util.ArrayUtil
@@ -168,6 +170,36 @@ class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelect
 
         FragmentSelector.selectFragment(supportFragmentManager, selectedFragment!!)
         return true
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == FragmentConversations.REQUEST_CREATE_CHAT && resultCode == Activity.RESULT_OK) {
+            data ?: return
+
+            val title = data.getStringExtra("title")
+            val peerId = data.getIntExtra("peer_id", -1)
+            val membersCount = data.getIntExtra("members_count", -1)
+
+            FragmentSelector.selectFragment(
+                supportFragmentManager, FragmentMessages(),
+                Bundle().apply {
+                    putString("title", title)
+                    putInt("peer_id", peerId)
+                    putInt("members_count", membersCount)
+                }, true
+            )
+        }
+    }
+
+    override fun onBackPressed() {
+        val fragment = FragmentSelector.currentFragment ?: return
+
+        if (fragment is FragmentMessages) {
+            fragment.onBackPressed()
+        } else {
+            super.onBackPressed()
+        }
     }
 
     override fun onNavigationItemReselected(item: MenuItem) {

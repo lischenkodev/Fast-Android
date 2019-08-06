@@ -21,7 +21,6 @@ import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
-import ru.melodin.fast.fragment.FragmentMessages
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Util
 import ru.melodin.fast.util.ViewUtil
@@ -198,14 +197,14 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
     }
 
     private fun openChat(title: String?, peerId: Int) {
-        val intent = Intent(this, FragmentMessages::class.java)
+        val intent = Intent().apply {
+            putExtra("title", title)
+            putExtra("peer_id", peerId)
+            putExtra("members_count", adapter!!.selectedCount + 1)
+        }
 
-        intent.putExtra("title", title)
-        intent.putExtra("peer_id", peerId)
-        intent.putExtra("members_count", adapter!!.selectedCount + 1)
-
+        setResult(Activity.RESULT_OK, intent)
         finish()
-        startActivity(intent)
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

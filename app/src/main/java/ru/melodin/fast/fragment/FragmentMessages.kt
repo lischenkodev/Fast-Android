@@ -168,6 +168,8 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         iconDone = ContextCompat.getDrawable(activity!!, R.drawable.md_done)
         iconTrash = ContextCompat.getDrawable(activity!!, R.drawable.ic_trash)
 
+        actionTb.visibility = View.GONE
+
         getIntentData()
         updateToolbar()
         showPinned(pinned)
@@ -926,7 +928,8 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         if (requestCode == REQUEST_CHOOSE_MESSAGE && resultCode == Activity.RESULT_OK) {
             data ?: return
 
-            val forwardingMessages = data.getSerializableExtra("fwd_messages") as ArrayList<VKMessage>? ?: return
+            val forwardingMessages =
+                data.getSerializableExtra("fwd_messages") as ArrayList<VKMessage>? ?: return
 
             val conversation =
                 data.getSerializableExtra("conversation") as VKConversation? ?: return
@@ -1392,13 +1395,13 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         send.setImageDrawable(iconTrash)
     }
 
-    private fun onBackPressed() {
+    fun onBackPressed() {
         when {
             editing -> {
                 editing = false
                 updateStyles()
             }
-            adapter?.isSelected!! -> {
+            adapter != null && adapter!!.isSelected -> {
                 adapter!!.clearSelected()
                 adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
                 updateToolbar()

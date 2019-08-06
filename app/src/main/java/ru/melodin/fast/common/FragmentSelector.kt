@@ -10,6 +10,8 @@ object FragmentSelector {
 
     private const val FRAGMENT_CONTAINER = R.id.fragment_container
 
+    var currentFragment: Fragment? = null
+
     fun selectFragment(
         manager: FragmentManager,
         fragment: Fragment,
@@ -39,9 +41,10 @@ object FragmentSelector {
         }
 
         if (withBackStack)
-            transaction.addToBackStack(null)
+            transaction.addToBackStack(fragment.javaClass.simpleName)
 
         transaction.commit()
+        currentFragment = fragment
     }
 
     fun selectFragment(manager: FragmentManager, fragment: Fragment, args: Bundle?) {
@@ -68,9 +71,10 @@ object FragmentSelector {
         transaction.add(FRAGMENT_CONTAINER, fragment, fragment.javaClass.simpleName)
 
         if (withBackStack)
-            transaction.addToBackStack(null)
+            transaction.addToBackStack(fragment.javaClass.simpleName)
 
         transaction.commit()
+        currentFragment = fragment
     }
 
     fun addFragment(manager: FragmentManager, fragment: Fragment, args: Bundle?) {
