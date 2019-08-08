@@ -63,13 +63,20 @@ class MessageMethodSetter(name: String) : MethodSetter("messages.$name") {
     }
 
     fun messageIds(vararg ids: Int): MessageMethodSetter {
-        put("message_ids", ArrayUtil.toString(*ids))
-        return this
+        return put("message_ids", ArrayUtil.toString(*ids)) as MessageMethodSetter
     }
 
     fun messageIds(id: Int): MessageMethodSetter {
-        put("message_ids", id)
-        return this
+        return put("message_ids", id) as MessageMethodSetter
+    }
+
+    fun messageIds(messages: ArrayList<VKMessage>): MessageMethodSetter {
+        val ids = arrayListOf<Int>()
+
+        for (message in messages)
+            ids.add(message.id)
+
+        return put("message_ids", ArrayUtil.toString(ids)) as MessageMethodSetter
     }
 
     fun every(every: Boolean?): MessageMethodSetter {

@@ -168,7 +168,7 @@ object VKApi {
 
     fun execute(
         url: String, cls: Class<*>?,
-        listener: OnCompleteListener?
+        listener: OnResponseListener?
     ) {
         TaskManager.execute {
             try {

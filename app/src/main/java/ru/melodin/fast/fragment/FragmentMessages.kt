@@ -3,9 +3,6 @@ package ru.melodin.fast.fragment
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlarmManager
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -32,6 +29,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_messages.*
+import kotlinx.android.synthetic.main.list_empty.*
+import kotlinx.android.synthetic.main.recycler_list.*
+import kotlinx.android.synthetic.main.toolbar.*
 import kotlinx.android.synthetic.main.toolbar_action.*
 import ru.melodin.fast.BuildConfig
 import ru.melodin.fast.MainActivity
@@ -39,17 +39,18 @@ import ru.melodin.fast.R
 import ru.melodin.fast.adapter.MessageAdapter
 import ru.melodin.fast.adapter.PopupAdapter
 import ru.melodin.fast.adapter.RecyclerAdapter
-import ru.melodin.fast.api.OnCompleteListener
+import ru.melodin.fast.api.OnResponseListener
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.VKUtil
-import ru.melodin.fast.api.method.MethodSetter
 import ru.melodin.fast.api.model.*
 import ru.melodin.fast.common.*
 import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.model.ListItem
+import ru.melodin.fast.mvp.contract.MessagesContract
+import ru.melodin.fast.mvp.presenter.MessagesPresenter
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.StringUtils
 import ru.melodin.fast.util.Util
@@ -58,7 +59,8 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
-    RecyclerAdapter.OnItemLongClickListener, TextWatcher, Toolbar.OnMenuItemClickListener {
+    RecyclerAdapter.OnItemLongClickListener, TextWatcher, Toolbar.OnMenuItemClickListener,
+    MessagesContract.View {
 
     var isLoading: Boolean = false
 
@@ -66,7 +68,8 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     private var editing: Boolean = false
     private var canWrite: Boolean = false
     private var typing: Boolean = false
-    private var notRead: VKMessage? = null
+
+    var notRead: VKMessage? = null
 
     private val random = Random()
 
@@ -83,15 +86,12 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
     private var photo: String? = null
 
-    private var reason: VKConversation.Reason? = null
-
     private var messageText: String? = null
     private var chatTitle: String? = null
 
     private var timer: Timer? = null
     private var selectTimer: Timer? = null
 
-    private var pinned: VKMessage? = null
     private var edited: VKMessage? = null
 
     private var editingPosition: Int = 0
@@ -108,7 +108,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         if (s.trim().isNotEmpty()) {
             messageText = s
 
-            sendMessage()
+            sendCurrentMessage()
             message.setText("")
         }
     }
@@ -122,7 +122,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         get() {
             if (conversation == null) return null
 
-            if (conversation!!.last != null && conversation!!.isChat && conversation!!.state != VKConversation.State.IN) {
+            if (conversation!!.lastMessage != null && conversation!!.isChat && conversation!!.state != VKConversation.State.IN) {
                 val kicked = conversation!!.state == VKConversation.State.KICKED
 
                 return getString(if (kicked) R.string.kicked_out_text else R.string.leave_from_chat_text)
@@ -131,8 +131,6 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                     null -> null
                     VKConversation.Type.USER -> {
                         val currentUser = CacheStorage.getUser(peerId)
-                        if (currentUser == null)
-                            loadUser(peerId)
                         getUserSubtitle(currentUser)
                     }
                     VKConversation.Type.CHAT -> if (conversation!!.isGroupChannel) {
@@ -151,6 +149,14 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                 }
         }
 
+    private val presenter = MessagesPresenter()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        presenter.attachView(this)
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -160,8 +166,10 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        refreshLayout.isEnabled = false
+
         toolbar = tb
-        recyclerList = recyclerView
+        recyclerList = list
 
         iconSend = ContextCompat.getDrawable(activity!!, R.drawable.md_send)
         iconMic = ContextCompat.getDrawable(activity!!, R.drawable.md_mic)
@@ -172,8 +180,8 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
         getIntentData()
         updateToolbar()
-        showPinned(pinned)
-        getConversation(peerId)
+        checkPinnedExists(conversation?.pinned)
+        loadConversation(peerId)
         checkCanWrite()
 
         tb.setTitle(chatTitle)
@@ -192,7 +200,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         scrollToBottom.setOnClickListener {
             scrollToBottom.hide()
             if (adapter != null)
-                recyclerView.smoothScrollToPosition(adapter!!.lastPosition + 1)
+                list.smoothScrollToPosition(adapter!!.lastPosition + 1)
         }
 
         initListScrollListener()
@@ -200,7 +208,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         layoutManager = LinearLayoutManager(activity!!, RecyclerView.VERTICAL, false)
         layoutManager.stackFromEnd = true
 
-        recyclerView.layoutManager = layoutManager
+        list.layoutManager = layoutManager
 
         if (VKConversation.isChatId(peerId))
             tb.setOnAvatarClickListener { openChatInfo() }
@@ -224,9 +232,9 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
             true
         }
 
-        getCachedHistory()
+        getCachedMessages(30, 0)
         if (savedInstanceState == null)
-            getHistory(0, MESSAGES_COUNT)
+            loadMessages(MESSAGES_COUNT, 0)
     }
 
     @SuppressLint("InflateParams")
@@ -342,9 +350,9 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                 adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
                 updateToolbar()
             }
-            R.id.forward -> confirmForward(adapter!!.selectedMessages)
+            R.id.forward -> confirmForwardMessages(adapter!!.selectedMessages)
             R.id.delete -> showConfirmDeleteMessages(adapter!!.selectedMessages)
-            R.id.reply -> confirmReply(adapter!!.selectedMessages)
+            R.id.reply -> confirmReplyMessages(adapter!!.selectedMessages)
         }
 
         return true
@@ -367,18 +375,8 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         }
     }
 
-    private fun toggleProgress() {
-        if (progress.visibility == View.VISIBLE) {
-            progress.visibility = View.GONE
-            recyclerView.visibility = View.VISIBLE
-        } else {
-            progress.visibility = View.VISIBLE
-            recyclerView.visibility = View.GONE
-        }
-    }
-
     private fun initListScrollListener() {
-        recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+        list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 if (dy > 0) {
@@ -407,39 +405,52 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         })
     }
 
-    private fun getConversation(peerId: Int) {
-        if (!Util.hasConnection()) return
-        TaskManager.loadConversation(peerId, true, object : OnCompleteListener {
+    override fun loadConversation(peerId: Int) {
+        if (!Util.hasConnection()) {
+            if (conversation == null)
+                showNoInternetToast()
+            return
+        }
+        TaskManager.loadConversation(peerId, true, object : OnResponseListener {
             override fun onComplete(models: ArrayList<*>?) {
                 if (ArrayUtil.isEmpty(models)) return
                 models ?: return
 
-                conversation = models[0] as VKConversation
+                val conversation = models[0] as VKConversation
+                this@FragmentMessages.conversation = conversation
+
+                CacheStorage.update(
+                    DatabaseHelper.CONVERSATIONS_TABLE,
+                    conversation,
+                    DatabaseHelper.PEER_ID,
+                    conversation.peerId
+                )
 
                 if (VKConversation.isChatId(peerId)) {
-                    tb.setTitle(conversation!!.title)
-                    updateToolbar()
+                    tb.setTitle(conversation.title)
+                    checkPinnedExists(conversation.pinned)
                 }
 
+                updateToolbar()
+
                 popupAdapter!!.changeItems(createItems())
-                getMessage(conversation!!.lastMessageId)
+
+                if (conversation.lastMessage == null && conversation.lastMessageId > 0)
+                    loadMessage(conversation.lastMessageId)
             }
 
             override fun onError(e: Exception) {}
         })
     }
 
-    private fun getMessage(messageId: Int) {
-        if (messageId == 0) return
-
-        TaskManager.loadMessage(messageId, true, object : OnCompleteListener {
+    override fun loadMessage(messageId: Int) {
+        TaskManager.loadMessage(messageId, true, object : OnResponseListener {
             override fun onComplete(models: ArrayList<*>?) {
                 if (!ArrayUtil.isEmpty(models)) {
                     val message = models!![0] as VKMessage
 
-                    conversation!!.last = message
+                    conversation?.lastMessage = message
                     CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, message)
-                    CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation!!)
                 }
             }
 
@@ -476,13 +487,11 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         photo = arguments!!.getString("photo")
         cantWriteReason = arguments!!.getInt("reason", -1)
         canWrite = arguments!!.getBoolean("can_write", true)
-        reason = VKConversation.getReason(cantWriteReason)
 
-        if (conversation != null) {
-            membersCount = conversation!!.membersCount
-            pinned = conversation!!.pinned
+        membersCount = if (conversation != null) {
+            conversation!!.membersCount
         } else {
-            membersCount = arguments!!.getInt("members_count", -1)
+            arguments!!.getInt("members_count", -1)
         }
     }
 
@@ -495,31 +504,38 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         )
     }
 
-    private fun checkCanWrite() {
+    override fun showCantWrite(reason: Int) {
+        chatPanel.isEnabled = false
+        send.isEnabled = false
+        smiles.isEnabled = false
+        message.isEnabled = false
+        message.setText(VKUtil.getErrorReason(VKConversation.getReason(reason)))
+    }
+
+    override fun hideCantWrite() {
         send.isEnabled = true
         smiles.isEnabled = true
         message.isEnabled = true
         message.setText("")
-
-        if (cantWriteReason <= 0) return
-        if (!canWrite) {
-            chatPanel.isEnabled = false
-            send.isEnabled = false
-            smiles.isEnabled = false
-            message.isEnabled = false
-            message.setText(VKUtil.getErrorReason(reason!!))
-        }
     }
 
-    fun chooseMessage(message: VKMessage?) {
-        if (adapter == null) return
-        if (adapter!!.contains(message!!.id)) {
-            val position = adapter!!.searchPosition(message.id)
+    private fun checkCanWrite() {
+        if (cantWriteReason <= 0) hideCantWrite()
+        if (!canWrite) showCantWrite(cantWriteReason)
+    }
 
-            recyclerView.smoothScrollToPosition(position)
+    override fun selectMessage(message: VKMessage) {
+        adapter ?: return
+
+        val index = adapter!!.searchPosition(message.id)
+
+        if (index == -1) {
+            showMessageAlert(message)
+        } else {
+            list.smoothScrollToPosition(index)
             adapter!!.clearSelected()
             adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
-            adapter!!.selectItem(position)
+            adapter!!.selectItem(index)
 
             if (selectTimer != null) selectTimer!!.cancel()
 
@@ -527,40 +543,31 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
             selectTimer?.schedule(object : TimerTask() {
                 override fun run() {
                     activity?.runOnUiThread {
-                        if (adapter?.isSelected(position)!!)
-                            adapter!!.unSelectItem(position)
+                        if (adapter?.isSelected(index)!!)
+                            adapter!!.unSelectItem(index)
 
                         selectTimer = null
                     }
                 }
             }, 3500)
-        } else {
-            showPinnedAlert(message)
         }
     }
 
-    fun showPinned(pinned: VKMessage?) {
-        if (pinned == null) {
-            pinnedContainer.visibility = View.GONE
-            return
-        }
-
+    override fun showPinnedMessage(message: VKMessage) {
         pinnedContainer.visibility = View.VISIBLE
+        pinnedContainer.setOnClickListener { selectMessage(message) }
 
-        pinnedContainer.setOnClickListener { chooseMessage(pinned) }
-
-        var user = CacheStorage.getUser(pinned.fromId)
-        if (user == null) user = VKUser.EMPTY
+        val user = CacheStorage.getUser(message.fromId) ?: VKUser.EMPTY
 
         pinnedName.text = user.toString().trim()
-        pinnedDate.text = Util.dateFormatter.format(pinned.date * 1000L)
+        pinnedDate.text = Util.dateFormatter.format(message.date * 1000L)
 
-        pinnedText.text = pinned.text
+        pinnedText.text = message.text
 
         unpin.setOnClickListener { showConfirmUnpinMessage() }
 
-        if (TextUtils.isEmpty(pinned.text) && !ArrayUtil.isEmpty(pinned.attachments)) {
-            val body = VKUtil.getAttachmentBody(pinned.attachments, pinned.fwdMessages)
+        if (TextUtils.isEmpty(message.text) && !ArrayUtil.isEmpty(message.attachments)) {
+            val body = VKUtil.getAttachmentBody(message.attachments, message.fwdMessages)
 
             val r = "<b>$body</b>"
             val span = SpannableString(HtmlCompat.fromHtml(r, HtmlCompat.FROM_HTML_MODE_LEGACY))
@@ -570,7 +577,19 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         }
     }
 
-    private fun showPinnedAlert(pinned: VKMessage) {
+    override fun hidePinnedMessage() {
+        pinnedContainer.visibility = View.GONE
+    }
+
+    private fun checkPinnedExists(pinned: VKMessage?) {
+        if (pinned == null) {
+            hidePinnedMessage()
+        } else {
+            showPinnedMessage(pinned)
+        }
+    }
+
+    private fun showMessageAlert(pinned: VKMessage) {
         val adb = AlertDialog.Builder(activity!!)
 
         val v = AttachmentInflater.getInstance(null, activity!!)
@@ -581,8 +600,8 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     private fun showConfirmUnpinMessage() {
-        if (!conversation!!.isCanChangePin) {
-            pinnedContainer.visibility = View.GONE
+        if (conversation != null && !conversation!!.isCanChangePin) {
+            hidePinnedMessage()
             return
         }
 
@@ -595,14 +614,19 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     private fun unpinMessage() {
+        conversation ?: return
         TaskManager.execute {
-            VKApi.messages().unpin().peerId(peerId).execute(null, object : OnCompleteListener {
+            VKApi.messages().unpin().peerId(peerId).execute(null, object : OnResponseListener {
                 override fun onComplete(models: ArrayList<*>?) {
-                    pinned = null
                     conversation!!.pinned = null
-                    showPinned(null)
+                    hidePinnedMessage()
 
-                    CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation!!)
+                    CacheStorage.update(
+                        DatabaseHelper.CONVERSATIONS_TABLE,
+                        conversation!!,
+                        DatabaseHelper.PEER_ID,
+                        conversation!!.peerId
+                    )
                 }
 
                 override fun onError(e: Exception) {
@@ -613,20 +637,25 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     private fun pinMessage(message: VKMessage) {
+        conversation ?: return
         TaskManager.execute {
             VKApi.messages().pin().messageId(message.id).peerId(peerId)
-                .execute(null, object : OnCompleteListener {
+                .execute(null, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
-                        pinned = message
-                        showPinned(pinned)
 
-                        conversation!!.pinned = pinned
+                        conversation!!.pinned = message
+                        showPinnedMessage(message)
 
-                        CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation!!)
+                        CacheStorage.update(
+                            DatabaseHelper.CONVERSATIONS_TABLE,
+                            conversation!!,
+                            DatabaseHelper.PEER_ID,
+                            conversation!!.peerId
+                        )
                     }
 
                     override fun onError(e: Exception) {
-                        Toast.makeText(activity!!, R.string.error, Toast.LENGTH_SHORT).show()
+                        showErrorToast()
                     }
                 })
         }
@@ -639,7 +668,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         typing = true
         TaskManager.execute {
             VKApi.messages().setActivity().type(true).peerId(peerId)
-                .execute(null, object : OnCompleteListener {
+                .execute(null, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         timer = Timer()
                         timer!!.schedule(object : TimerTask() {
@@ -657,7 +686,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         }
     }
 
-    private fun sendMessage() {
+    override fun sendCurrentMessage() {
         if (messageText!!.trim().isEmpty()) return
 
         val message = VKMessage()
@@ -677,7 +706,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         val msg = adapter!!.getItem(position)
 
         adapter!!.notifyDataSetChanged()
-        recyclerView.scrollToPosition(position + 1)
+        list.scrollToPosition(position + 1)
 
         val size = adapter!!.itemCount
 
@@ -694,7 +723,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
             TaskManager.sendMessage(
                 VKApi.messages().send().randomId(msg.randomId).message(
                     messageText!!.trim()
-                ).peerId(peerId), object : OnCompleteListener {
+                ).peerId(peerId), object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         if (ArrayUtil.isEmpty(models)) return
                         models ?: return
@@ -722,7 +751,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
                     override fun onError(e: Exception) {
                         Log.e("Error send message", Log.getStackTraceString(e))
-                        Toast.makeText(activity!!, R.string.error, Toast.LENGTH_SHORT).show()
+                        showErrorToast()
 
                         msg.status = VKMessage.Status.ERROR
                         adapter!!.notifyDataSetChanged()
@@ -731,53 +760,57 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         }
     }
 
-    private fun createAdapter(messages: ArrayList<VKMessage>, offset: Int) {
-        if (ArrayUtil.isEmpty(messages)) {
+    override fun createAdapter(items: ArrayList<VKMessage>?, offset: Int) {
+        if (ArrayUtil.isEmpty(items)) {
             return
         }
 
         if (adapter == null) {
-            adapter = MessageAdapter(this, messages, peerId)
+            adapter = MessageAdapter(this, items!!, peerId)
             adapter!!.setOnItemClickListener(this)
             adapter!!.setOnItemLongClickListener(this)
-            recyclerView.adapter = adapter
+            list.adapter = adapter
 
-            recyclerView.scrollToPosition(adapter!!.itemCount + 1)
+            list.scrollToPosition(adapter!!.itemCount + 1)
             return
         }
 
         if (offset > 0) {
-            adapter!!.values!!.addAll(messages)
+            adapter!!.values!!.addAll(items!!)
             adapter!!.notifyItemRangeInserted(
-                adapter!!.values!!.size - messages.size - 1,
-                messages.size
+                adapter!!.values!!.size - items.size - 1,
+                items.size
             )
             return
         }
 
-        adapter!!.changeItems(messages)
+        adapter!!.changeItems(items!!)
         adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
 
-        recyclerView.scrollToPosition(adapter!!.itemCount - 1)
+        list.scrollToPosition(adapter!!.itemCount - 1)
     }
 
-    private fun getCachedHistory() {
+    override fun getCachedMessages(count: Int, offset: Int) {
         val messages = CacheStorage.getMessages(peerId)
-        createAdapter(messages, 0)
+
 
         if (!ArrayUtil.isEmpty(messages)) {
-            toggleProgress()
+            setProgressBarVisible(false)
+            setNoItemsViewVisible(false)
+            createAdapter(messages, 0)
+        } else {
+            setProgressBarVisible(true)
         }
     }
 
-    private fun getHistory(offset: Int, count: Int) {
-        if (isLoading) return
+    override fun loadMessages(count: Int, offset: Int) {
         if (!Util.hasConnection()) {
-            Toast.makeText(activity!!, R.string.connect_to_the_internet, Toast.LENGTH_SHORT).show()
+            if (adapter == null || adapter!!.isEmpty)
+                setNoItemsViewVisible(true)
+
+            showNoInternetToast()
             return
         }
-
-        isLoading = true
 
         if (adapter == null || adapter!!.isEmpty)
             tb.setSubtitle(R.string.loading)
@@ -791,7 +824,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                 .fields(VKUser.FIELDS_DEFAULT)
                 .offset(offset)
                 .count(count)
-                .execute(VKMessage::class.java, object : OnCompleteListener {
+                .execute(VKMessage::class.java, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         if (ArrayUtil.isEmpty(models)) return
 
@@ -817,21 +850,59 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
                         createAdapter(messages, offset)
 
-                        if (progress.visibility == View.VISIBLE)
-                            toggleProgress()
-
-                        isLoading = false
+                        presenter.onFilledList()
                         updateToolbar()
                     }
 
                     override fun onError(e: Exception) {
-                        isLoading = false
+                        if (adapter == null || adapter!!.isEmpty) {
+                            setNoItemsViewVisible(true)
+                        }
                         updateToolbar()
-                        Toast.makeText(activity!!, R.string.error, Toast.LENGTH_SHORT).show()
+                        showErrorToast()
                     }
                 })
 
         }
+    }
+
+    override fun setProgressBarVisible(visible: Boolean) {
+        when (visible) {
+            true -> {
+                progressBar.visibility = View.VISIBLE
+                setRefreshing(false)
+                setNoItemsViewVisible(false)
+            }
+            else -> progressBar.visibility = View.GONE
+        }
+    }
+
+    override fun setRefreshing(value: Boolean) {
+
+    }
+
+    override fun setNoItemsViewVisible(visible: Boolean) {
+        when (visible) {
+            true -> {
+                emptyView.visibility = View.VISIBLE
+                setProgressBarVisible(false)
+            }
+            else -> emptyView.visibility = View.GONE
+        }
+    }
+
+    override fun clearList() {
+        adapter ?: return
+        adapter!!.clear()
+        adapter!!.notifyDataSetChanged()
+    }
+
+    override fun showNoInternetToast() {
+        Toast.makeText(activity, R.string.connect_to_the_internet, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showErrorToast() {
+        Toast.makeText(activity!!, R.string.error, Toast.LENGTH_SHORT).show()
     }
 
     fun updateChat(chat: VKChat) {
@@ -857,7 +928,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
         tb.setSubtitle(if (isLoading) getString(R.string.loading) else subtitle)
 
-        if (!editing && adapter != null && !adapter!!.isSelected && pinned != null && conversation!!.isCanChangePin)
+        if (!editing && adapter != null && !adapter!!.isSelected && conversation!!.pinned != null)
             pinnedContainer.visibility = View.VISIBLE
     }
 
@@ -872,17 +943,8 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         }
     }
 
-    private fun loadUser(id: Int) {
-        TaskManager.loadUser(id, object : OnCompleteListener {
-            override fun onComplete(models: ArrayList<*>?) {
-                updateToolbar()
-            }
 
-            override fun onError(e: Exception) {}
-        })
-    }
-
-    private fun confirmReply(messages: ArrayList<VKMessage>) {
+    override fun confirmReplyMessages(messages: ArrayList<VKMessage>) {
         if (messages.size == 1) {
             val replyId = messages[0].id
 
@@ -912,7 +974,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         }
     }
 
-    private fun confirmForward(messages: ArrayList<VKMessage>) {
+    override fun confirmForwardMessages(messages: ArrayList<VKMessage>) {
         FragmentSelector.addFragment(
             fragmentManager!!,
             FragmentConversations(true).apply {
@@ -952,40 +1014,92 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         }
     }
 
-    private fun forwardMessages(peerId: Int, text: String, messages: ArrayList<VKMessage>) {
+    override fun forwardMessages(peerId: Int, text: String, messages: ArrayList<VKMessage>) {
         if (ArrayUtil.isEmpty(messages)) return
 
         TaskManager.execute {
             VKApi.messages().send().randomId(random.nextInt()).forwardMessages(messages)
-                .message(text).peerId(peerId).execute(null, object : OnCompleteListener {
+                .message(text).peerId(peerId).execute(null, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
 
                     }
 
                     override fun onError(e: Exception) {
-                        Toast.makeText(
-                            activity!!,
-                            getString(R.string.error) + ": $e",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        showErrorToast()
                     }
                 })
         }
     }
 
-    private fun replyMessage(replyId: Int, text: String) {
+    override fun replyMessage(replyId: Int, text: String) {
         TaskManager.execute {
             VKApi.messages().send().randomId(random.nextInt()).replyTo(replyId).message(text)
-                .peerId(peerId).execute(null, object : OnCompleteListener {
+                .peerId(peerId).execute(null, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                     }
 
                     override fun onError(e: Exception) {
-                        Toast.makeText(
-                            activity!!,
-                            getString(R.string.error) + ": $e",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        showErrorToast()
+                    }
+                })
+        }
+    }
+
+    override fun leaveFromChat() {
+        conversation ?: return
+
+        TaskManager.execute {
+            VKApi.messages()
+                .removeChatUser()
+                .chatId(VKConversation.toChatId(conversation!!.peerId))
+                .userId(UserConfig.userId)
+                .execute(object : OnResponseListener {
+                    override fun onComplete(models: ArrayList<*>?) {
+                        conversation!!.state = VKConversation.State.LEFT
+                        CacheStorage.update(
+                            DatabaseHelper.CONVERSATIONS_TABLE,
+                            conversation!!,
+                            DatabaseHelper.PEER_ID,
+                            conversation!!.peerId
+                        )
+
+                        updateToolbar()
+
+                        popupAdapter!!.changeItems(createItems())
+                    }
+
+                    override fun onError(e: Exception) {
+                        showErrorToast()
+                    }
+                })
+        }
+    }
+
+    override fun returnToChat() {
+        conversation ?: return
+
+        TaskManager.execute {
+            VKApi.messages()
+                .addChatUser()
+                .chatId(VKConversation.toChatId(conversation!!.peerId))
+                .userId(UserConfig.userId)
+                .execute(object : OnResponseListener {
+                    override fun onComplete(models: ArrayList<*>?) {
+                        conversation!!.state = VKConversation.State.IN
+                        CacheStorage.update(
+                            DatabaseHelper.CONVERSATIONS_TABLE,
+                            conversation!!,
+                            DatabaseHelper.PEER_ID,
+                            conversation!!.peerId
+                        )
+
+                        updateToolbar()
+
+                        popupAdapter!!.changeItems(createItems())
+                    }
+
+                    override fun onError(e: Exception) {
+                        showErrorToast()
                     }
                 })
         }
@@ -994,47 +1108,19 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     private fun toggleChatState() {
         conversation ?: return
 
+        if (conversation!!.state != VKConversation.State.IN) {
+            returnToChat()
+            return
+        }
+
         val adb = AlertDialog.Builder(activity!!)
         adb.setTitle(R.string.confirmation)
         adb.setMessage(R.string.are_you_sure)
         adb.setPositiveButton(R.string.yes) { _, _ ->
-            val leave = conversation!!.state == VKConversation.State.IN
-            val chatId = VKConversation.toChatId(conversation!!.last!!.peerId)
-            setChatState(chatId, leave)
+            leaveFromChat()
         }
         adb.setNegativeButton(R.string.no, null)
         adb.show()
-    }
-
-    private fun setChatState(chatId: Int, leave: Boolean) {
-        TaskManager.execute {
-            val setter: MethodSetter = if (leave) {
-                VKApi.messages()
-                    .removeChatUser()
-                    .chatId(chatId)
-                    .userId(UserConfig.userId)
-            } else {
-                VKApi.messages()
-                    .addChatUser()
-                    .chatId(chatId)
-                    .userId(UserConfig.userId)
-            }
-
-            setter.execute(Int::class.java, object : OnCompleteListener {
-                override fun onComplete(models: ArrayList<*>?) {
-                    conversation!!.state =
-                        if (leave) VKConversation.State.LEFT else VKConversation.State.IN
-                    CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation!!)
-                    updateToolbar()
-
-                    popupAdapter!!.changeItems(createItems())
-                }
-
-                override fun onError(e: Exception) {
-                    Toast.makeText(activity!!, R.string.error, Toast.LENGTH_SHORT).show()
-                }
-            })
-        }
     }
 
     private fun toggleNotifications() {
@@ -1049,30 +1135,70 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
             conversation!!.isDisabledForever = true
         }
 
-        setNotifications(!conversation!!.isNotificationsDisabled)
+        if (conversation!!.isNotificationsDisabled) {
+            enableNotifications()
+        } else {
+            disableNotifications()
+        }
     }
 
-    private fun setNotifications(on: Boolean) {
+    override fun enableNotifications() {
+        conversation ?: return
         TaskManager.execute {
-
             VKApi.account()
                 .setSilenceMode()
                 .peerId(peerId)
-                .time(if (on) 0 else -1)
-                .sound(on)
-                .execute(null, object : OnCompleteListener {
+                .time(0)
+                .sound(true)
+                .execute(null, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
-                        conversation!!.isDisabledForever = !on
-                        conversation!!.disabledUntil = if (on) 0 else -1
-                        conversation!!.isNoSound = !on
+                        conversation!!.isDisabledForever = false
+                        conversation!!.disabledUntil = 0
+                        conversation!!.isNoSound = false
 
                         popupAdapter!!.changeItems(createItems())
 
-                        CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation!!)
+                        CacheStorage.update(
+                            DatabaseHelper.CONVERSATIONS_TABLE,
+                            conversation!!,
+                            DatabaseHelper.PEER_ID,
+                            conversation!!.peerId
+                        )
                     }
 
                     override fun onError(e: Exception) {
-                        Toast.makeText(activity!!, R.string.error, Toast.LENGTH_SHORT).show()
+                        showErrorToast()
+                    }
+                })
+        }
+    }
+
+    override fun disableNotifications() {
+        conversation ?: return
+        TaskManager.execute {
+            VKApi.account()
+                .setSilenceMode()
+                .peerId(peerId)
+                .time(-1)
+                .sound(false)
+                .execute(null, object : OnResponseListener {
+                    override fun onComplete(models: ArrayList<*>?) {
+                        conversation!!.isDisabledForever = true
+                        conversation!!.disabledUntil = -1
+                        conversation!!.isNoSound = true
+
+                        popupAdapter!!.changeItems(createItems())
+
+                        CacheStorage.update(
+                            DatabaseHelper.CONVERSATIONS_TABLE,
+                            conversation!!,
+                            DatabaseHelper.PEER_ID,
+                            conversation!!.peerId
+                        )
+                    }
+
+                    override fun onError(e: Exception) {
+                        showErrorToast()
                     }
                 })
         }
@@ -1123,41 +1249,48 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                 adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
             }
 
-            deleteMessages(items, forAll, *mIds)
+            deleteMessages(items, forAll)
         }
         adb.setNegativeButton(R.string.no, null)
         adb.show()
     }
 
-    private fun deleteMessages(messages: ArrayList<VKMessage>, forAll: Boolean?, vararg mIds: Int) {
+    override fun removeMessages(messages: ArrayList<VKMessage>) {
+        adapter!!.values!!.removeAll(messages)
+        adapter!!.notifyDataSetChanged()
+    }
+
+    override fun deleteMessages(messages: ArrayList<VKMessage>, forAll: Boolean?) {
         TaskManager.execute {
+            var hasError = false
+            for (message in messages) {
+                if (message.status == VKMessage.Status.ERROR) {
+                    hasError = true
+                    break
+                }
+            }
 
-            try {
-                if (messages[0].status != VKMessage.Status.ERROR)
-                    VKApi.messages().delete().messageIds(*mIds).every(forAll).execute()
-                activity!!.runOnUiThread {
-                    adapter!!.values!!.removeAll(messages)
-                    adapter!!.clearSelected()
-                    adapter!!.notifyDataSetChanged()
+            adapter!!.clearSelected()
+            removeMessages(messages)
+            updateToolbar()
 
-                    updateToolbar()
-
-                    for (message in messages) {
-                        CacheStorage.delete(
-                            DatabaseHelper.MESSAGES_TABLE,
-                            DatabaseHelper.MESSAGE_ID,
-                            message.id
-                        )
+            if (!hasError) {
+                VKApi.messages().delete().messageIds(messages).every(forAll).execute(object :
+                    OnResponseListener {
+                    override fun onComplete(models: ArrayList<*>?) {
+                        for (message in messages) {
+                            CacheStorage.delete(
+                                DatabaseHelper.MESSAGES_TABLE,
+                                DatabaseHelper.MESSAGE_ID,
+                                message.id
+                            )
+                        }
                     }
-                }
-            } catch (e: Exception) {
-                activity!!.runOnUiThread {
-                    Toast.makeText(
-                        activity!!,
-                        R.string.error,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
+
+                    override fun onError(e: Exception) {
+                        showErrorToast()
+                    }
+                })
             }
         }
     }
@@ -1169,7 +1302,8 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
     private fun showAlert(position: Int) {
         conversation ?: return
-        conversation!!.last ?: return
+        conversation!!.lastMessage ?: return
+
         val item = adapter!!.getItem(position)
 
         val list = arrayListOf(*resources.getStringArray(R.array.message_functions))
@@ -1186,7 +1320,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
             }
         }
 
-        if (TextUtils.isEmpty(conversation!!.last!!.text)) {
+        if (TextUtils.isEmpty(conversation!!.lastMessage!!.text)) {
             remove.add(getString(R.string.copy))
         }
 
@@ -1200,12 +1334,12 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                 remove.add(getString(R.string.pin_message))
             }
 
-            if (conversation!!.last!!.date * 1000L < System.currentTimeMillis() - AlarmManager.INTERVAL_DAY || !item.isOut) {
+            if (conversation!!.lastMessage!!.date * 1000L < System.currentTimeMillis() - AlarmManager.INTERVAL_DAY || !item.isOut) {
                 remove.add(getString(R.string.edit))
             }
         }
 
-        if (pinned != null && pinned!!.id == item.id) {
+        if (conversation!!.pinned != null && conversation!!.pinned!!.id == item.id) {
             remove.add(getString(R.string.pin_message))
         }
 
@@ -1219,8 +1353,8 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
         adb.setItems(items) { _, i ->
             when (items[i]) {
-                getString(R.string.forward) -> confirmForward(arrayListOf(item))
-                getString(R.string.reply) -> confirmReply(arrayListOf(item))
+                getString(R.string.forward) -> confirmForwardMessages(arrayListOf(item))
+                getString(R.string.reply) -> confirmReplyMessages(arrayListOf(item))
                 getString(R.string.copy) -> copyMessageText(item)
                 getString(R.string.retry) -> TaskManager.resendMessage(item.randomId.toLong())
                 getString(R.string.delete) -> showConfirmDeleteMessages(ArrayList(listOf(item)))
@@ -1245,8 +1379,8 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     private fun copyMessageText(item: VKMessage) {
-        val clipService = activity!!.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        clipService.setPrimaryClip(ClipData.newPlainText("msg id: ${item.id}", item.text))
+        item.text ?: return
+        Util.copyText(item.text!!)
 
         Toast.makeText(activity!!, R.string.copied_to_clipboard, Toast.LENGTH_SHORT).show()
     }
@@ -1286,18 +1420,18 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         message.setSelection(message.text!!.length)
     }
 
-    private fun editMessage(edited: VKMessage) {
-        edited.text = message.text!!.toString().trim()
+    override fun editMessage(message: VKMessage) {
+        message.text = message.text!!.toString().trim()
 
-        if (edited.text!!.trim().isEmpty() && ArrayUtil.isEmpty(edited.attachments) && ArrayUtil.isEmpty(
-                edited.fwdMessages
+        if (message.text!!.trim().isEmpty() && ArrayUtil.isEmpty(message.attachments) && ArrayUtil.isEmpty(
+                message.fwdMessages
             )
         ) {
-            showConfirmDeleteMessages(ArrayList(listOf(edited)))
+            showConfirmDeleteMessages(ArrayList(listOf(message)))
         } else {
-            val message = adapter!!.getItem(editingPosition)
-            message.status = VKMessage.Status.SENDING
-            message.isSelected = false
+            val current = adapter!!.getItem(editingPosition)
+            current.status = VKMessage.Status.SENDING
+            current.isSelected = false
             adapter!!.notifyItemChanged(editingPosition, -1)
 
             editing = false
@@ -1307,16 +1441,16 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
             TaskManager.execute {
                 VKApi.messages().edit()
-                    .message(edited.text!!)
-                    .messageId(edited.id)
-                    .attachment(edited.attachments)
+                    .message(current.text!!)
+                    .messageId(current.id)
+                    .attachment(current.attachments)
                     .keepForwardMessages(true)
                     .keepSnippets(true)
                     .peerId(peerId)
-                    .execute(Int::class.java, object : OnCompleteListener {
+                    .execute(Int::class.java, object : OnResponseListener {
                         override fun onComplete(models: ArrayList<*>?) {
                             val editedMessage = adapter!!.getItem(editingPosition)
-                            editedMessage.text = edited.text
+                            editedMessage.text = current.text
                             editedMessage.status = VKMessage.Status.SENT
                             editedMessage.updateTime = System.currentTimeMillis()
 
@@ -1433,7 +1567,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
             adapter!!.clearSelected()
             adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
         } else {
-            if (pinned != null)
+            if (conversation!!.pinned != null)
                 pinnedContainer.visibility = View.GONE
             adapter!!.setSelected(position, true)
         }
@@ -1460,7 +1594,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                 .deleteConversation()
                 .peerId(peerId)
                 .offset(0)
-                .execute(Int::class.java, object : OnCompleteListener {
+                .execute(Int::class.java, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         CacheStorage.delete(
                             DatabaseHelper.CONVERSATIONS_TABLE,
@@ -1495,16 +1629,8 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         delete.isVisible = selecting
     }
 
-    fun getRecyclerView(): RecyclerView {
-        return recyclerView
-    }
-
     fun isRunning(): Boolean {
         return resumed
-    }
-
-    fun setNotRead(last: VKMessage?) {
-        notRead = last
     }
 
     companion object {

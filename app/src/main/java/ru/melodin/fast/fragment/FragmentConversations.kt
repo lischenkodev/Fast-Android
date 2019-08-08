@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import kotlinx.android.synthetic.main.list_empty.*
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.CreateChatActivity
@@ -20,7 +21,7 @@ import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.ConversationAdapter
 import ru.melodin.fast.adapter.RecyclerAdapter
-import ru.melodin.fast.api.OnCompleteListener
+import ru.melodin.fast.api.OnResponseListener
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKConversation
 import ru.melodin.fast.api.model.VKGroup
@@ -33,24 +34,30 @@ import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
+import ru.melodin.fast.mvp.contract.ConversationsContract
+import ru.melodin.fast.mvp.presenter.ConversationsPresenter
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Util
 import ru.melodin.fast.view.FastToolbar
 import java.util.*
 
 class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshListener,
-    RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener {
+    RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener,
+    ConversationsContract.View {
 
     private var adapter: ConversationAdapter? = null
     private var bundle: Bundle? = null
 
     private var chooseConversation = false
 
-    var isLoading: Boolean = false
+    private val presenter = ConversationsPresenter()
 
     override fun onDestroy() {
         adapter?.destroy()
         super.onDestroy()
+
+        presenter.detachView()
+        presenter.destroy()
     }
 
     constructor(chooseConversation: Boolean) : this() {
@@ -59,6 +66,8 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        presenter.attachView(this)
 
         title =
             (getString(if (chooseConversation) R.string.choose_conversation else R.string.fragment_messages))
@@ -95,86 +104,127 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
             }
         })
 
-        refresh.setColorSchemeColors(ThemeManager.accent)
-        refresh.setOnRefreshListener(this)
-        refresh.setProgressBackgroundColorSchemeColor(ThemeManager.primary)
+        refreshLayout.setColorSchemeColors(ThemeManager.accent)
+        refreshLayout.setOnRefreshListener(this)
+        refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.primary)
 
         list.setHasFixedSize(true)
         list.layoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
 
-        getCachedConversations()
+        presenter.viewIsReady()
+
+        getCachedConversations(30, 0)
 
         if (savedInstanceState == null && !AppGlobal.preferences.getBoolean(
                 FragmentSettings.KEY_OFFLINE,
                 false
-            )
-        )
-            getConversations(CONVERSATIONS_COUNT, 0)
+            ) && Util.hasConnection()
+        ) {
+            loadConversations(CONVERSATIONS_COUNT, 0)
+        } else {
+            setProgressBarVisible(false)
+            if (adapter != null && adapter!!.isEmpty)
+                setNoItemsViewVisible(true)
+        }
 
         if (adapter != null && list?.adapter == null) {
             list?.adapter = adapter
         }
     }
 
-    private fun createAdapter(conversations: ArrayList<VKConversation>?) {
-        if (ArrayUtil.isEmpty(conversations)) return
+    override fun onResume() {
+        super.onResume()
+        onHiddenChanged(false)
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (!hidden && !chooseConversation)
+            (activity!! as MainActivity).showBottomView()
+    }
+
+    override fun setNoItemsViewVisible(visible: Boolean) {
+        when (visible) {
+            true -> {
+                emptyView.visibility = View.VISIBLE
+                setProgressBarVisible(false)
+            }
+            else -> emptyView.visibility = View.GONE
+        }
+    }
+
+    override fun showNoInternetToast() {
+        setRefreshing(false)
+        Toast.makeText(activity, R.string.connect_to_the_internet, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showErrorToast() {
+        Toast.makeText(context, R.string.error, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun setRefreshing(value: Boolean) {
+        when (value) {
+            true -> {
+                refreshLayout.isRefreshing = true
+                setProgressBarVisible(false)
+            }
+            else -> refreshLayout.isRefreshing = false
+        }
+    }
+
+    override fun createAdapter(items: ArrayList<VKConversation>?, offset: Int) {
+        if (ArrayUtil.isEmpty(items)) return
 
         if (adapter == null) {
-            adapter = ConversationAdapter(this, conversations!!)
+            adapter = ConversationAdapter(this, items!!)
             adapter!!.setOnItemClickListener(this)
             adapter!!.setOnItemLongClickListener(this)
+
             list.adapter = adapter
             list.scrollToPosition(0)
             return
         }
 
-        adapter!!.changeItems(conversations!!)
+        if (offset != 0) {
+            adapter!!.values!!.addAll(items!!)
+            adapter!!.notifyDataSetChanged()
+            return
+        }
+
+        adapter!!.changeItems(items!!)
         adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
     }
 
-    override fun onResume() {
-        super.onResume()
-        if (!chooseConversation)
-            onHiddenChanged(false)
-    }
-
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        if (!hidden)
-            (activity!! as MainActivity).showBottomView()
-    }
-
-    private fun getCachedConversations() {
+    override fun getCachedConversations(count: Int, offset: Int) {
         val conversations = CacheStorage.conversations ?: return
         conversations.reverse()
 
         if (!ArrayUtil.isEmpty(conversations)) {
-            createAdapter(conversations)
+            setRefreshing(true)
+            setNoItemsViewVisible(false)
+            createAdapter(conversations, 0)
+        } else {
+            setProgressBarVisible(true)
         }
     }
 
-    private fun getConversations(count: Int, offset: Int) {
-        if (isLoading) return
-
+    override fun loadConversations(count: Int, offset: Int) {
         if (!Util.hasConnection()) {
-            refresh!!.isRefreshing = false
-            Toast.makeText(activity, R.string.connect_to_the_internet, Toast.LENGTH_SHORT).show()
+            showNoInternetToast()
             return
         }
 
-        isLoading = true
-
         if (bundle != null)
-            refresh!!.isRefreshing = true
+            setRefreshing(true)
 
         TaskManager.execute {
             VKApi.messages().conversations
                 .filter("all")
                 .extended(true)
-                .fields(VKUser.FIELDS_DEFAULT + ", " + VKGroup.FIELDS_DEFAULT)
+                .fields(VKUser.FIELDS_DEFAULT + "," + VKGroup.FIELDS_DEFAULT)
                 .count(count)
                 .offset(offset)
-                .execute(VKConversation::class.java, object : OnCompleteListener {
+                .execute(VKConversation::class.java, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         if (ArrayUtil.isEmpty(models)) return
                         models ?: return
@@ -193,8 +243,8 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
                         val messages = ArrayList<VKMessage>()
 
                         for (conversation in conversations) {
-                            conversation.last ?: continue
-                            messages.add(conversation.last!!)
+                            conversation.lastMessage ?: continue
+                            messages.add(conversation.lastMessage!!)
                         }
 
                         CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
@@ -203,22 +253,33 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
 
                         conversations.reverse()
 
-                        createAdapter(conversations)
-                        refresh!!.isRefreshing = false
+                        createAdapter(conversations, offset)
 
-                        isLoading = false
+                        presenter.onFilledList()
                     }
 
                     override fun onError(e: Exception) {
-                        isLoading = false
-                        refresh!!.isRefreshing = false
-                        Toast.makeText(
-                            context,
-                            getString(R.string.error) + ": " + e.toString(),
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        setRefreshing(false)
+                        showErrorToast()
                     }
                 })
+        }
+    }
+
+    override fun clearList() {
+        adapter ?: return
+        adapter!!.clear()
+        adapter!!.notifyDataSetChanged()
+    }
+
+    override fun setProgressBarVisible(visible: Boolean) {
+        when (visible) {
+            true -> {
+                progressBar.visibility = View.VISIBLE
+                setRefreshing(false)
+                setNoItemsViewVisible(false)
+            }
+            else -> progressBar.visibility = View.GONE
         }
     }
 
@@ -253,7 +314,7 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
     }
 
     override fun onRefresh() {
-        getConversations(CONVERSATIONS_COUNT, 0)
+        loadConversations(CONVERSATIONS_COUNT, 0)
     }
 
     override fun onItemClick(position: Int) {
@@ -300,7 +361,7 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
         val list = arrayListOf<String>(*resources.getStringArray(R.array.conversation_functions))
         val remove = ArrayList<String>()
 
-        if (conversation.last == null || conversation.lastMessageId == -1 || conversation.last!!.isOut || conversation.isRead || conversation.last!!.isRead) {
+        if (conversation.lastMessage == null || conversation.lastMessageId == -1 || conversation.lastMessage!!.isOut || conversation.isRead || conversation.lastMessage!!.isRead) {
             remove.add(getString(R.string.read))
         }
 
@@ -337,17 +398,17 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
         val peerId = conversation.peerId
 
         if (!Util.hasConnection() || peerId == -1 || peerId == 0) {
-            refresh!!.isRefreshing = false
+            setRefreshing(false)
             return
         }
 
-        refresh!!.isRefreshing = true
+        setRefreshing(true)
 
         TaskManager.execute {
             VKApi.messages()
                 .deleteConversation()
                 .peerId(peerId)
-                .execute(null, object : OnCompleteListener {
+                .execute(null, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         CacheStorage.delete(
                             DatabaseHelper.CONVERSATIONS_TABLE,
@@ -357,11 +418,11 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
                         adapter!!.remove(position)
                         adapter!!.notifyItemRemoved(position)
                         adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
-                        refresh!!.isRefreshing = false
+                        setRefreshing(false)
                     }
 
                     override fun onError(e: Exception) {
-                        refresh!!.isRefreshing = false
+                        setRefreshing(true)
                         Log.e("Error delete dialog", Log.getStackTraceString(e))
                         Toast.makeText(activity, R.string.error, Toast.LENGTH_SHORT).show()
                     }

@@ -53,7 +53,7 @@ class WebViewLoginActivity : AppCompatActivity() {
 
         tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
             override fun onMenuItemClick(item: MenuItem) {
-                if (item.itemId == R.id.refresh) {
+                if (item.itemId == R.id.refreshLayout) {
                     progress.visibility = View.VISIBLE
                     web.visibility = View.GONE
                     web.reload()

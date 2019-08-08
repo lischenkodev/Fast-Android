@@ -1,7 +1,7 @@
 package ru.melodin.fast
 
 import android.os.Bundle
-import kotlinx.android.synthetic.main.activity_messages.*
+import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.current.BaseActivity
 import ru.melodin.fast.fragment.FragmentSettings

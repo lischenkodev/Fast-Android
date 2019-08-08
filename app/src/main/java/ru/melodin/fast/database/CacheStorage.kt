@@ -307,7 +307,7 @@ object CacheStorage {
     }
 
     fun delete(table: String, where: Any, args: Any) {
-        database.delete(table, "$where = ?", arrayOf(args.toString() + ""))
+        database.delete(table, "$where = ?", arrayOf(args.toString()))
     }
 
     fun delete(table: String) {
@@ -358,7 +358,7 @@ object CacheStorage {
         val last = getBlob(cursor, LAST_MESSAGE)
         val pinned = getBlob(cursor, PINNED_MESSAGE)
 
-        dialog.last = Util.deserialize(last) as VKMessage?
+        dialog.lastMessage = Util.deserialize(last) as VKMessage?
         dialog.pinned = Util.deserialize(pinned) as VKMessage?
         return dialog
     }
@@ -465,8 +465,8 @@ object CacheStorage {
         values.put(NO_SOUND, dialog.isNoSound)
         values.put(STATE, VKConversation.getState(dialog.state))
 
-        if (dialog.last != null) {
-            values.put(LAST_MESSAGE, Util.serialize(dialog.last!!))
+        if (dialog.lastMessage != null) {
+            values.put(LAST_MESSAGE, Util.serialize(dialog.lastMessage!!))
         }
 
         if (dialog.pinned != null) {

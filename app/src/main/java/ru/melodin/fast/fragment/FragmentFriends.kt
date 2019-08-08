@@ -11,12 +11,13 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import kotlinx.android.synthetic.main.list_empty.*
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.UserAdapter
-import ru.melodin.fast.api.OnCompleteListener
+import ru.melodin.fast.api.OnResponseListener
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKConversation
@@ -26,28 +27,38 @@ import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.CacheStorage
+import ru.melodin.fast.database.CacheStorage.getFriends
 import ru.melodin.fast.database.DatabaseHelper
+import ru.melodin.fast.mvp.contract.UsersContract
+import ru.melodin.fast.mvp.presenter.UsersPresenter
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Util
 
-class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
+class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, UsersContract.View {
 
     private var adapter: UserAdapter? = null
 
     var isLoading: Boolean = false
 
+    val presenter = UsersPresenter()
+
     override fun onRefresh() {
-        getFriends(FRIENDS_COUNT, 0)
+        loadUsers(FRIENDS_COUNT, 0)
     }
 
     override fun onDestroy() {
         adapter?.destroy()
         super.onDestroy()
+
+        presenter.detachView()
+        presenter.destroy()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        retainInstance = true
+
+        presenter.attachView(this)
+
         title = getString(R.string.fragment_friends)
     }
 
@@ -72,62 +83,44 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
         recyclerList = list
 
-        refresh.setOnRefreshListener(this)
-        refresh.setColorSchemeColors(ThemeManager.accent)
-        refresh.setProgressBackgroundColorSchemeColor(ThemeManager.primary)
+        refreshLayout.setOnRefreshListener(this)
+        refreshLayout.setColorSchemeColors(ThemeManager.accent)
+        refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.primary)
 
         val manager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
         list.setHasFixedSize(true)
         list.layoutManager = manager
 
-        refresh.isEnabled = false
+        refreshLayout.isEnabled = false
 
-        getCachedFriends()
+        getCachedUsers(0, 0)
         if (savedInstanceState == null)
-            getFriends(FRIENDS_COUNT, 0)
+            loadUsers(FRIENDS_COUNT, 0)
 
         if (adapter != null && list?.adapter == null) {
             list?.adapter = adapter
         }
     }
 
-    private fun createAdapter(friends: ArrayList<VKUser>, offset: Int) {
-        if (ArrayUtil.isEmpty(friends)) return
+    override fun getCachedUsers(count: Int, offset: Int) {
+        val users = getFriends(UserConfig.userId, false)
 
-        if (adapter == null) {
-            adapter = UserAdapter(this, friends)
-            list!!.adapter = adapter
-            return
-        }
-
-        if (offset != 0) {
-            adapter!!.values!!.addAll(friends)
-            adapter!!.notifyDataSetChanged()
-            return
-        }
-
-        adapter!!.changeItems(friends)
-        adapter!!.notifyDataSetChanged()
-    }
-
-    private fun getCachedFriends() {
-        val users = CacheStorage.getFriends(UserConfig.userId, false)
-
-        if (!ArrayUtil.isEmpty(users))
+        if (!ArrayUtil.isEmpty(users)) {
+            setRefreshing(true)
+            setNoItemsViewVisible(false)
             createAdapter(users, 0)
+        } else {
+            setProgressBarVisible(true)
+        }
     }
 
-    private fun getFriends(count: Int, offset: Int) {
-        if (isLoading) return
+    override fun loadUsers(count: Int, offset: Int) {
         if (!Util.hasConnection()) {
-            refresh.isRefreshing = false
-            Toast.makeText(activity, R.string.connect_to_the_internet, Toast.LENGTH_SHORT).show()
+            showNoInternetToast()
             return
         }
 
-        isLoading = true
-
-        refresh.isRefreshing = true
+        setRefreshing(true)
 
         TaskManager.execute {
 
@@ -135,7 +128,7 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
             VKApi.friends().get().userId(UserConfig.userId).order("hints")
                 .fields(VKUser.FIELDS_DEFAULT)
-                .execute(VKUser::class.java, object : OnCompleteListener {
+                .execute(VKUser::class.java, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         if (ArrayUtil.isEmpty(models)) return
                         models ?: return
@@ -150,19 +143,85 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
                         CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
 
                         createAdapter(users, offset)
-                        isLoading = false
-                        refresh.isRefreshing = false
+
+                        presenter.onFilledList()
                     }
 
                     override fun onError(e: Exception) {
-                        refresh.isRefreshing = false
-                        Toast.makeText(activity, getString(R.string.error), Toast.LENGTH_LONG)
-                            .show()
+                        setRefreshing(false)
+                        showErrorToast()
                     }
                 })
 
-            refresh.isRefreshing = false
+            refreshLayout.isRefreshing = false
         }
+    }
+
+    override fun createAdapter(items: ArrayList<VKUser>?, offset: Int) {
+        if (ArrayUtil.isEmpty(items)) return
+
+        if (adapter == null) {
+            adapter = UserAdapter(this, items!!)
+            list!!.adapter = adapter
+            return
+        }
+
+        if (offset != 0) {
+            adapter!!.values!!.addAll(items!!)
+            adapter!!.notifyDataSetChanged()
+            return
+        }
+
+        adapter!!.changeItems(items!!)
+        adapter!!.notifyDataSetChanged()
+    }
+
+
+
+    override fun showNoInternetToast() {
+        setRefreshing(false)
+        Toast.makeText(activity, R.string.connect_to_the_internet, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showErrorToast() {
+        Toast.makeText(activity, getString(R.string.error), Toast.LENGTH_LONG).show()
+    }
+
+    override fun setProgressBarVisible(visible: Boolean) {
+        when (visible) {
+            true -> {
+                progressBar.visibility = View.VISIBLE
+                setRefreshing(false)
+                setNoItemsViewVisible(false)
+            }
+            else -> progressBar.visibility = View.GONE
+        }
+    }
+
+    override fun setRefreshing(value: Boolean) {
+        when (value) {
+            true -> {
+                refreshLayout.isRefreshing = true
+                setProgressBarVisible(false)
+            }
+            else -> refreshLayout.isRefreshing = false
+        }
+    }
+
+    override fun setNoItemsViewVisible(visible: Boolean) {
+        when (visible) {
+            true -> {
+                emptyView.visibility = View.VISIBLE
+                setProgressBarVisible(false)
+            }
+            else -> emptyView.visibility = View.GONE
+        }
+    }
+
+    override fun clearList() {
+        adapter ?: return
+        adapter!!.clear()
+        adapter!!.notifyDataSetChanged()
     }
 
     fun openChat(position: Int) {
@@ -206,22 +265,22 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
     private fun deleteFriend(position: Int) {
         if (!Util.hasConnection()) {
-            refresh.isRefreshing = false
+            refreshLayout.isRefreshing = false
             return
         }
 
-        refresh.isRefreshing = true
+        refreshLayout.isRefreshing = true
 
         val user = adapter!!.getItem(position)
         val userId = user.id
 
         TaskManager.execute {
-            VKApi.friends().delete().userId(userId).execute(null, object : OnCompleteListener {
+            VKApi.friends().delete().userId(userId).execute(null, object : OnResponseListener {
                 override fun onComplete(models: ArrayList<*>?) {
                     adapter!!.remove(position)
                     adapter!!.notifyItemRemoved(position)
                     adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
-                    refresh.isRefreshing = false
+                    refreshLayout.isRefreshing = false
 
                     CacheStorage.delete(
                         DatabaseHelper.FRIENDS_TABLE,
@@ -232,7 +291,7 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener {
 
                 override fun onError(e: Exception) {
                     Log.e("Error delete friend", Log.getStackTraceString(e))
-                    refresh.isRefreshing = false
+                    refreshLayout.isRefreshing = false
                     Toast.makeText(activity, R.string.error, Toast.LENGTH_SHORT).show()
                 }
             })

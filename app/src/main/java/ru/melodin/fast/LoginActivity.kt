@@ -21,7 +21,7 @@ import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_login.*
 import org.json.JSONObject
 import org.jsoup.Jsoup
-import ru.melodin.fast.api.OnCompleteListener
+import ru.melodin.fast.api.OnResponseListener
 import ru.melodin.fast.api.Scopes
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
@@ -304,7 +304,7 @@ class LoginActivity : BaseActivity() {
             var user: VKUser?
 
             VKApi.users().get().userIds(id).fields(VKUser.FIELDS_DEFAULT)
-                .execute(VKUser::class.java, object : OnCompleteListener {
+                .execute(VKUser::class.java, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         if (ArrayUtil.isEmpty(models)) return
                         models ?: return

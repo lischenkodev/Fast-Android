@@ -93,11 +93,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
     @SuppressLint("InflateParams")
     private fun showCachedGroups() {
-        val v = layoutInflater.inflate(R.layout.recycler_list, null, false)
-
-        v.findViewById<View>(R.id.refresh).isEnabled = false
-        v.findViewById<View>(R.id.emptyView).visibility = View.GONE
-        val list = v.findViewById<RecyclerView>(R.id.list)
+        val list = RecyclerView(activity!!)
 
         val manager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
         list.setHasFixedSize(true)
@@ -115,7 +111,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         val adb = AlertDialog.Builder(context!!)
         adb.setTitle(R.string.cached_groups)
 
-        adb.setView(v)
+        adb.setView(list)
         adb.setPositiveButton(android.R.string.ok, null)
         adb.setNeutralButton(R.string.clear) { _, _ ->
             showConfirmClearCacheDialog(
@@ -128,11 +124,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
     @SuppressLint("InflateParams")
     private fun showCachedUsers() {
-        val v = layoutInflater.inflate(R.layout.recycler_list, null, false)
-
-        v.findViewById<View>(R.id.refresh).isEnabled = false
-        v.findViewById<View>(R.id.emptyView).visibility = View.GONE
-        val list = v.findViewById<RecyclerView>(R.id.list)
+        val list = RecyclerView(activity!!)
 
         val manager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
         list.setHasFixedSize(true)
@@ -150,7 +142,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         val adb = AlertDialog.Builder(context!!)
         adb.setTitle(R.string.cached_users)
 
-        adb.setView(v)
+        adb.setView(list)
         adb.setPositiveButton(android.R.string.ok, null)
         adb.setNeutralButton(R.string.clear) { _, _ ->
             showConfirmClearCacheDialog(

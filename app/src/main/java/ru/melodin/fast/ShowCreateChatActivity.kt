@@ -8,14 +8,16 @@ import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.Log
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.activity_show_create.*
+import kotlinx.android.synthetic.main.list_empty.*
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.adapter.UserAdapter
-import ru.melodin.fast.api.OnCompleteListener
+import ru.melodin.fast.api.OnResponseListener
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.TaskManager
@@ -65,7 +67,7 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
         tb.setBackVisible(true)
         tb.setTitle(R.string.create_chat)
 
-        refresh.isEnabled = false
+        refreshLayout.isEnabled = false
 
         chatTitle.addTextChangedListener(this)
 
@@ -74,6 +76,9 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
 
         list.setHasFixedSize(true)
         list.layoutManager = manager
+
+        emptyView.visibility = View.GONE
+        progressBar.visibility = View.GONE
 
         createAdapter()
     }
@@ -105,7 +110,7 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
             }
 
             VKApi.messages().createChat().title(builder.toString()).userIds(ids)
-                .execute(Int::class.java, object : OnCompleteListener {
+                .execute(Int::class.java, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         if (ArrayUtil.isEmpty(models)) return
                         models ?: return

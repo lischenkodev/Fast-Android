@@ -16,7 +16,7 @@ import kotlinx.android.synthetic.main.toolbar.*
 import org.greenrobot.eventbus.EventBus
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.UserAdapter
-import ru.melodin.fast.api.OnCompleteListener
+import ru.melodin.fast.api.OnResponseListener
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKChat
@@ -119,7 +119,7 @@ class FragmentChatInfo : BaseFragment() {
     private fun deletePhoto() {
         TaskManager.execute {
             VKApi.messages().deleteChatPhoto().chatId(chat!!.id)
-                .execute(null, object : OnCompleteListener {
+                .execute(null, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         chatAvatar.setImageResource(R.drawable.avatar_placeholder)
 
@@ -159,7 +159,7 @@ class FragmentChatInfo : BaseFragment() {
         TaskManager.loadChat(
             VKConversation.toChatId(conversation.peerId),
             VKUser.FIELDS_DEFAULT,
-            object : OnCompleteListener {
+            object : OnResponseListener {
 
                 override fun onComplete(models: ArrayList<*>?) {
                     if (ArrayUtil.isEmpty(models)) return
@@ -210,7 +210,7 @@ class FragmentChatInfo : BaseFragment() {
                 .chatId(VKConversation.toChatId(conversation.peerId))
                 .title(title)
 
-        TaskManager.addProcedure(setter, Int::class.java, object : OnCompleteListener {
+        TaskManager.addProcedure(setter, Int::class.java, object : OnResponseListener {
 
             override fun onComplete(models: ArrayList<*>?) {
                 ViewUtil.hideKeyboard(chatTitle)
@@ -254,7 +254,7 @@ class FragmentChatInfo : BaseFragment() {
     private fun kickUser(userId: Int) {
         TaskManager.execute {
             VKApi.messages().removeChatUser().chatId(VKConversation.toChatId(conversation.peerId))
-                .userId(userId).execute(null, object : OnCompleteListener {
+                .userId(userId).execute(null, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         if (userId == UserConfig.userId) {
                             chat!!.users = arrayListOf()
@@ -268,8 +268,9 @@ class FragmentChatInfo : BaseFragment() {
 
                         CacheStorage.update(
                             DatabaseHelper.CHATS_TABLE,
+                            chat!!,
                             DatabaseHelper.CHAT_ID,
-                            chat!!
+                            chat!!.id
                         )
                         Toast.makeText(activity!!, R.string.success, Toast.LENGTH_SHORT)
                             .show()

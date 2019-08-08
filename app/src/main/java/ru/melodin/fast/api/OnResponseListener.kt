@@ -1,6 +1,6 @@
 package ru.melodin.fast.api
 
-interface OnCompleteListener {
+interface OnResponseListener {
     fun onComplete(models: ArrayList<*>?)
     fun onError(e: Exception)
 }

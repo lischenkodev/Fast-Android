@@ -20,7 +20,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import ru.melodin.fast.R
-import ru.melodin.fast.api.OnCompleteListener
+import ru.melodin.fast.api.OnResponseListener
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKUtil
 import ru.melodin.fast.api.model.*
@@ -117,9 +117,6 @@ class ConversationAdapter(
                 updateGroup(groupId)
             }
             Keys.CONNECTED -> {
-                if (fragment.isLoading)
-                    fragment.isLoading = false
-
                 if (!AppGlobal.preferences.getBoolean(FragmentSettings.KEY_OFFLINE, false))
                     fragment.onRefresh()
             }
@@ -178,8 +175,8 @@ class ConversationAdapter(
 
         for (i in 0 until itemCount) {
             val conversation = getItem(i)
-            if (conversation.last!!.id == messageId) {
-                conversation.last = CacheStorage.getMessage(messageId)
+            if (conversation.lastMessage!!.id == messageId) {
+                conversation.lastMessage = CacheStorage.getMessage(messageId)
                 notifyItemChanged(i, -1)
                 break
             }
@@ -189,14 +186,14 @@ class ConversationAdapter(
     private fun updateUser(userId: Int) {
         for (i in 0 until itemCount) {
             val conversation = getItem(i)
-            conversation.last ?: continue
+            conversation.lastMessage ?: continue
             if (conversation.type == VKConversation.Type.USER) {
                 if (conversation.peerId == userId) {
                     notifyItemChanged(i, -1)
                     break
                 }
             } else if (conversation.isFromUser) {
-                if (conversation.last!!.fromId == userId) {
+                if (conversation.lastMessage!!.fromId == userId) {
                     notifyItemChanged(i, -1)
                     break
                 }
@@ -210,14 +207,14 @@ class ConversationAdapter(
             groupId *= -1
         for (i in 0 until itemCount) {
             val conversation = getItem(i)
-            conversation.last ?: continue
+            conversation.lastMessage ?: continue
             if (conversation.type == VKConversation.Type.GROUP) {
                 if (conversation.peerId == groupId) {
                     notifyItemChanged(i, -1)
                     break
                 }
             } else if (conversation.isFromGroup) {
-                if (conversation.last!!.fromId == groupId) {
+                if (conversation.lastMessage!!.fromId == groupId) {
                     notifyItemChanged(i, -1)
                     break
                 }
@@ -255,7 +252,7 @@ class ConversationAdapter(
                 this.isCanSeeInviteLink = current.isCanSeeInviteLink
                 this.membersCount = current.membersCount
 
-                if (last!!.isOut) {
+                if (lastMessage!!.isOut) {
                     unread = 0
                     isRead = false
                 }
@@ -274,7 +271,7 @@ class ConversationAdapter(
 
             CacheStorage.insert(
                 DatabaseHelper.MESSAGES_TABLE,
-                conversation.last!!
+                conversation.lastMessage!!
             )
 
             if (index > 0) {
@@ -292,7 +289,7 @@ class ConversationAdapter(
             }
 
         } else {
-            if (!conversation.last!!.isOut)
+            if (!conversation.lastMessage!!.isOut)
                 conversation.unread++
 
             add(0, conversation)
@@ -302,11 +299,11 @@ class ConversationAdapter(
             if (firstVisiblePosition <= 1)
                 manager.scrollToPosition(0)
 
-            if (conversation.last!!.action == VKMessage.Action.CREATE) {
+            if (conversation.lastMessage!!.action == VKMessage.Action.CREATE) {
                 TaskManager.loadConversation(
                     conversation.peerId,
                     true,
-                    object : OnCompleteListener {
+                    object : OnResponseListener {
                         override fun onComplete(models: ArrayList<*>?) {
                             if (ArrayUtil.isEmpty(models)) return
                             models ?: return
@@ -316,9 +313,9 @@ class ConversationAdapter(
                             CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE, DatabaseHelper.PEER_ID, dialog.peerId)
                             CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, dialog)
 
-                            dialog.last ?: return
+                            dialog.lastMessage ?: return
 
-                            CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, dialog.last!!)
+                            CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, dialog.lastMessage!!)
 
                             addMessage(dialog)
                         }
@@ -327,8 +324,8 @@ class ConversationAdapter(
                     })
             } else {
                 CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
-                conversation.last ?: return
-                CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.last!!)
+                conversation.lastMessage ?: return
+                CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.lastMessage!!)
             }
         }
     }
@@ -349,7 +346,7 @@ class ConversationAdapter(
         val position = searchMessagePosition(edited.id)
         if (position == -1) return
 
-        val message = getItem(position).last ?: return
+        val message = getItem(position).lastMessage ?: return
         message.apply {
             this.flags = edited.flags
             this.text = edited.text
@@ -365,9 +362,9 @@ class ConversationAdapter(
             val conversation = getItem(i)
             if (conversation.type != VKConversation.Type.USER) continue
 
-            conversation.last ?: return
+            conversation.lastMessage ?: return
 
-            val user = MemoryCache.getUser(conversation.last!!.peerId) ?: return
+            val user = MemoryCache.getUser(conversation.lastMessage!!.peerId) ?: return
             if (user.id == userId) {
                 user.apply {
                     isOnline = online
@@ -421,7 +418,7 @@ class ConversationAdapter(
 
     private fun searchMessagePosition(mId: Int): Int {
         values!!.forEach {
-            if (it.last != null && it.last!!.id == mId) return values!!.indexOf(it)
+            if (it.lastMessage != null && it.lastMessage!!.id == mId) return values!!.indexOf(it)
         }
 
         return -1
@@ -433,19 +430,19 @@ class ConversationAdapter(
 
     inner class ViewHolder(v: View) : RecyclerHolder(v) {
 
-        private var avatar: ImageView
-        private var avatarSmall: ImageView
-        private var online: ImageView
-        private var out: ImageView
-        private var muted: ImageView
 
-        private var title: TextView
-        private var body: TextView
-        private var time: TextView
-        private var counter: TextView
+        private var avatar: ImageView = v.findViewById(R.id.userAvatar)
+        private var avatarSmall: ImageView = v.findViewById(R.id.avatar_small)
+        private var online: ImageView = v.findViewById(R.id.online)
+        private var out: ImageView = v.findViewById(R.id.icon_out_message)
+        private var muted: ImageView = v.findViewById(R.id.muted)
 
-        private var container: LinearLayout
-        private var counterContainer: FrameLayout
+        private var title: TextView = v.findViewById(R.id.title)
+        private var body: TextView = v.findViewById(R.id.body)
+        private var time: TextView = v.findViewById(R.id.date)
+        private var counter: TextView = v.findViewById(R.id.counter)
+
+        private var counterContainer: FrameLayout = v.findViewById(R.id.counter_container)
 
         private var placeholder: Drawable = getDrawable(R.drawable.avatar_placeholder)!!
 
@@ -456,6 +453,7 @@ class ConversationAdapter(
         @ColorInt
         private var accentColor: Int = 0
 
+
         init {
             accentColor = ThemeManager.accent
             pushesEnabled = accentColor
@@ -463,20 +461,6 @@ class ConversationAdapter(
                 ThemeManager.primary,
                 2f
             ) else Color.GRAY
-
-            avatar = v.findViewById(R.id.userAvatar)
-            avatarSmall = v.findViewById(R.id.avatar_small)
-            online = v.findViewById(R.id.online)
-            out = v.findViewById(R.id.icon_out_message)
-            muted = v.findViewById(R.id.muted)
-
-            title = v.findViewById(R.id.title)
-            body = v.findViewById(R.id.body)
-            time = v.findViewById(R.id.date)
-            counter = v.findViewById(R.id.counter)
-
-            container = v.findViewById(R.id.container)
-            counterContainer = v.findViewById(R.id.counter_container)
 
             val background = GradientDrawable()
             background.setColor(ThemeManager.accent)
@@ -488,7 +472,7 @@ class ConversationAdapter(
         override fun bind(position: Int) {
             val item = getItem(position)
 
-            val last = item.last
+            val last = item.lastMessage
 
             muted.visibility = if (item.isNotificationsDisabled) View.VISIBLE else View.GONE
 
@@ -553,7 +537,7 @@ class ConversationAdapter(
             if (last.action == null) {
                 if (TextUtils.isEmpty(last.text)) {
                     val body =
-                        VKUtil.getAttachmentBody(item.last!!.attachments, item.last!!.fwdMessages)
+                        VKUtil.getAttachmentBody(item.lastMessage!!.attachments, item.lastMessage!!.fwdMessages)
 
                     val span = SpannableString(body)
                     span.setSpan(ForegroundColorSpan(accentColor), 0, body.length, 0)

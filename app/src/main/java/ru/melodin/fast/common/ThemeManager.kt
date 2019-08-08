@@ -19,7 +19,7 @@ class ThemeManager {
         }
 
         internal fun init() {
-            isDark = AppGlobal.preferences.getBoolean(FragmentSettings.KEY_DARK_STYLE, false)
+            isDark = AppGlobal.preferences.getBoolean(FragmentSettings.KEY_DARK_STYLE, true)
 
             currentTheme = if (isDark) R.style.AppTheme_Dark else R.style.AppTheme_Light
             popupTheme =

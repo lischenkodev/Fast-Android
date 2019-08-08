@@ -4,7 +4,7 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.jetbrains.annotations.Contract
-import ru.melodin.fast.api.OnCompleteListener
+import ru.melodin.fast.api.OnResponseListener
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.method.MessageMethodSetter
 import ru.melodin.fast.api.method.MethodSetter
@@ -34,7 +34,7 @@ class TaskManager {
 
     private class Task internal constructor(
         internal val setter: MethodSetter,
-        internal val listener: OnCompleteListener?
+        internal val listener: OnResponseListener?
     )
 
     companion object {
@@ -55,7 +55,7 @@ class TaskManager {
             return tasks.indexOf(task) != -1
         }
 
-        fun loadConversation(peerId: Int, extended: Boolean, listener: OnCompleteListener?) {
+        fun loadConversation(peerId: Int, extended: Boolean, listener: OnResponseListener?) {
             if (loadingIds.indexOf(peerId) != -1) return
             val setter =
                 VKApi.messages().conversationsById.extended(extended).peerIds(peerId).extended(true)
@@ -69,7 +69,7 @@ class TaskManager {
             )
         }
 
-        fun loadMessage(messageId: Int, extended: Boolean, listener: OnCompleteListener?) {
+        fun loadMessage(messageId: Int, extended: Boolean, listener: OnResponseListener?) {
             if (loadingIds.contains(messageId)) return
             val setter = VKApi.messages().byId.messageIds(messageId).extended(extended)
                 .fields(if (extended) VKUser.FIELDS_DEFAULT else "")
@@ -82,21 +82,21 @@ class TaskManager {
             )
         }
 
-        fun loadUser(userId: Int, listener: OnCompleteListener?) {
+        fun loadUser(userId: Int, listener: OnResponseListener?) {
             if (loadingIds.contains(userId)) return
             val setter = VKApi.users().get().userIds(userId).fields(VKUser.FIELDS_DEFAULT)
             loadingIds.add(userId)
             addProcedure(setter, VKUser::class.java, listener, arrayOf(Keys.UPDATE_USER, userId))
         }
 
-        fun loadGroup(groupId: Int, listener: OnCompleteListener?) {
+        fun loadGroup(groupId: Int, listener: OnResponseListener?) {
             if (loadingIds.contains(groupId)) return
             val setter = VKApi.groups().byId.groupId(groupId).fields(VKGroup.FIELDS_DEFAULT)
             loadingIds.add(groupId)
             addProcedure(setter, VKGroup::class.java, listener, arrayOf(Keys.UPDATE_GROUP, groupId))
         }
 
-        fun loadChat(chatId: Int, fields: String, listener: OnCompleteListener) {
+        fun loadChat(chatId: Int, fields: String, listener: OnResponseListener) {
             if (loadingIds.contains(chatId)) return
             val setter = VKApi.messages().chat.chatId(chatId).fields(fields)
             loadingIds.add(chatId)
@@ -106,7 +106,7 @@ class TaskManager {
         fun addProcedure(
             setter: MethodSetter,
             cls: Class<*>?,
-            listener: OnCompleteListener?,
+            listener: OnResponseListener?,
             pushData: Array<Any>?
         ) {
             val task = Task(setter, listener)
@@ -117,7 +117,7 @@ class TaskManager {
             }
 
             execute {
-                setter.execute(cls, object : OnCompleteListener {
+                setter.execute(cls, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         if (exists(task)) {
                             tasks.remove(task)
@@ -164,7 +164,7 @@ class TaskManager {
             }
         }
 
-        fun sendMessage(setter: MethodSetter, listener: OnCompleteListener?) {
+        fun sendMessage(setter: MethodSetter, listener: OnResponseListener?) {
             addProcedure(setter, Int::class.java, listener, null)
         }
 

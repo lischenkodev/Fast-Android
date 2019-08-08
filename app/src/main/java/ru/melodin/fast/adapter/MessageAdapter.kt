@@ -17,11 +17,13 @@ import androidx.annotation.ColorInt
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
+import kotlinx.android.synthetic.main.activity_chat_info.*
+import kotlinx.android.synthetic.main.recycler_list.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import ru.melodin.fast.R
-import ru.melodin.fast.api.OnCompleteListener
+import ru.melodin.fast.api.OnResponseListener
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.*
 import ru.melodin.fast.api.model.attachment.VKAudio
@@ -61,7 +63,7 @@ class MessageAdapter(
     private val attachmentInflater: AttachmentInflater = AttachmentInflater(this, context)
     private val metrics: DisplayMetrics = context.resources.displayMetrics
     private val layoutManager: LinearLayoutManager =
-        fragment.getRecyclerView().layoutManager as LinearLayoutManager
+        fragment.list.layoutManager as LinearLayoutManager
 
     init {
         EventBus.getDefault().register(this)
@@ -111,18 +113,18 @@ class MessageAdapter(
             Keys.MESSAGE_SET_FLAGS -> handleSetFlags(data)
             Keys.MESSAGE_NEW -> {
                 val conversation = data[1] as VKConversation
-                conversation.last ?: return
+                conversation.lastMessage ?: return
 
-                if (peerId != conversation.last?.peerId) return
+                if (peerId != conversation.lastMessage?.peerId) return
 
-                val last = conversation.last
+                val last = conversation.lastMessage
 
                 if (last!!.action == VKMessage.Action.PIN_MESSAGE) {
                     val position = findPosition(last.actionId)
                     if (position != -1)
-                        fragment.showPinned(getItem(position))
+                        fragment.showPinnedMessage(getItem(position))
                 } else if (last.action == VKMessage.Action.UNPIN_MESSAGE) {
-                    fragment.showPinned(null)
+                    fragment.hidePinnedMessage()
                 }
 
                 addMessage(last)
@@ -131,7 +133,7 @@ class MessageAdapter(
                 val lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition()
 
                 if (lastVisibleItem >= itemCount - 4) {
-                    fragment.getRecyclerView().scrollToPosition(lastPosition + 1)
+                    fragment.recyclerView.scrollToPosition(lastPosition + 1)
                 }
 
                 if (!last.isOut && last.peerId == peerId && !AppGlobal.preferences.getBoolean(
@@ -140,7 +142,7 @@ class MessageAdapter(
                     )
                 ) {
                     if (!fragment.isRunning()) {
-                        fragment.setNotRead(last)
+                        fragment.notRead = last
                     } else {
                         readNewMessage(last)
                     }
@@ -212,7 +214,7 @@ class MessageAdapter(
             VKApi.messages()
                 .markAsRead()
                 .messageIds(message.id)
-                .execute(Int::class.java, object : OnCompleteListener {
+                .execute(Int::class.java, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         readMessage(message.id)
                     }
@@ -492,8 +494,6 @@ class MessageAdapter(
 
         @ColorInt
         var alphaAccentColor: Int = 0
-
-        val isFooter = false
 
         init {
             alphaAccentColor = ColorUtil.alphaColor(ThemeManager.accent, 0.3f)

@@ -73,7 +73,7 @@ object LongPollEvents {
 
         conversation.type = VKConversation.getType(last.peerId)
 
-        conversation.last = last
+        conversation.lastMessage = last
 
         EventBus.getDefault().postSticky(arrayOf<Any>(Keys.MESSAGE_NEW, conversation))
     }
@@ -168,7 +168,7 @@ object LongPollEvents {
         if (!ArrayUtil.isEmpty(attachments) ||
             (!ArrayUtil.isEmpty(message.attachments) && ArrayUtil.isEmpty(attachments))
         ) {
-            TaskManager.loadMessage(id, true, object : OnCompleteListener {
+            TaskManager.loadMessage(id, true, object : OnResponseListener {
                 override fun onComplete(models: ArrayList<*>?) {
                     models ?: return
 

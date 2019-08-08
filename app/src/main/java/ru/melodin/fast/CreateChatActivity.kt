@@ -4,16 +4,18 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import kotlinx.android.synthetic.main.list_empty.*
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.adapter.CreateChatAdapter
 import ru.melodin.fast.adapter.RecyclerAdapter
-import ru.melodin.fast.api.OnCompleteListener
+import ru.melodin.fast.api.OnResponseListener
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKUser
@@ -21,21 +23,24 @@ import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
+import ru.melodin.fast.mvp.contract.UsersContract
+import ru.melodin.fast.mvp.presenter.UsersPresenter
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Util
 import ru.melodin.fast.util.ViewUtil
 import ru.melodin.fast.view.FastToolbar
-import java.util.*
 
 class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener,
-    RecyclerAdapter.OnItemClickListener {
+    RecyclerAdapter.OnItemClickListener, UsersContract.View {
 
     private var adapter: CreateChatAdapter? = null
 
     private var selecting: Boolean = false
 
+    private val presenter = UsersPresenter()
+
     override fun onRefresh() {
-        loadFriends()
+        loadUsers(0, 0)
     }
 
     override fun onItemClick(position: Int) {
@@ -52,6 +57,8 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_chat)
 
+        presenter.attachView(this)
+
         tb.setTitle(R.string.select_friends)
 
         tb.setBackVisible(true)
@@ -64,9 +71,9 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
 
         })
 
-        refresh.setOnRefreshListener(this)
-        refresh.setColorSchemeColors(ThemeManager.accent)
-        refresh.setProgressBackgroundColorSchemeColor(ThemeManager.background)
+        refreshLayout.setOnRefreshListener(this)
+        refreshLayout.setColorSchemeColors(ThemeManager.accent)
+        refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.background)
 
         val manager = LinearLayoutManager(this)
         manager.orientation = RecyclerView.VERTICAL
@@ -74,7 +81,7 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
         list.setHasFixedSize(true)
         list.layoutManager = manager
 
-        getCachedFriends()
+        getCachedUsers(0, 0)
     }
 
     override fun onBackPressed() {
@@ -88,47 +95,58 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
             super.onBackPressed()
     }
 
-    private fun getCachedFriends() {
-        val users = CacheStorage.getFriends(UserConfig.userId, false)
-
-        if (ArrayUtil.isEmpty(users)) {
-            loadFriends()
-            return
-        }
-
-        createAdapter(users)
-    }
-
-    private fun createAdapter(users: ArrayList<VKUser>) {
-        if (ArrayUtil.isEmpty(users)) return
+    override fun createAdapter(items: ArrayList<VKUser>?, offset: Int) {
+        if (ArrayUtil.isEmpty(items)) return
 
         if (adapter == null) {
-            adapter = CreateChatAdapter(this, users)
-            adapter!!.setOnItemClickListener(this)
+            adapter = CreateChatAdapter(this, items!!)
             list!!.adapter = adapter
             return
         }
 
-        adapter!!.changeItems(users)
+        if (offset != 0) {
+            adapter!!.values!!.addAll(items!!)
+            adapter!!.notifyDataSetChanged()
+            return
+        }
+
+        adapter!!.changeItems(items!!)
         adapter!!.notifyDataSetChanged()
     }
 
-    private fun loadFriends() {
+    override fun getCachedUsers(count: Int, offset: Int) {
+        val users = CacheStorage.getFriends(UserConfig.userId, false)
+
+        if (ArrayUtil.isEmpty(users)) {
+            setNoItemsViewVisible(false)
+            loadUsers(0, 0)
+        } else {
+            setRefreshing(false)
+            setProgressBarVisible(false)
+            setNoItemsViewVisible(false)
+            createAdapter(users, offset)
+        }
+    }
+
+    override fun loadUsers(count: Int, offset: Int) {
         if (!Util.hasConnection()) {
-            refresh.isRefreshing = false
+            setRefreshing(false)
+            showNoInternetToast()
             return
         }
 
         changeTitle()
 
-        refresh.isRefreshing = true
+        setRefreshing(true)
         TaskManager.execute {
 
             lateinit var friends: ArrayList<VKUser>
 
             VKApi.friends().get().userId(UserConfig.userId).order("hints")
                 .fields(VKUser.FIELDS_DEFAULT)
-                .execute(VKUser::class.java, object : OnCompleteListener {
+                .count(count)
+                .offset(offset)
+                .execute(VKUser::class.java, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         if (ArrayUtil.isEmpty(models)) return
                         models ?: return
@@ -139,19 +157,76 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
                         CacheStorage.insert(DatabaseHelper.USERS_TABLE, friends)
 
                         createAdapter(friends)
-                        refresh.isRefreshing = false
+                        refreshLayout.isRefreshing = false
 
                         changeTitle()
                     }
 
                     override fun onError(e: Exception) {
                         changeTitle()
-                        refresh.isRefreshing = false
-                        Toast.makeText(this@CreateChatActivity, R.string.error, Toast.LENGTH_LONG)
-                            .show()
+                        setRefreshing(false)
+                        showErrorToast()
                     }
                 })
         }
+    }
+
+    override fun setProgressBarVisible(visible: Boolean) {
+        when (visible) {
+            true -> {
+                progressBar.visibility = View.VISIBLE
+                setRefreshing(false)
+                setNoItemsViewVisible(false)
+            }
+            else -> progressBar.visibility = View.GONE
+        }
+    }
+
+    override fun setRefreshing(value: Boolean) {
+        when (value) {
+            true -> {
+                refreshLayout.isRefreshing = true
+                setProgressBarVisible(false)
+            }
+            else -> refreshLayout.isRefreshing = false
+        }
+    }
+
+    override fun setNoItemsViewVisible(visible: Boolean) {
+        when (visible) {
+            true -> {
+                emptyView.visibility = View.VISIBLE
+                setProgressBarVisible(false)
+            }
+            else -> emptyView.visibility = View.GONE
+        }
+    }
+
+    override fun clearList() {
+        adapter ?: return
+        adapter!!.clear()
+        adapter!!.notifyDataSetChanged()
+    }
+
+    override fun showNoInternetToast() {
+
+    }
+
+    override fun showErrorToast() {
+        Toast.makeText(this@CreateChatActivity, R.string.error, Toast.LENGTH_LONG).show()
+    }
+
+
+    private fun getCachedFriends() {
+
+    }
+
+    private fun createAdapter(users: ArrayList<VKUser>) {
+
+    }
+
+    private fun loadFriends() {
+
     }
 
     private fun changeTitle() {

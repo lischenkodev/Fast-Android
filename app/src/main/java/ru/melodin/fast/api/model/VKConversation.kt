@@ -29,7 +29,7 @@ class VKConversation : VKModel, Serializable {
     var isGroupChannel: Boolean = false
 
     var pinned: VKMessage? = null
-    var last: VKMessage? = null
+    var lastMessage: VKMessage? = null
 
     var title: String? = null
     var type: Type? = null
@@ -146,7 +146,7 @@ class VKConversation : VKModel, Serializable {
         get() = type == Type.CHAT && !isGroupChannel
 
     val isFromGroup: Boolean
-        get() = VKGroup.isGroupId(this.last!!.fromId)
+        get() = VKGroup.isGroupId(this.lastMessage!!.fromId)
 
     val isGroup: Boolean
         get() = type == Type.GROUP && !isGroupChannel
@@ -164,7 +164,7 @@ class VKConversation : VKModel, Serializable {
         Log.d("FVKConversation", o.toString())
 
         if (msg != null)
-            last = VKMessage(msg)
+            lastMessage = VKMessage(msg)
 
         val peer = o.optJSONObject("peer")
         this.peerId = peer!!.optInt("id", -1)
@@ -179,7 +179,7 @@ class VKConversation : VKModel, Serializable {
         this.unread = o.optInt("unread_count")
 
         this.isRead =
-            this.last == null || this.last!!.isOut && this.readOut == this.lastMessageId || !this.last!!.isOut && this.readIn == this.lastMessageId
+            this.lastMessage == null || this.lastMessage!!.isOut && this.readOut == this.lastMessageId || !this.lastMessage!!.isOut && this.readIn == this.lastMessageId
 
         val canWrite = o.optJSONObject("can_write")
         this.isCanWrite = canWrite!!.optBoolean("allowed")

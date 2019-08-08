@@ -299,7 +299,7 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
 
     fun reply(item: VKMessage, parent: ViewGroup, withStyles: Boolean) {
         val v = message(item, null, item.reply!!.asMessage(), true, withStyles)
-        v.setOnClickListener { adapter!!.getFragment().chooseMessage(item.reply!!.asMessage()) }
+        v.setOnClickListener { adapter!!.getFragment().selectMessage(item.reply!!.asMessage()) }
         parent.addView(v)
     }
 

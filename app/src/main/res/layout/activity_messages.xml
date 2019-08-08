@@ -6,18 +6,11 @@
     android:layout_height="match_parent"
     android:background="?android:windowBackground">
 
-    <ru.melodin.fast.view.FastRecyclerView
-        android:id="@+id/recyclerView"
+    <include
+        layout="@layout/recycler_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="56dp"
-        android:visibility="gone" />
-
-    <ProgressBar
-        android:id="@+id/progress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center" />
+        android:layout_marginTop="56dp" />
 
     <FrameLayout
         android:id="@+id/pinnedContainer"
@@ -103,10 +96,7 @@
             android:background="@drawable/abc_toolbar_shadow" />
     </FrameLayout>
 
-    <ru.melodin.fast.view.FastToolbar
-        android:id="@+id/tb"
-        android:layout_width="match_parent"
-        android:layout_height="56dp" />
+    <include layout="@layout/toolbar" />
 
     <include layout="@layout/toolbar_action" />
 
