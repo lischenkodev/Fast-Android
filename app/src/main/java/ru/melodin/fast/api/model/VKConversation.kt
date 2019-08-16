@@ -3,7 +3,6 @@ package ru.melodin.fast.api.model
 import android.util.Log
 import org.greenrobot.eventbus.EventBus
 import org.jetbrains.annotations.Contract
-import org.json.JSONException
 import org.json.JSONObject
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.MemoryCache
@@ -22,11 +21,11 @@ class VKConversation : VKModel, Serializable {
     var unread = 0
     var membersCount = 0
 
-    var isCanWrite: Boolean = false
+    var isCanWrite = false
     var reason = 0
 
-    var isRead: Boolean = false
-    var isGroupChannel: Boolean = false
+    var isRead = false
+    var isGroupChannel = false
 
     var pinned: VKMessage? = null
     var lastMessage: VKMessage? = null
@@ -159,15 +158,14 @@ class VKConversation : VKModel, Serializable {
 
     constructor()
 
-    @Throws(JSONException::class)
     constructor(o: JSONObject, msg: JSONObject?) {
         Log.d("FVKConversation", o.toString())
 
         if (msg != null)
             lastMessage = VKMessage(msg)
 
-        val peer = o.optJSONObject("peer")
-        this.peerId = peer!!.optInt("id", -1)
+        val peer = o.optJSONObject("peer") ?: return
+        this.peerId = peer.optInt("id", -1)
         this.localId = peer.optInt("local_id", -1)
 
         val type = peer.optString("type")

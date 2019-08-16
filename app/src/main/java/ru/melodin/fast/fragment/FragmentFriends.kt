@@ -62,11 +62,6 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Us
         title = getString(R.string.fragment_friends)
     }
 
-    override fun onResume() {
-        super.onResume()
-        (activity!! as MainActivity).hideBottomView()
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

@@ -1,8 +1,11 @@
 package ru.melodin.fast.fragment
 
 import android.os.Bundle
+import android.text.Editable
 import android.text.TextUtils
+import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -11,7 +14,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.activity_chat_info.*
+import kotlinx.android.synthetic.main.fragment_chat_info.*
 import kotlinx.android.synthetic.main.toolbar.*
 import org.greenrobot.eventbus.EventBus
 import ru.melodin.fast.R
@@ -30,24 +33,29 @@ import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Keys
 import ru.melodin.fast.util.Util
 import ru.melodin.fast.util.ViewUtil
-import java.util.*
+import ru.melodin.fast.view.FastToolbar
+
 
 class FragmentChatInfo : BaseFragment() {
+
+    private lateinit var conversation: VKConversation
 
     private var chat: VKChat? = null
 
     private var adapter: UserAdapter? = null
 
-    private lateinit var conversation: VKConversation
+    private var items: ArrayList<VKUser>? = null
 
-    private var timer: Timer? = null
+    override fun isBottomViewVisible(): Boolean {
+        return false
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.activity_chat_info, container, false)
+        return inflater.inflate(R.layout.fragment_chat_info, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -57,16 +65,38 @@ class FragmentChatInfo : BaseFragment() {
 
         chatTitle.setText(conversation.title)
         chatTitle.setSelection(chatTitle.text!!.length)
+        chatTitle.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(p0: Editable?) {}
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {}
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                prepareMenu()
+            }
+        })
+
         chatTitle.setOnEditorActionListener { _, actionId, _ ->
+            chat ?: return@setOnEditorActionListener false
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 val newTitle = chatTitle.text.toString().trim()
-                if (!TextUtils.isEmpty(newTitle)) {
+                if (!TextUtils.isEmpty(newTitle) && newTitle != chat!!.title) {
                     changeTitleName(newTitle)
                 }
-                true
-            } else
-                false
+            }
+
+            true
         }
+
+        tb.inflateMenu(R.menu.fragment_chat_info)
+
+        tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
+            override fun onMenuItemClick(item: MenuItem): Boolean {
+                if (item.itemId == R.id.save_title) {
+                    changeTitleName(chatTitle.text.toString().trim())
+                    return true
+                }
+                return false
+            }
+
+        })
 
         tb.setTitle(R.string.chat)
         tb.setBackVisible(true)
@@ -81,12 +111,13 @@ class FragmentChatInfo : BaseFragment() {
         }
 
         getCachedChat()
-        if (Util.hasConnection()) getChat()
-
+        if (Util.hasConnection()) loadChat()
     }
 
+
     private fun showPhotoAlert() {
-        val list = arrayListOf(*resources.getStringArray(R.array.chat_photo_functions))
+        val list =
+            arrayListOf(*resources.getStringArray(R.array.chat_photo_functions))
         val removeList = arrayListOf<String>()
 
         list.removeAll(removeList)
@@ -131,12 +162,20 @@ class FragmentChatInfo : BaseFragment() {
 
                         saveChat()
 
-                        Toast.makeText(activity!!, R.string.success, Toast.LENGTH_SHORT)
+                        Toast.makeText(
+                            activity!!,
+                            R.string.success,
+                            Toast.LENGTH_SHORT
+                        )
                             .show()
                     }
 
                     override fun onError(e: Exception) {
-                        Toast.makeText(activity!!, R.string.error, Toast.LENGTH_LONG)
+                        Toast.makeText(
+                            activity!!,
+                            R.string.error,
+                            Toast.LENGTH_LONG
+                        )
                             .show()
                     }
                 })
@@ -155,7 +194,7 @@ class FragmentChatInfo : BaseFragment() {
         initChat()
     }
 
-    private fun getChat() {
+    private fun loadChat() {
         TaskManager.loadChat(
             VKConversation.toChatId(conversation.peerId),
             VKUser.FIELDS_DEFAULT,
@@ -184,8 +223,15 @@ class FragmentChatInfo : BaseFragment() {
     }
 
     private fun createAdapter(items: ArrayList<VKUser>) {
+        this.items = items
+
         if (adapter == null) {
-            adapter = UserAdapter(activity!!, items, true)
+            adapter = if (items.size > 30) {
+                UserAdapter(this, ArrayList(items.subList(0, 29)), true)
+            } else {
+                UserAdapter(this, items, true)
+            }
+
             recyclerView.adapter = adapter
             return
         }
@@ -195,40 +241,38 @@ class FragmentChatInfo : BaseFragment() {
     }
 
     private fun setMembersCount(count: Int) {
-        chatMembers.text = if (count > 0)
+        chatMembers?.text = if (count > 0)
             resources.getQuantityString(R.plurals.members, count, count)
         else
             getString(R.string.no_members)
     }
 
     private fun changeTitleName(title: String) {
-        if (timer != null) return
-
-        val setter =
+        TaskManager.addProcedure(
             VKApi.messages()
                 .editChat()
                 .chatId(VKConversation.toChatId(conversation.peerId))
-                .title(title)
+                .title(title), Int::class.java, object : OnResponseListener {
 
-        TaskManager.addProcedure(setter, Int::class.java, object : OnResponseListener {
+                override fun onComplete(models: ArrayList<*>?) {
+                    chat!!.title = title
+                    prepareMenu()
 
-            override fun onComplete(models: ArrayList<*>?) {
-                ViewUtil.hideKeyboard(chatTitle)
-                chatTitle.clearFocus()
-                Toast.makeText(activity!!, R.string.title_changed, Toast.LENGTH_SHORT)
-                    .show()
+                    ViewUtil.hideKeyboard(chatTitle)
+                    chatTitle.clearFocus()
 
-                timer = Timer()
-                timer!!.schedule(object : TimerTask() {
-                    override fun run() {
-                        timer = null
-                    }
-                }, 3000)
-            }
+                    Toast.makeText(
+                        activity!!,
+                        R.string.title_changed,
+                        Toast.LENGTH_SHORT
+                    )
+                        .show()
+                }
 
-            override fun onError(e: Exception) {}
+                override fun onError(e: Exception) {}
 
-        }, null)
+            }, null
+        )
     }
 
     private fun loadAvatar() {
@@ -240,7 +284,7 @@ class FragmentChatInfo : BaseFragment() {
         }
     }
 
-    private fun confirmKick(userId: Int) {
+    fun confirmKick(userId: Int) {
         val builder = AlertDialog.Builder(activity!!)
         builder.setTitle(R.string.confirmation)
         builder.setMessage(R.string.are_you_sure)
@@ -272,15 +316,31 @@ class FragmentChatInfo : BaseFragment() {
                             DatabaseHelper.CHAT_ID,
                             chat!!.id
                         )
-                        Toast.makeText(activity!!, R.string.success, Toast.LENGTH_SHORT)
+                        Toast.makeText(
+                            activity!!,
+                            R.string.success,
+                            Toast.LENGTH_SHORT
+                        )
                             .show()
                     }
 
                     override fun onError(e: Exception) {
-                        Toast.makeText(activity!!, R.string.error, Toast.LENGTH_SHORT)
+                        Toast.makeText(
+                            activity!!,
+                            R.string.error,
+                            Toast.LENGTH_SHORT
+                        )
                             .show()
                     }
                 })
         }
+    }
+
+    private fun prepareMenu() {
+        val menu = tb.menu
+        val item = menu.findItem(R.id.save_title)
+
+        item.isVisible =
+            if (chat == null) false else chatTitle.text.toString().trim() != chat!!.title
     }
 }

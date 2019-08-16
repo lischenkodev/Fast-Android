@@ -349,7 +349,7 @@ class LoginActivity : BaseActivity() {
         if (buttonLogin.isExtended) {
             progress.visibility = View.VISIBLE
             buttonLogin.shrink(true)
-            buttonLogin.icon = drawable(R.drawable.ic_refresh_black_24dp)
+            buttonLogin.icon = drawable(R.drawable.ic_refresh)
         } else {
             progress.visibility = View.INVISIBLE
             buttonLogin.extend(true)

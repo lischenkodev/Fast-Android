@@ -21,7 +21,9 @@ import ru.melodin.fast.api.model.VKConversation
 import ru.melodin.fast.api.model.VKGroup
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.ThemeManager
+import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.MemoryCache
+import ru.melodin.fast.fragment.FragmentChatInfo
 import ru.melodin.fast.fragment.FragmentFriends
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.ColorUtil
@@ -32,7 +34,7 @@ import java.util.*
 
 class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
 
-    private var fragment: FragmentFriends? = null
+    private var fragment: BaseFragment? = null
 
     private var withKick: Boolean = false
     private var conversation: VKConversation? = null
@@ -71,6 +73,15 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
         EventBus.getDefault().register(this)
     }
 
+    constructor(fragment: BaseFragment, users: ArrayList<VKUser>, withKick: Boolean) : super(
+        fragment.activity!!,
+        R.layout.item_user,
+        users
+    ) {
+        this.fragment = fragment
+        this.withKick = withKick
+    }
+
     fun destroy() {
         EventBus.getDefault().unregister(this)
     }
@@ -94,9 +105,13 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
             )
             Keys.CONNECTED -> {
                 fragment ?: return
-                if (fragment!!.isLoading)
-                    fragment!!.isLoading = false
-                fragment!!.onRefresh()
+                if (fragment is FragmentFriends) {
+                    val fr = fragment as FragmentFriends
+                    if (fr.isLoading) {
+                        fr.isLoading = false
+                    }
+                    fr.onRefresh()
+                }
             }
         }
     }
@@ -126,42 +141,35 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
 
     inner class ViewHolder(v: View) : RecyclerHolder(v) {
 
-        private var avatar: CircleImageView
-        private var online: ImageView
+        private var avatar: CircleImageView = v.findViewById(R.id.userAvatar)
+        private var online: ImageView = v.findViewById(R.id.online)
 
-        private var name: TextView
-        private var lastSeen: TextView
+        private var name: TextView = v.findViewById(R.id.name)
+        private var lastSeen: TextView = v.findViewById(R.id.lastSeen)
 
-        private var message: ImageButton
-        private var functions: ImageButton
-        private var kick: ImageButton
+        private var message: ImageButton = v.findViewById(R.id.message)
+        private var functions: ImageButton = v.findViewById(R.id.functions)
+        private var kick: ImageButton = v.findViewById(R.id.kick)
 
-        private var contactContainer: LinearLayout
+        private var contactContainer: LinearLayout = v.findViewById(R.id.contact_container)
 
-        private var placeholder: Drawable? = null
-
-        init {
-            placeholder = getDrawable(R.drawable.avatar_placeholder)
-
-            avatar = v.findViewById(R.id.userAvatar)
-            online = v.findViewById(R.id.online)
-
-            lastSeen = v.findViewById(R.id.lastSeen)
-            name = v.findViewById(R.id.name)
-
-            message = v.findViewById(R.id.message)
-            functions = v.findViewById(R.id.functions)
-            kick = v.findViewById(R.id.kick)
-
-            contactContainer = v.findViewById(R.id.contact_container)
-        }
+        private var placeholder = getDrawable(R.drawable.avatar_placeholder)
 
         override fun bind(position: Int) {
-            if (fragment != null) {
+            if (fragment != null && fragment is FragmentFriends) {
                 contactContainer.visibility = View.VISIBLE
-                message.setOnClickListener { fragment!!.openChat(position) }
+                message.setOnClickListener {
+                    if (fragment is FragmentFriends) (fragment as FragmentFriends).openChat(
+                        position
+                    )
+                }
 
-                functions.setOnClickListener { v -> fragment!!.showDialog(position, v) }
+                functions.setOnClickListener { v ->
+                    if (fragment is FragmentFriends) (fragment as FragmentFriends).showDialog(
+                        position,
+                        v
+                    )
+                }
             } else {
                 contactContainer.visibility = View.GONE
             }
@@ -171,8 +179,10 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
             if (withKick) {
                 kick.visibility = View.VISIBLE
                 kick.setOnClickListener {
-                    if (context is ShowCreateChatActivity) {
+                    if (context is ShowCreateChatActivity && fragment == null) {
                         (context as ShowCreateChatActivity).confirmKick(position)
+                    } else if (fragment is FragmentChatInfo) {
+                        (fragment as FragmentChatInfo).confirmKick(user.id)
                     }
                 }
             } else {

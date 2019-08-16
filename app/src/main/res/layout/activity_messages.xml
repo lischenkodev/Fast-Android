@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -10,91 +10,98 @@
         layout="@layout/recycler_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@id/chatPanel"
         android:layout_marginTop="56dp" />
 
-    <FrameLayout
-        android:id="@+id/pinnedContainer"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="56dp">
+        android:layout_marginTop="56dp"
+        android:orientation="vertical">
 
-        <LinearLayout
+        <FrameLayout
+            android:id="@+id/pinnedContainer"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="?colorPrimary"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content">
 
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginStart="6dp"
-                android:layout_weight="1"
-                android:gravity="center_vertical"
-                android:orientation="vertical">
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:background="?colorPrimary"
+                android:orientation="horizontal">
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="10dp">
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingStart="4dp"
+                        android:paddingEnd="10dp">
+
+                        <TextView
+                            android:id="@+id/pinnedName"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:fontFamily="@font/ps_medium"
+                            android:singleLine="true"
+                            android:textColor="?android:textColorPrimary"
+                            tools:text="Danil Nikolaev" />
+
+                        <TextView
+                            android:id="@+id/pinnedDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:gravity="center_vertical"
+                            android:singleLine="true"
+                            android:textColor="?android:textColorSecondary"
+                            android:textSize="12sp"
+                            tools:text="12:30" />
+
+                    </LinearLayout>
 
                     <TextView
-                        android:id="@+id/pinnedName"
-                        android:layout_width="wrap_content"
+                        android:id="@+id/pinnedText"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:fontFamily="@font/ps_medium"
+                        android:layout_marginStart="10dp"
+                        android:layout_marginEnd="10dp"
+                        android:autoLink="all"
+                        android:linksClickable="false"
                         android:singleLine="true"
                         android:textColor="?android:textColorPrimary"
-                        tools:text="Danil Nikolaev" />
-
-                    <TextView
-                        android:id="@+id/pinnedDate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:gravity="center_vertical"
-                        android:singleLine="true"
-                        android:textColor="?android:textColorSecondary"
-                        android:textSize="12sp"
-                        tools:text="12:30" />
+                        tools:text="Pinned Message" />
 
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/pinnedText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_marginEnd="10dp"
-                    android:autoLink="all"
-                    android:linksClickable="false"
-                    android:singleLine="true"
-                    android:textColor="?android:textColorPrimary"
-                    tools:text="Pinned Message" />
-
+                <androidx.appcompat.widget.AppCompatImageButton
+                    android:id="@+id/unpin"
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="0"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:src="@drawable/md_clear"
+                    android:tint="?android:textColorPrimary" />
             </LinearLayout>
-
-            <androidx.appcompat.widget.AppCompatImageButton
-                android:id="@+id/unpin"
-                android:layout_width="45dp"
-                android:layout_height="45dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="6dp"
-                android:layout_marginEnd="6dp"
-                android:layout_weight="0"
-                android:background="?selectableItemBackgroundBorderless"
-                android:src="@drawable/md_clear"
-                android:tint="?android:textColorPrimary" />
-        </LinearLayout>
+        </FrameLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="3dp"
-            android:layout_marginTop="56dp"
             android:background="@drawable/abc_toolbar_shadow" />
-    </FrameLayout>
+
+    </LinearLayout>
 
     <include layout="@layout/toolbar" />
 
@@ -104,9 +111,10 @@
         android:id="@+id/scrollToBottom"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/chatPanel"
+        android:layout_alignParentEnd="true"
         android:layout_gravity="end|bottom"
-        android:layout_marginEnd="10dp"
-        android:layout_marginBottom="76dp"
+        android:layout_margin="16dp"
         android:src="@drawable/ic_keyboard_arrow_down_black_24dp"
         android:visibility="gone"
         app:backgroundTint="?colorPrimary"
@@ -117,25 +125,26 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="3dp"
-        android:layout_gravity="bottom"
-        android:layout_marginBottom="60dp"
+        android:layout_above="@+id/chatPanel"
         android:alpha="0.6"
         android:background="@drawable/message_drop_shadow_dark" />
 
     <LinearLayout
         android:id="@+id/chatPanel"
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_gravity="bottom"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
         android:background="?colorPrimary"
         android:gravity="center_vertical"
+        android:minHeight="60dp"
         android:orientation="horizontal">
 
         <androidx.appcompat.widget.AppCompatImageButton
-            android:id="@+id/picker"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_gravity="bottom"
             android:layout_marginStart="8dp"
+            android:layout_marginBottom="10dp"
             android:layout_weight="0"
             android:background="?selectableItemBackgroundBorderless"
             android:src="@drawable/md_attachment"
@@ -145,7 +154,7 @@
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/message"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:background="#00000000"
@@ -160,7 +169,9 @@
             android:id="@+id/smiles"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_gravity="bottom"
             android:layout_marginStart="6dp"
+            android:layout_marginBottom="10dp"
             android:layout_weight="0"
             android:background="?selectableItemBackgroundBorderless"
             android:src="@drawable/md_online_status"
@@ -171,8 +182,10 @@
             android:id="@+id/send"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_gravity="bottom"
             android:layout_marginStart="6dp"
             android:layout_marginEnd="8dp"
+            android:layout_marginBottom="6dp"
             android:layout_weight="0"
             android:elevation="0dp"
             android:src="@drawable/md_mic"
@@ -183,4 +196,4 @@
             app:tint="?colorPrimary" />
 
     </LinearLayout>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+</RelativeLayout>

@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.util.ViewUtil
+import ru.melodin.fast.view.FastToolbar
 
 abstract class BaseActivity : AppCompatActivity() {
 
@@ -40,5 +41,9 @@ abstract class BaseActivity : AppCompatActivity() {
 
     fun string(@StringRes resId: Int, vararg args: Any): String {
         return getString(resId, *args)
+    }
+
+    protected fun setToolbar(toolbar: FastToolbar) {
+
     }
 }

@@ -264,7 +264,6 @@ object CacheStorage {
                 CHATS_TABLE -> putValues(cv, item as VKChat)
             }
 
-
             val arguments = arrayOfNulls<String>(args.size)
             for (j in args.indices) {
                 arguments[j] = args[j].toString() + ""

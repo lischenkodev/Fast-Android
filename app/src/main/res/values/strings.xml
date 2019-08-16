@@ -4,7 +4,6 @@
     <string name="fragment_friends">Friends</string>
     <string name="exit_message">Are you really want to logout?</string>
     <string name="tap_to_type">Your message</string>
-    <string name="update">Update</string>
     <string name="logout">Logout</string>
     <string name="warning">Warning!</string>
     <string name="online">Online</string>
@@ -36,40 +35,23 @@
     <string name="hide_typing_summary">«%1$s %2$s typing&#8230;» will not shown for users</string>
     <string name="create_chat">Create chat</string>
     <string name="loading">Loading&#8230;</string>
-    <string name="token_login_message">Warning! If you do not know what to input, close this window!</string>
     <string name="members">Members</string>
-    <string name="chat_title">Chat title</string>
     <string name="create">Create</string>
-    <string name="back">Back</string>
-    <string name="token_login">Login with token</string>
     <string name="delete_friend">Delete friend</string>
     <string name="invisible_title">Invisible</string>
     <string name="hide_typing_title">Hide typing status</string>
     <string name="clear_messages_cache">Clear messages cache</string>
     <string name="app_crashed">App has been crashed</string>
-    <string name="show_error">Show error</string>
-    <string name="error_log">Error log</string>
-    <string name="created_chat_w">%1$s created chat %2$s</string>
     <string name="created_chat_m">%1$s created chat %2$s</string>
-    <string name="returned_to_chat_w">%s returned to chat</string>
     <string name="returned_to_chat_m">%s returned to chat</string>
-    <string name="invited_to_chat_w">%1$s invited %2$s to chat</string>
     <string name="invited_to_chat_m">%1$s invited %2$s to chat</string>
-    <string name="left_the_chat_w">%s left the chat</string>
     <string name="left_the_chat_m">%s left the chat</string>
-    <string name="kicked_from_chat_w">%1$s kicked %2$s out</string>
     <string name="kicked_from_chat_m">%1$s kicked %2$s out</string>
-    <string name="remove_chat_photo_w">%s removed chat photo</string>
     <string name="remove_chat_photo_m">%s removed chat photo</string>
-    <string name="updated_chat_photo_w">%s updated chat photo</string>
     <string name="updated_chat_photo_m">%s updated chat photo</string>
-    <string name="updated_title_w">%1$s updated title to %2$s</string>
     <string name="updated_title_m">%1$s updated title to %2$s</string>
-    <string name="pinned_message_w">%s pinned message</string>
     <string name="pinned_message_m">%s pinned message</string>
-    <string name="unpinned_message_w">%s unpinned message</string>
     <string name="unpinned_message_m">%s unpinned message</string>
-    <string name="invited_by_link_w">%s invited by link</string>
     <string name="invited_by_link_m">%s invited by link</string>
     <string name="user_in_blacklist">User in your blacklist</string>
     <string name="user_blocked_or_deleted">User blocked or deleted</string>
@@ -85,7 +67,6 @@
     <string name="graffiti">Graffiti</string>
     <string name="attachments_lot">Attachments</string>
     <string name="voice_message">Voice message</string>
-    <string name="edited">edited</string>
     <string name="group">Group</string>
     <string name="confirmation">Confirmation</string>
     <string name="groups">Groups</string>
@@ -98,11 +79,8 @@
     <string name="copy_link">Copy link</string>
     <string name="photo_of_photo">%1$d of %2$d</string>
     <string name="url_copied_text">Url copied to clipboard</string>
-    <string name="photo_permission_title">Fast requires permission for save photo</string>
     <string name="clear_cache_title">Clear cache</string>
 
-    <string name="user_id" translatable="false">User ID</string>
-    <string name="token">Token</string>
     <string name="show_error_summary">Shows alert dialog with error after app crash</string>
     <string name="show_error_title">Show error</string>
 
@@ -127,12 +105,9 @@
     <string name="edit">Edit</string>
 
     <string name="pin_message">Pin</string>
-    <string name="editing">Editing</string>
     <string name="enable_notifications">Enable notifications</string>
     <string name="disable_notifications">Disable notifications</string>
     <string name="clear_messages_history">Delete history</string>
-    <string name="leave_from">Leave from %s</string>
-    <string name="return_to">Return to %s</string>
     <string name="chat">Chat</string>
     <string name="channel">Channel</string>
     <string name="leave_from_chat_text">You were leaved from chat</string>
@@ -141,7 +116,6 @@
     <string name="event">Event</string>
     <string name="page">Page</string>
     <string name="hide_keyboard_on_scroll_title">Hide keyboard on scroll top</string>
-    <string name="exit">Exit</string>
     <string name="open_profile">Open profile</string>
     <string name="online_mobile">Online from mobile</string>
 
@@ -173,4 +147,8 @@
     <string name="in_progress">In progress</string>
     <string name="report_bug">Report a bug</string>
     <string name="choose_conversation">Choose an conversation</string>
+    <string name="report">Report</string>
+    <string name="cause_error">Cause error</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
 </resources>

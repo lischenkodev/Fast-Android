@@ -1,6 +1,5 @@
 package ru.melodin.fast.fragment
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -17,7 +16,6 @@ import kotlinx.android.synthetic.main.list_empty.*
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
 import ru.melodin.fast.CreateChatActivity
-import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.ConversationAdapter
 import ru.melodin.fast.adapter.RecyclerAdapter
@@ -28,7 +26,6 @@ import ru.melodin.fast.api.model.VKGroup
 import ru.melodin.fast.api.model.VKMessage
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.AppGlobal
-import ru.melodin.fast.common.FragmentSelector
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.current.BaseFragment
@@ -38,17 +35,16 @@ import ru.melodin.fast.mvp.contract.ConversationsContract
 import ru.melodin.fast.mvp.presenter.ConversationsPresenter
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Util
+import ru.melodin.fast.util.ViewUtil
 import ru.melodin.fast.view.FastToolbar
 import java.util.*
 
-class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshListener,
+class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListener,
     RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener,
-    ConversationsContract.View {
+    ConversationsContract.View, FastToolbar.OnMenuItemClickListener {
 
     private var adapter: ConversationAdapter? = null
     private var bundle: Bundle? = null
-
-    private var chooseConversation = false
 
     private val presenter = ConversationsPresenter()
 
@@ -60,17 +56,12 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
         presenter.destroy()
     }
 
-    constructor(chooseConversation: Boolean) : this() {
-        this.chooseConversation = chooseConversation
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         presenter.attachView(this)
 
-        title =
-            (getString(if (chooseConversation) R.string.choose_conversation else R.string.fragment_messages))
+        title = getString(R.string.fragment_messages)
     }
 
     override fun onCreateView(
@@ -92,17 +83,9 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
         tb.setTitle(title)
 
         tb.inflateMenu(R.menu.fragment_dialogs_menu)
-        tb.setItemVisible(0, false)
-        tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
-            override fun onMenuItemClick(item: MenuItem) {
-                if (item.itemId == R.id.create_chat) {
-                    activity!!.startActivityForResult(
-                        Intent(activity, CreateChatActivity::class.java),
-                        REQUEST_CREATE_CHAT
-                    )
-                }
-            }
-        })
+        tb.setOnMenuItemClickListener(this)
+
+        ViewUtil.applyToolbarMenuItemsColor(tb)
 
         refreshLayout.setColorSchemeColors(ThemeManager.accent)
         refreshLayout.setOnRefreshListener(this)
@@ -123,6 +106,7 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
             loadConversations(CONVERSATIONS_COUNT, 0)
         } else {
             setProgressBarVisible(false)
+            setRefreshing(false)
             if (adapter != null && adapter!!.isEmpty)
                 setNoItemsViewVisible(true)
         }
@@ -132,15 +116,26 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        onHiddenChanged(false)
-    }
-
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        if (!hidden && !chooseConversation)
-            (activity!! as MainActivity).showBottomView()
+    override fun onMenuItemClick(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.create_chat -> {
+                activity!!.startActivityForResult(
+                    Intent(activity, CreateChatActivity::class.java),
+                    REQUEST_CREATE_CHAT
+                )
+                true
+            }
+            R.id.clear_messages_cache -> {
+                context ?: return false
+                FragmentSettings.showConfirmClearCacheDialog(
+                    context = context!!,
+                    users = false,
+                    groups = false
+                )
+                true
+            }
+            else -> false
+        }
     }
 
     override fun setNoItemsViewVisible(visible: Boolean) {
@@ -284,13 +279,10 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
     }
 
     private fun openChat(conversation: VKConversation) {
-
-        val peerId = conversation.peerId
-
         val args = Bundle().apply {
+            putInt("peer_id", conversation.peerId)
             putString("title", conversation.fullTitle)
             putString("photo", conversation.photo)
-            putInt("peer_id", peerId)
             putBoolean("can_write", conversation.isCanWrite)
             putSerializable("conversation", conversation)
         }
@@ -299,7 +291,7 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
             args.putInt("reason", conversation.reason)
         }
 
-        FragmentSelector.selectFragment(fragmentManager!!, FragmentMessages(), args, true)
+        parent!!.replaceFragment(0, FragmentMessages(), args, true)
     }
 
     private fun readConversation(peerId: Int) {
@@ -320,19 +312,6 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
     override fun onItemClick(position: Int) {
         val conversation = adapter!!.getItem(position)
 
-        if (chooseConversation) {
-            fragmentManager!!.popBackStack()
-            targetFragment!!.onActivityResult(
-                FragmentMessages.REQUEST_CHOOSE_MESSAGE,
-                Activity.RESULT_OK,
-                Intent().apply {
-                    putExtras(arguments!!.apply {
-                        putSerializable("conversation", conversation)
-                    })
-                })
-            return
-        }
-
         openChat(conversation)
 
         if (!conversation.isRead && !AppGlobal.preferences.getBoolean(
@@ -345,8 +324,7 @@ class FragmentConversations() : BaseFragment(), SwipeRefreshLayout.OnRefreshList
     }
 
     override fun onItemLongClick(position: Int) {
-        if (!chooseConversation)
-            showAlert(position)
+        showAlert(position)
     }
 
     private fun showAlert(position: Int) {

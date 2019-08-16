@@ -18,23 +18,23 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import ru.melodin.fast.LoginActivity
-import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.ItemAdapter
 import ru.melodin.fast.adapter.RecyclerAdapter
 import ru.melodin.fast.adapter.UserAdapter
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.model.VKUser
+import ru.melodin.fast.common.CrashManager
 import ru.melodin.fast.common.FragmentSelector
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.current.BaseFragment
-import ru.melodin.fast.database.MemoryCache
 import ru.melodin.fast.model.ListItem
 import ru.melodin.fast.model.ShadowPaddingItem
 import ru.melodin.fast.service.LongPollService
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Constants
 import ru.melodin.fast.util.Keys
+import ru.melodin.fast.util.ViewUtil
 import ru.melodin.fast.view.FastToolbar
 
 
@@ -65,11 +65,15 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
         initUser()
 
         tb.inflateMenu(R.menu.fragment_items)
+        ViewUtil.applyToolbarMenuItemsColor(tb)
         tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
-            override fun onMenuItemClick(item: MenuItem) {
-                if (item.itemId == R.id.menu) {
-                    FragmentSelector.selectFragment(fragmentManager!!, fragmentSettings, true)
+            override fun onMenuItemClick(item: MenuItem): Boolean {
+                if (item.itemId == R.id.item_settings) {
+                    parent?.replaceFragment(0, fragmentSettings, null)
+                    return true
                 }
+
+                return false
             }
         })
 
@@ -102,10 +106,10 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
         val item = (list.adapter as ItemAdapter).getItem(position)
 
         when (item.id) {
-            ID_FRIENDS -> FragmentSelector.selectFragment(
-                fragmentManager!!,
+            ID_FRIENDS -> parent?.replaceFragment(
+                0,
                 fragmentFriends,
-                true
+                null
             )
             ID_GROUPS -> Toast.makeText(activity!!, R.string.in_progress, Toast.LENGTH_LONG).show()
             ID_REPORT_BUG -> showReportDialog()
@@ -118,30 +122,17 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
         builder.setTitle(R.string.warning)
         builder.setMessage(R.string.are_you_sure)
         builder.setPositiveButton(R.string.yes) { _, _ ->
-            openChatWithCreator()
+            reportBug()
         }
         builder.setNegativeButton(R.string.no, null)
         builder.show()
     }
 
-    private fun openChatWithCreator() {
-        val peerId = Constants.CREATOR_ID
-
-        val user = MemoryCache.getUser(peerId)
-
-        val args = Bundle().apply {
-            putString("title", user?.toString())
-            putString("photo", user?.photo200)
-            putInt("peer_id", peerId)
-            //putBoolean("can_write", conversation.isCanWrite)
-            //putSerializable("conversation", conversation)
-        }
-
-//        if (!conversation.isCanWrite) {
-//            args.putInt("reason", conversation.reason)
-//        }
-
-        FragmentSelector.selectFragment(fragmentManager!!, FragmentMessages(), args, true)
+    private fun reportBug() {
+        FragmentSelector.selectFragment(fragmentManager!!, FragmentMessages(), Bundle().apply {
+            putInt("peer_id", Constants.BOT_ID)
+            putString("text", "#bug\n\n${CrashManager.getInfo(null)}\n\nDescription: ")
+        }, true)
     }
 
     private fun initUser() {
@@ -161,17 +152,6 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
 
         userOnline.visibility = View.VISIBLE
         userOnline.setImageDrawable(UserAdapter.getOnlineIndicator(activity!!, user!!))
-    }
-
-    override fun onResume() {
-        super.onResume()
-        onHiddenChanged(false)
-    }
-
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        if (!hidden)
-            (activity!! as MainActivity).showBottomView()
     }
 
     override fun onDestroy() {

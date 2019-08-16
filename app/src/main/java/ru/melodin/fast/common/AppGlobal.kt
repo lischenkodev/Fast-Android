@@ -17,6 +17,41 @@ import java.util.*
 
 class AppGlobal : Application() {
 
+    companion object {
+
+        lateinit var database: SQLiteDatabase
+
+        lateinit var locale: Locale
+
+        lateinit var handler: Handler
+
+        lateinit var preferences: SharedPreferences
+
+        var app_version_name = ""
+
+        var app_version_code = -1
+
+        lateinit var clipService: ClipboardManager
+
+        lateinit var connectionService: ConnectivityManager
+
+        lateinit var inputService: InputMethodManager
+
+        lateinit var res: Resources
+
+        fun isAlpha(): Boolean {
+            return app_version_name.toLowerCase(Locale.getDefault()).contains("alpha")
+        }
+
+        fun isBeta(): Boolean {
+            return app_version_name.toLowerCase(Locale.getDefault()).contains("beta")
+        }
+
+        fun isDebug(): Boolean {
+            return isAlpha() || isBeta()
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         res = resources
@@ -45,36 +80,5 @@ class AppGlobal : Application() {
         clipService = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
     }
 
-    companion object {
 
-        @Volatile
-        lateinit var database: SQLiteDatabase
-
-        @Volatile
-        lateinit var locale: Locale
-
-        @Volatile
-        lateinit var handler: Handler
-
-        @Volatile
-        lateinit var preferences: SharedPreferences
-
-        @Volatile
-        var app_version_name = ""
-
-        @Volatile
-        var app_version_code = -1
-
-        @Volatile
-        lateinit var clipService: ClipboardManager
-
-        @Volatile
-        lateinit var connectionService: ConnectivityManager
-
-        @Volatile
-        lateinit var inputService: InputMethodManager
-
-        @Volatile
-        lateinit var res: Resources
-    }
 }

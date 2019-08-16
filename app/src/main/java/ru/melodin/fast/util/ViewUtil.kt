@@ -5,15 +5,19 @@ import android.view.View
 import android.view.Window
 import androidx.annotation.ColorInt
 import androidx.annotation.StringRes
+import androidx.core.view.get
 import com.google.android.material.snackbar.Snackbar
 import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.common.ThemeManager
+import ru.melodin.fast.view.FastToolbar
+
 
 object ViewUtil {
 
     private val keyboard = AppGlobal.inputService
 
     fun showKeyboard(v: View) {
+        v.requestFocus()
         keyboard.showSoftInput(v, 0)
     }
 
@@ -49,5 +53,12 @@ object ViewUtil {
 
     fun snackbar(v: View, @StringRes text: Int): Snackbar {
         return Snackbar.make(v, text, Snackbar.LENGTH_SHORT)
+    }
+
+    fun applyToolbarMenuItemsColor(toolbar: FastToolbar) {
+        for (i in 0 until toolbar.menu.size()) {
+            val item = toolbar.menu[i]
+            item.icon?.setTint(ThemeManager.main)
+        }
     }
 }

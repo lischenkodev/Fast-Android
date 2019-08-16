@@ -34,6 +34,22 @@ class WebViewLoginActivity : AppCompatActivity() {
         tb.setBackVisible(true)
         tb.inflateMenu(R.menu.activity_login)
 
+        ViewUtil.applyToolbarMenuItemsColor(tb)
+
+        tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
+            override fun onMenuItemClick(item: MenuItem): Boolean {
+                if (item.itemId == R.id.refreshLayout) {
+                    progress.visibility = View.VISIBLE
+                    web.visibility = View.GONE
+                    web.reload()
+
+                    return true
+                }
+
+                return false
+            }
+        })
+
         web.visibility = View.GONE
 
         web.settings.javaScriptEnabled = true
@@ -51,16 +67,6 @@ class WebViewLoginActivity : AppCompatActivity() {
         } catch (ignored: Exception) {
         }
 
-        tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
-            override fun onMenuItemClick(item: MenuItem) {
-                if (item.itemId == R.id.refreshLayout) {
-                    progress.visibility = View.VISIBLE
-                    web.visibility = View.GONE
-                    web.reload()
-                }
-            }
-
-        })
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

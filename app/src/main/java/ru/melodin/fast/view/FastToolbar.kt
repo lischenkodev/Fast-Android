@@ -5,13 +5,20 @@ import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.util.TypedValue
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.*
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.MenuRes
+import androidx.appcompat.view.SupportMenuInflater
+import androidx.appcompat.view.menu.MenuBuilder
+import androidx.appcompat.widget.ActionMenuView
 import androidx.core.content.ContextCompat
 import ru.melodin.fast.R
+
 
 class FastToolbar : FrameLayout {
 
@@ -19,16 +26,27 @@ class FastToolbar : FrameLayout {
     private lateinit var subtitle: TextView
     private lateinit var back: ImageButton
     private lateinit var menuLayout: LinearLayout
+    private lateinit var avatarSpace: Space
+    private lateinit var menuView: ActionMenuView
+
+    private lateinit var menuInflater: SupportMenuInflater
 
     lateinit var avatar: ImageView
 
-    var menu: Menu? = null
-        private set
+    lateinit var menu: Menu
 
     private var onMenuItemClickListener: OnMenuItemClickListener? = null
 
     @ColorInt
     private var colorPrimary: Int = 0
+
+    private val onMenuViewItemClickListener = ActionMenuView.OnMenuItemClickListener {
+        if (onMenuItemClickListener != null) {
+            return@OnMenuItemClickListener onMenuItemClickListener!!.onMenuItemClick(it)
+        }
+
+        return@OnMenuItemClickListener false
+    }
 
     constructor(context: Context) : super(context) {
         init()
@@ -47,30 +65,51 @@ class FastToolbar : FrameLayout {
     }
 
     private fun init() {
-        menu = PopupMenu(context, null).menu
-        colorPrimary = getAttrColor(R.attr.colorPrimary)
+        initMenuInflater()
+        initPrimaryColor()
 
         LayoutInflater.from(context).inflate(R.layout.abc_toolbar, this)
 
         setBackgroundColor(colorPrimary)
 
+        initViews()
+        validateAvatarVisibility()
+
+        menu = menuView.menu
+
+        (menuView.menu as MenuBuilder).setCallback(object : MenuBuilder.Callback {
+            override fun onMenuItemSelected(m: MenuBuilder?, item: MenuItem?): Boolean {
+                if (onMenuItemClickListener != null) {
+                    return onMenuItemClickListener!!.onMenuItemClick(item!!)
+                }
+
+                return false
+            }
+
+            override fun onMenuModeChange(menuBuilder: MenuBuilder) {}
+        })
+
+        menuView.setOnMenuItemClickListener(onMenuViewItemClickListener)
+
+        validateVisibility()
+    }
+
+    private fun initMenuInflater() {
+        menuInflater = SupportMenuInflater(context)
+    }
+
+    private fun initPrimaryColor() {
+        colorPrimary = getAttrColor(R.attr.colorPrimary)
+    }
+
+    private fun initViews() {
+        avatarSpace = findViewById(R.id.abc_tb_avatar_space)
+        menuView = findViewById(R.id.menuView)
         title = findViewById(R.id.abc_tb_title)
         subtitle = findViewById(R.id.abc_tb_subtitle)
         avatar = findViewById(R.id.abc_user_avatar)
         back = findViewById(R.id.abc_tb_back)
         menuLayout = findViewById(R.id.abc_tb_menu)
-
-        validateVisibility()
-        initListener()
-    }
-
-    private fun initListener() {
-        if (onMenuItemClickListener == null || menu!!.size() == 0) return
-
-        for (i in 0 until menu!!.size()) {
-            menuLayout.getChildAt(if (menu!!.size() == 1) 1 else i)
-                .setOnClickListener { onMenuItemClickListener!!.onMenuItemClick(menu!!.getItem(if (menu!!.size() == 1) 0 else i)) }
-        }
     }
 
     private fun validateVisibility() {
@@ -79,38 +118,10 @@ class FastToolbar : FrameLayout {
 
         this.title.visibility = if (title.isEmpty()) View.GONE else View.VISIBLE
         this.subtitle.visibility = if (subtitle.isEmpty()) View.GONE else View.VISIBLE
-
-        validateTitleGravity()
     }
 
     fun inflateMenu(@MenuRes resId: Int) {
-        val inflater = MenuInflater(context)
-        inflater.inflate(resId, menu)
-        initMenu()
-    }
-
-    private fun initMenu() {
-        if (menu!!.size() > 2) {
-            for (i in 2 until menu!!.size()) {
-                menu!!.removeItem(i)
-            }
-        }
-
-        when {
-            menu!!.size() == 0 -> {
-                menuLayout.visibility = View.GONE
-                return
-            }
-            menu!!.size() == 1 -> {
-                addMenuItem(1)
-            }
-            else -> {
-                menuLayout.visibility = View.VISIBLE
-                for (i in 0 until menu!!.size()) {
-                    addMenuItem(i)
-                }
-            }
-        }
+        menuInflater.inflate(resId, menuView.menu as MenuBuilder)
     }
 
     fun setBackIcon(icon: Drawable) {
@@ -127,32 +138,18 @@ class FastToolbar : FrameLayout {
         }
     }
 
-    fun setOnBackClickListener(listener: () -> Unit) {
-        back.setOnClickListener { listener() }
-    }
-
-    private fun validateTitleGravity() {
-        val gravity = if (this.avatar.visibility == View.VISIBLE) Gravity.START else Gravity.CENTER
-
-        this.title.gravity = gravity
-        this.subtitle.gravity = gravity
-    }
-
-    private fun addMenuItem(i: Int) {
-        val menuButton = menuLayout.getChildAt(i) as ImageButton
-        menuButton.visibility = View.VISIBLE
-        menuButton.setImageDrawable(menu!!.getItem(if (menu!!.size() == 1) 0 else i).icon)
-    }
-
-    fun setItemVisible(i: Int, visible: Boolean) {
-        if (i > 1) return
-        menuLayout.getChildAt(i).visibility = if (visible) View.VISIBLE else View.INVISIBLE
+    private fun validateAvatarVisibility() {
+        if (avatar.visibility == View.VISIBLE) {
+            avatarSpace.visibility = View.GONE
+        } else if (avatar.visibility == View.GONE) {
+            avatarSpace.visibility = View.VISIBLE
+        }
     }
 
     fun setAvatar(drawable: Drawable?) {
         avatar.setImageDrawable(drawable)
         avatar.visibility = if (drawable == null) View.GONE else View.VISIBLE
-        validateTitleGravity()
+        validateAvatarVisibility()
     }
 
     fun setAvatar(resId: Int) {
@@ -185,7 +182,6 @@ class FastToolbar : FrameLayout {
         validateVisibility()
     }
 
-    @ColorInt
     private fun getAttrColor(@AttrRes resId: Int): Int {
         val typedValue = TypedValue()
         val theme = context.theme
@@ -193,12 +189,12 @@ class FastToolbar : FrameLayout {
         return typedValue.data
     }
 
-    fun setOnMenuItemClickListener(onMenuItemClickListener: OnMenuItemClickListener) {
-        this.onMenuItemClickListener = onMenuItemClickListener
-        initListener()
+    fun setOnMenuItemClickListener(listener: OnMenuItemClickListener) {
+
+        this.onMenuItemClickListener = listener
     }
 
     interface OnMenuItemClickListener {
-        fun onMenuItemClick(item: MenuItem)
+        fun onMenuItemClick(item: MenuItem): Boolean
     }
 }

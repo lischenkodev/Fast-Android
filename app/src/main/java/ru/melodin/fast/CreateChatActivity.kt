@@ -63,12 +63,16 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
 
         tb.setBackVisible(true)
         tb.inflateMenu(R.menu.activity_create_chat)
+        ViewUtil.applyToolbarMenuItemsColor(tb)
         tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
-            override fun onMenuItemClick(item: MenuItem) {
-                if (item.itemId == R.id.create)
+            override fun onMenuItemClick(item: MenuItem): Boolean {
+                if (item.itemId == R.id.create) {
                     getUsers()
-            }
+                    return true
+                }
 
+                return false
+            }
         })
 
         refreshLayout.setOnRefreshListener(this)

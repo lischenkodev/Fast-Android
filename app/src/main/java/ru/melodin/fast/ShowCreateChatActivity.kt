@@ -57,15 +57,22 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
 
         tb.inflateMenu(R.menu.activity_create_chat)
         tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
-            override fun onMenuItemClick(item: MenuItem) {
-                if (item.itemId == R.id.create && adapter != null)
+            override fun onMenuItemClick(item: MenuItem): Boolean {
+                if (item.itemId == R.id.create && adapter != null) {
                     createChat()
+
+                    return true
+                }
+
+                return false
             }
 
         })
         tb.setBackIcon(drawable(R.drawable.md_clear))
         tb.setBackVisible(true)
         tb.setTitle(R.string.create_chat)
+
+        ViewUtil.applyToolbarMenuItemsColor(tb)
 
         refreshLayout.isEnabled = false
 
@@ -142,7 +149,10 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
     }
 
     fun confirmKick(position: Int) {
-        if (position == 0) finish()
+        if (position == 0) {
+            finish()
+            return
+        }
         if (list.isComputingLayout) return
 
         adapter!!.remove(position)

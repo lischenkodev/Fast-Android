@@ -1,6 +1,7 @@
 package ru.melodin.fast.current
 
 import android.graphics.drawable.Drawable
+import android.os.Bundle
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.DrawableRes
@@ -9,9 +10,8 @@ import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
-
 import com.google.android.material.appbar.AppBarLayout
-
+import ru.melodin.fast.MainActivity
 import ru.melodin.fast.view.FastToolbar
 
 abstract class BaseFragment : Fragment() {
@@ -20,6 +20,17 @@ abstract class BaseFragment : Fragment() {
 
     var recyclerList: RecyclerView? = null
     var toolbar: FastToolbar? = null
+
+    var parent: MainActivity? = null
+
+    open fun isBottomViewVisible(): Boolean {
+        return true
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        parent = activity as MainActivity?
+    }
 
     fun scrollToTop() {
         if (recyclerList != null)
@@ -47,12 +58,12 @@ abstract class BaseFragment : Fragment() {
     }
 
     fun drawable(@DrawableRes resId: Int): Drawable {
-        return ContextCompat.getDrawable(activity!!, resId)!!
+        return ContextCompat.getDrawable(context!!, resId)!!
     }
 
     @ColorInt
     fun color(@ColorRes resId: Int): Int {
-        return ContextCompat.getColor(activity!!, resId)
+        return ContextCompat.getColor(context!!, resId)
     }
 
     fun string(@StringRes resId: Int): String {
@@ -62,4 +73,7 @@ abstract class BaseFragment : Fragment() {
     fun string(@StringRes resId: Int, vararg args: Any): String {
         return getString(resId, *args)
     }
+
+    open fun onBackPressed() {}
+
 }

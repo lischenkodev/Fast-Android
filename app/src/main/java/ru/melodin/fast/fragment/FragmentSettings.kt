@@ -1,6 +1,7 @@
 package ru.melodin.fast.fragment
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -11,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.toolbar.*
 import org.greenrobot.eventbus.EventBus
-import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.GroupAdapter
 import ru.melodin.fast.adapter.UserAdapter
@@ -27,18 +27,73 @@ import ru.melodin.fast.util.ArrayUtil
 class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClickListener,
     Preference.OnPreferenceChangeListener {
 
+    companion object {
+        fun showConfirmClearCacheDialog(context: Context, users: Boolean, groups: Boolean) {
+            AlertDialog.Builder(context)
+                .setTitle(R.string.confirmation)
+                .setMessage(R.string.clear_cache_confirm)
+                .setPositiveButton(R.string.yes) { _, _ ->
+                    TaskManager.execute {
+                        val helper = DatabaseHelper.getInstance(context)
+                        val db = AppGlobal.database
+
+                        when {
+                            users -> helper.dropUsersTable(db)
+                            groups -> helper.dropGroupsTable(db)
+                            else -> {
+                                helper.dropMessagesTable(db)
+                                EventBus.getDefault().postSticky(arrayOf<Any>(KEY_MESSAGES_CLEAR_CACHE))
+                            }
+                        }
+                    }
+                }
+                .setNegativeButton(R.string.no, null)
+                .show()
+        }
+
+        const val KEY_NOT_READ_MESSAGES = "not_read"
+        const val KEY_DARK_STYLE = "dark_theme"
+        const val KEY_MESSAGE_TEMPLATE = "template"
+        const val KEY_HIDE_TYPING = "hide_typing"
+        const val KEY_SHOW_ERROR = "show_error"
+        const val DEFAULT_TEMPLATE_VALUE = "¯\\_(ツ)_/¯"
+        const val KEY_MESSAGES_CLEAR_CACHE = "clear_messages_cache"
+        const val KEY_HIDE_KEYBOARD_ON_SCROLL = "hide_keyboard_on_scroll"
+        const val KEY_OFFLINE = "offline"
+        const val KEY_CAUSE_ERROR = "cause_error"
+
+        private const val KEY_ABOUT = "about"
+        private const val KEY_SHOW_CACHED_GROUPS = "show_cached_groups"
+        private const val KEY_SHOW_CACHED_USERS = "show_cached_users"
+
+        const val KEY_CRASH_LOG = "crashLog"
+        const val KEY_CRASHED = "isCrashed"
+    }
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.prefs, rootKey)
 
         val hideTyping = findPreference<Preference>(KEY_HIDE_TYPING)
-        val darkTheme = findPreference<Preference>(KEY_DARK_STYLE)
 
-        findPreference<Preference>(KEY_ABOUT)!!.onPreferenceClickListener = this
-        findPreference<Preference>(KEY_MESSAGES_CLEAR_CACHE)!!.onPreferenceClickListener = this
-        findPreference<Preference>(KEY_SHOW_CACHED_USERS)!!.onPreferenceClickListener = this
-        findPreference<Preference>(KEY_SHOW_CACHED_GROUPS)!!.onPreferenceClickListener = this
+        if (AppGlobal.isAlpha()) {
+            val causeError = findPreference<Preference>(KEY_CAUSE_ERROR)
+            causeError?.isVisible = true
+            causeError?.onPreferenceClickListener = this
+        }
 
-        darkTheme!!.onPreferenceChangeListener = this
+        if (AppGlobal.isDebug()) {
+            val showError = findPreference<Preference>(KEY_SHOW_ERROR)
+            showError?.isVisible = true
+            showError?.isEnabled = false
+            showError?.summary = "Alpha version"
+        }
+
+        findPreference<Preference>(KEY_ABOUT)?.onPreferenceClickListener = this
+        findPreference<Preference>(KEY_MESSAGES_CLEAR_CACHE)?.onPreferenceClickListener = this
+        findPreference<Preference>(KEY_SHOW_CACHED_USERS)?.onPreferenceClickListener = this
+        findPreference<Preference>(KEY_SHOW_CACHED_GROUPS)?.onPreferenceClickListener = this
+
+        findPreference<Preference>(KEY_DARK_STYLE)?.onPreferenceChangeListener = this
 
         val user = UserConfig.getUser() ?: return
         val hideTypingSummary = String.format(
@@ -46,12 +101,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             user.name,
             user.surname!!.substring(0, 1) + "."
         )
-        hideTyping!!.summary = hideTypingSummary
-    }
-
-    override fun onResume() {
-        super.onResume()
-        (activity!! as MainActivity).hideBottomView()
+        hideTyping?.summary = hideTypingSummary
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -84,11 +134,21 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 ),
                 Toast.LENGTH_LONG
             ).show()
-            KEY_MESSAGES_CLEAR_CACHE -> showConfirmClearCacheDialog(users = false, groups = false)
+            KEY_MESSAGES_CLEAR_CACHE -> showConfirmClearCacheDialog(context = context!!, users = false, groups = false)
             KEY_SHOW_CACHED_USERS -> showCachedUsers()
             KEY_SHOW_CACHED_GROUPS -> showCachedGroups()
+            KEY_CAUSE_ERROR -> confirmCauseErrorDialog()
         }
         return true
+    }
+
+    private fun confirmCauseErrorDialog() {
+        val builder = AlertDialog.Builder(activity!!)
+        builder.setTitle(R.string.warning)
+        builder.setMessage(R.string.are_you_sure)
+        builder.setPositiveButton(R.string.yes) { _, _ -> throw RuntimeException("test exception") }
+        builder.setNegativeButton(R.string.no, null)
+        builder.show()
     }
 
     @SuppressLint("InflateParams")
@@ -115,6 +175,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         adb.setPositiveButton(android.R.string.ok, null)
         adb.setNeutralButton(R.string.clear) { _, _ ->
             showConfirmClearCacheDialog(
+                context = context!!,
                 users = false,
                 groups = true
             )
@@ -146,53 +207,12 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         adb.setPositiveButton(android.R.string.ok, null)
         adb.setNeutralButton(R.string.clear) { _, _ ->
             showConfirmClearCacheDialog(
+                context = context!!,
                 users = true,
                 groups = false
             )
         }
         adb.show()
-    }
-
-    private fun showConfirmClearCacheDialog(users: Boolean, groups: Boolean) {
-        AlertDialog.Builder(activity!!)
-            .setTitle(R.string.confirmation)
-            .setMessage(R.string.clear_cache_confirm)
-            .setPositiveButton(R.string.yes) { _, _ ->
-                TaskManager.execute {
-                    val helper = DatabaseHelper.getInstance(activity!!)
-                    val db = AppGlobal.database
-
-                    when {
-                        users -> helper.dropUsersTable(db)
-                        groups -> helper.dropGroupsTable(db)
-                        else -> {
-                            helper.dropMessagesTable(db)
-                            EventBus.getDefault().postSticky(arrayOf<Any>(KEY_MESSAGES_CLEAR_CACHE))
-                        }
-                    }
-                }
-            }
-            .setNegativeButton(R.string.no, null)
-            .show()
-    }
-
-    companion object {
-        const val KEY_NOT_READ_MESSAGES = "not_read"
-        const val KEY_DARK_STYLE = "dark_theme"
-        const val KEY_MESSAGE_TEMPLATE = "template"
-        const val KEY_HIDE_TYPING = "hide_typing"
-        const val KEY_SHOW_ERROR = "show_error"
-        const val DEFAULT_TEMPLATE_VALUE = "¯\\_(ツ)_/¯"
-        const val KEY_MESSAGES_CLEAR_CACHE = "clear_messages_cache"
-        const val KEY_HIDE_KEYBOARD_ON_SCROLL = "hide_keyboard_on_scroll"
-        const val KEY_OFFLINE = "offline"
-
-        private const val KEY_ABOUT = "about"
-        private const val KEY_SHOW_CACHED_GROUPS = "show_cached_groups"
-        private const val KEY_SHOW_CACHED_USERS = "show_cached_users"
-
-        const val KEY_CRASH_LOG = "crashLog"
-        const val KEY_CRASHED = "isCrashed"
     }
 
 }

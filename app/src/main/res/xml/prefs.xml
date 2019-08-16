@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory
         android:key="interface_"
@@ -71,7 +72,14 @@
         android:defaultValue="true"
         android:key="show_error"
         android:summary="@string/show_error_summary"
-        android:title="@string/show_error_title" />
+        android:title="@string/show_error_title"
+        app:isPreferenceVisible="false" />
+
+    <PreferenceScreen
+        android:key="cause_error"
+        android:summary="@string/warning"
+        android:title="@string/cause_error"
+        app:isPreferenceVisible="false" />
 
     <PreferenceScreen
         android:key="about"

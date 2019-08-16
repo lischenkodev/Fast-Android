@@ -27,6 +27,7 @@ import ru.melodin.fast.api.model.*
 import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
+import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.database.MemoryCache
@@ -39,7 +40,7 @@ import ru.melodin.fast.util.Util
 import java.util.*
 
 class ConversationAdapter(
-    private val fragment: FragmentConversations,
+    private val fragment: BaseFragment,
     values: ArrayList<VKConversation>
 ) :
     RecyclerAdapter<VKConversation, ConversationAdapter.ViewHolder>(
@@ -93,7 +94,8 @@ class ConversationAdapter(
             FragmentSettings.KEY_MESSAGES_CLEAR_CACHE -> {
                 clear()
                 notifyDataSetChanged()
-                fragment.onRefresh()
+                if (fragment is FragmentConversations)
+                    fragment.onRefresh()
             }
             Keys.NOTIFICATIONS_CHANGE -> changeNotifications(
                 data[1] as Int,
@@ -117,7 +119,11 @@ class ConversationAdapter(
                 updateGroup(groupId)
             }
             Keys.CONNECTED -> {
-                if (!AppGlobal.preferences.getBoolean(FragmentSettings.KEY_OFFLINE, false))
+                if (!AppGlobal.preferences.getBoolean(
+                        FragmentSettings.KEY_OFFLINE,
+                        false
+                    ) && fragment is FragmentConversations
+                )
                     fragment.onRefresh()
             }
             Keys.UPDATE_CHAT -> {
@@ -258,22 +264,6 @@ class ConversationAdapter(
                 }
             }
 
-            CacheStorage.delete(
-                DatabaseHelper.CONVERSATIONS_TABLE,
-                DatabaseHelper.PEER_ID,
-                conversation.peerId
-            )
-
-            CacheStorage.insert(
-                DatabaseHelper.CONVERSATIONS_TABLE,
-                conversation
-            )
-
-            CacheStorage.insert(
-                DatabaseHelper.MESSAGES_TABLE,
-                conversation.lastMessage!!
-            )
-
             if (index > 0) {
                 remove(index)
                 add(0, conversation)
@@ -310,24 +300,16 @@ class ConversationAdapter(
 
                             val dialog = models[0] as VKConversation
 
-                            CacheStorage.delete(DatabaseHelper.CONVERSATIONS_TABLE, DatabaseHelper.PEER_ID, dialog.peerId)
-                            CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, dialog)
-
-                            dialog.lastMessage ?: return
-
-                            CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, dialog.lastMessage!!)
-
                             addMessage(dialog)
                         }
 
                         override fun onError(e: Exception) {}
                     })
-            } else {
-                CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
-                conversation.lastMessage ?: return
-                CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.lastMessage!!)
             }
         }
+
+        CacheStorage.insert(DatabaseHelper.CONVERSATIONS_TABLE, conversation)
+        CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, conversation.lastMessage!!)
     }
 
     private fun readMessage(id: Int) {
@@ -537,7 +519,10 @@ class ConversationAdapter(
             if (last.action == null) {
                 if (TextUtils.isEmpty(last.text)) {
                     val body =
-                        VKUtil.getAttachmentBody(item.lastMessage!!.attachments, item.lastMessage!!.fwdMessages)
+                        VKUtil.getAttachmentBody(
+                            item.lastMessage!!.attachments,
+                            item.lastMessage!!.fwdMessages
+                        )
 
                     val span = SpannableString(body)
                     span.setSpan(ForegroundColorSpan(accentColor), 0, body.length, 0)

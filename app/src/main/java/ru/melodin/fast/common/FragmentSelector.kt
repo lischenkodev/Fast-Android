@@ -16,34 +16,44 @@ object FragmentSelector {
         manager: FragmentManager,
         fragment: Fragment,
         args: Bundle?,
-        withBackStack: Boolean
+        showOnce: Boolean
     ) {
         val fragments = manager.fragments
 
         val transaction = manager.beginTransaction()
 
-        fragment.arguments = args ?: Bundle()
+        if (args != null)
+            fragment.arguments = args
 
-        if (ArrayUtil.isEmpty(fragments))
+        if (showOnce) {
+            for (f in fragments) {
+                transaction.hide(f)
+            }
+
             transaction.add(FRAGMENT_CONTAINER, fragment, fragment.javaClass.simpleName)
-        else {
-            var contains = false
+            transaction.commit()
+        } else {
 
-            for (f in fragments)
-                if (f.javaClass.simpleName == fragment.javaClass.simpleName) {
-                    transaction.show(f)
-                    contains = true
-                } else
-                    transaction.hide(f)
-
-            if (!contains)
+            if (ArrayUtil.isEmpty(fragments))
                 transaction.add(FRAGMENT_CONTAINER, fragment, fragment.javaClass.simpleName)
+            else {
+                var contains = false
+
+                for (f in fragments)
+                    if (f.javaClass.simpleName == fragment.javaClass.simpleName) {
+                        transaction.show(f)
+                        contains = true
+                    } else
+                        transaction.hide(f)
+
+                if (!contains)
+                    transaction.add(FRAGMENT_CONTAINER, fragment, fragment.javaClass.simpleName)
+            }
+
+            transaction.commit()
         }
 
-        if (withBackStack)
-            transaction.addToBackStack(fragment.javaClass.simpleName)
 
-        transaction.commit()
         currentFragment = fragment
     }
 
@@ -65,13 +75,11 @@ object FragmentSelector {
         args: Bundle?,
         withBackStack: Boolean
     ) {
-        fragment.arguments = args ?: Bundle()
+        if (args != null)
+            fragment.arguments = args
 
         val transaction = manager.beginTransaction()
         transaction.add(FRAGMENT_CONTAINER, fragment, fragment.javaClass.simpleName)
-
-        if (withBackStack)
-            transaction.addToBackStack(fragment.javaClass.simpleName)
 
         transaction.commit()
         currentFragment = fragment

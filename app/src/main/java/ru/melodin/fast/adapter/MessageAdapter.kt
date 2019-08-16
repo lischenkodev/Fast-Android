@@ -1,7 +1,6 @@
 package ru.melodin.fast.adapter
 
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.media.MediaPlayer
 import android.text.TextUtils
@@ -17,7 +16,7 @@ import androidx.annotation.ColorInt
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.activity_chat_info.*
+import kotlinx.android.synthetic.main.fragment_chat_info.*
 import kotlinx.android.synthetic.main.recycler_list.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -133,7 +132,7 @@ class MessageAdapter(
                 val lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition()
 
                 if (lastVisibleItem >= itemCount - 4) {
-                    fragment.recyclerView.scrollToPosition(lastPosition + 1)
+                    fragment.recyclerView?.scrollToPosition(lastPosition)
                 }
 
                 if (!last.isOut && last.peerId == peerId && !AppGlobal.preferences.getBoolean(
@@ -150,8 +149,6 @@ class MessageAdapter(
             }
             Keys.MESSAGE_EDIT -> editMessage(data[1] as VKMessage)
             Keys.UPDATE_MESSAGE -> updateMessage(data[1] as Int)
-            Keys.CONNECTED -> {
-            }
             Keys.UPDATE_GROUP -> updateGroup(data[1] as Int)
             Keys.UPDATE_USER -> updateUser(data[1] as Int)
             Keys.UPDATE_CHAT -> fragment.updateChat(data[1] as VKChat)
@@ -313,24 +310,6 @@ class MessageAdapter(
         }
     }
 
-    override fun getItemCount(): Int {
-        return super.getItemCount() + 1
-    }
-
-    override fun getItemViewType(position: Int): Int {
-        return if (values!!.size == position) {
-            TYPE_FOOTER
-        } else {
-            TYPE_NORMAL
-        }
-    }
-
-    override fun getItem(position: Int): VKMessage {
-        return if (getItemViewType(position) == TYPE_FOOTER) {
-            super.getItem(position - 1)
-        } else super.getItem(position)
-    }
-
     fun searchPosition(mId: Int): Int {
         for (i in 0 until itemCount)
             if (getItem(i).id == mId) return i
@@ -400,7 +379,7 @@ class MessageAdapter(
         footer.isEnabled = false
         footer.isClickable = false
         footer.layoutParams =
-            RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Util.px(66f).toInt())
+            RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, Util.px(60f).toInt())
 
         return footer
     }
@@ -449,80 +428,43 @@ class MessageAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerHolder {
-        return when (viewType) {
-            TYPE_FOOTER -> FooterViewHolder(createFooter())
-            TYPE_NORMAL -> ViewHolder(getView(parent)!!)
-            else -> FooterViewHolder(createFooter())
-        }
+        return ViewHolder(getView(parent)!!)
     }
 
     override fun onBindViewHolder(holder: RecyclerHolder, position: Int) {
-        if (holder is FooterViewHolder) return
-        holder.bind(position)
-
         super.onBindViewHolder(holder, position)
+        holder.bind(position)
     }
 
-    internal inner class FooterViewHolder(v: View) : RecyclerHolder(v) {
-
-        override fun bind(position: Int) {}
-    }
 
     open inner class ViewHolder(v: View) : RecyclerHolder(v) {
 
-        private var avatar: CircleImageView
-        private var indicator: ImageView
-        private var important: ImageView
+        private var avatar: CircleImageView = itemView.findViewById(R.id.userAvatar)
+        private var indicator: ImageView = itemView.findViewById(R.id.message_state)
+        private var important: ImageView = itemView.findViewById(R.id.important)
 
-        private var text: TextView
+        private var text: TextView = itemView.findViewById(R.id.message)
 
-        private var mainContainer: LinearLayout
+        private var bubble: BoundedLinearLayout = itemView.findViewById(R.id.bubble)
+        private var attachments: LinearLayout = itemView.findViewById(R.id.attachments)
+        private var serviceContainer: LinearLayout = itemView.findViewById(R.id.service_container)
+        private var messageContainer: LinearLayout = itemView.findViewById(R.id.message_container)
+        private var timeContainer: LinearLayout = itemView.findViewById(R.id.time_container)
+        private var bubbleContainer: LinearLayout = itemView.findViewById(R.id.bubble_container)
+        private var replyContainer: LinearLayout = itemView.findViewById(R.id.reply_container)
 
-        private var bubble: BoundedLinearLayout
-        private var attachments: LinearLayout
-        private var serviceContainer: LinearLayout
-        private var messageContainer: LinearLayout
-        private var timeContainer: LinearLayout
-        private var bubbleContainer: LinearLayout
-        private var replyContainer: LinearLayout
-
-        private var sending: Drawable? = null
-        private var error: Drawable? = null
-        private var placeholder: Drawable? = null
-        private var defaultBg: Drawable? = null
+        private var sending = getDrawable(R.drawable.ic_access_time_black_24dp)
+        private var error = getDrawable(R.drawable.ic_error_black_24dp)
+        private var placeholder = getDrawable(R.drawable.avatar_placeholder)
+        private var defaultBg = getDrawable(R.drawable.msg_bg)
         private var circle: GradientDrawable? = null
 
         @ColorInt
-        var alphaAccentColor: Int = 0
+        val alphaAccentColor: Int = ColorUtil.alphaColor(ThemeManager.accent, 0.3f)
 
         init {
-            alphaAccentColor = ColorUtil.alphaColor(ThemeManager.accent, 0.3f)
-
-            text = v.findViewById(R.id.message)
-
-            placeholder = getDrawable(R.drawable.avatar_placeholder)
-
-            avatar = itemView.findViewById(R.id.userAvatar)
-            important = itemView.findViewById(R.id.important)
-
-            circle = null
-            defaultBg = getDrawable(R.drawable.msg_bg)
-            error = getDrawable(R.drawable.ic_error_black_24dp)
-            sending = getDrawable(R.drawable.ic_access_time_black_24dp)
-
             sending!!.setTint(ThemeManager.accent)
             error!!.setTint(Color.RED)
-
-            bubbleContainer = itemView.findViewById(R.id.bubble_container)
-            messageContainer = itemView.findViewById(R.id.message_container)
-            serviceContainer = itemView.findViewById(R.id.service_container)
-            mainContainer = itemView.findViewById(R.id.root)
-            replyContainer = itemView.findViewById(R.id.reply_container)
-            bubble = itemView.findViewById(R.id.bubble)
-            attachments = itemView.findViewById(R.id.attachments)
-            timeContainer = itemView.findViewById(R.id.time_container)
-
-            indicator = itemView.findViewById(R.id.message_state)
 
             bubble.maxWidth = metrics.widthPixels - metrics.widthPixels / 3
         }
@@ -656,12 +598,5 @@ class MessageAdapter(
 
     fun getFragment(): FragmentMessages {
         return fragment
-    }
-
-    companion object {
-
-        private const val TYPE_NORMAL = 0
-        private const val TYPE_FOOTER = 10
-
     }
 }

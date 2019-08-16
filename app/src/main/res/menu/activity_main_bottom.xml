@@ -3,19 +3,18 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/groups"
             android:enabled="false"
             android:icon="@drawable/md_groups"
             android:title="@string/groups"
             android:visible="false" />
 
         <item
-            android:id="@+id/conversations"
+            android:id="@+id/navigation_conversations"
             android:icon="@drawable/md_mail"
             android:title="@string/fragment_messages" />
 
         <item
-            android:id="@+id/menu"
+            android:id="@+id/navigation_items"
             android:icon="@drawable/md_burger"
             android:title="@string/settings" />
     </group>

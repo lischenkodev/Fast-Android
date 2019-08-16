@@ -10,7 +10,7 @@ class DatabaseHelper private constructor(context: Context) :
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(SQL_CREATE_TABLE_USERS)
         db.execSQL(SQL_CREATE_TABLE_GROUPS)
-        db.execSQL(SQL_CREATE_TABLE_DIALOGS)
+        db.execSQL(SQL_CREATE_TABLE_CONVERSATIONS)
         db.execSQL(SQL_CREATE_TABLE_FRIENDS)
         db.execSQL(SQL_CREATE_TABLE_MESSAGES)
         db.execSQL(SQL_CREATE_TABLE_CHATS)
@@ -22,9 +22,9 @@ class DatabaseHelper private constructor(context: Context) :
     }
 
     fun dropMessagesTable(db: SQLiteDatabase) {
-        db.execSQL(SQL_DELETE_DIALOGS)
+        db.execSQL(SQL_DELETE_CONVERSATIONS)
         db.execSQL(SQL_DELETE_MESSAGES)
-        db.execSQL(SQL_CREATE_TABLE_DIALOGS)
+        db.execSQL(SQL_CREATE_TABLE_CONVERSATIONS)
         db.execSQL(SQL_CREATE_TABLE_MESSAGES)
         db.execSQL(SQL_DELETE_CHATS)
         db.execSQL(SQL_CREATE_TABLE_CHATS)
@@ -44,7 +44,7 @@ class DatabaseHelper private constructor(context: Context) :
         db.execSQL(SQL_DELETE_USERS)
         db.execSQL(SQL_DELETE_GROUPS)
         db.execSQL(SQL_DELETE_FRIENDS)
-        db.execSQL(SQL_DELETE_DIALOGS)
+        db.execSQL(SQL_DELETE_CONVERSATIONS)
         db.execSQL(SQL_DELETE_MESSAGES)
         db.execSQL(SQL_DELETE_CHATS)
     }
@@ -157,7 +157,7 @@ class DatabaseHelper private constructor(context: Context) :
                 " [" + STATE + "] INTEGER" +
                 ");"
 
-        private const val SQL_CREATE_TABLE_DIALOGS = "CREATE TABLE " + CONVERSATIONS_TABLE +
+        private const val SQL_CREATE_TABLE_CONVERSATIONS = "CREATE TABLE " + CONVERSATIONS_TABLE +
                 " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 " [" + PEER_ID + "] INTEGER UNIQUE ON CONFLICT REPLACE, " +
                 " [" + TYPE + "] VARCHAR(255), " +
@@ -217,7 +217,7 @@ class DatabaseHelper private constructor(context: Context) :
         private const val SQL_DELETE_USERS = "DROP TABLE IF EXISTS $USERS_TABLE"
         private const val SQL_DELETE_GROUPS = "DROP TABLE IF EXISTS $GROUPS_TABLE"
         private const val SQL_DELETE_FRIENDS = "DROP TABLE IF EXISTS $FRIENDS_TABLE"
-        private const val SQL_DELETE_DIALOGS = "DROP TABLE IF EXISTS $CONVERSATIONS_TABLE"
+        private const val SQL_DELETE_CONVERSATIONS = "DROP TABLE IF EXISTS $CONVERSATIONS_TABLE"
         private const val SQL_DELETE_MESSAGES = "DROP TABLE IF EXISTS $MESSAGES_TABLE"
         private const val SQL_DELETE_CHATS = "DROP TABLE IF EXISTS $CHATS_TABLE"
 
