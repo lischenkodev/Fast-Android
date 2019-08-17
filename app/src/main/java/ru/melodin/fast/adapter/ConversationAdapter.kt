@@ -438,15 +438,15 @@ class ConversationAdapter(
 
 
         init {
-            accentColor = ThemeManager.accent
+            accentColor = ThemeManager.ACCENT
             pushesEnabled = accentColor
-            pushesDisabled = if (ThemeManager.isDark) ColorUtil.lightenColor(
-                ThemeManager.primary,
+            pushesDisabled = if (ThemeManager.IS_DARK) ColorUtil.lightenColor(
+                ThemeManager.PRIMARY,
                 2f
             ) else Color.GRAY
 
             val background = GradientDrawable()
-            background.setColor(ThemeManager.accent)
+            background.setColor(ThemeManager.ACCENT)
             background.cornerRadius = 200f
 
             counter.background = background
@@ -484,7 +484,7 @@ class ConversationAdapter(
             if (item.isNotificationsDisabled) {
                 counter.setTextColor(Color.WHITE)
             } else {
-                counter.setTextColor(if (ThemeManager.isDark) Color.DKGRAY else Color.WHITE)
+                counter.setTextColor(if (ThemeManager.IS_DARK) Color.DKGRAY else Color.WHITE)
             }
 
             if (item.isChat || last.isOut) {

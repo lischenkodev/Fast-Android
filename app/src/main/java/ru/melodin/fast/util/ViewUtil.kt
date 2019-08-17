@@ -26,7 +26,7 @@ object ViewUtil {
     }
 
     @JvmOverloads
-    fun applyWindowStyles(window: Window, @ColorInt color: Int = ThemeManager.primary) {
+    fun applyWindowStyles(window: Window, @ColorInt color: Int = ThemeManager.PRIMARY) {
         val light = ColorUtil.isLight(color)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
@@ -58,7 +58,7 @@ object ViewUtil {
     fun applyToolbarMenuItemsColor(toolbar: FastToolbar) {
         for (i in 0 until toolbar.menu.size()) {
             val item = toolbar.menu[i]
-            item.icon?.setTint(ThemeManager.main)
+            item.icon?.setTint(ThemeManager.MAIN)
         }
     }
 }

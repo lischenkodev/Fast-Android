@@ -1,14 +1,14 @@
-package ru.melodin.fast
+package ru.melodin.fast.fragment
 
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
 import android.text.TextUtils
-import android.text.TextWatcher
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,44 +16,44 @@ import kotlinx.android.synthetic.main.activity_show_create.*
 import kotlinx.android.synthetic.main.list_empty.*
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
+import ru.melodin.fast.R
 import ru.melodin.fast.adapter.UserAdapter
 import ru.melodin.fast.api.OnResponseListener
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.TaskManager
-import ru.melodin.fast.common.ThemeManager
-import ru.melodin.fast.current.BaseActivity
+import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.ViewUtil
 import ru.melodin.fast.view.FastToolbar
 import java.util.*
 
-class ShowCreateChatActivity : BaseActivity(), TextWatcher {
-
-    override fun afterTextChanged(p0: Editable?) {
-
-    }
-
-    override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-
-    }
-
-    override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-        invalidateOptionsMenu()
-    }
+class FragmentCreateChatUsers : BaseFragment() {
 
     private var adapter: UserAdapter? = null
 
     private var users: ArrayList<VKUser>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(ThemeManager.currentTheme)
-        ViewUtil.applyWindowStyles(window)
         super.onCreate(savedInstanceState)
 
-        users = intent.getSerializableExtra("users") as ArrayList<VKUser>
+        users = arguments!!.getSerializable("users") as ArrayList<VKUser>
+    }
 
-        setContentView(R.layout.activity_show_create)
+    override fun isBottomViewVisible(): Boolean {
+        return false
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(R.layout.activity_show_create, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         tb.inflateMenu(R.menu.activity_create_chat)
         tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
@@ -76,13 +76,8 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
 
         refreshLayout.isEnabled = false
 
-        chatTitle.addTextChangedListener(this)
-
-        val manager = LinearLayoutManager(this)
-        manager.orientation = RecyclerView.VERTICAL
-
         list.setHasFixedSize(true)
-        list.layoutManager = manager
+        list.layoutManager = LinearLayoutManager(activity!!, RecyclerView.VERTICAL, false)
 
         emptyView.visibility = View.GONE
         progressBar.visibility = View.GONE
@@ -124,17 +119,20 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
 
                         val peerId = 2_000_000_000 + models[0] as Int
 
-                        setResult(Activity.RESULT_OK, Intent().apply {
-                            putExtra("title", title)
-                            putExtra("peer_id", peerId)
-                        })
-                        finish()
+                        parent!!.onBackPressed()
+                        targetFragment!!.onActivityResult(
+                            FragmentCreateChat.REQUEST_CREATE_CHAT,
+                            Activity.RESULT_OK,
+                            Intent().apply {
+                                putExtra("title", title)
+                                putExtra("peer_id", peerId)
+                            })
                     }
 
                     override fun onError(e: Exception) {
                         Log.e("Error create chat", Log.getStackTraceString(e))
                         Toast.makeText(
-                            this@ShowCreateChatActivity,
+                            activity!!,
                             getString(R.string.error) + ": " + e.toString(),
                             Toast.LENGTH_SHORT
                         ).show()
@@ -143,14 +141,9 @@ class ShowCreateChatActivity : BaseActivity(), TextWatcher {
         }
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        overridePendingTransition(-1, -1)
-    }
-
     fun confirmKick(position: Int) {
         if (position == 0) {
-            finish()
+            parent!!.onBackPressed()
             return
         }
         if (list.isComputingLayout) return

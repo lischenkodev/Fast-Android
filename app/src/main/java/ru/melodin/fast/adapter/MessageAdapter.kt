@@ -458,10 +458,10 @@ class MessageAdapter(
         private var circle: GradientDrawable? = null
 
         @ColorInt
-        val alphaAccentColor: Int = ColorUtil.alphaColor(ThemeManager.accent, 0.3f)
+        val alphaAccentColor: Int = ColorUtil.alphaColor(ThemeManager.ACCENT, 0.3f)
 
         init {
-            sending!!.setTint(ThemeManager.accent)
+            sending!!.setTint(ThemeManager.ACCENT)
             error!!.setTint(Color.RED)
 
             bubble.maxWidth = metrics.widthPixels - metrics.widthPixels / 3
@@ -546,12 +546,12 @@ class MessageAdapter(
                 this.text.text = text
             }
 
-            val textColor: Int = if (ThemeManager.isDark) {
+            val textColor: Int = if (ThemeManager.IS_DARK) {
                 -0x111112
             } else {
                 -0xe2e2e3
             }
-            val linkColor: Int = ThemeManager.accent
+            val linkColor: Int = ThemeManager.ACCENT
 
             text.setTextColor(textColor)
             text.setLinkTextColor(linkColor)

@@ -219,7 +219,7 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         image.layoutParams = getParams(400, 400)
         loadImage(
             image,
-            if (ThemeManager.isDark) source.maxBackgroundSize else source.maxSize,
+            if (ThemeManager.IS_DARK) source.maxBackgroundSize else source.maxSize,
             null
         )
 
@@ -253,11 +253,11 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         time.text = duration
 
         image.layoutParams = if (maxWidth == -1) getFrameParams(
-            source.maxWidth,
+            320,
             FrameLayout.LayoutParams.WRAP_CONTENT
         ) else getFrameParams(maxWidth)
 
-        loadImage(image, source.maxSize, null)
+        loadImage(image, source.sizes[0]!!.src, if (source.sizes[1] != null) source.sizes[1]!!.src else null)
         parent.addView(v)
     }
 
@@ -346,9 +346,9 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
                 .into(avatar)
         }
 
-        line.setBackgroundColor(if (withStyles) ThemeManager.accent else Color.TRANSPARENT)
+        line.setBackgroundColor(if (withStyles) ThemeManager.ACCENT else Color.TRANSPARENT)
 
-        @ColorInt val lineColor = if (item != null) ThemeManager.accent else Color.TRANSPARENT
+        @ColorInt val lineColor = if (item != null) ThemeManager.ACCENT else Color.TRANSPARENT
         line.setBackgroundColor(lineColor)
 
         name.maxWidth = metrics.widthPixels - metrics.widthPixels / 3

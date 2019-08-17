@@ -8,15 +8,14 @@ import java.util.*
 
 class VKSticker(source: JSONObject) : VKModel(), Serializable {
 
-    val id: Int = source.optInt("sticker_id")
-    private val productId: Int = source.optInt("product_id")
+    val id = source.optInt("sticker_id")
+    private val productId = source.optInt("product_id")
     private val images = ArrayList<Size>()
     private val backgroundImages = ArrayList<Size>()
 
-    var maxWidth: Int = 0
-        private set
-    var maxHeight: Int = 0
-        private set
+    private var maxWidth = 0
+    private var maxHeight = 0
+
     val maxSize: String?
     val maxBackgroundSize: String?
 

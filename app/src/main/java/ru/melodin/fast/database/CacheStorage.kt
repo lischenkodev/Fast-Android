@@ -382,8 +382,8 @@ object CacheStorage {
         val attachments = getBlob(cursor, ATTACHMENTS)
         val forwarded = getBlob(cursor, FWD_MESSAGES)
 
-        message.attachments = Util.deserialize(attachments) as ArrayList<VKModel>
-        message.fwdMessages = Util.deserialize(forwarded) as ArrayList<VKMessage>
+        message.attachments = Util.deserialize(attachments) as ArrayList<VKModel>? ?: arrayListOf()
+        message.fwdMessages = Util.deserialize(forwarded) as ArrayList<VKMessage>? ?: arrayListOf()
         return message
     }
 

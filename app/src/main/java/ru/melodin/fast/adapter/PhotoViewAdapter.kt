@@ -10,15 +10,11 @@ import java.util.*
 class PhotoViewAdapter(fm: FragmentManager, private val items: ArrayList<VKPhoto>) :
     FragmentStatePagerAdapter(fm) {
 
-    var fragments: ArrayList<Fragment>? = arrayListOf()
+    var fragments: ArrayList<Fragment> = arrayListOf()
 
     init {
-        repeat(items.size) {
-            fragments!!.add(FragmentPhotoView())
-        }
-
-        for (i in fragments!!.indices) {
-            fragments!![i] = FragmentPhotoView(items[i])
+        for (i in fragments.indices) {
+            fragments.add(FragmentPhotoView(items[i]))
         }
     }
 
@@ -27,6 +23,6 @@ class PhotoViewAdapter(fm: FragmentManager, private val items: ArrayList<VKPhoto
     }
 
     override fun getItem(position: Int): Fragment {
-        return fragments!![position]
+        return fragments[position]
     }
 }

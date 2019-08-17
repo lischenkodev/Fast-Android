@@ -187,6 +187,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         refreshLayout.isEnabled = false
 
         toolbar = tb
@@ -220,14 +221,14 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         tb.setTitle(chatTitle)
         tb.setBackVisible(true)
 
-        actionTb.navigationIcon!!.setTint(ThemeManager.main)
+        actionTb.navigationIcon!!.setTint(ThemeManager.MAIN)
         actionTb.setNavigationOnClickListener { onBackPressed() }
         actionTb.inflateMenu(R.menu.activity_chat_history)
         actionTb.setOnMenuItemClickListener(this)
         onPrepareMenu()
         for (i in 0 until actionTb.menu.size()) {
             val item = actionTb.menu[i]
-            item.icon?.setTint(ThemeManager.main)
+            item.icon?.setTint(ThemeManager.MAIN)
         }
 
         scrollToBottom.setOnClickListener {
@@ -282,7 +283,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
             override fun onItemClick(position: Int) {
                 val item = popupAdapter!!.getItem(position)
                 when (item.id) {
-                    PopupAdapter.ID_CLEAR_DIALOG -> showConfirmDeleteConversation()
+                    PopupAdapter.ID_CLEAR_HISTORY -> showConfirmDeleteConversation()
                     PopupAdapter.ID_NOTIFICATIONS -> toggleNotifications()
                     PopupAdapter.ID_LEAVE -> toggleChatState()
                     PopupAdapter.ID_CHAT_INFO -> openChatInfo()
@@ -322,7 +323,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
             drawable(R.drawable.ic_volume_off_black_24dp)
         )
         val clear = ListItem(
-            PopupAdapter.ID_CLEAR_DIALOG,
+            PopupAdapter.ID_CLEAR_HISTORY,
             getString(R.string.clear_messages_history),
             drawable(R.drawable.ic_trash)
         )
@@ -764,11 +765,18 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         message.randomId = random.nextInt()
         message.status = VKMessage.Status.SENDING
 
+
+        val empty = adapter!!.isEmpty
+
         adapter!!.addMessage(message)
 
         val position = adapter!!.lastPosition
 
         val msg = adapter!!.getItem(position)
+
+        if (empty) {
+            setNoItemsViewVisible(false)
+        }
 
         adapter!!.notifyDataSetChanged()
         list.scrollToPosition(position)
@@ -891,7 +899,10 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                 .count(count)
                 .execute(VKMessage::class.java, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
-                        if (ArrayUtil.isEmpty(models)) return
+                        if (ArrayUtil.isEmpty(models)) {
+                            setNoItemsViewVisible(true)
+                            return
+                        }
 
                         messages = models as ArrayList<VKMessage>
                         messages.reverse()
@@ -958,6 +969,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         adapter ?: return
         adapter!!.clear()
         adapter!!.notifyDataSetChanged()
+        setNoItemsViewVisible(true)
     }
 
     override fun showNoInternetToast() {
@@ -986,14 +998,16 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     fun updateToolbar() {
-        onPrepareMenu()
-        loadAvatar()
+        parent!!.runOnUiThread {
+            onPrepareMenu()
+            loadAvatar()
 
-        tb.setTitle(chatTitle)
-        tb.setSubtitle(if (isLoading) getString(R.string.loading) else subtitle)
+            tb.setTitle(chatTitle)
+            tb.setSubtitle(if (isLoading) getString(R.string.loading) else subtitle)
 
-        if (!editing && adapter != null && !adapter!!.isSelected && conversation != null && conversation!!.pinned != null)
-            pinnedContainer.visibility = View.VISIBLE
+            if (!editing && adapter != null && !adapter!!.isSelected && conversation != null && conversation!!.pinned != null)
+                pinnedContainer.visibility = View.VISIBLE
+        }
     }
 
     private fun getUserSubtitle(user: VKUser?): String {
@@ -1324,7 +1338,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                 editingPosition = -1
 
                 adapter!!.clearSelected()
-                adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
+                adapter!!.notifyDataSetChanged()
             }
 
             deleteMessages(items, forAll)
@@ -1334,8 +1348,10 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     override fun removeMessages(messages: ArrayList<VKMessage>) {
-        adapter!!.values!!.removeAll(messages)
-        adapter!!.notifyDataSetChanged()
+        parent!!.runOnUiThread {
+            adapter!!.values!!.removeAll(messages)
+            adapter!!.notifyDataSetChanged()
+        }
     }
 
     override fun deleteMessages(messages: ArrayList<VKMessage>, forAll: Boolean?) {
@@ -1674,7 +1690,6 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
             VKApi.messages()
                 .deleteConversation()
                 .peerId(peerId)
-                .offset(0)
                 .execute(Int::class.java, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         CacheStorage.delete(
@@ -1682,8 +1697,14 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                             DatabaseHelper.PEER_ID,
                             peerId
                         )
-                        adapter!!.values!!.clear()
-                        adapter!!.notifyDataSetChanged()
+
+                        CacheStorage.delete(
+                            DatabaseHelper.MESSAGES_TABLE,
+                            DatabaseHelper.PEER_ID,
+                            peerId
+                        )
+
+                        clearList()
                     }
 
                     override fun onError(e: Exception) {

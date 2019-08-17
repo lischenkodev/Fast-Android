@@ -9,34 +9,22 @@ import java.util.*
 
 class VKPhoto(source: JSONObject) : VKModel(), Serializable {
 
-    val id: Int
-    val albumId: Int
-    val ownerId: Int
-    val width: Int
-    val height: Int
-    val text: String
-    val date: Long
-    val accessKey: String
-    val sizes: ArrayList<VKPhotoSizes.PhotoSize>?
-    var maxWidth: Int = 0
-        private set
-    var maxHeight: Int = 0
-        private set
-    val maxSize: String?
+    val id = source.optInt("id")
+    val albumId = source.optInt("album_id")
+    val ownerId = source.optInt("owner_id")
+    val width = source.optInt("width")
+    val height = source.optInt("height")
+    val text: String = source.optString("text")
+    val date = source.optLong("date")
+    val accessKey: String = source.optString("access_key")
+    val sizes: ArrayList<VKPhotoSizes.PhotoSize>? = VKPhotoSizes(source.optJSONArray("sizes")!!).sizes
 
-    init {
-        this.id = source.optInt("id")
-        this.ownerId = source.optInt("owner_id")
-        this.albumId = source.optInt("album_id")
-        this.date = source.optLong("date")
-        this.width = source.optInt("width")
-        this.height = source.optInt("height")
-        this.text = source.optString("text")
-        this.accessKey = source.optString("access_key")
-        this.sizes = VKPhotoSizes(source.optJSONArray("sizes")!!).sizes
+    var maxWidth = 0
+        private set
+    var maxHeight = 0
+        private set
 
-        maxSize = findMaxSize()
-    }
+    val maxSize: String? = findMaxSize()
 
     private fun findMaxSize(): String? {
         if (ArrayUtil.isEmpty(sizes)) return null

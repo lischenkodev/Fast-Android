@@ -17,7 +17,7 @@ import ru.melodin.fast.view.FastToolbar
 abstract class BaseActivity : AppCompatActivity() {
 
     public override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(ThemeManager.currentTheme)
+        setTheme(ThemeManager.CURRENT_THEME)
         ViewUtil.applyWindowStyles(window)
         super.onCreate(savedInstanceState)
     }

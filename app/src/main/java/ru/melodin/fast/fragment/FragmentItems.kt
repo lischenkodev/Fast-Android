@@ -45,7 +45,7 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
     private var user: VKUser? = null
 
     private val fragmentSettings = FragmentSettings()
-    private val fragmentFriends = FragmentFriends()
+    private val fragmentFriends = ParentFragmentFriends()
 
     companion object {
         const val ID_FRIENDS = 0

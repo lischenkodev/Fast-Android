@@ -1,6 +1,5 @@
 package ru.melodin.fast
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.SparseArray
@@ -51,8 +50,8 @@ open class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemS
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ViewUtil.applyWindowStyles(window, ThemeManager.primaryDark)
-        setTheme(ThemeManager.currentTheme)
+        ViewUtil.applyWindowStyles(window, ThemeManager.PRIMARY_DARK)
+        setTheme(ThemeManager.CURRENT_THEME)
         VKApi.config = UserConfig.restore()
         super.onCreate(savedInstanceState)
         initStacks()
@@ -253,23 +252,6 @@ open class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemS
     private fun showFragment(fragment: Fragment, arguments: Bundle?, showOnce: Boolean) {
         FragmentSelector.currentFragment = fragment
         FragmentSelector.selectFragment(supportFragmentManager, fragment, arguments, showOnce)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == FragmentConversations.REQUEST_CREATE_CHAT && resultCode == Activity.RESULT_OK) {
-            data ?: return
-
-            val title = data.getStringExtra("title")
-            val peerId = data.getIntExtra("peer_id", -1)
-            val membersCount = data.getIntExtra("members_count", -1)
-
-            replaceFragment(0, FragmentMessages(), Bundle().apply {
-                putString("title", title)
-                putInt("peer_id", peerId)
-                putInt("members_count", membersCount)
-            })
-        }
     }
 
     override fun onBackPressed() {

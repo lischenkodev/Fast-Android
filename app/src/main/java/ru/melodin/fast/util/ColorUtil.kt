@@ -99,7 +99,7 @@ object ColorUtil {
         var color = foreground
         if (Color.alpha(background) != 255) {
             throw IllegalArgumentException(
-                "background can not be translucent: #" + Integer.toHexString(
+                "BACKGROUND can not be translucent: #" + Integer.toHexString(
                     background
                 )
             )
@@ -120,7 +120,7 @@ object ColorUtil {
     ): Int {
         if (Color.alpha(background) != 255) {
             throw IllegalArgumentException(
-                "background can not be translucent: #" + Integer.toHexString(
+                "BACKGROUND can not be translucent: #" + Integer.toHexString(
                     background
                 )
             )

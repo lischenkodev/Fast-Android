@@ -39,7 +39,7 @@ class PopupAdapter(context: Context, values: ArrayList<ListItem>) :
     }
 
     companion object {
-        const val ID_CLEAR_DIALOG = 0
+        const val ID_CLEAR_HISTORY = 0
         const val ID_NOTIFICATIONS = 1
         const val ID_LEAVE = 2
         const val ID_CHAT_INFO = 3

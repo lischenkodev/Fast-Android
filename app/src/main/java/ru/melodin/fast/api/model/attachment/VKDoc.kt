@@ -8,14 +8,14 @@ import java.io.Serializable
 import java.util.*
 
 class VKDoc(source: JSONObject) : VKModel(), Serializable {
-    val id: Int
-    val ownerId: Int
-    val title: String
-    val size: Int
-    val ext: String
-    val url: String
-    val accessKey: String
-    var type: Int = 0
+    val id = source.optInt("id")
+    val ownerId = source.optInt("owner_id")
+    val title: String = source.optString("title")
+    val size = source.optInt("size")
+    val ext: String = source.optString("ext")
+    val url: String = source.optString("url")
+    val accessKey: String = source.optString("access_key")
+    var type = source.optInt("type")
         private set
     var sizes: ArrayList<VKPhotoSizes.PhotoSize>? = null
         private set
@@ -38,16 +38,6 @@ class VKDoc(source: JSONObject) : VKModel(), Serializable {
         }
 
     init {
-        this.id = source.optInt("id")
-        this.ownerId = source.optInt("owner_id")
-        this.title = source.optString("title")
-        this.url = source.optString("url")
-        this.size = source.optInt("size")
-        this.type = source.optInt("type")
-        this.ext = source.optString("ext")
-        this.accessKey = source.optString("access_key")
-        this.type = source.optInt("type")
-
         val preview = source.optJSONObject("preview")
 
         if (preview != null) {

@@ -19,7 +19,7 @@ class ValidationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         ViewUtil.applyWindowStyles(window)
-        setTheme(ThemeManager.loginTheme)
+        setTheme(ThemeManager.LOGIN_THEME)
         super.onCreate(savedInstanceState)
 
         val webView = WebView(this)

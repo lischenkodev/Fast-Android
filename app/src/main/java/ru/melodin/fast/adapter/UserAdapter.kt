@@ -16,7 +16,6 @@ import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import ru.melodin.fast.R
-import ru.melodin.fast.ShowCreateChatActivity
 import ru.melodin.fast.api.model.VKConversation
 import ru.melodin.fast.api.model.VKGroup
 import ru.melodin.fast.api.model.VKUser
@@ -24,6 +23,7 @@ import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.MemoryCache
 import ru.melodin.fast.fragment.FragmentChatInfo
+import ru.melodin.fast.fragment.FragmentCreateChatUsers
 import ru.melodin.fast.fragment.FragmentFriends
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.ColorUtil
@@ -90,27 +90,31 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
     fun onReceive(data: Array<Any>) {
         if (ArrayUtil.isEmpty(data)) return
 
-        when (data[0] as String) {
-            Keys.USER_OFFLINE -> setUserOnline(
-                online = false,
-                mobile = false,
-                userId = data[1] as Int,
-                time = data[2] as Int
-            )
-            Keys.USER_ONLINE -> setUserOnline(
-                true,
-                data[3] as Boolean,
-                data[1] as Int,
-                data[2] as Int
-            )
-            Keys.CONNECTED -> {
-                fragment ?: return
-                if (fragment is FragmentFriends) {
-                    val fr = fragment as FragmentFriends
-                    if (fr.isLoading) {
-                        fr.isLoading = false
+        if (fragment != null && fragment is FragmentFriends && (fragment as FragmentFriends).onlyOnline) {
+            (fragment as FragmentFriends).onReceive(data)
+        } else {
+            when (data[0] as String) {
+                Keys.USER_OFFLINE -> setUserOnline(
+                    online = false,
+                    mobile = false,
+                    userId = data[1] as Int,
+                    time = data[2] as Int
+                )
+                Keys.USER_ONLINE -> setUserOnline(
+                    true,
+                    data[3] as Boolean,
+                    data[1] as Int,
+                    data[2] as Int
+                )
+                Keys.CONNECTED -> {
+                    fragment ?: return
+                    if (fragment is FragmentFriends) {
+                        val fr = fragment as FragmentFriends
+                        if (fr.isLoading) {
+                            fr.isLoading = false
+                        }
+                        fr.onRefresh()
                     }
-                    fr.onRefresh()
                 }
             }
         }
@@ -179,10 +183,10 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
             if (withKick) {
                 kick.visibility = View.VISIBLE
                 kick.setOnClickListener {
-                    if (context is ShowCreateChatActivity && fragment == null) {
-                        (context as ShowCreateChatActivity).confirmKick(position)
-                    } else if (fragment is FragmentChatInfo) {
+                    if (fragment is FragmentChatInfo) {
                         (fragment as FragmentChatInfo).confirmKick(user.id)
+                    } else if (fragment is FragmentCreateChatUsers) {
+                        (fragment as FragmentCreateChatUsers).confirmKick(position)
                     }
                 }
             } else {
@@ -242,7 +246,7 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
                 avatar.setImageDrawable(
                     ColorDrawable(
                         ColorUtil.alphaColor(
-                            ThemeManager.primary,
+                            ThemeManager.PRIMARY,
                             0.5f
                         )
                     )

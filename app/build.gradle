@@ -10,8 +10,8 @@ android {
         applicationId "ru.melodin.fast"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 14
-        versionName "0.8 Alpha 82"
+        versionCode 13
+        versionName "0.8 Alpha 8"
     }
 
     buildTypes {

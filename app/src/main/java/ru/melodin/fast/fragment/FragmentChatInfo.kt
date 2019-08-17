@@ -59,6 +59,7 @@ class FragmentChatInfo : BaseFragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         conversation = arguments?.getSerializable("conversation") as VKConversation
 
         recyclerView.layoutManager = LinearLayoutManager(activity!!, RecyclerView.VERTICAL, false)

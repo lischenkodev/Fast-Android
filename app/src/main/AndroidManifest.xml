@@ -29,8 +29,6 @@
 
         <activity android:name=".LoginActivity" />
         <activity android:name=".ValidationActivity" />
-        <activity android:name=".CreateChatActivity" />
-        <activity android:name=".ShowCreateChatActivity" />
 
         <activity
             android:name=".WebViewLoginActivity"

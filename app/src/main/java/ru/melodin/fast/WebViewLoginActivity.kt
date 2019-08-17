@@ -26,7 +26,7 @@ class WebViewLoginActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(ThemeManager.currentTheme)
+        setTheme(ThemeManager.CURRENT_THEME)
         ViewUtil.applyWindowStyles(window)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web_login)

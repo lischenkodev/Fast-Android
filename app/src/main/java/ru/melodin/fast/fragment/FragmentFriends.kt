@@ -14,7 +14,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.android.synthetic.main.list_empty.*
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
-import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.UserAdapter
 import ru.melodin.fast.api.OnResponseListener
@@ -29,12 +28,18 @@ import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.CacheStorage.getFriends
 import ru.melodin.fast.database.DatabaseHelper
+import ru.melodin.fast.database.MemoryCache
 import ru.melodin.fast.mvp.contract.UsersContract
 import ru.melodin.fast.mvp.presenter.UsersPresenter
 import ru.melodin.fast.util.ArrayUtil
+import ru.melodin.fast.util.Keys
 import ru.melodin.fast.util.Util
 
-class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, UsersContract.View {
+class FragmentFriends(var onlyOnline: Boolean) : BaseFragment(),
+    SwipeRefreshLayout.OnRefreshListener,
+    UsersContract.View {
+
+    constructor() : this(false)
 
     private var adapter: UserAdapter? = null
 
@@ -58,8 +63,6 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Us
         super.onCreate(savedInstanceState)
 
         presenter.attachView(this)
-
-        title = getString(R.string.fragment_friends)
     }
 
     override fun onCreateView(
@@ -71,16 +74,17 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Us
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
         toolbar = tb.apply {
-            setTitle(title)
-            setBackVisible(true)
+            visibility = View.GONE
         }
 
         recyclerList = list
 
         refreshLayout.setOnRefreshListener(this)
-        refreshLayout.setColorSchemeColors(ThemeManager.accent)
-        refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.primary)
+        refreshLayout.setColorSchemeColors(ThemeManager.ACCENT)
+        refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.PRIMARY)
 
         val manager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
         list.setHasFixedSize(true)
@@ -98,7 +102,7 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Us
     }
 
     override fun getCachedUsers(count: Int, offset: Int) {
-        val users = getFriends(UserConfig.userId, false)
+        val users = getFriends(UserConfig.userId, onlyOnline)
 
         if (!ArrayUtil.isEmpty(users)) {
             setRefreshing(true)
@@ -119,8 +123,6 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Us
 
         TaskManager.execute {
 
-            lateinit var users: ArrayList<VKUser>
-
             VKApi.friends().get().userId(UserConfig.userId).order("hints")
                 .fields(VKUser.FIELDS_DEFAULT)
                 .execute(VKUser::class.java, object : OnResponseListener {
@@ -128,7 +130,7 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Us
                         if (ArrayUtil.isEmpty(models)) return
                         models ?: return
 
-                        users = models as ArrayList<VKUser>
+                        val users = models as ArrayList<VKUser>
 
                         if (offset == 0) {
                             CacheStorage.delete(DatabaseHelper.FRIENDS_TABLE)
@@ -137,7 +139,7 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Us
 
                         CacheStorage.insert(DatabaseHelper.USERS_TABLE, users)
 
-                        createAdapter(users, offset)
+                        createAdapter(sortUsers(users), offset)
 
                         presenter.onFilledList()
                     }
@@ -150,6 +152,19 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Us
 
             refreshLayout.isRefreshing = false
         }
+    }
+
+    private fun sortUsers(users: ArrayList<VKUser>): ArrayList<VKUser> {
+        if (!onlyOnline) return users
+        val newUsers = arrayListOf<VKUser>()
+
+        for (user in users) {
+            if ((onlyOnline && user.isOnline)) {
+                newUsers.add(user)
+            }
+        }
+
+        return newUsers
     }
 
     override fun createAdapter(items: ArrayList<VKUser>?, offset: Int) {
@@ -170,7 +185,6 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Us
         adapter!!.changeItems(items!!)
         adapter!!.notifyDataSetChanged()
     }
-
 
 
     override fun showNoInternetToast() {
@@ -290,6 +304,26 @@ class FragmentFriends : BaseFragment(), SwipeRefreshLayout.OnRefreshListener, Us
                     Toast.makeText(activity, R.string.error, Toast.LENGTH_SHORT).show()
                 }
             })
+        }
+    }
+
+    fun onReceive(data: Array<Any>) {
+        adapter ?: return
+        when (data[0] as String) {
+            Keys.USER_OFFLINE -> {
+                val index = adapter!!.searchUser(data[1] as Int)
+                if (index != -1) {
+                    adapter!!.remove(index)
+                    adapter!!.notifyDataSetChanged()
+                }
+            }
+            Keys.USER_ONLINE -> {
+                val user = MemoryCache.getUser(data[1] as Int)
+                if (user != null) {
+                    adapter!!.add(0, user)
+                    adapter!!.notifyDataSetChanged()
+                }
+            }
         }
     }
 

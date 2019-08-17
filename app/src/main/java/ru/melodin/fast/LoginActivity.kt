@@ -42,13 +42,13 @@ class LoginActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setTheme(ThemeManager.loginTheme)
-        ViewUtil.applyWindowStyles(window, ThemeManager.background)
+        setTheme(ThemeManager.LOGIN_THEME)
+        ViewUtil.applyWindowStyles(window, ThemeManager.BACKGROUND)
         setContentView(R.layout.activity_login)
 
         progress.visibility = View.INVISIBLE
         progress.indeterminateTintList =
-            ColorStateList.valueOf(ColorUtil.saturateColor(ThemeManager.accent, 2f))
+            ColorStateList.valueOf(ColorUtil.saturateColor(ThemeManager.ACCENT, 2f))
 
         buttonLogin.shrink()
         buttonLogin.extend()
@@ -63,13 +63,13 @@ class LoginActivity : BaseActivity() {
 
         logoText.setOnClickListener { toggleTheme() }
 
-        if (ThemeManager.isDark) {
+        if (ThemeManager.IS_DARK) {
             logoText.setTextColor(Color.WHITE)
-            val stateList = ColorStateList.valueOf(ThemeManager.accent)
+            val stateList = ColorStateList.valueOf(ThemeManager.ACCENT)
             iconEmail.imageTintList = stateList
             iconKey.imageTintList = stateList
         } else {
-            val boxColor = ColorUtil.darkenColor(ThemeManager.background, 0.98f)
+            val boxColor = ColorUtil.darkenColor(ThemeManager.BACKGROUND, 0.98f)
             inputLogin.boxBackgroundColor = boxColor
             inputPassword.boxBackgroundColor = boxColor
         }

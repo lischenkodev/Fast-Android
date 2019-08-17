@@ -59,6 +59,7 @@ class FragmentChooseConversation : BaseFragment(), ConversationsContract.View,
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         refreshLayout.isEnabled = false
         refreshLayout.isRefreshing = false
 

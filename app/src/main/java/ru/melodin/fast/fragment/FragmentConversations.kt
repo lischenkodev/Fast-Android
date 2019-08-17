@@ -1,6 +1,5 @@
 package ru.melodin.fast.fragment
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,7 +14,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.android.synthetic.main.list_empty.*
 import kotlinx.android.synthetic.main.recycler_list.*
 import kotlinx.android.synthetic.main.toolbar.*
-import ru.melodin.fast.CreateChatActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.ConversationAdapter
 import ru.melodin.fast.adapter.RecyclerAdapter
@@ -87,9 +85,9 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
 
         ViewUtil.applyToolbarMenuItemsColor(tb)
 
-        refreshLayout.setColorSchemeColors(ThemeManager.accent)
+        refreshLayout.setColorSchemeColors(ThemeManager.ACCENT)
         refreshLayout.setOnRefreshListener(this)
-        refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.primary)
+        refreshLayout.setProgressBackgroundColorSchemeColor(ThemeManager.PRIMARY)
 
         list.setHasFixedSize(true)
         list.layoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
@@ -119,9 +117,11 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
     override fun onMenuItemClick(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.create_chat -> {
-                activity!!.startActivityForResult(
-                    Intent(activity, CreateChatActivity::class.java),
-                    REQUEST_CREATE_CHAT
+                parent!!.replaceFragment(
+                    0,
+                    FragmentCreateChat(),
+                    null,
+                    true
                 )
                 true
             }
@@ -393,9 +393,17 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
                             DatabaseHelper.PEER_ID,
                             peerId
                         )
+
+                        CacheStorage.delete(
+                            DatabaseHelper.MESSAGES_TABLE,
+                            DatabaseHelper.PEER_ID,
+                            peerId
+                        )
+
                         adapter!!.remove(position)
                         adapter!!.notifyItemRemoved(position)
                         adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
+
                         setRefreshing(false)
                     }
 

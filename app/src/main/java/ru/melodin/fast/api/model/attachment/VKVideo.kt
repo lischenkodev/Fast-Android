@@ -9,55 +9,29 @@ import java.util.*
 
 class VKVideo(source: JSONObject) : VKModel(), Serializable {
 
-    val id: Int
-    var ownerId: Int = 0
-        private set
-    val title: String
-    val description: String
-    val duration: Int
-    val date: Long
+    val id: Int = source.optInt("id")
+    var ownerId = source.optInt("owner_id")
+    val title: String = source.optString("title")
+    val description: String? = source.optString("description")
+    val duration = source.optInt("duration")
+    val date = source.optLong("date")
 
-    val player: String
+    private val accessKey: String = source.optString("access_key")
 
-    val photo130: String
-    val photo320: String
-    val photo640: String
-    val photo800: String
-    val photo1280: String
-
-    val accessKey: String
-
-    var maxWidth: Int = 0
-        private set
+    var maxWidth = 0
     val maxSize: String?
 
-    private val sizes = ArrayList<Size>()
+    val sizes = ArrayList<VKPhotoSizes.PhotoSize?>()
 
     init {
-        this.id = source.optInt("id")
-        this.ownerId = source.optInt("owner_id")
-
         if (this.ownerId < 0)
             this.ownerId *= -1
 
-        this.title = source.optString("title")
-        this.description = source.optString("description")
-        this.duration = source.optInt("duration")
-        this.date = source.optLong("date")
-        this.player = source.optString("player")
-        this.accessKey = source.optString("access_key")
 
-        this.photo130 = source.optString("photo_130")
-        this.photo320 = source.optString("photo_320")
-        this.photo640 = source.optString("photo_640")
-        this.photo800 = source.optString("photo_800")
-        this.photo1280 = source.optString("photo_1280")
-
-        sizes.add(Size(130, photo130))
-        sizes.add(Size(320, photo320))
-        sizes.add(Size(640, photo640))
-        sizes.add(Size(800, photo800))
-        sizes.add(Size(1280, photo1280))
+        val image = source.optJSONArray("image")!!
+        for (i in 0 until image.length()) {
+            sizes.add(VKPhotoSizes.PhotoSize(image.optJSONObject(i)))
+        }
 
         maxSize = findMaxSize()
     }
@@ -65,8 +39,8 @@ class VKVideo(source: JSONObject) : VKModel(), Serializable {
     private fun findMaxSize(): String? {
         if (ArrayUtil.isEmpty(sizes)) return null
         for (i in sizes.indices.reversed()) {
-            val size = sizes[i]
-            val image = size.url
+            val size = sizes[i]!!
+            val image = size.src
             if (!TextUtils.isEmpty(image)) {
                 maxWidth = size.width
                 return image
@@ -88,8 +62,6 @@ class VKVideo(source: JSONObject) : VKModel(), Serializable {
     override fun toString(): String {
         return toAttachmentString()
     }
-
-    inner class Size internal constructor(val width: Int, val url: String) : Serializable
 
     companion object {
         private const val serialVersionUID = 1L

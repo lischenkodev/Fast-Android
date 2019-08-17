@@ -146,9 +146,10 @@
     <string name="send">Send</string>
     <string name="in_progress">In progress</string>
     <string name="report_bug">Report a bug</string>
-    <string name="choose_conversation">Choose an conversation</string>
+    <string name="choose_conversation">Choose a conversation</string>
     <string name="report">Report</string>
     <string name="cause_error">Cause error</string>
+    <string name="all">All</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
+    <!-- ъеъ -->
 </resources>
