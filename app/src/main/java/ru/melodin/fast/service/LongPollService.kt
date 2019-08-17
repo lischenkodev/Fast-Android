@@ -118,7 +118,6 @@ class LongPollService : Service() {
             }
         }
 
-        @Throws(Exception::class)
         private fun getResponse(server: VKLongPollServer): JSONObject {
             val params = ArrayMap<String, String>()
             params["act"] = "a_check"

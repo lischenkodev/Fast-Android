@@ -7,48 +7,6 @@ import android.database.sqlite.SQLiteOpenHelper
 class DatabaseHelper private constructor(context: Context) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
-    override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL(SQL_CREATE_TABLE_USERS)
-        db.execSQL(SQL_CREATE_TABLE_GROUPS)
-        db.execSQL(SQL_CREATE_TABLE_CONVERSATIONS)
-        db.execSQL(SQL_CREATE_TABLE_FRIENDS)
-        db.execSQL(SQL_CREATE_TABLE_MESSAGES)
-        db.execSQL(SQL_CREATE_TABLE_CHATS)
-    }
-
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        dropTables(db)
-        onCreate(db)
-    }
-
-    fun dropMessagesTable(db: SQLiteDatabase) {
-        db.execSQL(SQL_DELETE_CONVERSATIONS)
-        db.execSQL(SQL_DELETE_MESSAGES)
-        db.execSQL(SQL_CREATE_TABLE_CONVERSATIONS)
-        db.execSQL(SQL_CREATE_TABLE_MESSAGES)
-        db.execSQL(SQL_DELETE_CHATS)
-        db.execSQL(SQL_CREATE_TABLE_CHATS)
-    }
-
-    fun dropUsersTable(db: SQLiteDatabase) {
-        db.execSQL(SQL_DELETE_USERS)
-        db.execSQL(SQL_CREATE_TABLE_USERS)
-    }
-
-    fun dropGroupsTable(db: SQLiteDatabase) {
-        db.execSQL(SQL_DELETE_GROUPS)
-        db.execSQL(SQL_CREATE_TABLE_GROUPS)
-    }
-
-    fun dropTables(db: SQLiteDatabase) {
-        db.execSQL(SQL_DELETE_USERS)
-        db.execSQL(SQL_DELETE_GROUPS)
-        db.execSQL(SQL_DELETE_FRIENDS)
-        db.execSQL(SQL_DELETE_CONVERSATIONS)
-        db.execSQL(SQL_DELETE_MESSAGES)
-        db.execSQL(SQL_DELETE_CHATS)
-    }
-
     companion object {
 
         const val USERS_TABLE = "users"
@@ -116,7 +74,7 @@ class DatabaseHelper private constructor(context: Context) :
 
         private const val ID = "_id"
 
-        private const val DATABASE_VERSION = 50
+        private const val DATABASE_VERSION = 51
         private const val DATABASE_NAME = "cache.db"
 
         private const val SQL_CREATE_TABLE_USERS = "CREATE TABLE " + USERS_TABLE +
@@ -231,5 +189,47 @@ class DatabaseHelper private constructor(context: Context) :
 
             return instance as DatabaseHelper
         }
+    }
+
+    override fun onCreate(db: SQLiteDatabase) {
+        db.execSQL(SQL_CREATE_TABLE_USERS)
+        db.execSQL(SQL_CREATE_TABLE_GROUPS)
+        db.execSQL(SQL_CREATE_TABLE_CONVERSATIONS)
+        db.execSQL(SQL_CREATE_TABLE_FRIENDS)
+        db.execSQL(SQL_CREATE_TABLE_MESSAGES)
+        db.execSQL(SQL_CREATE_TABLE_CHATS)
+    }
+
+    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        dropTables(db)
+        onCreate(db)
+    }
+
+    fun dropMessagesTable(db: SQLiteDatabase) {
+        db.execSQL(SQL_DELETE_CONVERSATIONS)
+        db.execSQL(SQL_DELETE_MESSAGES)
+        db.execSQL(SQL_CREATE_TABLE_CONVERSATIONS)
+        db.execSQL(SQL_CREATE_TABLE_MESSAGES)
+        db.execSQL(SQL_DELETE_CHATS)
+        db.execSQL(SQL_CREATE_TABLE_CHATS)
+    }
+
+    fun dropUsersTable(db: SQLiteDatabase) {
+        db.execSQL(SQL_DELETE_USERS)
+        db.execSQL(SQL_CREATE_TABLE_USERS)
+    }
+
+    fun dropGroupsTable(db: SQLiteDatabase) {
+        db.execSQL(SQL_DELETE_GROUPS)
+        db.execSQL(SQL_CREATE_TABLE_GROUPS)
+    }
+
+    fun dropTables(db: SQLiteDatabase) {
+        db.execSQL(SQL_DELETE_USERS)
+        db.execSQL(SQL_DELETE_GROUPS)
+        db.execSQL(SQL_DELETE_FRIENDS)
+        db.execSQL(SQL_DELETE_CONVERSATIONS)
+        db.execSQL(SQL_DELETE_MESSAGES)
+        db.execSQL(SQL_DELETE_CHATS)
     }
 }

@@ -10,8 +10,8 @@ android {
         applicationId "ru.melodin.fast"
         minSdkVersion 21
         targetSdkVersion 29
-        versionCode 13
-        versionName "0.8 Alpha 7"
+        versionCode 14
+        versionName "0.8 Alpha 82"
     }
 
     buildTypes {
@@ -45,7 +45,10 @@ dependencies {
     implementation "androidx.core:core-ktx:1.0.2"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.9'
+    def appCenterSdkVersion = '2.3.0'
+    implementation "com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}"
+    implementation "com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}"
+    implementation "com.microsoft.appcenter:appcenter-distribute:${appCenterSdkVersion}"
 }
 
 repositories {

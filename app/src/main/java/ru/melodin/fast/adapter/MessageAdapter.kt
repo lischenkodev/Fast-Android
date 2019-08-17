@@ -16,7 +16,6 @@ import androidx.annotation.ColorInt
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.fragment_chat_info.*
 import kotlinx.android.synthetic.main.recycler_list.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -112,9 +111,8 @@ class MessageAdapter(
             Keys.MESSAGE_SET_FLAGS -> handleSetFlags(data)
             Keys.MESSAGE_NEW -> {
                 val conversation = data[1] as VKConversation
-                conversation.lastMessage ?: return
 
-                if (peerId != conversation.lastMessage?.peerId) return
+                if (peerId != conversation.peerId) return
 
                 val last = conversation.lastMessage
 
@@ -131,8 +129,8 @@ class MessageAdapter(
 
                 val lastVisibleItem = layoutManager.findLastCompletelyVisibleItemPosition()
 
-                if (lastVisibleItem >= itemCount - 4) {
-                    fragment.recyclerView?.scrollToPosition(lastPosition)
+                if (lastVisibleItem >= itemCount - 2) {
+                    fragment.list.scrollToPosition(lastPosition)
                 }
 
                 if (!last.isOut && last.peerId == peerId && !AppGlobal.preferences.getBoolean(

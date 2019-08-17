@@ -181,7 +181,7 @@ class ConversationAdapter(
 
         for (i in 0 until itemCount) {
             val conversation = getItem(i)
-            if (conversation.lastMessage!!.id == messageId) {
+            if (conversation.lastMessageId == messageId) {
                 conversation.lastMessage = CacheStorage.getMessage(messageId)
                 notifyItemChanged(i, -1)
                 break
@@ -245,6 +245,7 @@ class ConversationAdapter(
                 this.title = current.title
                 this.isCanWrite = current.isCanWrite
                 this.type = current.type
+                this.lastMessageId = conversation.lastMessageId
                 this.unread = current.unread + 1
                 this.isDisabledForever = current.isDisabledForever
                 this.disabledUntil = current.disabledUntil

@@ -8,6 +8,10 @@ import android.view.MenuItem
 import android.view.View
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.microsoft.appcenter.AppCenter
+import com.microsoft.appcenter.analytics.Analytics
+import com.microsoft.appcenter.crashes.Crashes
+import com.microsoft.appcenter.distribute.Distribute
 import kotlinx.android.synthetic.main.activity_main.*
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -27,6 +31,7 @@ import ru.melodin.fast.util.Keys
 import ru.melodin.fast.util.Util
 import ru.melodin.fast.util.ViewUtil
 import java.util.*
+
 
 open class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemSelectedListener {
 
@@ -64,6 +69,27 @@ open class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemS
         }
 
         EventBus.getDefault().register(this)
+
+        if (!BuildConfig.DEBUG) {
+            AppCenter.start(
+                application,
+                "bd53321b-546a-4579-82fb-c68edb4feb20",
+                Analytics::class.java
+            )
+        }
+
+        AppCenter.start(
+            application,
+            "bd53321b-546a-4579-82fb-c68edb4feb20",
+            Crashes::class.java
+        )
+
+        Distribute.setEnabledForDebuggableBuild(true)
+        AppCenter.start(
+            application,
+            "bd53321b-546a-4579-82fb-c68edb4feb20",
+            Distribute::class.java
+        )
     }
 
     private fun initStacks() {
@@ -92,7 +118,11 @@ open class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemS
 
                 helper.dropTables(db)
                 helper.onCreate(db)
-                finishAffinity()
+                UserConfig.clear()
+
+                stopService(Intent(this, LongPollService::class.java))
+                finish()
+                startActivity(Intent(this, LoginActivity::class.java))
             }
         }
     }
@@ -133,8 +163,7 @@ open class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemS
         }
     }
 
-
-    public override fun onDestroy() {
+    override fun onDestroy() {
         super.onDestroy()
         if (!fromRecreate) {
             stopService(Intent(this, LongPollService::class.java))

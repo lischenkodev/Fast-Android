@@ -9,7 +9,8 @@
     <SwitchPreference
         android:defaultValue="true"
         android:key="dark_theme"
-        android:title="@string/dark_theme_title" />
+        android:title="@string/dark_theme_title"
+        app:enabled="false" />
 
     <PreferenceCategory
         android:key="functional"
@@ -79,7 +80,7 @@
         android:key="cause_error"
         android:summary="@string/warning"
         android:title="@string/cause_error"
-        app:isPreferenceVisible="false" />
+        app:enabled="false" />
 
     <PreferenceScreen
         android:key="about"

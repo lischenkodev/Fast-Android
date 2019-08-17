@@ -108,13 +108,16 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     private var popupAdapter: PopupAdapter? = null
 
     private val sendClick = View.OnClickListener {
-        val s = message.text!!.toString()
-        if (s.trim().isNotEmpty()) {
-            messageText = s
+        if (adapter != null) {
+            val s = message.text!!.toString()
+            if (s.trim().isNotEmpty()) {
+                messageText = s
 
-            sendCurrentMessage()
-            message.setText("")
+                sendCurrentMessage()
+                message.setText("")
+            }
         }
+
     }
     private val recordClick: View.OnClickListener? = null
     private val doneClick = View.OnClickListener {
@@ -561,7 +564,9 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         parent?.replaceFragment(
             0,
             FragmentChatInfo(),
-            arguments!!.apply { putSerializable("conversation", conversation) })
+            arguments!!.apply { putSerializable("conversation", conversation) },
+            true
+        )
     }
 
     override fun showCantWrite(reason: Int) {
@@ -831,7 +836,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
             adapter!!.setOnItemLongClickListener(this)
             list.adapter = adapter
 
-            list.scrollToPosition(adapter!!.itemCount)
+            list.scrollToPosition(adapter!!.lastPosition)
             return
         }
 
@@ -847,7 +852,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         adapter!!.changeItems(items!!)
         adapter!!.notifyItemRangeChanged(0, adapter!!.itemCount, -1)
 
-        list.scrollToPosition(adapter!!.itemCount)
+        list.scrollToPosition(adapter!!.lastPosition)
     }
 
     override fun getCachedMessages(count: Int, offset: Int) {
@@ -1078,10 +1083,18 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     override fun forwardMessages(peerId: Int, text: String, messages: ArrayList<VKMessage>) {
+        adapter?.clearSelected()
+        adapter?.notifyDataSetChanged()
+
         if (ArrayUtil.isEmpty(messages)) return
 
+        val ids = arrayListOf<Int>()
+        for (message in messages) {
+            ids.add(message.id)
+        }
+
         TaskManager.execute {
-            VKApi.messages().send().randomId(random.nextInt()).forwardMessages(messages)
+            VKApi.messages().send().randomId(random.nextInt()).forwardMessages(ids)
                 .message(text).peerId(peerId).execute(null, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
 
@@ -1095,6 +1108,8 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     override fun replyMessage(replyId: Int, text: String) {
+        adapter?.clearSelected()
+        adapter?.notifyDataSetChanged()
         TaskManager.execute {
             VKApi.messages().send().randomId(random.nextInt()).replyTo(replyId).message(text)
                 .peerId(peerId).execute(null, object : OnResponseListener {
@@ -1604,7 +1619,6 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                 updateToolbar()
             }
             else -> {
-                //parent!!.supportFragmentManager.beginTransaction().remove(this).commit()
                 parent!!.goBack = true
                 parent!!.onBackPressed()
             }

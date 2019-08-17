@@ -96,7 +96,7 @@
     <string name="captcha">Капча</string>
     <string name="are_you_sure">Вы уверены?</string>
     <string name="all_necessary_data">Введите все необходимые данные</string>
-    <string name="login_via_webview">Авторизоваться через WebView\n(Рекомендуется)</string>
+    <string name="login_via_webview">Авторизоваться через WebView</string>
     <string name="delete">Удалить</string>
     <string name="edit">Редактировать</string>
     <string name="for_everyone">Для всех</string>

@@ -75,12 +75,6 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
         val hideTyping = findPreference<Preference>(KEY_HIDE_TYPING)
 
-        if (AppGlobal.isAlpha()) {
-            val causeError = findPreference<Preference>(KEY_CAUSE_ERROR)
-            causeError?.isVisible = true
-            causeError?.onPreferenceClickListener = this
-        }
-
         if (AppGlobal.isDebug()) {
             val showError = findPreference<Preference>(KEY_SHOW_ERROR)
             showError?.isVisible = true

@@ -164,10 +164,7 @@ class MessageMethodSetter(name: String) : MethodSetter("messages.$name") {
         return put("forward_messages", ArrayUtil.toString(*ids)) as MessageMethodSetter
     }
 
-    fun forwardMessages(messages: ArrayList<VKMessage>): MessageMethodSetter {
-        val ids = arrayListOf<Int>()
-        for (m in messages)
-            ids.add(m.id)
+    fun forwardMessages(ids: ArrayList<Int>): MessageMethodSetter {
         return put("forward_messages", ArrayUtil.toString(ids)) as MessageMethodSetter
     }
 

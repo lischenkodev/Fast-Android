@@ -5,7 +5,6 @@ import androidx.collection.SparseArrayCompat
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
-import java.util.*
 
 object ArrayUtil {
 
@@ -188,17 +187,5 @@ object ArrayUtil {
 
     fun isEmpty(array: Array<String?>?): Boolean {
         return array == null || array.isEmpty()
-    }
-
-    fun toString(ids: Collection<Int>): String? {
-        val builder = StringBuilder()
-
-        builder.append(mutableListOf(ids)[0])
-        for (i in ids) {
-            builder.append(',')
-            builder.append(i)
-        }
-
-        return builder.toString()
     }
 }

@@ -98,7 +98,7 @@
     <string name="fast_messenger" translatable="false"><b>Fast</b> Messenger</string>
     <string name="captcha">Captcha</string>
     <string name="all_necessary_data">Input all necessary data</string>
-    <string name="login_via_webview">Login via WebView\n(Recommended)</string>
+    <string name="login_via_webview">Login via WebView</string>
     <string name="are_you_sure">Are you sure?</string>
     <string name="delete">Delete</string>
     <string name="for_everyone">For everyone</string>

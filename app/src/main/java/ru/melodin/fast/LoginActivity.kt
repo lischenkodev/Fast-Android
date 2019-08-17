@@ -9,28 +9,26 @@ import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.*
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.annotation.ColorInt
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.squareup.picasso.Picasso
 import kotlinx.android.synthetic.main.activity_login.*
 import org.json.JSONObject
-import org.jsoup.Jsoup
 import ru.melodin.fast.api.OnResponseListener
 import ru.melodin.fast.api.Scopes
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.VKUser
-import ru.melodin.fast.common.TaskManager.Companion.execute
+import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.current.BaseActivity
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
+import ru.melodin.fast.net.HttpRequest
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.ColorUtil
 import ru.melodin.fast.util.Util
@@ -71,7 +69,7 @@ class LoginActivity : BaseActivity() {
             iconEmail.imageTintList = stateList
             iconKey.imageTintList = stateList
         } else {
-            @ColorInt val boxColor = ColorUtil.darkenColor(ThemeManager.background, 0.98f)
+            val boxColor = ColorUtil.darkenColor(ThemeManager.background, 0.98f)
             inputLogin.boxBackgroundColor = boxColor
             inputPassword.boxBackgroundColor = boxColor
         }
@@ -124,99 +122,66 @@ class LoginActivity : BaseActivity() {
 
         toggleButton()
 
-        val webView = WebView(this)
-        webView.settings.javaScriptEnabled = true
-        webView.settings.domStorageEnabled = true
-        webView.settings.loadsImagesAutomatically = false
-        webView.settings.userAgentString = "Chrome/41.0.2228.0 Safari/537.36"
-
-        webView.clearCache(true)
-
-        webView.addJavascriptInterface(HandlerInterface(), "HtmlHandler")
-        webView.webViewClient = object : WebViewClient() {
-            override fun onReceivedError(
-                view: WebView,
-                request: WebResourceRequest,
-                error: WebResourceError
-            ) {
-                if (Util.hasConnection())
-                    view.reload()
-            }
-
-            override fun onPageFinished(view: WebView, url: String) {
-                webView.loadUrl("javascript:window.HtmlHandler.handleHtml" + "('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');")
-            }
-        }
-
-        execute {
-            val manager = CookieManager.getInstance()
-            manager.removeAllCookies(null)
-            manager.flush()
-            manager.setAcceptCookie(false)
-
+        TaskManager.execute {
             val url =
-                "https://oauth.vk.com/token?grant_type=password&client_id=2274003&scope=" + Scopes.all() + "&client_secret=hHbZxrka2uZ6jB1inYsH" +
-                        "&username=" + login +
-                        "&password=" + password +
-                        captcha +
-                        "&v=5.68"
+                "https://oauth.vk.com/token?grant_type=password&client_id=2274003&scope=${Scopes.all()}&client_secret=hHbZxrka2uZ6jB1inYsH&username=$login&password=$password$captcha&v=5.68"
 
-            runOnUiThread { webView.loadUrl(url) }
+            try {
+                val response = JSONObject(HttpRequest[url].asString())
+                runOnUiThread {
+                    parseResponse(response)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                runOnUiThread {
+                    showErrorSnackbar(e.toString())
+                }
+            }
         }
     }
 
-    fun authorize(jsonObject: String) {
-        execute {
+    private fun parseResponse(response: JSONObject) {
+        toggleButton()
 
-            lateinit var response: JSONObject
+        if (response.has("error")) {
+            val errorDescription = response.optString("error_description")
 
-            try {
-                response = JSONObject(jsonObject)
-                runOnUiThread {
-                    toggleButton()
-
-                    if (response.has("error")) {
-                        val errorDescription = response.optString("error_description")
-
-                        when (response.optString("error", getString(R.string.error))) {
-                            "need_validation" -> {
-                                val redirectUri = response.optString("redirect_uri")
-                                val intent =
-                                    Intent(this@LoginActivity, ValidationActivity::class.java)
-                                intent.putExtra("url", redirectUri)
-                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                                startActivityForResult(intent, REQUEST_VALIDATE)
-                            }
-                            "need_captcha" -> {
-                                val captchaImg = response.optString("captcha_img")
-                                val captchaSid = response.optString("captcha_sid")
-                                showCaptchaDialog(captchaSid, captchaImg)
-                            }
-                            else -> Snackbar.make(
-                                buttonLogin,
-                                errorDescription,
-                                Snackbar.LENGTH_LONG
-                            ).show()
+            when (response.optString("error", getString(R.string.error))) {
+                "need_validation" -> {
+                    val redirectUri = response.optString("redirect_uri")
+                    val intent =
+                        Intent(this@LoginActivity, ValidationActivity::class.java).apply {
+                            putExtra("url", redirectUri)
+                            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                         }
-                    } else {
-                        UserConfig.userId = response.optInt("user_id", -1)
-                        UserConfig.accessToken = response.optString("access_token")
-                        UserConfig.save()
-
-                        getCurrentUser(UserConfig.userId)
-                        startMainActivity()
+                    startActivityForResult(intent, REQUEST_VALIDATE)
+                }
+                "need_captcha" -> {
+                    val captchaImg = response.optString("captcha_img")
+                    val captchaSid = response.optString("captcha_sid")
+                    showCaptchaDialog(captchaSid, captchaImg)
+                }
+                else ->
+                    runOnUiThread {
+                        showErrorSnackbar(errorDescription)
                     }
-                }
-            } catch (e: Exception) {
-                runOnUiThread {
-                    Toast.makeText(
-                        this@LoginActivity,
-                        R.string.error,
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
             }
+        } else {
+            UserConfig.userId = response.optInt("user_id", -1)
+            UserConfig.accessToken = response.optString("access_token")
+            UserConfig.save()
+
+            getCurrentUser()
+            startMainActivity()
         }
+    }
+
+    private fun showErrorSnackbar(text: String) {
+        Snackbar.make(
+            buttonLogin,
+            text,
+            Snackbar.LENGTH_LONG
+        ).show()
     }
 
     private fun showCaptchaDialog(captcha_sid: String, captcha_img: String) {
@@ -291,27 +256,26 @@ class LoginActivity : BaseActivity() {
             UserConfig.userId = id
             UserConfig.accessToken = token
             UserConfig.save()
+
             VKApi.config = UserConfig.restore()
 
-            getCurrentUser(id)
+            getCurrentUser()
             startMainActivity()
         }
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    private fun getCurrentUser(id: Int) {
-        execute {
-            var user: VKUser?
-
-            VKApi.users().get().userIds(id).fields(VKUser.FIELDS_DEFAULT)
+    private fun getCurrentUser() {
+        TaskManager.execute {
+            VKApi.users().get().fields(VKUser.FIELDS_DEFAULT)
                 .execute(VKUser::class.java, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
                         if (ArrayUtil.isEmpty(models)) return
                         models ?: return
 
-                        user = models[0] as VKUser?
+                        val user = models[0] as VKUser
 
-                        CacheStorage.insert(DatabaseHelper.USERS_TABLE, user!!)
+                        CacheStorage.insert(DatabaseHelper.USERS_TABLE, user)
                         UserConfig.getUser()
                     }
 
@@ -354,18 +318,6 @@ class LoginActivity : BaseActivity() {
             progress.visibility = View.INVISIBLE
             buttonLogin.extend(true)
             buttonLogin.icon = drawable(R.drawable.md_done)
-        }
-    }
-
-    private inner class HandlerInterface {
-
-        @JavascriptInterface
-        fun handleHtml(html: String) {
-            val doc = Jsoup.parse(html)
-            val response =
-                doc.select("pre[style=\"word-wrap: break-word; white-space: pre-wrap;\"]").first()
-                    .text()
-            runOnUiThread { authorize(response) }
         }
     }
 

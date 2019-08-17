@@ -8,7 +8,6 @@ import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.StringUtils
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
-import java.util.*
 
 open class MethodSetter(private val name: String) {
     private val params: ArrayMap<String, String>?
@@ -106,7 +105,7 @@ open class MethodSetter(private val name: String) {
         return put("user_ids", ArrayUtil.toString(*ids))
     }
 
-    fun userIds(ids: Collection<Int>): MethodSetter {
+    fun userIds(ids: ArrayList<Int>): MethodSetter {
         return put("user_ids", ArrayUtil.toString(ids))
     }
 

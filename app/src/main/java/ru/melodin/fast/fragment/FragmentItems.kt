@@ -1,5 +1,6 @@
 package ru.melodin.fast.fragment
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
@@ -24,10 +25,11 @@ import ru.melodin.fast.adapter.RecyclerAdapter
 import ru.melodin.fast.adapter.UserAdapter
 import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.model.VKUser
+import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.common.CrashManager
 import ru.melodin.fast.common.FragmentSelector
-import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.current.BaseFragment
+import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.model.ListItem
 import ru.melodin.fast.model.ShadowPaddingItem
 import ru.melodin.fast.service.LongPollService
@@ -44,6 +46,35 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
 
     private val fragmentSettings = FragmentSettings()
     private val fragmentFriends = FragmentFriends()
+
+    companion object {
+        const val ID_FRIENDS = 0
+        const val ID_GROUPS = 1
+        const val ID_REPORT_BUG = 254
+        const val ID_LOGOUT = 255
+
+        fun showExitDialog(activity: Activity?) {
+            activity ?: return
+            val adb = AlertDialog.Builder(activity)
+            adb.setTitle(R.string.warning)
+            adb.setMessage(R.string.exit_message)
+            adb.setPositiveButton(R.string.yes) { _, _ ->
+                val helper = DatabaseHelper.getInstance(activity)
+                val db = AppGlobal.database
+
+                helper.dropTables(db)
+                helper.onCreate(db)
+                UserConfig.clear()
+
+                activity.stopService(Intent(activity, LongPollService::class.java))
+                activity.finish()
+                activity.startActivity(Intent(activity, LoginActivity::class.java))
+            }
+
+            adb.setNegativeButton(R.string.no, null)
+            adb.create().show()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -113,7 +144,7 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
             )
             ID_GROUPS -> Toast.makeText(activity!!, R.string.in_progress, Toast.LENGTH_LONG).show()
             ID_REPORT_BUG -> showReportDialog()
-            ID_LOGOUT -> showExitDialog()
+            ID_LOGOUT -> showExitDialog(activity)
         }
     }
 
@@ -187,30 +218,5 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
 
             initUser()
         }
-    }
-
-    private fun showExitDialog() {
-        val adb = AlertDialog.Builder(activity!!)
-        adb.setTitle(R.string.warning)
-        adb.setMessage(R.string.exit_message)
-        adb.setPositiveButton(R.string.yes) { _, _ ->
-            activity!!.stopService(Intent(activity!!, LongPollService::class.java))
-            startActivity(Intent(activity!!, LoginActivity::class.java))
-            activity!!.finish()
-
-            TaskManager.execute {
-                UserConfig.clear()
-                EventBus.getDefault().postSticky(arrayOf<Any>(Keys.AUTHORIZATION_FAILED))
-            }
-        }
-        adb.setNegativeButton(R.string.no, null)
-        adb.create().show()
-    }
-
-    companion object {
-        const val ID_FRIENDS = 0
-        const val ID_GROUPS = 1
-        const val ID_REPORT_BUG = 254
-        const val ID_LOGOUT = 255
     }
 }

@@ -47,16 +47,7 @@ object Scopes {
 
     @Contract(pure = true)
     fun all(): String {
-        return (NOTIFY + ','.toString() + FRIENDS
-                + ','.toString() + PHOTOS + ','.toString() + AUDIO
-                + ','.toString() + VIDEO + ','.toString() + PAGES
-                + ','.toString() + STATUS + ','.toString() + NOTES
-                + ','.toString() + WALL
-                + ','.toString() + ADS + ','.toString() + OFFLINE
-                + ','.toString() + DOCS + ','.toString() + GROUPS
-                + ','.toString() + NOTIFICATIONS + ','.toString()
-                + ','.toString() + MESSAGES
-                + STATS)
+        return "$NOTIFY,$FRIENDS,$PHOTOS,$AUDIO,$VIDEO,$PAGES,$STATUS,$NOTES,$WALL,$ADS,$OFFLINE,$DOCS,$GROUPS,$NOTIFICATIONS,$MESSAGES,$STATS"
     }
 
     fun allInt(): String {

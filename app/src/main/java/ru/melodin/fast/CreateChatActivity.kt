@@ -100,7 +100,12 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
     }
 
     override fun createAdapter(items: ArrayList<VKUser>?, offset: Int) {
-        if (ArrayUtil.isEmpty(items)) return
+        if (ArrayUtil.isEmpty(items)) {
+            setNoItemsViewVisible(true)
+            return
+        }
+
+        setNoItemsViewVisible(false)
 
         if (adapter == null) {
             adapter = CreateChatAdapter(this, items!!)
@@ -122,7 +127,6 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
         val users = CacheStorage.getFriends(UserConfig.userId, false)
 
         if (ArrayUtil.isEmpty(users)) {
-            setNoItemsViewVisible(false)
             loadUsers(0, 0)
         } else {
             setRefreshing(false)
@@ -136,6 +140,10 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
         if (!Util.hasConnection()) {
             setRefreshing(false)
             showNoInternetToast()
+
+            if (adapter == null || adapter!!.isEmpty) {
+                setNoItemsViewVisible(true)
+            }
             return
         }
 
@@ -160,7 +168,7 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
                         CacheStorage.insert(DatabaseHelper.FRIENDS_TABLE, friends)
                         CacheStorage.insert(DatabaseHelper.USERS_TABLE, friends)
 
-                        createAdapter(friends)
+                        createAdapter(friends, 0)
                         refreshLayout.isRefreshing = false
 
                         changeTitle()
@@ -213,24 +221,11 @@ class CreateChatActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshList
     }
 
     override fun showNoInternetToast() {
-
+        Toast.makeText(this@CreateChatActivity, R.string.connect_to_the_internet, Toast.LENGTH_LONG).show()
     }
 
     override fun showErrorToast() {
         Toast.makeText(this@CreateChatActivity, R.string.error, Toast.LENGTH_LONG).show()
-    }
-
-
-    private fun getCachedFriends() {
-
-    }
-
-    private fun createAdapter(users: ArrayList<VKUser>) {
-
-    }
-
-    private fun loadFriends() {
-
     }
 
     private fun changeTitle() {
