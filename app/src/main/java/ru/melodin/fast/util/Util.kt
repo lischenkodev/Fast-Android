@@ -1,30 +1,60 @@
 package ru.melodin.fast.util
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ClipData
 import android.content.Intent
 import android.os.Build
 import android.os.Environment
-import ru.melodin.fast.R
 import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.io.BytesOutputStream
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.ln
 import kotlin.math.pow
 
+
 object Util {
 
     var dateFormatter: SimpleDateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+
+    var timeFormatter: DateFormat = DateFormat.getTimeInstance(DateFormat.SHORT)
+    var dayOfWeekFormatter: DateFormat = SimpleDateFormat("EEE", Locale.getDefault())
+    var shortDateFormatter: DateFormat = DateFormat.getDateInstance(DateFormat.SHORT)
 
     init {
         // 15:57
         //SimpleDateFormat dateMonthFormatter = new SimpleDateFormat("d MMM", Locale.getDefault());
         //SimpleDateFormat dateYearFormatter = new SimpleDateFormat("d MMM, yyyy", Locale.getDefault());
         //SimpleDateFormat dateFullFormatter = new SimpleDateFormat("dd.MM.yyyy, HH:mm", Locale.getDefault());
+    }
+
+    fun formatShortTimestamp(ts: Long): String {
+        val thenCal = GregorianCalendar()
+        thenCal.timeInMillis = ts
+        val nowCal = GregorianCalendar()
+        nowCal.timeInMillis = System.currentTimeMillis()
+
+        val f: DateFormat
+
+        if (thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR)
+            && thenCal.get(Calendar.MONTH) == nowCal.get(Calendar.MONTH)
+            && thenCal.get(Calendar.DAY_OF_MONTH) == nowCal.get(Calendar.DAY_OF_MONTH)
+        ) {
+            f = timeFormatter
+        } else if (thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR)
+            && thenCal.get(Calendar.MONTH) == nowCal.get(Calendar.MONTH)
+            && nowCal.get(Calendar.DAY_OF_MONTH) - thenCal.get(Calendar.DAY_OF_MONTH) < 7
+        ) {
+            f = dayOfWeekFormatter
+        } else {
+            f = shortDateFormatter
+        }
+        return f.format(thenCal.time)
     }
 
     private fun restart(activity: Activity, extras: Intent?, anim: Boolean) {
@@ -36,7 +66,7 @@ object Util {
         activity.finish()
 
         if (anim)
-            activity.overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
+            activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
     }
 
     fun restart(activity: Activity, anim: Boolean) {
