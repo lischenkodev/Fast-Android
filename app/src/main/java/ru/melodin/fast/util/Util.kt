@@ -1,5 +1,6 @@
 package ru.melodin.fast.util
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.os.Build
 import android.os.Environment
@@ -16,17 +17,19 @@ import kotlin.math.pow
 
 object Util {
 
+    @SuppressLint("ConstantLocale")
     val dateFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
 
     private val timeFormatter = DateFormat.getTimeInstance(DateFormat.SHORT)
+
+    @SuppressLint("ConstantLocale")
     private val dayOfWeekFormatter = SimpleDateFormat("EEE", Locale.getDefault())
+    
     private val shortDateFormatter = DateFormat.getDateInstance(DateFormat.SHORT)
 
     fun formatShortTimestamp(ts: Long): String {
-        val thenCal = GregorianCalendar()
-        thenCal.timeInMillis = ts
-        val nowCal = GregorianCalendar()
-        nowCal.timeInMillis = System.currentTimeMillis()
+        val thenCal = GregorianCalendar().apply { timeInMillis = ts }
+        val nowCal = GregorianCalendar().apply { timeInMillis = System.currentTimeMillis() }
 
         val formatter = if (thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR)
             && thenCal.get(Calendar.MONTH) == nowCal.get(Calendar.MONTH)
@@ -41,6 +44,7 @@ object Util {
         } else {
             shortDateFormatter
         }
+
         return formatter.format(thenCal.time)
     }
 
@@ -115,6 +119,7 @@ object Util {
             networkInfo != null && networkInfo.isConnected
         }
     }
+
     fun saveFileByUrl(link: String): String {
         val url = URL(link)
         val urlConnection = url.openConnection() as HttpURLConnection
