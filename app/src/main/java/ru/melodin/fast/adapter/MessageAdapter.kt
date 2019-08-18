@@ -24,10 +24,7 @@ import ru.melodin.fast.R
 import ru.melodin.fast.api.OnResponseListener
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.model.*
-import ru.melodin.fast.api.model.attachment.VKAudio
-import ru.melodin.fast.api.model.attachment.VKDoc
-import ru.melodin.fast.api.model.attachment.VKPhoto
-import ru.melodin.fast.api.model.attachment.VKVideo
+import ru.melodin.fast.api.model.attachment.*
 import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.common.AttachmentInflater
 import ru.melodin.fast.common.TaskManager

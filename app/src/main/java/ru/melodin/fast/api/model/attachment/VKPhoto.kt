@@ -8,6 +8,7 @@ import java.io.Serializable
 import java.util.*
 
 class VKPhoto(source: JSONObject) : VKModel(), Serializable {
+    constructor() : this(JSONObject())
 
     val id = source.optInt("id")
     val albumId = source.optInt("album_id")
@@ -25,6 +26,10 @@ class VKPhoto(source: JSONObject) : VKModel(), Serializable {
         private set
 
     val maxSize: String? = findMaxSize()
+
+    init {
+        initAttachmentType()
+    }
 
     private fun findMaxSize(): String? {
         if (ArrayUtil.isEmpty(sizes)) return null

@@ -3,12 +3,8 @@ package ru.melodin.fast.api.model
 import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import org.json.JSONArray
-import org.json.JSONObject
 import ru.melodin.fast.R
-import ru.melodin.fast.api.model.attachment.VKAudio
-import ru.melodin.fast.api.model.attachment.VKDoc
-import ru.melodin.fast.api.model.attachment.VKPhoto
-import ru.melodin.fast.api.model.attachment.VKVideo
+import ru.melodin.fast.api.model.attachment.*
 import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.util.ArrayUtil
 import java.io.Serializable
@@ -39,12 +35,13 @@ class VKAttachments : VKModel(), Serializable {
             val attachments = ArrayList<VKModel>(array.length())
 
             for (i in 0 until array.length()) {
-                var attachment: JSONObject? = array.optJSONObject(i)
-                if (attachment!!.has("attachment")) {
-                    attachment = attachment.optJSONObject("attachment")
+                var attachment = array.optJSONObject(i)!!
+
+                if (attachment.has("attachment")) {
+                    attachment = attachment.optJSONObject("attachment")!!
                 }
 
-                val type = attachment!!.optString("type")
+                val type = attachment.optString("type")
                 val source = attachment.optJSONObject(type) ?: return attachments
 
                 when (type) {

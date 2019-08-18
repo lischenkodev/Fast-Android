@@ -31,7 +31,6 @@ object VKApi {
     var config: UserConfig? = null
     var lang: String? = AppGlobal.locale.language
 
-    @Throws(Exception::class)
     fun <T> execute(url: String, cls: Class<T>?): ArrayList<T>? {
         if (BuildConfig.DEBUG) {
             Log.w(TAG, "url: $url")
@@ -84,82 +83,89 @@ object VKApi {
 
         val models: ArrayList<T>
 
-        if (cls == VKChat::class.java && !url.contains("chat_ids"))
-            models = ArrayList(1)
+        models = if (cls == VKChat::class.java && !url.contains("chat_ids"))
+            ArrayList(1)
         else
-            models = ArrayList(array!!.length())
+            ArrayList(array!!.length())
 
-        if (cls == VKUser::class.java) {
-            if (url.contains("friends.get")) {
-                VKUser.count = json.optJSONObject("response")!!.optInt("count")
-            }
-
-            for (i in 0 until array!!.length()) {
-                models.add(VKUser(array.optJSONObject(i)) as T)
-            }
-        } else if (cls == VKMessage::class.java) {
-            if (url.contains("messages.getHistory")) {
-                VKMessage.lastHistoryCount = json.optJSONObject("response")!!.optInt("count")
-
-                val groups = json.optJSONObject("response")!!.optJSONArray("groups")
-                if (groups != null && groups.length() > 0) {
-                    VKMessage.groups = VKGroup.parse(groups)
+        when (cls) {
+            VKUser::class.java -> {
+                if (url.contains("friends.get")) {
+                    VKUser.count = json.optJSONObject("response")!!.optInt("count")
                 }
 
-                val profiles = json.optJSONObject("response")!!.optJSONArray("profiles")
-                if (profiles != null && profiles.length() > 0) {
-                    VKMessage.users = VKUser.parse(profiles)
+                for (i in 0 until array!!.length()) {
+                    models.add(VKUser(array.optJSONObject(i)) as T)
+                }
+            }
+            VKMessage::class.java -> {
+                if (url.contains("messages.getHistory")) {
+                    VKMessage.lastHistoryCount = json.optJSONObject("response")!!.optInt("count")
+
+                    val groups = json.optJSONObject("response")!!.optJSONArray("groups")
+                    if (groups != null && groups.length() > 0) {
+                        VKMessage.groups = VKGroup.parse(groups)
+                    }
+
+                    val profiles = json.optJSONObject("response")!!.optJSONArray("profiles")
+                    if (profiles != null && profiles.length() > 0) {
+                        VKMessage.users = VKUser.parse(profiles)
+                    }
+                }
+
+                for (i in 0 until array!!.length()) {
+                    var source: JSONObject? = array.optJSONObject(i)
+                    val unread = source!!.optInt("unread")
+                    if (source.has("message")) {
+                        source = source.optJSONObject("message")
+                    }
+                    val message = VKMessage(source!!)
+                    message.unread = unread
+                    models.add(message as T)
                 }
             }
 
-            for (i in 0 until array!!.length()) {
-                var source: JSONObject? = array.optJSONObject(i)
-                val unread = source!!.optInt("unread")
-                if (source.has("message")) {
-                    source = source.optJSONObject("message")
-                }
-                val message = VKMessage(source!!)
-                message.unread = unread
-                models.add(message as T)
-            }
-        } else if (cls == VKGroup::class.java) {
-            for (i in 0 until array!!.length()) {
+            VKGroup::class.java -> for (i in 0 until array!!.length()) {
                 models.add(VKGroup(array.optJSONObject(i)) as T)
             }
-        } else if (cls == VKModel::class.java && url.contains("messages.getHistoryAttachments")) {
-            return VKAttachments.parse(array!!) as ArrayList<T>
-        } else if (cls == VKConversation::class.java) {
-            if (url.contains("messages.getConversations?")) {
-                val response = json.optJSONObject("response")
-                VKConversation.count = response!!.optInt("count")
+            VKModel::class.java -> {
+                if (url.contains("messages.getHistoryAttachments"))
+                    return VKAttachments.parse(array!!) as ArrayList<T>
+            }
+            VKConversation::class.java -> {
+                if (url.contains("messages.getConversations?")) {
+                    val response = json.optJSONObject("response")
+                    VKConversation.count = response!!.optInt("count")
 
-                val groups = response.optJSONArray("groups")
-                if (groups != null && groups.length() > 0) {
-                    VKConversation.groups = VKGroup.parse(groups)
+                    val groups = response.optJSONArray("groups")
+                    if (groups != null && groups.length() > 0) {
+                        VKConversation.groups = VKGroup.parse(groups)
+                    }
+
+                    val profiles = response.optJSONArray("profiles")
+                    if (profiles != null && profiles.length() > 0) {
+                        VKConversation.users = VKUser.parse(profiles)
+                    }
                 }
 
-                val profiles = response.optJSONArray("profiles")
-                if (profiles != null && profiles.length() > 0) {
-                    VKConversation.users = VKUser.parse(profiles)
+                for (i in 0 until array!!.length()) {
+                    val source = array.optJSONObject(i)
+                    val conversation: VKConversation
+                    conversation = if (url.contains("getConversations?")) {
+                        val jConversation = source.optJSONObject("conversation")
+                        val jLastMessage = source.optJSONObject("last_message")
+
+                        VKConversation(jConversation, jLastMessage)
+                    } else {
+                        VKConversation(source, null)
+                    }
+                    models.add(conversation as T)
                 }
             }
-
-            for (i in 0 until array!!.length()) {
-                val source = array.optJSONObject(i)
-                val conversation: VKConversation
-                conversation = if (url.contains("getConversations?")) {
-                    val jConversation = source.optJSONObject("conversation")
-                    val jLastMessage = source.optJSONObject("last_message")
-
-                    VKConversation(jConversation, jLastMessage)
-                } else {
-                    VKConversation(source, null)
+            VKChat::class.java -> {
+                if (!url.contains("chat_ids")) {
+                    models.add(VKChat(json.optJSONObject("response")!!) as T)
                 }
-                models.add(conversation as T)
-            }
-        } else if (cls == VKChat::class.java) {
-            if (!url.contains("chat_ids")) {
-                models.add(VKChat(json.optJSONObject("response")!!) as T)
             }
         }
 

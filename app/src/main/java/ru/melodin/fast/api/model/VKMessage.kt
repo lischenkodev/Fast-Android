@@ -53,7 +53,6 @@ class VKMessage : VKModel, Serializable {
 
     constructor()
 
-    @Throws(JSONException::class)
     constructor(o: JSONObject) {
         this.date = o.optLong("date", -1)
         this.fromId = o.optInt("from_id", -1)

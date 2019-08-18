@@ -75,7 +75,7 @@
                         android:layout_height="15dp"
                         android:layout_gravity="center_vertical"
                         android:layout_marginStart="4dp"
-                        android:src="@drawable/ic_volume_off_black_24dp"
+                        android:src="@drawable/ic_volume_off"
                         android:tint="?android:textColorSecondaryNoDisable" />
                 </LinearLayout>
 

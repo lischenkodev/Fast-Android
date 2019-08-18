@@ -92,7 +92,7 @@
             tools:visibility="visible">
 
             <androidx.appcompat.widget.ActionMenuView
-                android:id="@+id/menuView"
+                android:id="@+id/abc_tb_menu_view"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent" />
 

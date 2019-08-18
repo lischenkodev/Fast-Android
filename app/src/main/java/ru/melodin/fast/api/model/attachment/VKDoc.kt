@@ -38,6 +38,8 @@ class VKDoc(source: JSONObject) : VKModel(), Serializable {
         }
 
     init {
+        initAttachmentType()
+
         val preview = source.optJSONObject("preview")
 
         if (preview != null) {

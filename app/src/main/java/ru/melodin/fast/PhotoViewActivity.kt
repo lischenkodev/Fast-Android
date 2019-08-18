@@ -33,7 +33,7 @@ class PhotoViewActivity : AppCompatActivity() {
             val position = pager.currentItem
 
             val fragments = adapter!!.fragments
-            return (fragments!![position] as FragmentPhotoView).url!!
+            return (fragments[position] as FragmentPhotoView).url!!
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,7 +48,7 @@ class PhotoViewActivity : AppCompatActivity() {
         changeTbVisibility()
 
         val photos = intent.getSerializableExtra("photo") as ArrayList<VKPhoto>
-        source = intent.getSerializableExtra("selected") as VKPhoto
+        source = intent.getSerializableExtra("selected") as VKPhoto?
 
         if (ArrayUtil.isEmpty(photos)) {
             finish()
@@ -60,8 +60,10 @@ class PhotoViewActivity : AppCompatActivity() {
         if (source != null)
             for (i in photos.indices) {
                 val photo = photos[i]
-                if (photo.id == source!!.id)
+                if (photo.id == source!!.id) {
                     selectedPosition = i
+                    break
+                }
             }
 
         pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {

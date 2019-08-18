@@ -74,7 +74,7 @@ class DatabaseHelper private constructor(context: Context) :
 
         private const val ID = "_id"
 
-        private const val DATABASE_VERSION = 51
+        private const val DATABASE_VERSION = 52
         private const val DATABASE_NAME = "cache.db"
 
         private const val SQL_CREATE_TABLE_USERS = "CREATE TABLE " + USERS_TABLE +

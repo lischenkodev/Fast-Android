@@ -5,15 +5,14 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentStatePagerAdapter
 import ru.melodin.fast.api.model.attachment.VKPhoto
 import ru.melodin.fast.fragment.FragmentPhotoView
-import java.util.*
 
 class PhotoViewAdapter(fm: FragmentManager, private val items: ArrayList<VKPhoto>) :
     FragmentStatePagerAdapter(fm) {
 
-    var fragments: ArrayList<Fragment> = arrayListOf()
+    var fragments = arrayListOf<Fragment>()
 
     init {
-        for (i in fragments.indices) {
+        for (i in items.indices) {
             fragments.add(FragmentPhotoView(items[i]))
         }
     }

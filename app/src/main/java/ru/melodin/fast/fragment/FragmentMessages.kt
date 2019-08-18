@@ -45,6 +45,7 @@ import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.VKApi
 import ru.melodin.fast.api.VKUtil
 import ru.melodin.fast.api.model.*
+import ru.melodin.fast.api.model.attachment.VKLink
 import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.common.AttachmentInflater
 import ru.melodin.fast.common.TaskManager
@@ -288,6 +289,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                     PopupAdapter.ID_NOTIFICATIONS -> toggleNotifications()
                     PopupAdapter.ID_LEAVE -> toggleChatState()
                     PopupAdapter.ID_CHAT_INFO -> openChatInfo()
+                    PopupAdapter.ID_ATTACHMENTS -> openChatAttachments()
                 }
 
                 popupWindow!!.dismiss()
@@ -322,11 +324,20 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
         val chatDivider = DividerItem()
 
+        val attachments = ListItem(
+            PopupAdapter.ID_ATTACHMENTS,
+            getString(R.string.show_attachments),
+            drawable(R.drawable.ic_image_multiple)
+        )
+
         val disableNotifications = ListItem(
             PopupAdapter.ID_NOTIFICATIONS,
             getString(R.string.disable_notifications),
-            drawable(R.drawable.ic_volume_off_black_24dp)
+            drawable(R.drawable.ic_volume_off)
         )
+
+        val dangerDivider = DividerItem()
+
         val clear = ListItem(
             PopupAdapter.ID_CLEAR_HISTORY,
             getString(R.string.clear_messages_history),
@@ -334,7 +345,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         )
         val left = ListItem(PopupAdapter.ID_LEAVE, "", ColorDrawable(Color.TRANSPARENT))
 
-        val items = ArrayList(listOf(chatInfo, chatDivider, disableNotifications, clear, left))
+        val items = ArrayList(listOf(chatInfo, chatDivider, attachments, disableNotifications, dangerDivider, clear, left))
 
         for (item in items)
             updatePopupItemById(item)
@@ -362,7 +373,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                 item.icon = drawable(R.drawable.ic_volume_full_black_24dp)
             } else {
                 item.title = getString(R.string.disable_notifications)
-                item.icon = drawable(R.drawable.ic_volume_off_black_24dp)
+                item.icon = drawable(R.drawable.ic_volume_off)
             }
             PopupAdapter.ID_LEAVE -> {
                 item.isVisible =
@@ -524,7 +535,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
                 if (!ArrayUtil.isEmpty(models)) {
                     val message = models!![0] as VKMessage
 
-                    conversation?.lastMessage = message
+                    conversation!!.lastMessage = message
                     CacheStorage.insert(DatabaseHelper.MESSAGES_TABLE, message)
                 }
             }
@@ -573,6 +584,15 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
             0,
             FragmentChatInfo(),
             arguments!!.apply { putSerializable("conversation", conversation) },
+            true
+        )
+    }
+
+    private fun openChatAttachments() {
+        parent?.replaceFragment(
+            0,
+            ParentFragmentMessagesAttachments(),
+            arguments,
             true
         )
     }
@@ -1035,12 +1055,14 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
             val text = AppCompatEditText(activity!!)
             text.hint = getString(R.string.message)
+            text.setText(message.text.toString())
 
             val builder = AlertDialog.Builder(activity!!)
             builder.setTitle(R.string.reply)
             builder.setView(text)
             builder.setNegativeButton(android.R.string.cancel, null)
             builder.setPositiveButton(R.string.send) { _, _ ->
+                message.setText("")
                 replyMessage(replyId, text.text.toString().trim())
             }
             builder.show()

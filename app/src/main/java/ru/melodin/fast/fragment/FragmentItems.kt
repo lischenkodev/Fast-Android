@@ -100,7 +100,7 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
         tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
             override fun onMenuItemClick(item: MenuItem): Boolean {
                 if (item.itemId == R.id.item_settings) {
-                    parent?.replaceFragment(0, fragmentSettings, null)
+                    parent?.replaceFragment(R.id.navigation_items, fragmentSettings, null)
                     return true
                 }
 

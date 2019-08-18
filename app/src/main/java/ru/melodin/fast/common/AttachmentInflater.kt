@@ -26,10 +26,7 @@ import ru.melodin.fast.R
 import ru.melodin.fast.adapter.MessageAdapter
 import ru.melodin.fast.api.VKUtil
 import ru.melodin.fast.api.model.*
-import ru.melodin.fast.api.model.attachment.VKAudio
-import ru.melodin.fast.api.model.attachment.VKDoc
-import ru.melodin.fast.api.model.attachment.VKPhoto
-import ru.melodin.fast.api.model.attachment.VKVideo
+import ru.melodin.fast.api.model.attachment.*
 import ru.melodin.fast.database.MemoryCache
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Util
@@ -39,6 +36,54 @@ import kotlin.math.max
 import kotlin.math.min
 
 class AttachmentInflater(private val adapter: MessageAdapter?, private val context: Context) {
+
+    companion object {
+
+        const val KEY_PLAY_AUDIO = "play_audio"
+        const val KEY_PAUSE_AUDIO = "pause_audio"
+        const val KEY_STOP_AUDIO = "stop_audio"
+
+        @Synchronized
+        fun getInstance(adapter: MessageAdapter?, context: Context): AttachmentInflater {
+            return AttachmentInflater(adapter, context)
+        }
+
+        fun loadImage(
+            image: ImageView,
+            smallSrc: String?,
+            normalSrc: String?,
+            placeholder: Drawable? = null
+        ) {
+            if (TextUtils.isEmpty(smallSrc)) return
+            try {
+                val request = Picasso.get()
+                    .load(smallSrc)
+                    .priority(Picasso.Priority.HIGH)
+                    .placeholder(placeholder ?: ColorDrawable(0))
+
+                if (!TextUtils.isEmpty(normalSrc)) {
+                    request.into(image, object : Callback.EmptyCallback() {
+                        override fun onSuccess() {
+                            if (TextUtils.isEmpty(normalSrc))
+                                return
+
+                            Picasso.get()
+                                .load(normalSrc)
+                                .placeholder(image.drawable)
+                                .priority(Picasso.Priority.HIGH)
+                                .into(image)
+                        }
+                    })
+                } else {
+                    request.into(image)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+        }
+    }
+
     private val inflater: LayoutInflater = LayoutInflater.from(context)
     private val metrics: DisplayMetrics = context.resources.displayMetrics
 
@@ -73,41 +118,6 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
                 else -> empty(parent, context.getString(R.string.unknown))
             }
         }
-    }
-
-    private fun loadImage(
-        image: ImageView,
-        smallSrc: String?,
-        normalSrc: String?,
-        placeholder: Drawable? = null
-    ) {
-        if (TextUtils.isEmpty(smallSrc)) return
-        try {
-            val request = Picasso.get()
-                .load(smallSrc)
-                .priority(Picasso.Priority.HIGH)
-                .placeholder(placeholder ?: ColorDrawable(0))
-
-            if (!TextUtils.isEmpty(normalSrc)) {
-                request.into(image, object : Callback.EmptyCallback() {
-                    override fun onSuccess() {
-                        if (TextUtils.isEmpty(normalSrc))
-                            return
-
-                        Picasso.get()
-                            .load(normalSrc)
-                            .placeholder(image.drawable)
-                            .priority(Picasso.Priority.HIGH)
-                            .into(image)
-                    }
-                })
-            } else {
-                request.into(image)
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-
     }
 
     private fun getHeight(layoutMaxWidth: Int): Int {
@@ -171,7 +181,7 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
 
         v.setOnClickListener { isSelected(item) }
 
-        val title = v.findViewById<TextView>(R.id.abc_tb_title)
+        val title = v.findViewById<TextView>(R.id.title)
         val body = v.findViewById<TextView>(R.id.body)
         val icon = v.findViewById<ImageView>(R.id.icon)
 
@@ -245,12 +255,18 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
 
         v.setOnClickListener { isSelected(item) }
 
-        val image = v.findViewById<ImageView>(R.id.image)
-        val time = v.findViewById<TextView>(R.id.time)
+        val image = v.findViewById<ImageView>(R.id.video_image)
+        val time = v.findViewById<TextView>(R.id.video_duration)
 
         val duration =
             String.format(AppGlobal.locale, "%d:%02d", source.duration / 60, source.duration % 60)
         time.text = duration
+
+        if (source.duration == 0) {
+            time.visibility = View.GONE
+        } else {
+            time.visibility = View.VISIBLE
+        }
 
         image.layoutParams = if (maxWidth == -1) getFrameParams(
             320,
@@ -384,7 +400,7 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
             true
         }
 
-        val title = v.findViewById<TextView>(R.id.abc_tb_title)
+        val title = v.findViewById<TextView>(R.id.title)
         val size = v.findViewById<TextView>(R.id.body)
 
         title.text = source.title
@@ -414,11 +430,11 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
 
         v.setOnClickListener { isSelected(item) }
 
-        val title = v.findViewById<TextView>(R.id.abc_tb_title)
+        val title = v.findViewById<TextView>(R.id.title)
         val body = v.findViewById<TextView>(R.id.body)
-        val time = v.findViewById<TextView>(R.id.duration)
+        val time = v.findViewById<TextView>(R.id.audio_duration)
 
-        val play = v.findViewById<ImageButton>(R.id.play)
+        val play = v.findViewById<ImageButton>(R.id.audio_play)
 
         val duration =
             String.format(AppGlobal.locale, "%d:%02d", source.duration / 60, source.duration % 60)
@@ -458,11 +474,11 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
 
         v.setOnClickListener { isSelected(item) }
 
-        val title = v.findViewById<TextView>(R.id.abc_tb_title)
+        val title = v.findViewById<TextView>(R.id.title)
         val body = v.findViewById<TextView>(R.id.body)
-        val time = v.findViewById<TextView>(R.id.duration)
+        val time = v.findViewById<TextView>(R.id.audio_duration)
 
-        val play = v.findViewById<ImageButton>(R.id.play)
+        val play = v.findViewById<ImageButton>(R.id.audio_play)
         val start = ContextCompat.getDrawable(context, R.drawable.ic_play_circle_filled_black_24dp)
         val stop = ContextCompat.getDrawable(context, R.drawable.ic_pause_circle_filled_black_24dp)
 
@@ -499,7 +515,7 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
             true
         }
 
-        val title = v.findViewById<TextView>(R.id.abc_tb_title)
+        val title = v.findViewById<TextView>(R.id.title)
         val description = v.findViewById<TextView>(R.id.description)
         val icon = v.findViewById<ImageView>(R.id.icon)
         val photo = v.findViewById<CircleImageView>(R.id.photo)
@@ -576,17 +592,5 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         if (position == -1) return
 
         adapter.getFragment().onItemLongClick(position)
-    }
-
-    companion object {
-
-        const val KEY_PLAY_AUDIO = "play_audio"
-        const val KEY_PAUSE_AUDIO = "pause_audio"
-        const val KEY_STOP_AUDIO = "stop_audio"
-
-        @Synchronized
-        fun getInstance(adapter: MessageAdapter?, context: Context): AttachmentInflater {
-            return AttachmentInflater(adapter, context)
-        }
     }
 }

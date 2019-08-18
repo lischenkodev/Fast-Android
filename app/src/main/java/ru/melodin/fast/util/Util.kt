@@ -24,7 +24,7 @@ object Util {
 
     @SuppressLint("ConstantLocale")
     private val dayOfWeekFormatter = SimpleDateFormat("EEE", Locale.getDefault())
-    
+
     private val shortDateFormatter = DateFormat.getDateInstance(DateFormat.SHORT)
 
     fun formatShortTimestamp(ts: Long): String {

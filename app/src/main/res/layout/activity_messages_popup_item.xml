@@ -14,7 +14,8 @@
         android:background="?selectableItemBackground"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="8dp">
+        android:padding="8dp"
+        tools:ignore="UselessParent">
 
         <ImageView
             android:id="@+id/icon"
@@ -22,7 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="6dp"
             android:layout_marginEnd="14dp"
-            android:tint="?android:textColorSecondary"
+            android:tint="?android:textColorSecondaryInverseNoDisable"
             tools:src="@drawable/ic_refresh" />
 
         <TextView

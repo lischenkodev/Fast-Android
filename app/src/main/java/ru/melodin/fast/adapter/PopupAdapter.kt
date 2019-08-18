@@ -16,6 +16,14 @@ class PopupAdapter(context: Context, values: ArrayList<ListItem>) :
         values
     ) {
 
+    companion object {
+        const val ID_CLEAR_HISTORY = 0
+        const val ID_NOTIFICATIONS = 1
+        const val ID_LEAVE = 2
+        const val ID_CHAT_INFO = 3
+        const val ID_ATTACHMENTS = 4
+    }
+
     override fun changeItems(items: ArrayList<ListItem>) {
         super.changeItems(items)
         notifyDataSetChanged()
@@ -47,11 +55,4 @@ class PopupAdapter(context: Context, values: ArrayList<ListItem>) :
     }
 
     inner class Holder(v: View) : RecyclerHolder(v)
-
-    companion object {
-        const val ID_CLEAR_HISTORY = 0
-        const val ID_NOTIFICATIONS = 1
-        const val ID_LEAVE = 2
-        const val ID_CHAT_INFO = 3
-    }
 }

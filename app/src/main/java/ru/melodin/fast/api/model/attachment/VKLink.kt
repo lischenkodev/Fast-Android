@@ -1,7 +1,7 @@
-package ru.melodin.fast.api.model
+package ru.melodin.fast.api.model.attachment
 
 import org.json.JSONObject
-import ru.melodin.fast.api.model.attachment.VKPhoto
+import ru.melodin.fast.api.model.VKModel
 import java.io.Serializable
 
 class VKLink(source: JSONObject) : VKModel(), Serializable {
@@ -16,6 +16,8 @@ class VKLink(source: JSONObject) : VKModel(), Serializable {
         private set
 
     init {
+        initAttachmentType()
+
         val linkPhoto = source.optJSONObject("photo")
         if (linkPhoto != null) {
             this.photo = VKPhoto(linkPhoto)

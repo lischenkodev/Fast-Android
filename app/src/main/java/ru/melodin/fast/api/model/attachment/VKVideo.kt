@@ -24,6 +24,8 @@ class VKVideo(source: JSONObject) : VKModel(), Serializable {
     val sizes = ArrayList<VKPhotoSizes.PhotoSize?>()
 
     init {
+        initAttachmentType()
+
         if (this.ownerId < 0)
             this.ownerId *= -1
 

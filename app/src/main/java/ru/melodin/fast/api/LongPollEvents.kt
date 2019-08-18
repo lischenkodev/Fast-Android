@@ -76,6 +76,7 @@ object LongPollEvents {
         conversation.lastMessage = last
 
         EventBus.getDefault().postSticky(arrayOf<Any>(Keys.MESSAGE_NEW, conversation))
+        TaskManager.loadMessage(mId, true, null)
     }
 
     private fun messageSetFlags(item: JSONArray) {

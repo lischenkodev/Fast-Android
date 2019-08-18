@@ -16,6 +16,10 @@ class VKAudio(source: JSONObject) : VKModel(), Serializable {
     val url = source.optString("url")
     val accessKey = source.optString("access_key")
 
+    init {
+        initAttachmentType()
+    }
+
     private fun toAttachmentString(): String {
         val result = StringBuilder("audio").append(ownerId).append('_').append(id)
         if (!TextUtils.isEmpty(accessKey)) {

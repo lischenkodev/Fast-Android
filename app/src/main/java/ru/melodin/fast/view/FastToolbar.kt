@@ -104,7 +104,7 @@ class FastToolbar : FrameLayout {
 
     private fun initViews() {
         avatarSpace = findViewById(R.id.abc_tb_avatar_space)
-        menuView = findViewById(R.id.menuView)
+        menuView = findViewById(R.id.abc_tb_menu_view)
         title = findViewById(R.id.abc_tb_title)
         subtitle = findViewById(R.id.abc_tb_subtitle)
         avatar = findViewById(R.id.abc_user_avatar)

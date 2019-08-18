@@ -60,6 +60,14 @@ abstract class RecyclerAdapter<T : Model, VH : RecyclerHolder> internal construc
         isSelected = value
     }
 
+    internal fun createEmptyHolder(): RecyclerHolder {
+        return RecyclerHolder(View(context))
+    }
+
+    internal fun inflateView(viewRes: Int, parent: ViewGroup): View {
+        return inflater.inflate(viewRes, parent, false)
+    }
+
     fun selectItem(position: Int) {
         getItem(position).isSelected = true
         notifyItemChanged(position, -1)

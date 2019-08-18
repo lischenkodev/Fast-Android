@@ -208,8 +208,7 @@ class MessageMethodSetter(name: String) : MethodSetter("messages.$name") {
     }
 
     fun photoSizes(value: Boolean): MessageMethodSetter {
-        put("photo_sizes", value)
-        return this
+        return put("photo_sizes", value) as MessageMethodSetter
     }
 
     fun replyTo(value: Int): MessageMethodSetter {

@@ -263,8 +263,10 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
 
     override fun clearList() {
         adapter ?: return
-        adapter!!.clear()
-        adapter!!.notifyDataSetChanged()
+        parent?.runOnUiThread {
+            adapter!!.clear()
+            adapter!!.notifyDataSetChanged()
+        }
     }
 
     override fun setProgressBarVisible(visible: Boolean) {

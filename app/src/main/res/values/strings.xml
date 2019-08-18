@@ -150,6 +150,13 @@
     <string name="report">Report</string>
     <string name="cause_error">Cause error</string>
     <string name="all">All</string>
+    <string name="show_attachments">Show attachments</string>
+    <string name="attachments">Attachments</string>
+    <string name="photos">Photos</string>
+    <string name="videos">Videos</string>
+    <string name="audios">Audios</string>
+    <string name="documents">Documents</string>
+    <string name="links">Links</string>
 
     <!-- ъеъ -->
 </resources>
