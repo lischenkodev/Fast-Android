@@ -16,11 +16,11 @@ import kotlin.math.pow
 
 object Util {
 
-    var dateFormatter: SimpleDateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    val dateFormatter = SimpleDateFormat("HH:mm", Locale.getDefault())
 
-    var timeFormatter: DateFormat = DateFormat.getTimeInstance(DateFormat.SHORT)
-    var dayOfWeekFormatter: DateFormat = SimpleDateFormat("EEE", Locale.getDefault())
-    var shortDateFormatter: DateFormat = DateFormat.getDateInstance(DateFormat.SHORT)
+    private val timeFormatter = DateFormat.getTimeInstance(DateFormat.SHORT)
+    private val dayOfWeekFormatter = SimpleDateFormat("EEE", Locale.getDefault())
+    private val shortDateFormatter = DateFormat.getDateInstance(DateFormat.SHORT)
 
     fun formatShortTimestamp(ts: Long): String {
         val thenCal = GregorianCalendar()
@@ -28,7 +28,7 @@ object Util {
         val nowCal = GregorianCalendar()
         nowCal.timeInMillis = System.currentTimeMillis()
 
-        val f = if (thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR)
+        val formatter = if (thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR)
             && thenCal.get(Calendar.MONTH) == nowCal.get(Calendar.MONTH)
             && thenCal.get(Calendar.DAY_OF_MONTH) == nowCal.get(Calendar.DAY_OF_MONTH)
         ) {
@@ -41,7 +41,7 @@ object Util {
         } else {
             shortDateFormatter
         }
-        return f.format(thenCal.time)
+        return formatter.format(thenCal.time)
     }
 
     fun copyText(text: String) {
