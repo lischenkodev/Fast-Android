@@ -1,9 +1,6 @@
 package ru.melodin.fast.util
 
-import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.ClipData
-import android.content.Intent
 import android.os.Build
 import android.os.Environment
 import ru.melodin.fast.common.AppGlobal
@@ -17,7 +14,6 @@ import java.util.*
 import kotlin.math.ln
 import kotlin.math.pow
 
-
 object Util {
 
     var dateFormatter: SimpleDateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
@@ -26,51 +22,26 @@ object Util {
     var dayOfWeekFormatter: DateFormat = SimpleDateFormat("EEE", Locale.getDefault())
     var shortDateFormatter: DateFormat = DateFormat.getDateInstance(DateFormat.SHORT)
 
-    init {
-        // 15:57
-        //SimpleDateFormat dateMonthFormatter = new SimpleDateFormat("d MMM", Locale.getDefault());
-        //SimpleDateFormat dateYearFormatter = new SimpleDateFormat("d MMM, yyyy", Locale.getDefault());
-        //SimpleDateFormat dateFullFormatter = new SimpleDateFormat("dd.MM.yyyy, HH:mm", Locale.getDefault());
-    }
-
     fun formatShortTimestamp(ts: Long): String {
         val thenCal = GregorianCalendar()
         thenCal.timeInMillis = ts
         val nowCal = GregorianCalendar()
         nowCal.timeInMillis = System.currentTimeMillis()
 
-        val f: DateFormat
-
-        if (thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR)
+        val f = if (thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR)
             && thenCal.get(Calendar.MONTH) == nowCal.get(Calendar.MONTH)
             && thenCal.get(Calendar.DAY_OF_MONTH) == nowCal.get(Calendar.DAY_OF_MONTH)
         ) {
-            f = timeFormatter
+            timeFormatter
         } else if (thenCal.get(Calendar.YEAR) == nowCal.get(Calendar.YEAR)
             && thenCal.get(Calendar.MONTH) == nowCal.get(Calendar.MONTH)
             && nowCal.get(Calendar.DAY_OF_MONTH) - thenCal.get(Calendar.DAY_OF_MONTH) < 7
         ) {
-            f = dayOfWeekFormatter
+            dayOfWeekFormatter
         } else {
-            f = shortDateFormatter
+            shortDateFormatter
         }
         return f.format(thenCal.time)
-    }
-
-    private fun restart(activity: Activity, extras: Intent?, anim: Boolean) {
-        val intent = Intent(activity, activity.javaClass)
-        if (extras != null)
-            intent.putExtras(extras)
-
-        activity.startActivity(intent)
-        activity.finish()
-
-        if (anim)
-            activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
-    }
-
-    fun restart(activity: Activity, anim: Boolean) {
-        restart(activity, null, anim)
     }
 
     fun copyText(text: String) {
@@ -144,8 +115,6 @@ object Util {
             networkInfo != null && networkInfo.isConnected
         }
     }
-
-    @Throws(Exception::class)
     fun saveFileByUrl(link: String): String {
         val url = URL(link)
         val urlConnection = url.openConnection() as HttpURLConnection
