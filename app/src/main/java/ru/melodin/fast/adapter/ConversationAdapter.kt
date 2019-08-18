@@ -478,7 +478,7 @@ class ConversationAdapter(
             title.text = item.fullTitle
 
             counter.text = if (item.unread > 0) item.unread.toString() else ""
-            time.text = Util.dateFormatter.format(last.date * 1000)
+            time.text = Util.formatShortTimestamp(last.date * 1000)
 
             counter.background.setTint(if (item.isNotificationsDisabled) pushesDisabled else pushesEnabled)
             if (item.isNotificationsDisabled) {

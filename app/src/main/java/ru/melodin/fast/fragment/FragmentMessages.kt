@@ -626,7 +626,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         val user = CacheStorage.getUser(message.fromId) ?: VKUser.EMPTY
 
         pinnedName.text = user.toString().trim()
-        pinnedDate.text = Util.dateFormatter.format(message.date * 1000L)
+        pinnedDate.text = Util.formatShortTimestamp(message.date * 1000L)
 
         pinnedText.text = message.text
 
