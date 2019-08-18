@@ -21,8 +21,16 @@ class PopupAdapter(context: Context, values: ArrayList<ListItem>) :
         notifyDataSetChanged()
     }
 
+    override fun getItemViewType(position: Int): Int {
+        return getItem(position).type
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerHolder {
-        return ViewHolder(getView(parent)!!)
+        return when (viewType) {
+            ListItem.TYPE_ITEM -> ViewHolder(getView(parent)!!)
+            ListItem.TYPE_DIVIDER -> Holder(inflater.inflate(R.layout.view_divider, parent, false))
+            else -> Holder(View(context))
+        }
     }
 
     inner class ViewHolder(v: View) : RecyclerHolder(v) {
@@ -37,6 +45,8 @@ class PopupAdapter(context: Context, values: ArrayList<ListItem>) :
             title.text = item.title
         }
     }
+
+    inner class Holder(v: View) : RecyclerHolder(v)
 
     companion object {
         const val ID_CLEAR_HISTORY = 0

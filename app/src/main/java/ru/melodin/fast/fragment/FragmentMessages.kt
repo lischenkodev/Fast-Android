@@ -52,6 +52,7 @@ import ru.melodin.fast.common.ThemeManager
 import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
+import ru.melodin.fast.model.DividerItem
 import ru.melodin.fast.model.ListItem
 import ru.melodin.fast.mvp.contract.MessagesContract
 import ru.melodin.fast.mvp.presenter.MessagesPresenter
@@ -312,11 +313,15 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
 
     private fun createItems(): ArrayList<ListItem> {
         context ?: return arrayListOf()
+
         val chatInfo = ListItem(
             PopupAdapter.ID_CHAT_INFO,
             getString(R.string.chat_info),
             drawable(R.drawable.ic_info_black_24dp)
         )
+
+        val chatDivider = DividerItem()
+
         val disableNotifications = ListItem(
             PopupAdapter.ID_NOTIFICATIONS,
             getString(R.string.disable_notifications),
@@ -329,7 +334,7 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         )
         val left = ListItem(PopupAdapter.ID_LEAVE, "", ColorDrawable(Color.TRANSPARENT))
 
-        val items = ArrayList(listOf(chatInfo, disableNotifications, clear, left))
+        val items = ArrayList(listOf(chatInfo, chatDivider, disableNotifications, clear, left))
 
         for (item in items)
             updatePopupItemById(item)
@@ -338,10 +343,12 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
         if (conversation == null || conversation!!.type != VKConversation.Type.CHAT) {
             removeItems.add(left)
             removeItems.add(chatInfo)
+            removeItems.add(chatDivider)
         }
 
         if (conversation != null && conversation!!.isGroupChannel) {
             removeItems.add(chatInfo)
+            removeItems.add(chatDivider)
         }
 
         items.removeAll(removeItems)
