@@ -35,7 +35,8 @@ class ParentFragmentMessagesAttachments : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         tb.setTitle(R.string.attachments)
-        tb.setBackVisible(true)
+        tb.setNavigationIcon(R.drawable.ic_arrow_back)
+        tb.setNavigationOnClickListener { onBackPressed() }
 
         tb.setOnClickListener {
             pager ?: return@setOnClickListener

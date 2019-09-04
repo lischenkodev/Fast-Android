@@ -19,7 +19,7 @@
             android:layout_height="24dp"
             android:layout_gravity="center"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_vector_file"
+            android:src="@drawable/ic_file"
             android:tint="?colorAccent" />
 
     </FrameLayout>

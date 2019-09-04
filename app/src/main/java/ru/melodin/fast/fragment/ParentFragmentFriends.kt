@@ -27,7 +27,8 @@ class ParentFragmentFriends : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         tb.setTitle(R.string.fragment_friends)
-        tb.setBackVisible(true)
+        tb.setNavigationIcon(R.drawable.ic_arrow_back)
+        tb.setNavigationOnClickListener { parent?.onBackPressed() }
 
         tabLayout.setTabTextColors(ThemeManager.SECONDARY, ThemeManager.MAIN)
         tabLayout.setSelectedTabIndicatorColor(ThemeManager.MAIN)
@@ -41,5 +42,4 @@ class ParentFragmentFriends : BaseFragment() {
         pager.adapter = adapter
         tabLayout.setupWithViewPager(pager)
     }
-
 }

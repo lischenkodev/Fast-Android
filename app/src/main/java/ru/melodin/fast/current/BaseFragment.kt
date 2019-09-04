@@ -11,15 +11,15 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.appbar.MaterialToolbar
 import ru.melodin.fast.MainActivity
-import ru.melodin.fast.view.FastToolbar
 
 abstract class BaseFragment : Fragment() {
 
     internal var title: CharSequence? = null
 
     var recyclerList: RecyclerView? = null
-    var toolbar: FastToolbar? = null
+    var toolbar: MaterialToolbar? = null
 
     var parent: MainActivity? = null
 

@@ -2,16 +2,19 @@ package ru.melodin.fast.fragment
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.toolbar.*
 import org.greenrobot.eventbus.EventBus
+import ru.melodin.fast.MainActivity
 import ru.melodin.fast.R
 import ru.melodin.fast.adapter.GroupAdapter
 import ru.melodin.fast.adapter.UserAdapter
@@ -19,7 +22,6 @@ import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.common.ThemeManager
-import ru.melodin.fast.current.BaseActivity
 import ru.melodin.fast.database.CacheStorage
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.util.ArrayUtil
@@ -42,7 +44,8 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                             groups -> helper.dropGroupsTable(db)
                             else -> {
                                 helper.dropMessagesTable(db)
-                                EventBus.getDefault().postSticky(arrayOf<Any>(KEY_MESSAGES_CLEAR_CACHE))
+                                EventBus.getDefault()
+                                    .postSticky(arrayOf<Any>(KEY_MESSAGES_CLEAR_CACHE))
                             }
                         }
                     }
@@ -82,6 +85,12 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             showError?.summary = "Alpha version"
         }
 
+        if (!AppGlobal.preferences.getBoolean(KEY_DARK_STYLE, true)) {
+            AppGlobal.preferences.edit().putBoolean(KEY_DARK_STYLE, true).apply()
+            activity!!.finishAffinity()
+            startActivity(Intent(activity!!, MainActivity::class.java))
+        }
+
         findPreference<Preference>(KEY_ABOUT)?.onPreferenceClickListener = this
         findPreference<Preference>(KEY_MESSAGES_CLEAR_CACHE)?.onPreferenceClickListener = this
         findPreference<Preference>(KEY_SHOW_CACHED_USERS)?.onPreferenceClickListener = this
@@ -101,13 +110,19 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        tb.setBackVisible(true)
+        tb.setNavigationIcon(R.drawable.ic_arrow_back)
+        tb.setNavigationOnClickListener { activity?.onBackPressed() }
         tb.setTitle(R.string.settings)
     }
 
     private fun switchTheme(dark: Boolean) {
         ThemeManager.switchTheme(dark)
-        (activity as BaseActivity).recreate()
+
+        val nightMode =
+            if (dark) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
+
+        AppCompatDelegate.setDefaultNightMode(nightMode)
+        (activity as MainActivity).delegate.localNightMode = nightMode
     }
 
     override fun onPreferenceChange(preference: Preference, newValue: Any): Boolean {
@@ -128,7 +143,11 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
                 ),
                 Toast.LENGTH_LONG
             ).show()
-            KEY_MESSAGES_CLEAR_CACHE -> showConfirmClearCacheDialog(context = context!!, users = false, groups = false)
+            KEY_MESSAGES_CLEAR_CACHE -> showConfirmClearCacheDialog(
+                context = context!!,
+                users = false,
+                groups = false
+            )
             KEY_SHOW_CACHED_USERS -> showCachedUsers()
             KEY_SHOW_CACHED_GROUPS -> showCachedGroups()
             KEY_CAUSE_ERROR -> confirmCauseErrorDialog()

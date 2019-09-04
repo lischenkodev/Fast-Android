@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="?android:windowBackground">
+    android:layout_height="match_parent">
 
     <include
         layout="@layout/recycler_list"
@@ -22,12 +21,12 @@
         <FrameLayout
             android:id="@+id/pinnedContainer"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="?colorSurface">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:background="?colorPrimary"
                 android:orientation="horizontal">
 
                 <LinearLayout
@@ -91,7 +90,7 @@
                     android:layout_marginEnd="6dp"
                     android:layout_weight="0"
                     android:background="?selectableItemBackgroundBorderless"
-                    android:src="@drawable/md_clear"
+                    android:src="@drawable/ic_clear"
                     android:tint="?android:textColorPrimary" />
             </LinearLayout>
         </FrameLayout>
@@ -99,11 +98,29 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="3dp"
-            android:background="@drawable/abc_toolbar_shadow" />
+            android:background="@drawable/shadow_toolbar" />
 
     </LinearLayout>
 
-    <include layout="@layout/toolbar" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?colorPrimary"
+        android:gravity="center_vertical">
+
+        <include
+            layout="@layout/toolbar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <ru.melodin.fast.view.CircleImageView
+            android:id="@+id/messageAvatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="10dp" />
+
+    </LinearLayout>
 
     <include layout="@layout/toolbar_action" />
 
@@ -115,9 +132,9 @@
         android:layout_alignParentEnd="true"
         android:layout_gravity="end|bottom"
         android:layout_margin="16dp"
-        android:src="@drawable/ic_keyboard_arrow_down_black_24dp"
+        android:src="@drawable/ic_keyboard_arrow_down"
         android:visibility="gone"
-        app:backgroundTint="?colorPrimary"
+        app:backgroundTint="?android:windowBackground"
         app:fabSize="mini"
         app:tint="?android:textColorPrimary"
         tools:visibility="visible" />
@@ -127,14 +144,14 @@
         android:layout_height="3dp"
         android:layout_above="@+id/chatPanel"
         android:alpha="0.6"
-        android:background="@drawable/message_drop_shadow_dark" />
+        android:background="@drawable/shadow_activity_messages_panel" />
 
     <LinearLayout
         android:id="@+id/chatPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="?colorPrimary"
+        android:background="?colorSurface"
         android:gravity="center_vertical"
         android:minHeight="60dp"
         android:orientation="horizontal">
@@ -145,9 +162,8 @@
             android:layout_gravity="bottom"
             android:layout_marginStart="8dp"
             android:layout_marginBottom="10dp"
-            android:layout_weight="0"
             android:background="?selectableItemBackgroundBorderless"
-            android:src="@drawable/md_attachment"
+            android:src="@drawable/ic_plus_30dp"
             app:backgroundTint="@android:color/transparent"
             app:tint="?android:textColorSecondary" />
 
@@ -172,28 +188,22 @@
             android:layout_gravity="bottom"
             android:layout_marginStart="6dp"
             android:layout_marginBottom="10dp"
-            android:layout_weight="0"
             android:background="?selectableItemBackgroundBorderless"
-            android:src="@drawable/md_online_status"
+            android:src="@drawable/ic_emoticon_happy_outline_30dp"
             app:backgroundTint="@android:color/transparent"
             app:tint="?android:textColorSecondary" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/send"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="bottom"
             android:layout_marginStart="6dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginBottom="6dp"
-            android:layout_weight="0"
-            android:elevation="0dp"
-            android:src="@drawable/md_mic"
-            app:backgroundTint="?colorAccent"
-            app:elevation="0dp"
-            app:fabCustomSize="40dp"
-            app:fabSize="mini"
-            app:tint="?colorPrimary" />
+            android:layout_marginBottom="10dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_microphone_outline_30dp"
+            android:tint="?colorAccent" />
 
     </LinearLayout>
 </RelativeLayout>

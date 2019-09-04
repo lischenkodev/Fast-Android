@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -24,8 +23,6 @@ import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.TaskManager
 import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.util.ArrayUtil
-import ru.melodin.fast.util.ViewUtil
-import ru.melodin.fast.view.FastToolbar
 import java.util.*
 
 class FragmentCreateChatUsers : BaseFragment() {
@@ -56,23 +53,19 @@ class FragmentCreateChatUsers : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         tb.inflateMenu(R.menu.activity_create_chat)
-        tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
-            override fun onMenuItemClick(item: MenuItem): Boolean {
-                if (item.itemId == R.id.create && adapter != null) {
-                    createChat()
+        tb.setOnMenuItemClickListener{
+            if (it.itemId == R.id.create && adapter != null) {
+                createChat()
 
-                    return true
-                }
-
-                return false
+                return@setOnMenuItemClickListener true
             }
 
-        })
-        tb.setBackIcon(drawable(R.drawable.md_clear))
-        tb.setBackVisible(true)
-        tb.setTitle(R.string.create_chat)
+            false
+        }
 
-        ViewUtil.applyToolbarMenuItemsColor(tb)
+        tb.setNavigationIcon(R.drawable.ic_clear)
+        tb.setNavigationOnClickListener { onBackPressed() }
+        tb.setTitle(R.string.create_chat)
 
         refreshLayout.isEnabled = false
 

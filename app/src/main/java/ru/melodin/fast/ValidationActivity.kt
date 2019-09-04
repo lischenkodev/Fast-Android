@@ -8,17 +8,13 @@ import android.view.ViewGroup
 import android.webkit.CookieManager
 import android.webkit.WebView
 import android.webkit.WebViewClient
-
 import androidx.appcompat.app.AppCompatActivity
-
 import ru.melodin.fast.api.Auth
 import ru.melodin.fast.common.ThemeManager
-import ru.melodin.fast.util.ViewUtil
 
 class ValidationActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ViewUtil.applyWindowStyles(window)
         setTheme(ThemeManager.LOGIN_THEME)
         super.onCreate(savedInstanceState)
 

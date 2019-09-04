@@ -18,7 +18,7 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:scaleType="centerCrop"
-            tools:src="@drawable/avatar_placeholder"
+            tools:src="@drawable/ic_avatar_placeholder"
             tools:visibility="gone" />
 
         <ImageView
@@ -28,7 +28,7 @@
             android:layout_gravity="center"
             android:contentDescription="@string/app_name"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_vector_link_arrow"
+            android:src="@drawable/ic_arrow_top_right"
             android:tint="?colorAccent" />
 
     </FrameLayout>

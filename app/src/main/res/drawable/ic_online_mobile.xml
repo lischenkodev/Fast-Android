@@ -15,6 +15,6 @@
                 android:color="?colorPrimary" />
         </shape>
     </item>
-    <item android:drawable="@drawable/ic_phone_android_black_24dp" />
+    <item android:drawable="@drawable/ic_phone_android" />
 
 </layer-list>

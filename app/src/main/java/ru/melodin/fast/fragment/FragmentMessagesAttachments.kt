@@ -31,6 +31,8 @@ class FragmentMessagesAttachments(private val peerId: Int, private val type: Str
     BaseFragment(), AttachmentsContract.View, SwipeRefreshLayout.OnRefreshListener,
     RecyclerAdapter.OnItemClickListener {
 
+    constructor(): this(-1, "")
+
     companion object {
         const val TYPE_PHOTO = "photo"
         const val TYPE_VIDEO = "video"

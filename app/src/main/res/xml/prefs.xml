@@ -4,13 +4,14 @@
 
     <PreferenceCategory
         android:key="interface_"
-        android:title="@string/interface_title" />
+        android:title="@string/interface_title"
+        app:isPreferenceVisible="false" />
 
     <SwitchPreference
         android:defaultValue="true"
         android:key="dark_theme"
         android:title="@string/dark_theme_title"
-        app:enabled="false" />
+        app:isPreferenceVisible="false" />
 
     <PreferenceCategory
         android:key="functional"

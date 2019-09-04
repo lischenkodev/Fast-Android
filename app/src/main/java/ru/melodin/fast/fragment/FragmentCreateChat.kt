@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -30,8 +29,6 @@ import ru.melodin.fast.mvp.contract.UsersContract
 import ru.melodin.fast.mvp.presenter.UsersPresenter
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Util
-import ru.melodin.fast.util.ViewUtil
-import ru.melodin.fast.view.FastToolbar
 
 class FragmentCreateChat : BaseFragment(), SwipeRefreshLayout.OnRefreshListener,
     RecyclerAdapter.OnItemClickListener, UsersContract.View {
@@ -73,19 +70,18 @@ class FragmentCreateChat : BaseFragment(), SwipeRefreshLayout.OnRefreshListener,
 
         tb.setTitle(R.string.select_friends)
 
-        tb.setBackVisible(true)
-        tb.inflateMenu(R.menu.activity_create_chat)
-        ViewUtil.applyToolbarMenuItemsColor(tb)
-        tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
-            override fun onMenuItemClick(item: MenuItem): Boolean {
-                if (item.itemId == R.id.create) {
-                    getUsers()
-                    return true
-                }
+        tb.setNavigationIcon(R.drawable.ic_arrow_back)
+        tb.setNavigationOnClickListener { onBackPressed() }
 
-                return false
+        tb.inflateMenu(R.menu.activity_create_chat)
+        tb.setOnMenuItemClickListener {
+            if (it.itemId == R.id.create) {
+                getUsers()
+                return@setOnMenuItemClickListener true
             }
-        })
+
+            false
+        }
 
         refreshLayout.setOnRefreshListener(this)
         refreshLayout.setColorSchemeColors(ThemeManager.ACCENT)
@@ -118,6 +114,7 @@ class FragmentCreateChat : BaseFragment(), SwipeRefreshLayout.OnRefreshListener,
 
         if (adapter == null) {
             adapter = CreateChatAdapter(activity!!, items!!)
+            adapter!!.setOnItemClickListener(this)
             list!!.adapter = adapter
             return
         }

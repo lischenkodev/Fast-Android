@@ -35,7 +35,7 @@
                     android:layout_width="65dp"
                     android:layout_height="65dp"
                     android:layout_centerVertical="true"
-                    android:src="@drawable/avatar_placeholder" />
+                    android:src="@drawable/ic_avatar_placeholder" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -63,7 +63,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:background="@drawable/activity_chat_info_edittext"
+                        android:background="@drawable/bg_activity_chat_info_edittext"
                         android:backgroundTint="?colorPrimary"
                         android:backgroundTintMode="multiply"
                         android:gravity="start|center_vertical"

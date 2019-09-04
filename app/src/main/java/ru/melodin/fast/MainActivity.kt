@@ -28,7 +28,6 @@ import ru.melodin.fast.service.LongPollService
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Keys
 import ru.melodin.fast.util.Util
-import ru.melodin.fast.util.ViewUtil
 import java.util.*
 
 
@@ -38,7 +37,7 @@ open class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemS
     private var currentId = -1
     private var currentFragment: BaseFragment? = null
 
-    private lateinit var stacks: SparseArray<Stack<Fragment>>
+    private var stacks: SparseArray<Stack<Fragment>> = SparseArray()
 
     private lateinit var queue: ArrayList<String>
 
@@ -50,7 +49,6 @@ open class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemS
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        ViewUtil.applyWindowStyles(window, ThemeManager.PRIMARY_DARK)
         setTheme(ThemeManager.CURRENT_THEME)
         VKApi.config = UserConfig.restore()
         super.onCreate(savedInstanceState)
@@ -93,7 +91,6 @@ open class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemS
 
     private fun initStacks() {
         queue = ArrayList()
-        stacks = SparseArray()
         stacks.put(R.id.navigation_conversations, Stack())
         stacks.put(R.id.navigation_items, Stack())
     }

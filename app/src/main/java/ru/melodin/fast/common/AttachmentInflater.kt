@@ -106,6 +106,7 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         val attachments = item.attachments
         for (i in attachments.indices) {
             when (val attachment = attachments[i]) {
+                is VKGift -> gift(item, parent, attachment)
                 is VKAudio -> audio(item, parent, attachment)
                 is VKPhoto -> photo(item, images, attachment, if (forwarded) maxWidth else -1)
                 is VKSticker -> sticker(item, images, attachment)
@@ -172,7 +173,26 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
 
     }
 
-    fun wall(item: VKMessage, parent: ViewGroup, wall: VKWall) {
+    fun gift(item: VKMessage, parent: ViewGroup, source: VKGift) {
+        val image =
+            inflater.inflate(R.layout.activity_messages_attach_photo, parent, false) as ImageView
+        image.setOnLongClickListener {
+            simulateLongClick(item)
+            true
+        }
+
+        image.setOnClickListener { isSelected(item) }
+
+        image.layoutParams = params
+        loadImage(image, source.thumb256, null)
+
+        image.isClickable = false
+        image.isFocusable = false
+
+        parent.addView(image)
+    }
+
+    fun wall(item: VKMessage, parent: ViewGroup, source: VKWall) {
         val v = inflater.inflate(R.layout.activity_messages_attach_doc, parent, false)
         v.setOnLongClickListener {
             simulateLongClick(item)
@@ -191,7 +211,7 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         title.maxWidth = metrics.widthPixels - metrics.widthPixels / 2
         body.maxWidth = metrics.widthPixels - metrics.widthPixels / 2
 
-        val drawable = ContextCompat.getDrawable(context, R.drawable.ic_newspaper_black_24dp)
+        val drawable = ContextCompat.getDrawable(context, R.drawable.ic_newspaper)
         icon.setImageDrawable(drawable)
 
         parent.addView(v)
@@ -273,7 +293,11 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
             FrameLayout.LayoutParams.WRAP_CONTENT
         ) else getFrameParams(maxWidth)
 
-        loadImage(image, source.sizes[0]!!.src, if (source.sizes[1] != null) source.sizes[1]!!.src else null)
+        loadImage(
+            image,
+            source.sizes[0]!!.src,
+            if (source.sizes[1] != null) source.sizes[1]!!.src else null
+        )
         parent.addView(v)
     }
 
@@ -358,7 +382,7 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
             Picasso.get()
                 .load(user.photo100)
                 .priority(Picasso.Priority.HIGH)
-                .placeholder(R.drawable.avatar_placeholder)
+                .placeholder(R.drawable.ic_avatar_placeholder)
                 .into(avatar)
         }
 
@@ -441,8 +465,8 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         title.text = context.getString(R.string.voice_message)
         body.text = duration
 
-        val start = ContextCompat.getDrawable(context, R.drawable.ic_play_circle_filled_black_24dp)
-        val stop = ContextCompat.getDrawable(context, R.drawable.ic_pause_circle_filled_black_24dp)
+        val start = ContextCompat.getDrawable(context, R.drawable.ic_play_circle_outline)
+        val stop = ContextCompat.getDrawable(context, R.drawable.ic_pause_circle_outline)
 
         val playing = item.isPlaying
         play.setImageDrawable(if (playing) stop else start)
@@ -479,8 +503,8 @@ class AttachmentInflater(private val adapter: MessageAdapter?, private val conte
         val time = v.findViewById<TextView>(R.id.audio_duration)
 
         val play = v.findViewById<ImageButton>(R.id.audio_play)
-        val start = ContextCompat.getDrawable(context, R.drawable.ic_play_circle_filled_black_24dp)
-        val stop = ContextCompat.getDrawable(context, R.drawable.ic_pause_circle_filled_black_24dp)
+        val start = ContextCompat.getDrawable(context, R.drawable.ic_play_circle_outline)
+        val stop = ContextCompat.getDrawable(context, R.drawable.ic_pause_circle_outline)
 
         val playing = item.isPlaying
         play.setImageDrawable(if (playing) stop else start)

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorSurface">@color/dark_surface</item>
+        <item name="colorAccent">@color/dark_accent</item>
+        <item name="colorPrimary">@color/dark_primary</item>
+        <item name="colorSecondary">?colorAccent</item>
+        <item name="colorPrimaryDark">@color/dark_primary_dark</item>
+        <item name="android:windowBackground">@color/dark_background</item>
+        <item name="alertDialogTheme">@style/AlertDialog.Theme</item>
+        <item name="preferenceTheme">@style/AppTheme.PreferenceThemeOverlay</item>
+        <item name="itemsColor">#0A0A0A</item>
+        <item name="itemsShadowColor">#CC000000</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor" tools:targetApi="o_mr1">?colorPrimaryDark</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+    </style>
+
+    <style name="AppTheme.Login" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorSurface">@color/dark_surface</item>
+        <item name="colorAccent">@color/dark_accent</item>
+        <item name="colorPrimary">@color/dark_accent</item>
+        <item name="colorPrimaryDark">@color/dark_primary_dark</item>
+        <item name="colorSecondary">?colorAccent</item>
+        <item name="android:windowBackground">@color/dark_background</item>
+        <item name="alertDialogTheme">@style/AlertDialog.Theme</item>
+        <item name="android:navigationBarColor" tools:targetApi="o_mr1">?colorPrimaryDark</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+    </style>
+
+    <style name="AlertDialog.Theme" parent="Theme.MaterialComponents.Dialog.Alert">
+        <item name="colorAccent">@color/dark_accent</item>
+        <item name="dialogCornerRadius">@dimen/default_corners_radius</item>
+        <item name="buttonBarPositiveButtonStyle">@style/AlertDialog.Button</item>
+        <item name="buttonBarNegativeButtonStyle">@style/AlertDialog.Button</item>
+        <item name="buttonBarNeutralButtonStyle">@style/AlertDialog.Button</item>
+    </style>
+
+    <style name="AlertDialog.Button" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="backgroundTint">@android:color/transparent</item>
+        <item name="rippleColor">@color/dark_accent</item>
+        <item name="android:textColor">@color/dark_accent</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
+    <style name="AppTheme.PhotoView" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="colorPrimaryDark">@android:color/transparent</item>
+        <item name="colorPrimary">@android:color/black</item>
+        <item name="alertDialogTheme">@style/AlertDialog.Theme</item>
+    </style>
+
+</resources>

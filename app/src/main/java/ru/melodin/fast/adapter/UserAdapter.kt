@@ -157,7 +157,7 @@ class UserAdapter : RecyclerAdapter<VKUser, UserAdapter.ViewHolder> {
 
         private var contactContainer: LinearLayout = v.findViewById(R.id.contact_container)
 
-        private var placeholder = getDrawable(R.drawable.avatar_placeholder)
+        private var placeholder = getDrawable(R.drawable.ic_avatar_placeholder)
 
         override fun bind(position: Int) {
             if (fragment != null && fragment is FragmentFriends) {

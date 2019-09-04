@@ -19,36 +19,18 @@ import ru.melodin.fast.api.AppIds
 import ru.melodin.fast.api.Auth
 import ru.melodin.fast.api.Scopes
 import ru.melodin.fast.common.ThemeManager
-import ru.melodin.fast.util.ViewUtil
-import ru.melodin.fast.view.FastToolbar
 
 class WebViewLoginActivity : AppCompatActivity() {
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(ThemeManager.CURRENT_THEME)
-        ViewUtil.applyWindowStyles(window)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web_login)
 
-        tb.setBackVisible(true)
-        tb.inflateMenu(R.menu.activity_login)
-
-        ViewUtil.applyToolbarMenuItemsColor(tb)
-
-        tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
-            override fun onMenuItemClick(item: MenuItem): Boolean {
-                if (item.itemId == R.id.refreshLayout) {
-                    progress.visibility = View.VISIBLE
-                    web.visibility = View.GONE
-                    web.reload()
-
-                    return true
-                }
-
-                return false
-            }
-        })
+        setSupportActionBar(tb)
+        tb.setNavigationIcon(R.drawable.ic_arrow_back)
+        tb.setNavigationOnClickListener { finish() }
 
         web.visibility = View.GONE
 
@@ -62,16 +44,23 @@ class WebViewLoginActivity : AppCompatActivity() {
         manager.flush()
         manager.setAcceptCookie(true)
 
-        try {
-            web!!.loadUrl(Auth.getUrl(AppIds.FAST, Scopes.allInt()))
-        } catch (ignored: Exception) {
-        }
-
+        web!!.loadUrl(Auth.getUrl(AppIds.FAST, Scopes.allInt()))
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.activity_login, menu)
         return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.refreshLayout) {
+            progress.visibility = View.VISIBLE
+            web.visibility = View.GONE
+            web.reload()
+
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onBackPressed() {

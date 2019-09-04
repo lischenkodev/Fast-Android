@@ -4,12 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <androidx.appcompat.widget.Toolbar
+    <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/actionTb"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="?colorPrimary"
-        app:navigationIcon="@drawable/md_clear"
+        app:navigationIcon="@drawable/ic_clear"
         app:title="@null" />
 
 </com.google.android.material.appbar.AppBarLayout>

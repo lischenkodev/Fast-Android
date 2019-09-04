@@ -21,7 +21,7 @@
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_gravity="bottom|end"
-            tools:src="@drawable/avatar_placeholder" />
+            tools:src="@drawable/ic_avatar_placeholder" />
 
         <ImageView
             android:id="@+id/online"
@@ -70,7 +70,7 @@
         android:layout_marginStart="10dp"
         android:background="?selectableItemBackgroundBorderless"
         android:padding="10dp"
-        android:src="@drawable/md_clear"
+        android:src="@drawable/ic_clear"
         android:tint="?android:textColorSecondary" />
 
     <LinearLayout
@@ -87,7 +87,7 @@
             android:layout_height="wrap_content"
             android:background="?selectableItemBackgroundBorderless"
             android:padding="10dp"
-            android:src="@drawable/md_mail"
+            android:src="@drawable/ic_mail"
             android:tint="?colorAccent" />
 
         <androidx.appcompat.widget.AppCompatImageButton
@@ -97,7 +97,7 @@
             android:layout_marginStart="-6dp"
             android:background="?selectableItemBackgroundBorderless"
             android:padding="10dp"
-            android:src="@drawable/md_arrow_up"
+            android:src="@drawable/ic_keyboard_arrow_down"
             android:tint="?android:textColorPrimary" />
 
     </LinearLayout>

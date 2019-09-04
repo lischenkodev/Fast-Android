@@ -3,6 +3,7 @@ package ru.melodin.fast.common
 import android.graphics.Color
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
+import androidx.appcompat.app.AppCompatDelegate
 import org.greenrobot.eventbus.EventBus
 import ru.melodin.fast.R
 import ru.melodin.fast.fragment.FragmentSettings
@@ -18,12 +19,12 @@ object ThemeManager {
     internal fun init() {
         IS_DARK = AppGlobal.preferences.getBoolean(FragmentSettings.KEY_DARK_STYLE, true)
 
-        CURRENT_THEME = if (IS_DARK) R.style.AppTheme_Dark else R.style.AppTheme_Light
-        POPUP_THEME =
-            if (IS_DARK) R.style.ThemeOverlay_AppCompat else R.style.ThemeOverlay_AppCompat_Light
-        LOGIN_THEME = if (IS_DARK) R.style.AppTheme_Login_Dark else R.style.AppTheme_Login_Light
-        ALERT_THEME =
-            if (IS_DARK) R.style.AlertDialog_Theme_Dark else R.style.AlertDialog_Theme_Light
+        AppCompatDelegate.setDefaultNightMode(if (IS_DARK) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
+
+        CURRENT_THEME = R.style.AppTheme
+        POPUP_THEME = if (IS_DARK) R.style.ThemeOverlay_AppCompat else R.style.ThemeOverlay_AppCompat_Light
+        LOGIN_THEME = R.style.AppTheme_Login
+        ALERT_THEME = R.style.AlertDialog_Theme
 
         PRIMARY = getColor(if (IS_DARK) R.color.dark_primary else R.color.primary)
         PRIMARY_INVERSE = getColor(if (IS_DARK) R.color.primary else R.color.dark_primary)

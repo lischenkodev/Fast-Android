@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -27,7 +26,6 @@ import ru.melodin.fast.api.UserConfig
 import ru.melodin.fast.api.model.VKUser
 import ru.melodin.fast.common.AppGlobal
 import ru.melodin.fast.common.CrashManager
-import ru.melodin.fast.common.FragmentSelector
 import ru.melodin.fast.current.BaseFragment
 import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.model.ListItem
@@ -36,8 +34,6 @@ import ru.melodin.fast.service.LongPollService
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Constants
 import ru.melodin.fast.util.Keys
-import ru.melodin.fast.util.ViewUtil
-import ru.melodin.fast.view.FastToolbar
 
 
 class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
@@ -96,17 +92,14 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
         initUser()
 
         tb.inflateMenu(R.menu.fragment_items)
-        ViewUtil.applyToolbarMenuItemsColor(tb)
-        tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
-            override fun onMenuItemClick(item: MenuItem): Boolean {
-                if (item.itemId == R.id.item_settings) {
-                    parent?.replaceFragment(R.id.navigation_items, fragmentSettings, null)
-                    return true
-                }
-
-                return false
+        tb.setOnMenuItemClickListener {
+            if (it.itemId == R.id.item_settings) {
+                parent?.replaceFragment(R.id.navigation_items, fragmentSettings, null)
+                return@setOnMenuItemClickListener true
             }
-        })
+
+            false
+        }
 
         EventBus.getDefault().register(this)
 
@@ -116,16 +109,16 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
     private fun createItems() {
         val items = arrayListOf(
             ShadowPaddingItem(),
-            ListItem(ID_FRIENDS, string(R.string.fragment_friends), drawable(R.drawable.md_people)),
-            ListItem(ID_GROUPS, string(R.string.groups), drawable(R.drawable.md_groups)),
+            ListItem(ID_FRIENDS, string(R.string.fragment_friends), drawable(R.drawable.ic_account_multiple)),
+            ListItem(ID_GROUPS, string(R.string.groups), drawable(R.drawable.ic_account_group)),
             ShadowPaddingItem(),
             ListItem(
                 ID_REPORT_BUG,
                 string(R.string.report_bug),
-                drawable(R.drawable.ic_bug_report_black_24dp)
+                drawable(R.drawable.ic_bug_report)
             ),
             ShadowPaddingItem(),
-            ListItem(ID_LOGOUT, string(R.string.logout), drawable(R.drawable.md_exit_to_app))
+            ListItem(ID_LOGOUT, string(R.string.logout), drawable(R.drawable.ic_exit_to_app))
         )
 
         val adapter = ItemAdapter(activity!!, items)
@@ -160,7 +153,7 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
     }
 
     private fun reportBug() {
-        FragmentSelector.selectFragment(fragmentManager!!, FragmentMessages(), Bundle().apply {
+        parent?.replaceFragment(0, FragmentMessages(), Bundle().apply {
             putInt("peer_id", Constants.BOT_ID)
             putString("text", "#bug\n\n${CrashManager.getInfo(null)}\n\nDescription: ")
         }, true)
@@ -173,10 +166,10 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
             Picasso.get()
                 .load(user!!.photo200)
                 .priority(Picasso.Priority.HIGH)
-                .placeholder(R.drawable.avatar_placeholder)
+                .placeholder(R.drawable.ic_avatar_placeholder)
                 .into(userAvatar)
         } else {
-            userAvatar.setImageResource(R.drawable.avatar_placeholder)
+            userAvatar.setImageResource(R.drawable.ic_avatar_placeholder)
         }
 
         userName.text = user.toString()

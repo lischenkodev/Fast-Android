@@ -42,8 +42,7 @@ class LoginActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setTheme(ThemeManager.LOGIN_THEME)
-        ViewUtil.applyWindowStyles(window, ThemeManager.BACKGROUND)
+        setTheme(R.style.AppTheme_Login)
         setContentView(R.layout.activity_login)
 
         progress.visibility = View.INVISIBLE
@@ -61,7 +60,7 @@ class LoginActivity : BaseActivity() {
             }
         }
 
-        logoText.setOnClickListener { toggleTheme() }
+        //logoText.setOnClickListener { toggleTheme() }
 
         if (ThemeManager.IS_DARK) {
             logoText.setTextColor(Color.WHITE)
@@ -133,9 +132,7 @@ class LoginActivity : BaseActivity() {
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                runOnUiThread {
-                    showErrorSnackbar(e.toString())
-                }
+                startWebLogin()
             }
         }
     }
@@ -144,10 +141,11 @@ class LoginActivity : BaseActivity() {
         toggleButton()
 
         if (response.has("error")) {
+            val error = response.optString("error")
             val errorDescription = response.optString("error_description")
 
-            when (response.optString("error", getString(R.string.error))) {
-                "need_validation" -> {
+            when {
+                error.toLowerCase().contains("need_validation") -> {
                     val redirectUri = response.optString("redirect_uri")
                     val intent =
                         Intent(this@LoginActivity, ValidationActivity::class.java).apply {
@@ -156,7 +154,7 @@ class LoginActivity : BaseActivity() {
                         }
                     startActivityForResult(intent, REQUEST_VALIDATE)
                 }
-                "need_captcha" -> {
+                error.toLowerCase().contains("need_captcha") -> {
                     val captchaImg = response.optString("captcha_img")
                     val captchaSid = response.optString("captcha_sid")
                     showCaptchaDialog(captchaSid, captchaImg)
@@ -317,7 +315,7 @@ class LoginActivity : BaseActivity() {
         } else {
             progress.visibility = View.INVISIBLE
             buttonLogin.extend(true)
-            buttonLogin.icon = drawable(R.drawable.md_done)
+            buttonLogin.icon = drawable(R.drawable.ic_done)
         }
     }
 

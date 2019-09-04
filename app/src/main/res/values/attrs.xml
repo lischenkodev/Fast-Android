@@ -15,5 +15,6 @@
 
     <attr name="itemsColor" format="color" />
     <attr name="itemsShadowColor" format="color" />
+    <attr name="colorSurface" format="color" />
 
 </resources>

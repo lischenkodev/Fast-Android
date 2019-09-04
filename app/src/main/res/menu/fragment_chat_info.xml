@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/save_title"
-        android:icon="@drawable/md_done"
+        android:icon="@drawable/ic_done"
         android:title="@string/save"
         app:showAsAction="ifRoom" />
 

@@ -19,7 +19,7 @@
             android:layout_height="@dimen/avatar_chat_size"
             android:layout_gravity="center_vertical|top"
             android:layout_margin="4dp"
-            tools:src="@drawable/avatar_placeholder"
+            tools:src="@drawable/ic_avatar_placeholder"
             tools:visibility="gone" />
 
         <LinearLayout
@@ -45,7 +45,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="4dp"
-                android:background="@drawable/msg_bg"
+                android:background="@drawable/bg_message_bubble"
                 android:backgroundTint="?colorPrimary"
                 android:backgroundTintMode="multiply"
                 android:minHeight="40dp"
@@ -100,7 +100,7 @@
             android:layout_height="14dp"
             android:layout_marginStart="4dp"
             android:layout_marginTop="2dp"
-            android:src="@drawable/ic_stars_black_24dp"
+            android:src="@drawable/ic_stars"
             android:tint="?colorAccent"
             android:visibility="gone" />
 

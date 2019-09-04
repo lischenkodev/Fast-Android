@@ -3,7 +3,6 @@ package ru.melodin.fast.fragment
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
@@ -33,13 +32,11 @@ import ru.melodin.fast.mvp.contract.ConversationsContract
 import ru.melodin.fast.mvp.presenter.ConversationsPresenter
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Util
-import ru.melodin.fast.util.ViewUtil
-import ru.melodin.fast.view.FastToolbar
 import java.util.*
 
 class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListener,
     RecyclerAdapter.OnItemClickListener, RecyclerAdapter.OnItemLongClickListener,
-    ConversationsContract.View, FastToolbar.OnMenuItemClickListener {
+    ConversationsContract.View {
 
     private var adapter: ConversationAdapter? = null
     private var bundle: Bundle? = null
@@ -78,12 +75,31 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
         toolbar = tb
         recyclerList = list
 
-        tb.setTitle(title)
-
+        tb.title = title
         tb.inflateMenu(R.menu.fragment_dialogs_menu)
-        tb.setOnMenuItemClickListener(this)
-
-        ViewUtil.applyToolbarMenuItemsColor(tb)
+        tb.setOnMenuItemClickListener {
+            when (it.itemId) {
+                R.id.create_chat -> {
+                    parent!!.replaceFragment(
+                        0,
+                        FragmentCreateChat(),
+                        null,
+                        true
+                    )
+                    true
+                }
+                R.id.clear_messages_cache -> {
+                    context ?: return@setOnMenuItemClickListener false
+                    FragmentSettings.showConfirmClearCacheDialog(
+                        context = context!!,
+                        users = false,
+                        groups = false
+                    )
+                    true
+                }
+                else -> false
+            }
+        }
 
         refreshLayout.setColorSchemeColors(ThemeManager.ACCENT)
         refreshLayout.setOnRefreshListener(this)
@@ -111,30 +127,6 @@ class FragmentConversations : BaseFragment(), SwipeRefreshLayout.OnRefreshListen
 
         if (adapter != null && list?.adapter == null) {
             list?.adapter = adapter
-        }
-    }
-
-    override fun onMenuItemClick(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.create_chat -> {
-                parent!!.replaceFragment(
-                    0,
-                    FragmentCreateChat(),
-                    null,
-                    true
-                )
-                true
-            }
-            R.id.clear_messages_cache -> {
-                context ?: return false
-                FragmentSettings.showConfirmClearCacheDialog(
-                    context = context!!,
-                    users = false,
-                    groups = false
-                )
-                true
-            }
-            else -> false
         }
     }
 

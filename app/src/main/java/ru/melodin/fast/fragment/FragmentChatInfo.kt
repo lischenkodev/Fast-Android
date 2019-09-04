@@ -5,7 +5,6 @@ import android.text.Editable
 import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.LayoutInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
@@ -33,7 +32,6 @@ import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Keys
 import ru.melodin.fast.util.Util
 import ru.melodin.fast.util.ViewUtil
-import ru.melodin.fast.view.FastToolbar
 
 
 class FragmentChatInfo : BaseFragment() {
@@ -88,19 +86,18 @@ class FragmentChatInfo : BaseFragment() {
 
         tb.inflateMenu(R.menu.fragment_chat_info)
 
-        tb.setOnMenuItemClickListener(object : FastToolbar.OnMenuItemClickListener {
-            override fun onMenuItemClick(item: MenuItem): Boolean {
-                if (item.itemId == R.id.save_title) {
-                    changeTitleName(chatTitle.text.toString().trim())
-                    return true
-                }
-                return false
+        tb.setOnMenuItemClickListener {
+            if (it.itemId == R.id.save_title) {
+                changeTitleName(chatTitle.text.toString().trim())
+                return@setOnMenuItemClickListener true
             }
 
-        })
+            false
+        }
 
         tb.setTitle(R.string.chat)
-        tb.setBackVisible(true)
+        tb.setNavigationIcon(R.drawable.ic_arrow_back)
+        tb.setNavigationOnClickListener { onBackPressed() }
 
         chatLeave.setOnClickListener {
             confirmKick(UserConfig.userId)
@@ -114,7 +111,6 @@ class FragmentChatInfo : BaseFragment() {
         getCachedChat()
         if (Util.hasConnection()) loadChat()
     }
-
 
     private fun showPhotoAlert() {
         val list =
@@ -153,7 +149,7 @@ class FragmentChatInfo : BaseFragment() {
             VKApi.messages().deleteChatPhoto().chatId(chat!!.id)
                 .execute(null, object : OnResponseListener {
                     override fun onComplete(models: ArrayList<*>?) {
-                        chatAvatar.setImageResource(R.drawable.avatar_placeholder)
+                        chatAvatar.setImageResource(R.drawable.ic_avatar_placeholder)
 
                         chat!!.apply {
                             photo50 = null
@@ -280,7 +276,7 @@ class FragmentChatInfo : BaseFragment() {
         if (!TextUtils.isEmpty(if (chat == null) conversation.photo200 else chat!!.photo200)) {
             Picasso.get()
                 .load(if (chat == null) conversation.photo200 else chat!!.photo200)
-                .placeholder(R.drawable.avatar_placeholder)
+                .placeholder(R.drawable.ic_avatar_placeholder)
                 .into(chatAvatar)
         }
     }

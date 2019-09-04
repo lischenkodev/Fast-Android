@@ -14,7 +14,7 @@
         android:layout_marginEnd="4dp"
         android:background="@android:color/transparent"
         android:contentDescription="@string/app_name"
-        android:src="@drawable/ic_play_circle_filled_black_24dp"
+        android:src="@drawable/ic_play_circle_outline"
         android:tint="?colorAccent" />
 
     <LinearLayout

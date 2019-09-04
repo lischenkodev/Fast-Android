@@ -417,6 +417,7 @@ class MessageAdapter(
                 }
                 is VKVoice -> attachmentInflater.voice(item, parent, attachment)
                 is VKWall -> attachmentInflater.wall(item, parent, attachment)
+                is VKGift -> attachmentInflater.gift(item, parent, attachment)
                 else -> attachmentInflater.empty(parent, context.getString(R.string.unknown))
             }
         }
@@ -448,10 +449,10 @@ class MessageAdapter(
         private var bubbleContainer: LinearLayout = itemView.findViewById(R.id.bubble_container)
         private var replyContainer: LinearLayout = itemView.findViewById(R.id.reply_container)
 
-        private var sending = getDrawable(R.drawable.ic_access_time_black_24dp)
-        private var error = getDrawable(R.drawable.ic_error_black_24dp)
-        private var placeholder = getDrawable(R.drawable.avatar_placeholder)
-        private var defaultBg = getDrawable(R.drawable.msg_bg)
+        private var sending = getDrawable(R.drawable.ic_access_time)
+        private var error = getDrawable(R.drawable.ic_alert_circle_outline)
+        private var placeholder = getDrawable(R.drawable.ic_avatar_placeholder)
+        private var defaultBg = getDrawable(R.drawable.bg_message_bubble)
         private var circle: GradientDrawable? = null
 
         @ColorInt

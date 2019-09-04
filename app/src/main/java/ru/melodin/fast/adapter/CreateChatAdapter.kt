@@ -95,7 +95,7 @@ class CreateChatAdapter(context: Context, users: ArrayList<VKUser>) :
 
         init {
 
-            placeholder = getDrawable(R.drawable.avatar_placeholder)
+            placeholder = getDrawable(R.drawable.ic_avatar_placeholder)
             root = v.findViewById(R.id.root)
 
             avatar = v.findViewById(R.id.userAvatar)

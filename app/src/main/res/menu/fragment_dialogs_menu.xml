@@ -10,7 +10,7 @@
 
     <item
         android:id="@+id/create_chat"
-        android:icon="@drawable/md_add"
+        android:icon="@drawable/ic_plus"
         android:title="@string/create_chat"
         app:showAsAction="ifRoom|collapseActionView" />
 

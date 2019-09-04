@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/reply"
-        android:icon="@drawable/ic_reply_black_24dp"
+        android:icon="@drawable/ic_reply"
         android:title="@string/reply"
         app:showAsAction="ifRoom" />
 
@@ -16,7 +16,7 @@
 
     <item
         android:id="@+id/forward"
-        android:icon="@drawable/ic_arrow_forward_black_24dp"
+        android:icon="@drawable/ic_arrow_forward"
         android:title="@string/forward"
         app:showAsAction="ifRoom" />
 

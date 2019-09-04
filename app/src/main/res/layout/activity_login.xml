@@ -11,7 +11,9 @@
         android:layout_gravity="center"
         android:layout_marginStart="30dp"
         android:layout_marginEnd="30dp"
+        app:cardBackgroundColor="?colorSurface"
         app:cardCornerRadius="@dimen/default_corners_radius"
+        app:cardPreventCornerOverlap="true"
         app:cardElevation="6dp">
 
         <LinearLayout
@@ -49,7 +51,7 @@
                         android:id="@+id/iconEmail"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/md_email"
+                        android:src="@drawable/ic_at"
                         android:tint="?android:textColorPrimary" />
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -84,7 +86,7 @@
                         android:id="@+id/iconKey"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/md_key"
+                        android:src="@drawable/ic_key_rounded"
                         android:tint="?android:textColorPrimary" />
 
                     <com.google.android.material.textfield.TextInputLayout
@@ -123,7 +125,7 @@
                         android:text="@string/login"
                         android:textColor="?android:textColorPrimaryInverse"
                         app:cornerRadius="@dimen/default_corners_radius"
-                        app:icon="@drawable/md_done"
+                        app:icon="@drawable/ic_done"
                         app:iconTint="?android:textColorPrimaryInverse"
                         app:rippleColor="@android:color/white" />
 

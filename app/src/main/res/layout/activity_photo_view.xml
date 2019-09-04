@@ -44,7 +44,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.3"
             android:background="?selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_mode_comment_black_24dp"
+            android:src="@drawable/ic_comment_outline"
             android:tint="#ffffff" />
 
 
@@ -53,7 +53,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="0.3"
             android:background="?selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_share_black_24dp"
+            android:src="@drawable/ic_share"
             android:tint="#ffffff" />
 
     </LinearLayout>

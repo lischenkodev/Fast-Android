@@ -8,9 +8,9 @@ android {
 
     defaultConfig {
         applicationId "ru.melodin.fast"
-        versionCode 14
-        versionName "0.8 Alpha 9"
-        minSdkVersion 21
+        versionCode 16
+        versionName "0.8 Alpha 10"
+        minSdkVersion 23
         targetSdkVersion 29
     }
 

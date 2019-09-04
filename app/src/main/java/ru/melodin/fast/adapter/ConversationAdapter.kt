@@ -427,7 +427,7 @@ class ConversationAdapter(
 
         private var counterContainer: FrameLayout = v.findViewById(R.id.counter_container)
 
-        private var placeholder: Drawable = getDrawable(R.drawable.avatar_placeholder)!!
+        private var placeholder: Drawable = getDrawable(R.drawable.ic_avatar_placeholder)!!
 
         @ColorInt
         private var pushesEnabled: Int = 0
