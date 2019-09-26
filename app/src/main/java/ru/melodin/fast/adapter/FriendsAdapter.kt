@@ -6,7 +6,7 @@ import androidx.fragment.app.FragmentStatePagerAdapter
 import ru.melodin.fast.fragment.FragmentFriends
 
 class FriendsAdapter(fragmentManager: FragmentManager, var titles: ArrayList<String>) :
-    FragmentStatePagerAdapter(fragmentManager) {
+    FragmentStatePagerAdapter(fragmentManager, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     private val fragments = arrayListOf<Fragment>(FragmentFriends(), FragmentFriends(true))
 

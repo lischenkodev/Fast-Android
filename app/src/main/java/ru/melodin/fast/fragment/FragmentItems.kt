@@ -40,7 +40,6 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
 
     private var user: VKUser? = null
 
-    private val fragmentSettings = FragmentSettings()
     private val fragmentFriends = ParentFragmentFriends()
 
     companion object {
@@ -94,7 +93,7 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
         tb.inflateMenu(R.menu.fragment_items)
         tb.setOnMenuItemClickListener {
             if (it.itemId == R.id.item_settings) {
-                parent?.replaceFragment(R.id.navigation_items, fragmentSettings, null)
+                openSettings()
                 return@setOnMenuItemClickListener true
             }
 
@@ -104,12 +103,26 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
         EventBus.getDefault().register(this)
 
         createItems()
+
+        arguments ?: return
+
+        if (arguments!!.containsKey("open_settings")) {
+            openSettings()
+        }
+    }
+
+    fun openSettings() {
+        parent?.replaceFragment(R.id.navigation_items, FragmentSettings(), null, true)
     }
 
     private fun createItems() {
         val items = arrayListOf(
             ShadowPaddingItem(),
-            ListItem(ID_FRIENDS, string(R.string.fragment_friends), drawable(R.drawable.ic_account_multiple)),
+            ListItem(
+                ID_FRIENDS,
+                string(R.string.fragment_friends),
+                drawable(R.drawable.ic_account_multiple)
+            ),
             ListItem(ID_GROUPS, string(R.string.groups), drawable(R.drawable.ic_account_group)),
             ShadowPaddingItem(),
             ListItem(

@@ -8,6 +8,7 @@ class ConversationsPresenter : PresenterBase<VKConversation, ConversationsContra
     ConversationsContract.Presenter {
 
     override fun onFilledList() {
+        view ?: return
         view!!.setRefreshing(false)
         view!!.setProgressBarVisible(false)
         view!!.setNoItemsViewVisible(false)

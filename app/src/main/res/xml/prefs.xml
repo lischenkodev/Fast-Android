@@ -4,14 +4,12 @@
 
     <PreferenceCategory
         android:key="interface_"
-        android:title="@string/interface_title"
-        app:isPreferenceVisible="false" />
+        android:title="@string/interface_title" />
 
     <SwitchPreference
         android:defaultValue="true"
         android:key="dark_theme"
-        android:title="@string/dark_theme_title"
-        app:isPreferenceVisible="false" />
+        android:title="@string/dark_theme_title" />
 
     <PreferenceCategory
         android:key="functional"
@@ -37,7 +35,8 @@
         android:defaultValue="false"
         android:key="offline"
         android:summary="@string/offline_summary"
-        android:title="@string/offline" />
+        android:title="@string/offline"
+        app:isPreferenceVisible="false" />
 
     <SwitchPreference
         android:defaultValue="false"
@@ -56,11 +55,13 @@
 
     <PreferenceScreen
         android:key="show_cached_users"
-        android:title="@string/show_caches_users_title" />
+        android:title="@string/show_caches_users_title"
+        app:isPreferenceVisible="false" />
 
     <PreferenceScreen
         android:key="show_cached_groups"
-        android:title="@string/show_cached_groups_title" />
+        android:title="@string/show_cached_groups_title"
+        app:isPreferenceVisible="false" />
 
     <PreferenceScreen
         android:key="clear_messages_cache"
@@ -81,7 +82,7 @@
         android:key="cause_error"
         android:summary="@string/warning"
         android:title="@string/cause_error"
-        app:enabled="false" />
+        app:isPreferenceVisible="false" />
 
     <PreferenceScreen
         android:key="about"

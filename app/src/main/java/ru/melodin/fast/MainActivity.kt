@@ -61,8 +61,15 @@ open class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemS
         checkLogin(savedInstanceState)
         CrashManager.checkCrash(this)
 
-        if (UserConfig.isLoggedIn && savedInstanceState == null) {
-            trackVisitor()
+        if (savedInstanceState == null) {
+            if (UserConfig.isLoggedIn) trackVisitor()
+
+            if (intent.hasExtra("select_settings")) {
+                replaceFragment(
+                    R.id.navigation_items,
+                    fragmentItems,
+                    Bundle().apply { putBoolean("open_settings", true) })
+            }
         }
 
         EventBus.getDefault().register(this)

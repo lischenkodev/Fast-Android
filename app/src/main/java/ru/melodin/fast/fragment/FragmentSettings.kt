@@ -73,23 +73,12 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         const val KEY_CRASHED = "isCrashed"
     }
 
+    private var currentTaps = 0
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.prefs, rootKey)
 
         val hideTyping = findPreference<Preference>(KEY_HIDE_TYPING)
-
-        if (AppGlobal.isDebug()) {
-            val showError = findPreference<Preference>(KEY_SHOW_ERROR)
-            showError?.isVisible = true
-            showError?.isEnabled = false
-            showError?.summary = "Alpha version"
-        }
-
-        if (!AppGlobal.preferences.getBoolean(KEY_DARK_STYLE, true)) {
-            AppGlobal.preferences.edit().putBoolean(KEY_DARK_STYLE, true).apply()
-            activity!!.finishAffinity()
-            startActivity(Intent(activity!!, MainActivity::class.java))
-        }
 
         findPreference<Preference>(KEY_ABOUT)?.onPreferenceClickListener = this
         findPreference<Preference>(KEY_MESSAGES_CLEAR_CACHE)?.onPreferenceClickListener = this
@@ -122,7 +111,9 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             if (dark) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
 
         AppCompatDelegate.setDefaultNightMode(nightMode)
-        (activity as MainActivity).delegate.localNightMode = nightMode
+        activity!!.finish()
+        startActivity(Intent(context, MainActivity::class.java).putExtra("select_settings", true))
+        activity!!.overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
     }
 
     override fun onPreferenceChange(preference: Preference, newValue: Any): Boolean {
@@ -134,15 +125,26 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
     override fun onPreferenceClick(preference: Preference): Boolean {
         when (preference.key) {
-            KEY_ABOUT -> Toast.makeText(
-                context,
-                String.format(
-                    getString(R.string.about_toast),
-                    AppGlobal.app_version_name,
-                    AppGlobal.app_version_code
-                ),
-                Toast.LENGTH_LONG
-            ).show()
+            KEY_ABOUT -> {
+                Toast.makeText(
+                    context,
+                    String.format(
+                        getString(R.string.about_toast),
+                        AppGlobal.app_version_name,
+                        AppGlobal.app_version_code
+                    ),
+                    Toast.LENGTH_LONG
+                ).show()
+
+                currentTaps++
+
+                if (currentTaps == 5 && !findPreference<Preference>(KEY_CAUSE_ERROR)!!.isVisible) {
+                    currentTaps = 0
+
+                    showHidedElements()
+                    Toast.makeText(context, "¯\\_(ツ)_/¯", Toast.LENGTH_SHORT).show()
+                }
+            }
             KEY_MESSAGES_CLEAR_CACHE -> showConfirmClearCacheDialog(
                 context = context!!,
                 users = false,
@@ -153,6 +155,14 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             KEY_CAUSE_ERROR -> confirmCauseErrorDialog()
         }
         return true
+    }
+
+    private fun showHidedElements() {
+        findPreference<Preference>(KEY_SHOW_ERROR)!!.isVisible = true
+        findPreference<Preference>(KEY_CAUSE_ERROR)!!.isVisible = true
+        findPreference<Preference>(KEY_OFFLINE)!!.isVisible = true
+        findPreference<Preference>(KEY_SHOW_CACHED_USERS)!!.isVisible = true
+        findPreference<Preference>(KEY_SHOW_CACHED_GROUPS)!!.isVisible = true
     }
 
     private fun confirmCauseErrorDialog() {
