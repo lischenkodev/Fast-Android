@@ -67,8 +67,9 @@ open class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemS
             if (intent.hasExtra("select_settings")) {
                 replaceFragment(
                     R.id.navigation_items,
-                    fragmentItems,
-                    Bundle().apply { putBoolean("open_settings", true) })
+                    FragmentItems(),
+                    Bundle().apply { putBoolean("open_settings", true) }
+                )
             }
         }
 

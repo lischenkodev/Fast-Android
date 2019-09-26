@@ -73,7 +73,7 @@ internal object CrashManager {
                 .putString(FragmentSettings.KEY_CRASH_LOG, "")
                 .apply()
 
-            if (!AppGlobal.preferences.getBoolean(FragmentSettings.KEY_SHOW_ERROR, true))
+            if (!AppGlobal.preferences.getBoolean(FragmentSettings.KEY_SHOW_ERROR, false))
                 return
 
             val adb = AlertDialog.Builder(activity)

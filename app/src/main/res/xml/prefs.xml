@@ -72,7 +72,7 @@
         android:title="@string/application_title" />
 
     <SwitchPreference
-        android:defaultValue="true"
+        android:defaultValue="false"
         android:key="show_error"
         android:summary="@string/show_error_summary"
         android:title="@string/show_error_title"

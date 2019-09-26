@@ -80,6 +80,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
         val hideTyping = findPreference<Preference>(KEY_HIDE_TYPING)
 
+        findPreference<Preference>(KEY_CAUSE_ERROR)?.onPreferenceClickListener = this
         findPreference<Preference>(KEY_ABOUT)?.onPreferenceClickListener = this
         findPreference<Preference>(KEY_MESSAGES_CLEAR_CACHE)?.onPreferenceClickListener = this
         findPreference<Preference>(KEY_SHOW_CACHED_USERS)?.onPreferenceClickListener = this
@@ -111,6 +112,7 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
             if (dark) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO
 
         AppCompatDelegate.setDefaultNightMode(nightMode)
+
         activity!!.finish()
         startActivity(Intent(context, MainActivity::class.java).putExtra("select_settings", true))
         activity!!.overridePendingTransition(R.anim.fade_in, R.anim.fade_out)
@@ -138,11 +140,15 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
 
                 currentTaps++
 
-                if (currentTaps == 5 && !findPreference<Preference>(KEY_CAUSE_ERROR)!!.isVisible) {
+                if (currentTaps == 5) {
                     currentTaps = 0
-
-                    showHidedElements()
                     Toast.makeText(context, "¯\\_(ツ)_/¯", Toast.LENGTH_SHORT).show()
+                    
+                    if (!findPreference<Preference>(KEY_CAUSE_ERROR)!!.isVisible) {
+                        setHidedElementsVisible(true)
+                    } else {
+                        setHidedElementsVisible(false)
+                    }
                 }
             }
             KEY_MESSAGES_CLEAR_CACHE -> showConfirmClearCacheDialog(
@@ -157,12 +163,12 @@ class FragmentSettings : PreferenceFragmentCompat(), Preference.OnPreferenceClic
         return true
     }
 
-    private fun showHidedElements() {
-        findPreference<Preference>(KEY_SHOW_ERROR)!!.isVisible = true
-        findPreference<Preference>(KEY_CAUSE_ERROR)!!.isVisible = true
-        findPreference<Preference>(KEY_OFFLINE)!!.isVisible = true
-        findPreference<Preference>(KEY_SHOW_CACHED_USERS)!!.isVisible = true
-        findPreference<Preference>(KEY_SHOW_CACHED_GROUPS)!!.isVisible = true
+    private fun setHidedElementsVisible(visible: Boolean) {
+        findPreference<Preference>(KEY_SHOW_ERROR)!!.isVisible = visible
+        findPreference<Preference>(KEY_CAUSE_ERROR)!!.isVisible = visible
+        findPreference<Preference>(KEY_OFFLINE)!!.isVisible = visible
+        findPreference<Preference>(KEY_SHOW_CACHED_USERS)!!.isVisible = visible
+        findPreference<Preference>(KEY_SHOW_CACHED_GROUPS)!!.isVisible = visible
     }
 
     private fun confirmCauseErrorDialog() {

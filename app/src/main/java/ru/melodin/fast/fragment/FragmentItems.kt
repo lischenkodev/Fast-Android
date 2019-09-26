@@ -111,7 +111,7 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
         }
     }
 
-    fun openSettings() {
+    private fun openSettings() {
         parent?.replaceFragment(R.id.navigation_items, FragmentSettings(), null, true)
     }
 
