@@ -9,7 +9,6 @@
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
         android:background="?colorPrimary"
-        app:layout_scrollFlags="scroll|enterAlways"
-        app:titleTextAppearance="@style/AppTheme.Widget.Toolbar.Title" />
+        app:layout_scrollFlags="scroll|enterAlways" />
 
 </com.google.android.material.appbar.AppBarLayout>

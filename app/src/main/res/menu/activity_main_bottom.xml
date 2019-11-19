@@ -3,10 +3,9 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:enabled="false"
-            android:icon="@drawable/ic_account_group"
-            android:title="@string/groups"
-            android:visible="false" />
+            android:id="@+id/navigation_friends"
+            android:icon="@drawable/ic_account_multiple"
+            android:title="@string/fragment_friends" />
 
         <item
             android:id="@+id/navigation_conversations"

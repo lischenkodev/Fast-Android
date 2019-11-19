@@ -23,7 +23,7 @@
             android:layout_gravity="bottom|end"
             tools:src="@drawable/ic_avatar_placeholder" />
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/online"
             android:layout_width="14dp"
             android:layout_height="14dp"

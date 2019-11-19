@@ -117,19 +117,19 @@ class FragmentItems : BaseFragment(), RecyclerAdapter.OnItemClickListener {
 
     private fun createItems() {
         val items = arrayListOf(
-            ShadowPaddingItem(),
-            ListItem(
-                ID_FRIENDS,
-                string(R.string.fragment_friends),
-                drawable(R.drawable.ic_account_multiple)
-            ),
-            ListItem(ID_GROUPS, string(R.string.groups), drawable(R.drawable.ic_account_group)),
-            ShadowPaddingItem(),
-            ListItem(
-                ID_REPORT_BUG,
-                string(R.string.report_bug),
-                drawable(R.drawable.ic_bug_report)
-            ),
+//            ShadowPaddingItem(),
+//            ListItem(
+//                ID_FRIENDS,
+//                string(R.string.fragment_friends),
+//                drawable(R.drawable.ic_account_multiple)
+//            ),
+//            ListItem(ID_GROUPS, string(R.string.groups), drawable(R.drawable.ic_account_group)),
+//            ShadowPaddingItem(),
+//            ListItem(
+//                ID_REPORT_BUG,
+//                string(R.string.report_bug),
+//                drawable(R.drawable.ic_bug_report)
+//            ),
             ShadowPaddingItem(),
             ListItem(ID_LOGOUT, string(R.string.logout), drawable(R.drawable.ic_exit_to_app))
         )

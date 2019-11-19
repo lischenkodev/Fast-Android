@@ -24,6 +24,7 @@ import ru.melodin.fast.database.DatabaseHelper
 import ru.melodin.fast.fragment.FragmentConversations
 import ru.melodin.fast.fragment.FragmentItems
 import ru.melodin.fast.fragment.FragmentMessages
+import ru.melodin.fast.fragment.ParentFragmentFriends
 import ru.melodin.fast.service.LongPollService
 import ru.melodin.fast.util.ArrayUtil
 import ru.melodin.fast.util.Keys
@@ -44,6 +45,7 @@ open class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemS
     var goBack = true
 
     companion object {
+        val fragmentFriends = ParentFragmentFriends()
         val fragmentConversations = FragmentConversations()
         val fragmentItems = FragmentItems()
     }
@@ -99,6 +101,7 @@ open class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemS
 
     private fun initStacks() {
         queue = ArrayList()
+        stacks.put(R.id.navigation_friends, Stack())
         stacks.put(R.id.navigation_conversations, Stack())
         stacks.put(R.id.navigation_items, Stack())
     }
@@ -199,6 +202,10 @@ open class MainActivity : BaseActivity(), BottomNavigationView.OnNavigationItemS
         }
 
         return when (item.itemId) {
+            R.id.navigation_friends -> {
+                replaceFragment(item.itemId, fragmentFriends, null)
+                true
+            }
             R.id.navigation_conversations -> {
                 replaceFragment(item.itemId, fragmentConversations, null)
                 true

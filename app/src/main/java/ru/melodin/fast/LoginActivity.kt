@@ -53,11 +53,12 @@ class LoginActivity : BaseActivity() {
         buttonLogin.extend()
 
         buttonLogin.setOnClickListener {
-            if (!buttonLogin.isExtended) {
-                toggleButton()
-            } else {
-                login(false)
-            }
+            login(false)
+//            if (!buttonLogin.isExtended) {
+//                toggleButton()
+//            } else {
+//                login(false)
+//            }
         }
 
         //logoText.setOnClickListener { toggleTheme() }
@@ -91,7 +92,6 @@ class LoginActivity : BaseActivity() {
         }
 
         webLogin!!.setOnClickListener {
-            webLogin!!.isEnabled = false
             startWebLogin()
         }
     }
@@ -310,11 +310,11 @@ class LoginActivity : BaseActivity() {
     private fun toggleButton() {
         if (buttonLogin.isExtended) {
             progress.visibility = View.VISIBLE
-            buttonLogin.shrink(true)
+            buttonLogin.shrink()
             buttonLogin.icon = drawable(R.drawable.ic_refresh)
         } else {
             progress.visibility = View.INVISIBLE
-            buttonLogin.extend(true)
+            buttonLogin.extend()
             buttonLogin.icon = drawable(R.drawable.ic_done)
         }
     }

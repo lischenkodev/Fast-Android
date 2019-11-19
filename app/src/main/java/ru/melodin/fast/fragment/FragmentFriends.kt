@@ -76,10 +76,7 @@ class FragmentFriends(var onlyOnline: Boolean) : BaseFragment(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        toolbar = tb.apply {
-            visibility = View.GONE
-        }
-
+        toolbar = tb.apply { visibility = View.GONE }
         recyclerList = list
 
         refreshLayout.setOnRefreshListener(this)
@@ -95,6 +92,10 @@ class FragmentFriends(var onlyOnline: Boolean) : BaseFragment(),
         getCachedUsers(0, 0)
         if (savedInstanceState == null)
             loadUsers(FRIENDS_COUNT, 0)
+    }
+
+    override fun onResume() {
+        super.onResume()
 
         if (adapter != null && list?.adapter == null) {
             list?.adapter = adapter
@@ -104,12 +105,14 @@ class FragmentFriends(var onlyOnline: Boolean) : BaseFragment(),
     override fun getCachedUsers(count: Int, offset: Int) {
         val users = getFriends(UserConfig.userId, onlyOnline)
 
-        if (!ArrayUtil.isEmpty(users)) {
-            setRefreshing(true)
-            setNoItemsViewVisible(false)
-            createAdapter(users, 0)
-        } else {
-            setProgressBarVisible(true)
+        requireActivity().runOnUiThread {
+            if (!ArrayUtil.isEmpty(users)) {
+                setRefreshing(true)
+                setNoItemsViewVisible(false)
+                createAdapter(users, 0)
+            } else {
+                setProgressBarVisible(true)
+            }
         }
     }
 
@@ -250,7 +253,7 @@ class FragmentFriends(var onlyOnline: Boolean) : BaseFragment(),
             args.putInt("reason", VKConversation.getReason(VKConversation.Reason.USER_DELETED))
         }
 
-        FragmentSelector.selectFragment(fragmentManager!!, FragmentMessages(), args, true)
+        FragmentSelector.selectFragment(requireFragmentManager(), FragmentMessages(), args, true)
     }
 
     fun showDialog(position: Int, v: View) {

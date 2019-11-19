@@ -27,8 +27,8 @@ class ParentFragmentFriends : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
 
         tb.setTitle(R.string.fragment_friends)
-        tb.setNavigationIcon(R.drawable.ic_arrow_back)
-        tb.setNavigationOnClickListener { parent?.onBackPressed() }
+//        tb.setNavigationIcon(R.drawable.ic_arrow_back)
+//        tb.setNavigationOnClickListener { parent?.onBackPressed() }
 
         tabLayout.setTabTextColors(ThemeManager.SECONDARY, ThemeManager.MAIN)
         tabLayout.setSelectedTabIndicatorColor(ThemeManager.MAIN)
@@ -38,7 +38,7 @@ class ParentFragmentFriends : BaseFragment() {
 
     private fun createAdapter() {
         val titles = arrayListOf(getString(R.string.all), getString(R.string.online))
-        adapter = FriendsAdapter(fragmentManager!!, titles)
+        adapter = FriendsAdapter(childFragmentManager, titles)
         pager.adapter = adapter
         tabLayout.setupWithViewPager(pager)
     }

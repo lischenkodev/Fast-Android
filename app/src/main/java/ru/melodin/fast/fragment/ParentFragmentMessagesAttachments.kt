@@ -61,7 +61,7 @@ class ParentFragmentMessagesAttachments : BaseFragment() {
 
         pager.offscreenPageLimit = 4
 
-        adapter = MessagesAttachmentsAdapter(fragmentManager!!, peerId, titles)
+        adapter = MessagesAttachmentsAdapter(childFragmentManager, peerId, titles)
         pager.adapter = adapter
         tabLayout.setupWithViewPager(pager)
     }

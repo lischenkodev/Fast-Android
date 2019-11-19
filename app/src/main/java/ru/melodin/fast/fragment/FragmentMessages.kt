@@ -588,12 +588,9 @@ class FragmentMessages : BaseFragment(), RecyclerAdapter.OnItemClickListener,
     }
 
     private fun openChatInfo() {
-        parent?.replaceFragment(
-            0,
-            FragmentChatInfo(),
-            arguments!!.apply { putSerializable("conversation", conversation) },
-            true
-        )
+        val args = arguments!!.apply { putSerializable("conversation", conversation) }
+
+        parent?.replaceFragment(0, FragmentChatInfo(), args, true)
     }
 
     private fun openChatAttachments() {
